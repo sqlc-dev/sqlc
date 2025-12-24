@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"os"
 	osexec "os/exec"
 	"path/filepath"
@@ -12,7 +11,6 @@ import (
 	"strings"
 	"testing"
 
-	_ "github.com/ClickHouse/clickhouse-go/v2" // ClickHouse driver
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
@@ -129,7 +127,7 @@ func TestReplay(t *testing.T) {
 	}
 
 	// Try Docker for any missing databases
-	if postgresURI == "" || mysqlURI == "" {
+	if postgresURI == "" || mysqlURI == "" || clickhouseURI == "" {
 		if err := docker.Installed(); err == nil {
 			if postgresURI == "" {
 				host, err := docker.StartPostgreSQLServer(ctx)
@@ -145,6 +143,14 @@ func TestReplay(t *testing.T) {
 					t.Logf("docker mysql startup failed: %s", err)
 				} else {
 					mysqlURI = host
+				}
+			}
+			if clickhouseURI == "" {
+				host, err := docker.StartClickHouseServer(ctx)
+				if err != nil {
+					t.Logf("docker clickhouse startup failed: %s", err)
+				} else {
+					clickhouseURI = host
 				}
 			}
 		}
@@ -205,6 +211,11 @@ func TestReplay(t *testing.T) {
 							Engine: config.EngineMySQL,
 							URI:    mysqlURI,
 						},
+						{
+							Name:   "clickhouse",
+							Engine: config.EngineClickHouse,
+							URI:    clickhouseURI,
+						},
 					}
 
 					for i := range c.SQL {
@@ -221,6 +232,12 @@ func TestReplay(t *testing.T) {
 							c.SQL[i].Database = &config.Database{
 								Managed: true,
 							}
+						case config.EngineClickHouse:
+							// ClickHouse uses URI directly (not managed mode)
+							c.SQL[i].Database = &config.Database{
+								URI:     clickhouseURI,
+								Managed: true,
+							}
 						default:
 							// pass
 						}
@@ -229,56 +246,7 @@ func TestReplay(t *testing.T) {
 			},
 			Enabled: func() bool {
 				// Enabled if at least one database URI is available
-				return postgresURI != "" || mysqlURI != ""
-			},
-		},
-		"clickhouse": {
-			Mutate: func(t *testing.T, path string) func(*config.Config) {
-				return func(c *config.Config) {
-					for i := range c.SQL {
-						if c.SQL[i].Engine == config.EngineClickHouse {
-							c.SQL[i].Database = &config.Database{
-								URI: clickhouseURI,
-							}
-							// Apply schema migrations to ClickHouse
-							for _, schemaPath := range c.SQL[i].Schema {
-								fullPath := filepath.Join(path, schemaPath)
-								schemaSQL, err := os.ReadFile(fullPath)
-								if err != nil {
-									t.Logf("Failed to read schema %s: %v", fullPath, err)
-									continue
-								}
-								db, err := sql.Open("clickhouse", clickhouseURI)
-								if err != nil {
-									t.Logf("Failed to connect to ClickHouse: %v", err)
-									continue
-								}
-								// Execute each statement separately
-								for _, stmt := range strings.Split(string(schemaSQL), ";") {
-									stmt = strings.TrimSpace(stmt)
-									if stmt == "" {
-										continue
-									}
-									// Drop table first if this is a CREATE TABLE statement
-									if strings.HasPrefix(strings.ToUpper(stmt), "CREATE TABLE") {
-										parts := strings.Fields(stmt)
-										if len(parts) >= 3 {
-											tableName := strings.TrimSuffix(parts[2], "(")
-											db.Exec("DROP TABLE IF EXISTS " + tableName)
-										}
-									}
-									if _, err := db.Exec(stmt); err != nil {
-										t.Logf("Failed to apply schema: %v", err)
-									}
-								}
-								db.Close()
-							}
-						}
-					}
-				}
-			},
-			Enabled: func() bool {
-				return clickhouseURI != ""
+				return postgresURI != "" || mysqlURI != "" || clickhouseURI != ""
 			},
 		},
 	}
@@ -315,12 +283,6 @@ func TestReplay(t *testing.T) {
 				if len(args.Contexts) > 0 {
 					if !slices.Contains(args.Contexts, name) {
 						t.Skipf("unsupported context: %s", name)
-					}
-				} else if name == "clickhouse" {
-					// For clickhouse context, only run tests that explicitly include it
-					// or that have ClickHouse engine (checked by having "clickhouse" in path)
-					if !strings.Contains(tc.Name, "clickhouse") {
-						t.Skipf("clickhouse context: skipping non-clickhouse test")
 					}
 				}
 

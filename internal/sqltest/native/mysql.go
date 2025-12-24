@@ -102,15 +102,23 @@ func startMySQLServer(ctx context.Context) (string, error) {
 }
 
 func startMySQLService() error {
+	// Check if mysqld is already running via pgrep
+	cmd := exec.Command("pgrep", "-x", "mysqld")
+	if err := cmd.Run(); err == nil {
+		// mysqld is already running
+		time.Sleep(1 * time.Second)
+		return nil
+	}
+
 	// Try systemctl first
-	cmd := exec.Command("sudo", "systemctl", "start", "mysql")
+	cmd = exec.Command("sudo", "systemctl", "start", "mysql")
 	if err := cmd.Run(); err == nil {
 		// Give MySQL time to fully initialize
 		time.Sleep(2 * time.Second)
 		return nil
 	}
 
-	// Try mysqld
+	// Try mysqld via systemctl
 	cmd = exec.Command("sudo", "systemctl", "start", "mysqld")
 	if err := cmd.Run(); err == nil {
 		time.Sleep(2 * time.Second)
@@ -127,6 +135,13 @@ func startMySQLService() error {
 	cmd = exec.Command("sudo", "service", "mysqld", "start")
 	if err := cmd.Run(); err == nil {
 		time.Sleep(2 * time.Second)
+		return nil
+	}
+
+	// Try starting mysqld directly as a last resort
+	cmd = exec.Command("sudo", "mysqld", "--user=mysql")
+	if err := cmd.Start(); err == nil {
+		time.Sleep(3 * time.Second)
 		return nil
 	}
 

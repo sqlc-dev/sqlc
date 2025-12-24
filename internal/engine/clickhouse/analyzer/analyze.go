@@ -8,6 +8,8 @@ import (
 	"sync"
 
 	_ "github.com/ClickHouse/clickhouse-go/v2" // ClickHouse driver
+	dcast "github.com/sqlc-dev/doubleclick/ast"
+	"github.com/sqlc-dev/doubleclick/parser"
 
 	core "github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/config"
@@ -155,6 +157,18 @@ func (a *Analyzer) connect(ctx context.Context, migrations []string) error {
 			if len(strings.TrimSpace(m)) == 0 {
 				continue
 			}
+			// For CREATE TABLE statements, drop the table first if it exists
+			upper := strings.ToUpper(strings.TrimSpace(m))
+			if strings.HasPrefix(upper, "CREATE TABLE") {
+				// Extract table name and drop it first
+				parts := strings.Fields(m)
+				if len(parts) >= 3 {
+					tableName := parts[2]
+					// Remove any trailing characters like "("
+					tableName = strings.TrimSuffix(tableName, "(")
+					a.conn.ExecContext(ctx, "DROP TABLE IF EXISTS "+tableName)
+				}
+			}
 			if _, err := a.conn.ExecContext(ctx, m); err != nil {
 				a.conn.Close()
 				a.conn = nil
@@ -212,12 +226,16 @@ func (a *Analyzer) GetColumnNames(ctx context.Context, query string) ([]string, 
 	// Replace ? placeholders with NULL for introspection
 	preparedQuery := strings.ReplaceAll(query, "?", "NULL")
 
-	// Add LIMIT 0 to avoid fetching data
-	limitQuery := addLimit0(preparedQuery)
-
-	rows, err := a.conn.QueryContext(ctx, limitQuery)
+	// Use DESCRIBE (query) to get column information
+	describeQuery := fmt.Sprintf("DESCRIBE (%s)", preparedQuery)
+	rows, err := a.conn.QueryContext(ctx, describeQuery)
 	if err != nil {
-		return nil, err
+		// Fallback to LIMIT 0 if DESCRIBE fails
+		limitQuery := addLimit0(preparedQuery)
+		rows, err = a.conn.QueryContext(ctx, limitQuery)
+		if err != nil {
+			return nil, err
+		}
 	}
 	defer rows.Close()
 
@@ -314,63 +332,140 @@ type paramInfo struct {
 	Type string
 }
 
-// detectParameters finds parameters in a ClickHouse query.
-// ClickHouse supports {name:Type} and $1, $2 style parameters.
+// detectParameters finds parameters in a ClickHouse query using the doubleclick parser.
+// ClickHouse supports {name:Type} and ? style parameters.
 func detectParameters(query string) []paramInfo {
 	var params []paramInfo
 
-	// Find {name:Type} style parameters
-	i := 0
-	for i < len(query) {
-		if query[i] == '{' {
-			j := i + 1
-			for j < len(query) && query[j] != '}' {
-				j++
-			}
-			if j < len(query) {
-				paramStr := query[i+1 : j]
-				parts := strings.SplitN(paramStr, ":", 2)
-				if len(parts) == 2 {
-					params = append(params, paramInfo{
-						Name: parts[0],
-						Type: normalizeType(parts[1]),
-					})
-				} else if len(parts) == 1 {
-					params = append(params, paramInfo{
-						Name: parts[0],
-						Type: "any",
-					})
+	// First, try to find {name:Type} style parameters using the doubleclick parser
+	ctx := context.Background()
+	stmts, err := parser.Parse(ctx, strings.NewReader(query))
+	if err == nil {
+		// Walk the AST to find Parameter nodes (for {name:Type} style)
+		for _, stmt := range stmts {
+			walkStatement(stmt, func(expr dcast.Expression) {
+				if param, ok := expr.(*dcast.Parameter); ok {
+					name := param.Name
+					dataType := "any"
+					if param.Type != nil {
+						dataType = normalizeType(param.Type.Name)
+					}
+					if name != "" {
+						// Only add named parameters from the parser
+						params = append(params, paramInfo{
+							Name: name,
+							Type: dataType,
+						})
+					}
 				}
-			}
-			i = j + 1
-		} else {
-			i++
-		}
-	}
-
-	// Find $1, $2 style parameters (simpler approach)
-	for i := 1; i <= 100; i++ {
-		placeholder := fmt.Sprintf("$%d", i)
-		if strings.Contains(query, placeholder) {
-			params = append(params, paramInfo{
-				Name: fmt.Sprintf("p%d", i),
-				Type: "any",
 			})
-		} else {
-			break
 		}
 	}
 
-	// Find ? placeholders
+	// Count ? placeholders (the doubleclick parser doesn't fully support these)
+	// The ? placeholders are added after any named parameters
 	count := strings.Count(query, "?")
-	for i := len(params); i < count; i++ {
+	for i := 0; i < count; i++ {
 		params = append(params, paramInfo{
-			Name: fmt.Sprintf("p%d", i+1),
+			Name: fmt.Sprintf("p%d", len(params)+1),
 			Type: "any",
 		})
 	}
 
 	return params
+}
+
+// walkStatement walks a statement and calls fn for each expression.
+func walkStatement(stmt dcast.Statement, fn func(dcast.Expression)) {
+	switch s := stmt.(type) {
+	case *dcast.SelectQuery:
+		walkSelectQuery(s, fn)
+	case *dcast.SelectWithUnionQuery:
+		for _, sel := range s.Selects {
+			walkStatement(sel, fn)
+		}
+	case *dcast.InsertQuery:
+		if s.Select != nil {
+			walkStatement(s.Select, fn)
+		}
+	}
+}
+
+// walkSelectQuery walks a SELECT query and calls fn for each expression.
+func walkSelectQuery(s *dcast.SelectQuery, fn func(dcast.Expression)) {
+	// Walk columns
+	for _, col := range s.Columns {
+		walkExpression(col, fn)
+	}
+	// Walk WHERE clause
+	if s.Where != nil {
+		walkExpression(s.Where, fn)
+	}
+	// Walk GROUP BY
+	for _, g := range s.GroupBy {
+		walkExpression(g, fn)
+	}
+	// Walk HAVING
+	if s.Having != nil {
+		walkExpression(s.Having, fn)
+	}
+	// Walk ORDER BY
+	for _, o := range s.OrderBy {
+		walkExpression(o.Expression, fn)
+	}
+	// Walk LIMIT
+	if s.Limit != nil {
+		walkExpression(s.Limit, fn)
+	}
+	// Walk OFFSET
+	if s.Offset != nil {
+		walkExpression(s.Offset, fn)
+	}
+}
+
+// walkExpression walks an expression and calls fn for each sub-expression.
+func walkExpression(expr dcast.Expression, fn func(dcast.Expression)) {
+	if expr == nil {
+		return
+	}
+	fn(expr)
+
+	switch e := expr.(type) {
+	case *dcast.BinaryExpr:
+		walkExpression(e.Left, fn)
+		walkExpression(e.Right, fn)
+	case *dcast.UnaryExpr:
+		walkExpression(e.Operand, fn)
+	case *dcast.FunctionCall:
+		for _, arg := range e.Arguments {
+			walkExpression(arg, fn)
+		}
+	case *dcast.Subquery:
+		walkStatement(e.Query, fn)
+	case *dcast.CaseExpr:
+		if e.Operand != nil {
+			walkExpression(e.Operand, fn)
+		}
+		for _, when := range e.Whens {
+			walkExpression(when.Condition, fn)
+			walkExpression(when.Result, fn)
+		}
+		if e.Else != nil {
+			walkExpression(e.Else, fn)
+		}
+	case *dcast.InExpr:
+		walkExpression(e.Expr, fn)
+		for _, v := range e.List {
+			walkExpression(v, fn)
+		}
+		if e.Query != nil {
+			walkStatement(e.Query, fn)
+		}
+	case *dcast.BetweenExpr:
+		walkExpression(e.Expr, fn)
+		walkExpression(e.Low, fn)
+		walkExpression(e.High, fn)
+	}
 }
 
 // addLimit0 adds LIMIT 0 to a query for schema introspection.

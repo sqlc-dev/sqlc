@@ -1,5 +1,5 @@
 {
-  "contexts": ["clickhouse"],
+  "contexts": ["managed-db"],
   "env": {
     "SQLCEXPERIMENT": "clickhouse"
   }
