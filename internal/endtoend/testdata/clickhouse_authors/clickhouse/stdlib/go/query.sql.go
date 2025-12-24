@@ -10,52 +10,45 @@ import (
 	"database/sql"
 )
 
-const createAuthor = `-- name: CreateAuthor :one
-INSERT INTO authors (name, bio) VALUES (?, ?) RETURNING id, name, bio;
+const createAuthor = `-- name: CreateAuthor :exec
+INSERT INTO authors (id, name, bio) VALUES ({id:UInt64}, {name:String}, {bio:String});
 `
 
 type CreateAuthorParams struct {
-	Column1 interface{}
-	Column2 interface{}
+	ID   uint64
+	Name string
+	Bio  string
 }
 
-type CreateAuthorRow struct {
-	ID   sql.NullInt64
-	Name sql.NullString
-	Bio  sql.NullString
-}
-
-func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (CreateAuthorRow, error) {
-	row := q.db.QueryRowContext(ctx, createAuthor, arg.Column1, arg.Column2)
-	var i CreateAuthorRow
-	err := row.Scan(&i.ID, &i.Name, &i.Bio)
-	return i, err
+func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) error {
+	_, err := q.db.ExecContext(ctx, createAuthor, arg.ID, arg.Name, arg.Bio)
+	return err
 }
 
 const getAuthor = `-- name: GetAuthor :one
-SELECT id, name, bio FROM authors WHERE id = ?;
+SELECT id, name, bio FROM authors WHERE id = {id:UInt64};
 `
 
 type GetAuthorRow struct {
-	ID   sql.NullInt64
-	Name sql.NullString
+	ID   uint64
+	Name string
 	Bio  sql.NullString
 }
 
-func (q *Queries) GetAuthor(ctx context.Context, dollar_1 interface{}) (GetAuthorRow, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, dollar_1)
+func (q *Queries) GetAuthor(ctx context.Context, id uint64) (GetAuthorRow, error) {
+	row := q.db.QueryRowContext(ctx, getAuthor, id)
 	var i GetAuthorRow
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
 }
 
 const listAuthors = `-- name: ListAuthors :many
-SELECT id, name, bio FROM authors;
+SELECT id, name, bio FROM authors ORDER BY name;
 `
 
 type ListAuthorsRow struct {
-	ID   sql.NullInt64
-	Name sql.NullString
+	ID   uint64
+	Name string
 	Bio  sql.NullString
 }
 

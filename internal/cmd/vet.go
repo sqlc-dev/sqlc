@@ -150,6 +150,7 @@ func Vet(ctx context.Context, dir, filename string, opts *Options) error {
 		Stderr:        stderr,
 		OnlyManagedDB: e.Debug.OnlyManagedDatabases,
 		Replacer:      shfmt.NewReplacer(nil),
+		Experiment:    e.Experiment,
 	}
 	errored := false
 	for _, sql := range conf.SQL {
@@ -389,6 +390,7 @@ type checker struct {
 	Client        dbmanager.Client
 	clientOnce    sync.Once
 	Replacer      *shfmt.Replacer
+	Experiment    opts.Experiment
 }
 
 // isInMemorySQLite checks if a SQLite URI refers to an in-memory database
@@ -481,7 +483,8 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 
 	var name string
 	parseOpts := opts.Parser{
-		Debug: debug.Debug,
+		Debug:      debug.Debug,
+		Experiment: c.Experiment,
 	}
 
 	result, failed := parse(ctx, name, c.Dir, s, combo, parseOpts, c.Stderr)

@@ -88,7 +88,8 @@ func processQuerySets(ctx context.Context, rp ResultProcessor, conf *config.Conf
 
 			var name, lang string
 			parseOpts := opts.Parser{
-				Debug: debug.Debug,
+				Debug:      debug.Debug,
+				Experiment: o.Env.Experiment,
 			}
 
 			switch {

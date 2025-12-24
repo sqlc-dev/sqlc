@@ -7,37 +7,50 @@ package querytest
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createTask = `-- name: CreateTask :one
-INSERT INTO tasks (title, status) VALUES ($1, $2) RETURNING id, title, status
+INSERT INTO tasks (title, status) VALUES ($1, $2) RETURNING id, title, status;
 `
 
 type CreateTaskParams struct {
-	Title  string
-	Status Status
+	Column1 sql.NullString
+	Column2 interface{}
 }
 
-func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (Task, error) {
-	row := q.db.QueryRowContext(ctx, createTask, arg.Title, arg.Status)
-	var i Task
+type CreateTaskRow struct {
+	ID     int32
+	Title  string
+	Status interface{}
+}
+
+func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (CreateTaskRow, error) {
+	row := q.db.QueryRowContext(ctx, createTask, arg.Column1, arg.Column2)
+	var i CreateTaskRow
 	err := row.Scan(&i.ID, &i.Title, &i.Status)
 	return i, err
 }
 
 const getTasksByStatus = `-- name: GetTasksByStatus :many
-SELECT id, title, status FROM tasks WHERE status = $1
+SELECT id, title, status FROM tasks WHERE status = $1;
 `
 
-func (q *Queries) GetTasksByStatus(ctx context.Context, status Status) ([]Task, error) {
-	rows, err := q.db.QueryContext(ctx, getTasksByStatus, status)
+type GetTasksByStatusRow struct {
+	ID     int32
+	Title  string
+	Status interface{}
+}
+
+func (q *Queries) GetTasksByStatus(ctx context.Context, dollar_1 interface{}) ([]GetTasksByStatusRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTasksByStatus, dollar_1)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Task
+	var items []GetTasksByStatusRow
 	for rows.Next() {
-		var i Task
+		var i GetTasksByStatusRow
 		if err := rows.Scan(&i.ID, &i.Title, &i.Status); err != nil {
 			return nil, err
 		}
@@ -53,18 +66,24 @@ func (q *Queries) GetTasksByStatus(ctx context.Context, status Status) ([]Task, 
 }
 
 const listTasks = `-- name: ListTasks :many
-SELECT id, title, status FROM tasks
+SELECT id, title, status FROM tasks;
 `
 
-func (q *Queries) ListTasks(ctx context.Context) ([]Task, error) {
+type ListTasksRow struct {
+	ID     int32
+	Title  string
+	Status interface{}
+}
+
+func (q *Queries) ListTasks(ctx context.Context) ([]ListTasksRow, error) {
 	rows, err := q.db.QueryContext(ctx, listTasks)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Task
+	var items []ListTasksRow
 	for rows.Next() {
-		var i Task
+		var i ListTasksRow
 		if err := rows.Scan(&i.ID, &i.Title, &i.Status); err != nil {
 			return nil, err
 		}

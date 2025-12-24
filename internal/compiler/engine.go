@@ -7,6 +7,8 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/dbmanager"
+	"github.com/sqlc-dev/sqlc/internal/engine/clickhouse"
+	clickhouseanalyze "github.com/sqlc-dev/sqlc/internal/engine/clickhouse/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	pganalyze "github.com/sqlc-dev/sqlc/internal/engine/postgresql/analyzer"
@@ -111,6 +113,34 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 				)
 			}
 		}
+	case config.EngineClickHouse:
+		// ClickHouse requires the clickhouse experiment flag
+		if !parserOpts.Experiment.ClickHouse {
+			return nil, fmt.Errorf("clickhouse engine requires SQLCEXPERIMENT=clickhouse")
+		}
+		// ClickHouse requires database-only mode
+		if !conf.Analyzer.Database.IsOnly() {
+			return nil, fmt.Errorf("clickhouse engine requires analyzer.database: only")
+		}
+		if conf.Database == nil {
+			return nil, fmt.Errorf("clickhouse engine requires database configuration")
+		}
+		if conf.Database.URI == "" && !conf.Database.Managed {
+			return nil, fmt.Errorf("clickhouse engine requires database.uri or database.managed")
+		}
+
+		parser := clickhouse.NewParser()
+		c.parser = parser
+		c.catalog = clickhouse.NewCatalog()
+		c.selector = newDefaultSelector()
+		c.databaseOnlyMode = true
+
+		// Create the ClickHouse analyzer
+		chAnalyzer := clickhouseanalyze.New(*conf.Database)
+		c.analyzer = analyzer.Cached(chAnalyzer, combo.Global, *conf.Database)
+		// Create the expander using the analyzer as the column getter
+		c.expander = expander.New(c.analyzer, parser, parser)
+
 	default:
 		return nil, fmt.Errorf("unknown engine: %s", conf.Engine)
 	}

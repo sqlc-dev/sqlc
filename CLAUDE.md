@@ -87,9 +87,45 @@ Test the connection:
 mysql -h 127.0.0.1 -u root -pmysecretpassword -e "SELECT VERSION();"
 ```
 
-### Step 4: Run End-to-End Tests
+### Step 4: Install ClickHouse (Optional - for ClickHouse tests)
 
-With both databases running, the test framework automatically detects them:
+ClickHouse is required for ClickHouse engine tests. The ClickHouse feature is experimental and requires the `SQLCEXPERIMENT=clickhouse` flag.
+
+**Important:** Use the official ClickHouse repository, not the Ubuntu package (which has an old incompatible version).
+
+```bash
+# Add ClickHouse official repository key and source
+curl -fsSL https://packages.clickhouse.com/rpm/lts/repodata/repomd.xml.key | sudo gpg --dearmor -o /usr/share/keyrings/clickhouse-keyring.gpg
+ARCH=$(dpkg --print-architecture)
+echo "deb [signed-by=/usr/share/keyrings/clickhouse-keyring.gpg arch=${ARCH}] https://packages.clickhouse.com/deb stable main" | sudo tee /etc/apt/sources.list.d/clickhouse.list
+
+# Install ClickHouse from official repo
+sudo apt-get update
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y clickhouse-server clickhouse-client
+
+# Start ClickHouse server
+sudo clickhouse start
+```
+
+Test the connection:
+
+```bash
+clickhouse-client --query "SELECT version()"
+```
+
+The native database support automatically detects ClickHouse and uses:
+- URI: `clickhouse://default:@localhost:9000/default`
+- User: `default` (no password)
+- Port: 9000
+
+**Note:** ClickHouse tests require setting the experiment flag:
+```bash
+SQLCEXPERIMENT=clickhouse go test ./internal/endtoend -run "TestReplay/clickhouse" -v
+```
+
+### Step 5: Run End-to-End Tests
+
+With the databases running, the test framework automatically detects them:
 
 ```bash
 # Run all end-to-end tests
@@ -103,11 +139,12 @@ go test --tags=examples -timeout 20m ./...
 ```
 
 The native database support (in `internal/sqltest/native/`) automatically:
-- Detects running PostgreSQL and MySQL instances
+- Detects running PostgreSQL, MySQL, and ClickHouse instances
 - Starts services if installed but not running
 - Uses standard connection URIs:
   - PostgreSQL: `postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable`
   - MySQL: `root:mysecretpassword@tcp(127.0.0.1:3306)/mysql`
+  - ClickHouse: `clickhouse://default:@localhost:9000/default`
 
 ### Running Tests
 
@@ -192,6 +229,11 @@ The `docker-compose.yml` provides test databases:
   - User: `root`
   - Password: `mysecretpassword`
   - Database: `dinotest`
+
+- **ClickHouse** - Port 9000 (experimental, requires `SQLCEXPERIMENT=clickhouse`)
+  - User: `default`
+  - Password: (none)
+  - Database: `default`
 
 ### Managing Databases
 
@@ -291,6 +333,7 @@ POSTGRESQL_SERVER_URI="postgres://postgres:mysecretpassword@localhost:5432/postg
   - `/postgresql/` - PostgreSQL parser and converter
   - `/dolphin/` - MySQL parser (uses TiDB parser)
   - `/sqlite/` - SQLite parser
+  - `/clickhouse/` - ClickHouse parser (uses doubleclick parser, experimental)
 - `/internal/compiler/` - Query compilation logic
 - `/internal/codegen/` - Code generation for different languages
 - `/internal/config/` - Configuration file parsing

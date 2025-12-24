@@ -1,0 +1,13 @@
+version: "2"
+sql:
+  - engine: clickhouse
+    schema: "schema.sql"
+    queries: "query.sql"
+    database:
+      uri: "clickhouse://localhost:9000/default"
+    analyzer:
+      database: "only"
+    gen:
+      go:
+        package: "querytest"
+        out: "go"
