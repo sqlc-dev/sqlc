@@ -11,22 +11,22 @@ import (
 )
 
 const createAuthor = `-- name: CreateAuthor :exec
-INSERT INTO authors (id, name, bio) VALUES (?, ?, ?);
+INSERT INTO authors (id, name, bio) VALUES ({id:UInt64}, {name:String}, {bio:String});
 `
 
 type CreateAuthorParams struct {
-	P1 interface{}
-	P2 interface{}
-	P3 interface{}
+	ID   uint64
+	Name string
+	Bio  string
 }
 
 func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) error {
-	_, err := q.db.ExecContext(ctx, createAuthor, arg.P1, arg.P2, arg.P3)
+	_, err := q.db.ExecContext(ctx, createAuthor, arg.ID, arg.Name, arg.Bio)
 	return err
 }
 
 const getAuthor = `-- name: GetAuthor :one
-SELECT id, name, bio FROM authors WHERE id = ?;
+SELECT id, name, bio FROM authors WHERE id = {id:UInt64};
 `
 
 type GetAuthorRow struct {
@@ -35,8 +35,8 @@ type GetAuthorRow struct {
 	Bio  sql.NullString
 }
 
-func (q *Queries) GetAuthor(ctx context.Context, p1 interface{}) (GetAuthorRow, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, p1)
+func (q *Queries) GetAuthor(ctx context.Context, id uint64) (GetAuthorRow, error) {
+	row := q.db.QueryRowContext(ctx, getAuthor, id)
 	var i GetAuthorRow
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err

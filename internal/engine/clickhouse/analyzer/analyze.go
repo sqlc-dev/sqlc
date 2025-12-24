@@ -4,12 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"regexp"
 	"strings"
 	"sync"
 
 	_ "github.com/ClickHouse/clickhouse-go/v2" // ClickHouse driver
-	dcast "github.com/sqlc-dev/doubleclick/ast"
-	"github.com/sqlc-dev/doubleclick/parser"
 
 	core "github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/config"
@@ -59,9 +58,9 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 	if isSelectQuery {
 		// For ClickHouse, we use DESCRIBE or LIMIT 0 to get column information
 
-		// Replace ? placeholders with NULL for introspection
-		// This allows us to run the query to get column types
-		preparedQuery := strings.ReplaceAll(query, "?", "NULL")
+		// Replace all parameter placeholders with NULL for introspection
+		// This handles both ? placeholders and {name:Type} named parameters
+		preparedQuery := replaceParamsWithNull(query)
 
 		// Use DESCRIBE (query) to get column information
 		describeQuery := fmt.Sprintf("DESCRIBE (%s)", preparedQuery)
@@ -111,7 +110,7 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 			Column: &core.Column{
 				Name:     param.Name,
 				DataType: param.Type,
-				NotNull:  false,
+				NotNull:  true, // Parameters are typically not nullable
 			},
 		})
 	}
@@ -332,38 +331,26 @@ type paramInfo struct {
 	Type string
 }
 
-// detectParameters finds parameters in a ClickHouse query using the doubleclick parser.
+// detectParameters finds parameters in a ClickHouse query.
 // ClickHouse supports {name:Type} and ? style parameters.
 func detectParameters(query string) []paramInfo {
 	var params []paramInfo
 
-	// First, try to find {name:Type} style parameters using the doubleclick parser
-	ctx := context.Background()
-	stmts, err := parser.Parse(ctx, strings.NewReader(query))
-	if err == nil {
-		// Walk the AST to find Parameter nodes (for {name:Type} style)
-		for _, stmt := range stmts {
-			walkStatement(stmt, func(expr dcast.Expression) {
-				if param, ok := expr.(*dcast.Parameter); ok {
-					name := param.Name
-					dataType := "any"
-					if param.Type != nil {
-						dataType = normalizeType(param.Type.Name)
-					}
-					if name != "" {
-						// Only add named parameters from the parser
-						params = append(params, paramInfo{
-							Name: name,
-							Type: dataType,
-						})
-					}
-				}
+	// Find all {name:Type} style parameters using regex
+	// This is more reliable than AST walking as it works for all statement types
+	matches := namedParamRegex.FindAllStringSubmatch(query, -1)
+	for _, match := range matches {
+		if len(match) >= 3 {
+			name := match[1]
+			dataType := normalizeType(match[2])
+			params = append(params, paramInfo{
+				Name: name,
+				Type: dataType,
 			})
 		}
 	}
 
-	// Count ? placeholders (the doubleclick parser doesn't fully support these)
-	// The ? placeholders are added after any named parameters
+	// Count ? placeholders and add them after any named parameters
 	count := strings.Count(query, "?")
 	for i := 0; i < count; i++ {
 		params = append(params, paramInfo{
@@ -375,97 +362,17 @@ func detectParameters(query string) []paramInfo {
 	return params
 }
 
-// walkStatement walks a statement and calls fn for each expression.
-func walkStatement(stmt dcast.Statement, fn func(dcast.Expression)) {
-	switch s := stmt.(type) {
-	case *dcast.SelectQuery:
-		walkSelectQuery(s, fn)
-	case *dcast.SelectWithUnionQuery:
-		for _, sel := range s.Selects {
-			walkStatement(sel, fn)
-		}
-	case *dcast.InsertQuery:
-		if s.Select != nil {
-			walkStatement(s.Select, fn)
-		}
-	}
-}
+// namedParamRegex matches ClickHouse named parameters like {name:Type}
+var namedParamRegex = regexp.MustCompile(`\{(\w+):(\w+)\}`)
 
-// walkSelectQuery walks a SELECT query and calls fn for each expression.
-func walkSelectQuery(s *dcast.SelectQuery, fn func(dcast.Expression)) {
-	// Walk columns
-	for _, col := range s.Columns {
-		walkExpression(col, fn)
-	}
-	// Walk WHERE clause
-	if s.Where != nil {
-		walkExpression(s.Where, fn)
-	}
-	// Walk GROUP BY
-	for _, g := range s.GroupBy {
-		walkExpression(g, fn)
-	}
-	// Walk HAVING
-	if s.Having != nil {
-		walkExpression(s.Having, fn)
-	}
-	// Walk ORDER BY
-	for _, o := range s.OrderBy {
-		walkExpression(o.Expression, fn)
-	}
-	// Walk LIMIT
-	if s.Limit != nil {
-		walkExpression(s.Limit, fn)
-	}
-	// Walk OFFSET
-	if s.Offset != nil {
-		walkExpression(s.Offset, fn)
-	}
-}
-
-// walkExpression walks an expression and calls fn for each sub-expression.
-func walkExpression(expr dcast.Expression, fn func(dcast.Expression)) {
-	if expr == nil {
-		return
-	}
-	fn(expr)
-
-	switch e := expr.(type) {
-	case *dcast.BinaryExpr:
-		walkExpression(e.Left, fn)
-		walkExpression(e.Right, fn)
-	case *dcast.UnaryExpr:
-		walkExpression(e.Operand, fn)
-	case *dcast.FunctionCall:
-		for _, arg := range e.Arguments {
-			walkExpression(arg, fn)
-		}
-	case *dcast.Subquery:
-		walkStatement(e.Query, fn)
-	case *dcast.CaseExpr:
-		if e.Operand != nil {
-			walkExpression(e.Operand, fn)
-		}
-		for _, when := range e.Whens {
-			walkExpression(when.Condition, fn)
-			walkExpression(when.Result, fn)
-		}
-		if e.Else != nil {
-			walkExpression(e.Else, fn)
-		}
-	case *dcast.InExpr:
-		walkExpression(e.Expr, fn)
-		for _, v := range e.List {
-			walkExpression(v, fn)
-		}
-		if e.Query != nil {
-			walkStatement(e.Query, fn)
-		}
-	case *dcast.BetweenExpr:
-		walkExpression(e.Expr, fn)
-		walkExpression(e.Low, fn)
-		walkExpression(e.High, fn)
-	}
+// replaceParamsWithNull replaces all parameter placeholders with NULL for query introspection.
+// It handles both ? placeholders and {name:Type} named parameters.
+func replaceParamsWithNull(query string) string {
+	// Replace {name:Type} named parameters with NULL
+	result := namedParamRegex.ReplaceAllString(query, "NULL")
+	// Also replace ? placeholders with NULL
+	result = strings.ReplaceAll(result, "?", "NULL")
+	return result
 }
 
 // addLimit0 adds LIMIT 0 to a query for schema introspection.
