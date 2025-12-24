@@ -3,6 +3,8 @@
 ![go](https://github.com/sqlc-dev/sqlc/workflows/go/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/sqlc-dev/sqlc)](https://goreportcard.com/report/github.com/sqlc-dev/sqlc)
 
+<!-- -->
+
 sqlc generates **type-safe code** from SQL. Here's how it works:
 
 1. You write queries in SQL.
