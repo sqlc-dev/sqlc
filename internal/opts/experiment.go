@@ -30,6 +30,8 @@ type Experiment struct {
 	AnalyzerV2 bool
 	// ParseCmd enables the parse subcommand which outputs AST as JSON.
 	ParseCmd bool
+	// ClickHouse enables ClickHouse database support.
+	ClickHouse bool
 }
 
 // ExperimentFromEnv returns an Experiment initialized from the SQLCEXPERIMENT
@@ -77,7 +79,7 @@ func ExperimentFromString(val string) Experiment {
 // known experiment.
 func isKnownExperiment(name string) bool {
 	switch strings.ToLower(name) {
-	case "analyzerv2", "parsecmd":
+	case "analyzerv2", "parsecmd", "clickhouse":
 		return true
 	default:
 		return false
@@ -91,6 +93,8 @@ func setExperiment(e *Experiment, name string, enabled bool) {
 		e.AnalyzerV2 = enabled
 	case "parsecmd":
 		e.ParseCmd = enabled
+	case "clickhouse":
+		e.ClickHouse = enabled
 	}
 }
 
@@ -102,6 +106,9 @@ func (e Experiment) Enabled() []string {
 	}
 	if e.ParseCmd {
 		enabled = append(enabled, "parsecmd")
+	}
+	if e.ClickHouse {
+		enabled = append(enabled, "clickhouse")
 	}
 	return enabled
 }
