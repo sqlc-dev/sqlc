@@ -90,7 +90,11 @@ type Queries struct {
 }
 
 {{if not .EmitMethodsWithDBArgument}}
+{{- if and .EmitInterface .UseInterfaceReturnTypes}}
+func (q *Queries) WithTx(tx *sql.Tx) Querier {
+{{- else -}}
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
+{{- end}}
 	return &Queries{
 		db: tx,
      	{{- if .EmitPreparedQueries}}
