@@ -39,12 +39,6 @@ jobs:
     - name: install test-json-process-plugin
       run: go install ./scripts/test-json-process-plugin/
 
-    - name: install examples-plugin-based-codegen-plugins-sqlc-engine-sqlite3
-      run: go install ./examples/plugin-based-codegen/plugins/sqlc-engine-sqlite3
-
-    - name: install examples-plugin-based-codegen-plugins-sqlc-gen-rust
-      run: go install ./examples/plugin-based-codegen/plugins/sqlc-gen-rust
-
     - name: install ./...
       run: go install ./...
       env:
@@ -55,6 +49,7 @@ jobs:
       working-directory: internal/endtoend/testdata
       env:
         CGO_ENABLED: "0"
+        SQLCDEBUG: processplugins=1
 
     - name: test ./...
       run: gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m ./...
