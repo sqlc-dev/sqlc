@@ -75,13 +75,30 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 	if r.Dir != "" {
 		cmd.Dir = r.Dir
 	}
-	// Inherit the current environment (excluding SQLC_AUTH_TOKEN) and add SQLC_VERSION
-	for _, env := range os.Environ() {
-		if !strings.HasPrefix(env, "SQLC_AUTH_TOKEN=") {
-			cmd.Env = append(cmd.Env, env)
+	// Pass only SQLC_VERSION and explicitly configured environment variables
+	cmd.Env = []string{
+		fmt.Sprintf("SQLC_VERSION=%s", info.Version),
+	}
+	for _, key := range r.Env {
+		if key == "SQLC_AUTH_TOKEN" {
+			continue
+		}
+		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, os.Getenv(key)))
+	}
+	// For "go run" commands, inherit PATH and Go-related environment
+	if len(cmdParts) > 1 && cmdParts[0] == "go" {
+		for _, env := range os.Environ() {
+			if strings.HasPrefix(env, "PATH=") ||
+				strings.HasPrefix(env, "GOPATH=") ||
+				strings.HasPrefix(env, "GOROOT=") ||
+				strings.HasPrefix(env, "GOWORK=") ||
+				strings.HasPrefix(env, "HOME=") ||
+				strings.HasPrefix(env, "GOCACHE=") ||
+				strings.HasPrefix(env, "GOMODCACHE=") {
+				cmd.Env = append(cmd.Env, env)
+			}
 		}
 	}
-	cmd.Env = append(cmd.Env, fmt.Sprintf("SQLC_VERSION=%s", info.Version))
 
 	out, err := cmd.Output()
 	if err != nil {

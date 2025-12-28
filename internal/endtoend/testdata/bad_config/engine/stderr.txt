@@ -1,0 +1,10 @@
+error creating compiler: unknown engine: bad_engine
+
+To use a custom database engine, add it to the 'engines' section of sqlc.yaml:
+
+  engines:
+    - name: bad_engine
+      process:
+        cmd: sqlc-engine-bad_engine
+
+Then install the plugin: go install github.com/example/sqlc-engine-bad_engine@latest
