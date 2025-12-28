@@ -24,6 +24,7 @@ import (
 // ProcessRunner runs an engine plugin as an external process.
 type ProcessRunner struct {
 	Cmd string
+	Dir string // Working directory for the plugin (config file directory)
 	Env []string
 
 	// Cached responses
@@ -32,9 +33,10 @@ type ProcessRunner struct {
 }
 
 // NewProcessRunner creates a new ProcessRunner.
-func NewProcessRunner(cmd string, env []string) *ProcessRunner {
+func NewProcessRunner(cmd, dir string, env []string) *ProcessRunner {
 	return &ProcessRunner{
 		Cmd: cmd,
+		Dir: dir,
 		Env: env,
 	}
 }
@@ -60,6 +62,10 @@ func (r *ProcessRunner) invoke(ctx context.Context, method string, req, resp pro
 	args := append(cmdParts[1:], method)
 	cmd := exec.CommandContext(ctx, path, args...)
 	cmd.Stdin = bytes.NewReader(stdin)
+	// Set working directory to config file directory for relative paths
+	if r.Dir != "" {
+		cmd.Dir = r.Dir
+	}
 	// Inherit the current environment and add SQLC_VERSION
 	cmd.Env = append(os.Environ(), fmt.Sprintf("SQLC_VERSION=%s", info.Version))
 
@@ -446,10 +452,10 @@ type PluginEngine struct {
 }
 
 // NewPluginEngine creates a new engine from a process plugin.
-func NewPluginEngine(name, cmd string, env []string) *PluginEngine {
+func NewPluginEngine(name, cmd, dir string, env []string) *PluginEngine {
 	return &PluginEngine{
 		name:   name,
-		runner: NewProcessRunner(cmd, env),
+		runner: NewProcessRunner(cmd, dir, env),
 	}
 }
 

@@ -21,6 +21,7 @@ import (
 
 type Runner struct {
 	Cmd    string
+	Dir    string // Working directory for the plugin (config file directory)
 	Format string
 	Env    []string
 }
@@ -70,6 +71,10 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 	cmdArgs := append(cmdParts[1:], method)
 	cmd := exec.CommandContext(ctx, path, cmdArgs...)
 	cmd.Stdin = bytes.NewReader(stdin)
+	// Set working directory to config file directory for relative paths
+	if r.Dir != "" {
+		cmd.Dir = r.Dir
+	}
 	// Inherit the current environment (excluding SQLC_AUTH_TOKEN) and add SQLC_VERSION
 	for _, env := range os.Environ() {
 		if !strings.HasPrefix(env, "SQLC_AUTH_TOKEN=") {

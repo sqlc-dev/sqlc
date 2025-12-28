@@ -116,7 +116,7 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 	default:
 		// Check if this is a plugin engine
 		if enginePlugin, found := config.FindEnginePlugin(&combo.Global, string(conf.Engine)); found {
-			eng, err := createPluginEngine(enginePlugin)
+			eng, err := createPluginEngine(enginePlugin, combo.Dir)
 			if err != nil {
 				return nil, err
 			}
@@ -137,10 +137,10 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 }
 
 // createPluginEngine creates an engine from an engine plugin configuration.
-func createPluginEngine(ep *config.EnginePlugin) (engine.Engine, error) {
+func createPluginEngine(ep *config.EnginePlugin, dir string) (engine.Engine, error) {
 	switch {
 	case ep.Process != nil:
-		return plugin.NewPluginEngine(ep.Name, ep.Process.Cmd, ep.Env), nil
+		return plugin.NewPluginEngine(ep.Name, ep.Process.Cmd, dir, ep.Env), nil
 	case ep.WASM != nil:
 		return plugin.NewWASMPluginEngine(ep.Name, ep.WASM.URL, ep.WASM.SHA256, ep.Env), nil
 	default:

@@ -326,12 +326,16 @@ type CombinedSettings struct {
 
 	// TODO: Combine these into a more usable type
 	Codegen Codegen
+
+	// Dir is the directory containing the config file (for resolving relative paths)
+	Dir string
 }
 
-func Combine(conf Config, pkg SQL) CombinedSettings {
+func Combine(conf Config, pkg SQL, dir string) CombinedSettings {
 	cs := CombinedSettings{
 		Global:  conf,
 		Package: pkg,
+		Dir:     dir,
 	}
 	if pkg.Gen.Go != nil {
 		cs.Go = *pkg.Gen.Go
