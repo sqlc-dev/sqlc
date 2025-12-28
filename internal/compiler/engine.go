@@ -7,7 +7,9 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/dbmanager"
+	"github.com/sqlc-dev/sqlc/internal/engine"
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
+	"github.com/sqlc-dev/sqlc/internal/engine/plugin"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	pganalyze "github.com/sqlc-dev/sqlc/internal/engine/postgresql/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
@@ -112,9 +114,47 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 			}
 		}
 	default:
-		return nil, fmt.Errorf("unknown engine: %s", conf.Engine)
+		// Check if this is a plugin engine
+		if enginePlugin, found := config.FindEnginePlugin(&combo.Global, string(conf.Engine)); found {
+			eng, err := createPluginEngine(enginePlugin)
+			if err != nil {
+				return nil, err
+			}
+			c.parser = eng.Parser()
+			c.catalog = eng.Catalog()
+			sel := eng.Selector()
+			if sel != nil {
+				c.selector = &engineSelectorAdapter{sel}
+			} else {
+				c.selector = newDefaultSelector()
+			}
+		} else {
+			return nil, fmt.Errorf("unknown engine: %s\n\nTo use a custom database engine, add it to the 'engines' section of sqlc.yaml:\n\n  engines:\n    - name: %s\n      process:\n        cmd: sqlc-engine-%s\n\nThen install the plugin: go install github.com/example/sqlc-engine-%s@latest",
+				conf.Engine, conf.Engine, conf.Engine, conf.Engine)
+		}
 	}
 	return c, nil
+}
+
+// createPluginEngine creates an engine from an engine plugin configuration.
+func createPluginEngine(ep *config.EnginePlugin) (engine.Engine, error) {
+	switch {
+	case ep.Process != nil:
+		return plugin.NewPluginEngine(ep.Name, ep.Process.Cmd, ep.Env), nil
+	case ep.WASM != nil:
+		return plugin.NewWASMPluginEngine(ep.Name, ep.WASM.URL, ep.WASM.SHA256, ep.Env), nil
+	default:
+		return nil, fmt.Errorf("engine plugin %s has no process or wasm configuration", ep.Name)
+	}
+}
+
+// engineSelectorAdapter adapts engine.Selector to the compiler's selector interface.
+type engineSelectorAdapter struct {
+	sel engine.Selector
+}
+
+func (a *engineSelectorAdapter) ColumnExpr(name string, column *Column) string {
+	return a.sel.ColumnExpr(name, column.DataType)
 }
 
 func (c *Compiler) Catalog() *catalog.Catalog {

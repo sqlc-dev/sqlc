@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -53,23 +54,29 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 		return fmt.Errorf("unknown plugin format: %s", r.Format)
 	}
 
+	// Parse command string to support formats like "go run ./path"
+	cmdParts := strings.Fields(r.Cmd)
+	if len(cmdParts) == 0 {
+		return fmt.Errorf("process: %s not found", r.Cmd)
+	}
+
 	// Check if the output plugin exists
-	path, err := exec.LookPath(r.Cmd)
+	path, err := exec.LookPath(cmdParts[0])
 	if err != nil {
 		return fmt.Errorf("process: %s not found", r.Cmd)
 	}
 
-	cmd := exec.CommandContext(ctx, path, method)
+	// Build arguments: rest of cmdParts + method
+	cmdArgs := append(cmdParts[1:], method)
+	cmd := exec.CommandContext(ctx, path, cmdArgs...)
 	cmd.Stdin = bytes.NewReader(stdin)
-	cmd.Env = []string{
-		fmt.Sprintf("SQLC_VERSION=%s", info.Version),
-	}
-	for _, key := range r.Env {
-		if key == "SQLC_AUTH_TOKEN" {
-			continue
+	// Inherit the current environment (excluding SQLC_AUTH_TOKEN) and add SQLC_VERSION
+	for _, env := range os.Environ() {
+		if !strings.HasPrefix(env, "SQLC_AUTH_TOKEN=") {
+			cmd.Env = append(cmd.Env, env)
 		}
-		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, os.Getenv(key)))
 	}
+	cmd.Env = append(cmd.Env, fmt.Sprintf("SQLC_VERSION=%s", info.Version))
 
 	out, err := cmd.Output()
 	if err != nil {
