@@ -69,12 +69,12 @@ func (n *DeleteStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 
 		if items(n.OnCols) {
 			buf.WriteString("(")
-			buf.astFormat(n.OnCols)
+			buf.astFormat(n.OnCols, d)
 			buf.WriteString(") ")
 		}
 
 		if set(n.OnSelectStmt) {
-			buf.astFormat(n.OnSelectStmt)
+			buf.astFormat(n.OnSelectStmt, d)
 		}
 	}
 

@@ -1,6 +1,10 @@
 package ast
 
-import "github.com/sqlc-dev/sqlc/internal/sql/format"
+import (
+	"fmt"
+
+	"github.com/sqlc-dev/sqlc/internal/sql/format"
+)
 
 type ParamRef struct {
 	Number   int
