@@ -49,7 +49,6 @@ jobs:
       working-directory: internal/endtoend/testdata
       env:
         CGO_ENABLED: "0"
-        SQLCDEBUG: processplugins=1
 
     - name: test ./...
       run: gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m ./...
