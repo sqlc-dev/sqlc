@@ -331,11 +331,10 @@ type CombinedSettings struct {
 	Dir string
 }
 
-func Combine(conf Config, pkg SQL, dir string) CombinedSettings {
+func Combine(conf Config, pkg SQL) CombinedSettings {
 	cs := CombinedSettings{
 		Global:  conf,
 		Package: pkg,
-		Dir:     dir,
 	}
 	if pkg.Gen.Go != nil {
 		cs.Go = *pkg.Gen.Go

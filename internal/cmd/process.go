@@ -68,7 +68,10 @@ func processQuerySets(ctx context.Context, rp ResultProcessor, conf *config.Conf
 		errout := &stderrs[i]
 
 		grp.Go(func() error {
-			combo := config.Combine(*conf, sql.SQL, dir)
+			combo := config.Combine(*conf, sql.SQL)
+			if dir != "" {
+				combo.Dir = dir
+			}
 			if sql.Plugin != nil {
 				combo.Codegen = *sql.Plugin
 			}
