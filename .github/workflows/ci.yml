@@ -39,6 +39,12 @@ jobs:
     - name: install test-json-process-plugin
       run: go install ./scripts/test-json-process-plugin/
 
+    - name: install examples-plugin-based-codegen-plugins-sqlc-engine-sqlite3
+      run: go install ./examples/plugin-based-codegen/plugins/sqlc-engine-sqlite3
+
+    - name: install examples-plugin-based-codegen-plugins-sqlc-gen-rust
+      run: go install ./examples/plugin-based-codegen/plugins/sqlc-gen-rust
+
     - name: install ./...
       run: go install ./...
       env:
