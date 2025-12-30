@@ -17,6 +17,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
+	"github.com/sqlc-dev/sqlc/internal/sql/validate"
 )
 
 type Analyzer struct {
@@ -74,6 +75,16 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 				}
 			}
 		}
+	}
+
+	// SQLite-specific validation
+	toValidate := n
+	if raw, ok := n.(*ast.RawStmt); ok && raw != nil && raw.Stmt != nil {
+		toValidate = raw.Stmt
+	}
+
+	if err := validate.ValidateSQLiteQualifiedColumnRefs(toValidate); err != nil {
+		return nil, err
 	}
 
 	// Prepare the statement to get column and parameter information
