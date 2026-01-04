@@ -16,28 +16,20 @@ import (
 
 var parseCmd = &cobra.Command{
 	Use:   "parse [file]",
-	Short: "Parse SQL and output the AST as JSON (experimental)",
+	Short: "Parse SQL and output the AST as JSON",
 	Long: `Parse SQL from a file or stdin and output the abstract syntax tree as JSON.
-
-This command is experimental and requires the 'parsecmd' experiment to be enabled.
-Enable it by setting: SQLCEXPERIMENT=parsecmd
 
 Examples:
   # Parse a SQL file with PostgreSQL dialect
-  SQLCEXPERIMENT=parsecmd sqlc parse --dialect postgresql schema.sql
+  sqlc parse --dialect postgresql schema.sql
 
   # Parse from stdin with MySQL dialect
-  echo "SELECT * FROM users" | SQLCEXPERIMENT=parsecmd sqlc parse --dialect mysql
+  echo "SELECT * FROM users" | sqlc parse --dialect mysql
 
   # Parse SQLite SQL
-  SQLCEXPERIMENT=parsecmd sqlc parse --dialect sqlite queries.sql`,
+  sqlc parse --dialect sqlite queries.sql`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		env := ParseEnv(cmd)
-		if !env.Experiment.ParseCmd {
-			return fmt.Errorf("parse command requires the 'parsecmd' experiment to be enabled.\nSet SQLCEXPERIMENT=parsecmd to use this command")
-		}
-
 		dialect, err := cmd.Flags().GetString("dialect")
 		if err != nil {
 			return err
