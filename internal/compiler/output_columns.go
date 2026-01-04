@@ -201,7 +201,10 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 					name = *res.Name
 				}
 				// TODO Validate column names
-				col := toColumn(tc.TypeName)
+				col, err := toColumn(tc.TypeName)
+				if err != nil {
+					return nil, err
+				}
 				col.Name = name
 				cols = append(cols, col)
 			} else if aconst, ok := n.Defresult.(*ast.A_Const); ok {
@@ -358,7 +361,10 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 				name = *res.Name
 			}
 			// TODO Validate column names
-			col := toColumn(n.TypeName)
+			col, err := toColumn(n.TypeName)
+			if err != nil {
+				return nil, err
+			}
 			col.Name = name
 			// TODO Add correct, real type inference
 			if constant, ok := n.Arg.(*ast.A_Const); ok {
