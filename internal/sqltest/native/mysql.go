@@ -166,6 +166,11 @@ func waitForMySQL(ctx context.Context, uri string, timeout time.Duration) error 
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 
+	// Make an immediate first attempt before waiting for the ticker
+	if err := tryMySQLConnection(ctx, uri); err == nil {
+		return nil
+	}
+
 	var lastErr error
 	for {
 		select {
@@ -175,23 +180,24 @@ func waitForMySQL(ctx context.Context, uri string, timeout time.Duration) error 
 			if time.Now().After(deadline) {
 				return fmt.Errorf("timeout waiting for MySQL (last error: %v)", lastErr)
 			}
-			db, err := sql.Open("mysql", uri)
-			if err != nil {
+			if err := tryMySQLConnection(ctx, uri); err != nil {
 				lastErr = err
-				slog.Debug("native/mysql", "open-attempt", err)
 				continue
 			}
-			// Use a short timeout for ping to avoid hanging
-			pingCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
-			err = db.PingContext(pingCtx)
-			cancel()
-			if err != nil {
-				lastErr = err
-				db.Close()
-				continue
-			}
-			db.Close()
 			return nil
 		}
 	}
+}
+
+func tryMySQLConnection(ctx context.Context, uri string) error {
+	db, err := sql.Open("mysql", uri)
+	if err != nil {
+		slog.Debug("native/mysql", "open-attempt", err)
+		return err
+	}
+	defer db.Close()
+	// Use a short timeout for ping to avoid hanging
+	pingCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	return db.PingContext(pingCtx)
 }
