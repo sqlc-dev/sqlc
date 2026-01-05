@@ -313,8 +313,9 @@ func (s StructLit) Render() string {
 
 // SliceLit represents a slice literal expression.
 type SliceLit struct {
-	Type   string   // Element type (e.g., "interface{}")
-	Values []string // Elements
+	Type      string   // Element type (e.g., "interface{}")
+	Multiline bool     // If true, always use multi-line format
+	Values    []string // Elements
 }
 
 func (s SliceLit) Render() string {
@@ -322,11 +323,23 @@ func (s SliceLit) Render() string {
 	b.WriteString("[]")
 	b.WriteString(s.Type)
 	b.WriteString("{")
-	for i, v := range s.Values {
-		if i > 0 {
-			b.WriteString(", ")
+	if len(s.Values) <= 3 && !s.Multiline {
+		// Compact format for small slice literals
+		for i, v := range s.Values {
+			if i > 0 {
+				b.WriteString(", ")
+			}
+			b.WriteString(v)
 		}
-		b.WriteString(v)
+	} else if len(s.Values) > 0 {
+		// Multi-line format for larger slice literals or when explicitly requested
+		b.WriteString("\n")
+		for _, v := range s.Values {
+			b.WriteString("\t\t")
+			b.WriteString(v)
+			b.WriteString(",\n")
+		}
+		b.WriteString("\t")
 	}
 	b.WriteString("}")
 	return b.String()

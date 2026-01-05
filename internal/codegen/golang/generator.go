@@ -560,7 +560,7 @@ func (g *CodeGenerator) addModelsCode(f *poet.File) {
 				Name:    fmt.Sprintf("All%sValues", enum.Name),
 				Results: []poet.Param{{Type: "[]" + enum.Name}},
 				Stmts: []poet.Stmt{poet.Return{Values: []string{
-					poet.SliceLit{Type: enum.Name, Values: enumValues}.Render(),
+					poet.SliceLit{Type: enum.Name, Multiline: true, Values: enumValues}.Render(),
 				}}},
 			})
 		}
