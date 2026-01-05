@@ -126,15 +126,15 @@ func (g *CodeGenerator) addDBCodeStd(f *poet.File) {
 	if g.tctx.EmitMethodsWithDBArgument {
 		f.Decls = append(f.Decls, poet.Func{
 			Name:    "New",
-			Results: []poet.Param{{Type: "*Queries"}},
-			Stmts: []poet.Stmt{poet.RawStmt{Code: "\treturn &Queries{}\n"}},
+			Results: []poet.Param{{Type: "Queries", Pointer: true}},
+			Stmts:   []poet.Stmt{poet.Return{Values: []string{"&Queries{}"}}},
 		})
 	} else {
 		f.Decls = append(f.Decls, poet.Func{
 			Name:    "New",
 			Params:  []poet.Param{{Name: "db", Type: "DBTX"}},
-			Results: []poet.Param{{Type: "*Queries"}},
-			Stmts: []poet.Stmt{poet.RawStmt{Code: "\treturn &Queries{db: db}\n"}},
+			Results: []poet.Param{{Type: "Queries", Pointer: true}},
+			Stmts:   []poet.Stmt{poet.Return{Values: []string{"&Queries{db: db}"}}},
 		})
 	}
 
@@ -179,51 +179,108 @@ func (g *CodeGenerator) addDBCodeStd(f *poet.File) {
 
 		// Helper functions
 		f.Decls = append(f.Decls, poet.Func{
-			Recv:    &poet.Param{Name: "q", Type: "*Queries"},
-			Name:    "exec",
-			Params:  []poet.Param{{Name: "ctx", Type: "context.Context"}, {Name: "stmt", Type: "*sql.Stmt"}, {Name: "query", Type: "string"}, {Name: "args", Type: "...interface{}"}},
+			Recv: &poet.Param{Name: "q", Type: "Queries", Pointer: true},
+			Name: "exec",
+			Params: []poet.Param{
+				{Name: "ctx", Type: "context.Context"},
+				{Name: "stmt", Type: "sql.Stmt", Pointer: true},
+				{Name: "query", Type: "string"},
+				{Name: "args", Type: "...interface{}"},
+			},
 			Results: []poet.Param{{Type: "sql.Result"}, {Type: "error"}},
-			Stmts: []poet.Stmt{poet.RawStmt{Code: `	switch {
-	case stmt != nil && q.tx != nil:
-		return q.tx.StmtContext(ctx, stmt).ExecContext(ctx, args...)
-	case stmt != nil:
-		return stmt.ExecContext(ctx, args...)
-	default:
-		return q.db.ExecContext(ctx, query, args...)
-	}
-`}},
+			Stmts: []poet.Stmt{poet.Switch{
+				Cases: []poet.Case{
+					{
+						Values: []string{"stmt != nil && q.tx != nil"},
+						Body: []poet.Stmt{poet.Return{
+							Values: []string{
+								"q.tx.StmtContext(ctx, stmt).ExecContext(ctx, args...)",
+							},
+						}},
+					},
+					{
+						Values: []string{"stmt != nil"},
+						Body: []poet.Stmt{poet.Return{
+							Values: []string{"stmt.ExecContext(ctx, args...)"},
+						}},
+					},
+					{
+						Body: []poet.Stmt{poet.Return{
+							Values: []string{"q.db.ExecContext(ctx, query, args...)"},
+						}},
+					},
+				},
+			}},
 		})
 
 		f.Decls = append(f.Decls, poet.Func{
-			Recv:    &poet.Param{Name: "q", Type: "*Queries"},
-			Name:    "query",
-			Params:  []poet.Param{{Name: "ctx", Type: "context.Context"}, {Name: "stmt", Type: "*sql.Stmt"}, {Name: "query", Type: "string"}, {Name: "args", Type: "...interface{}"}},
-			Results: []poet.Param{{Type: "*sql.Rows"}, {Type: "error"}},
-			Stmts: []poet.Stmt{poet.RawStmt{Code: `	switch {
-	case stmt != nil && q.tx != nil:
-		return q.tx.StmtContext(ctx, stmt).QueryContext(ctx, args...)
-	case stmt != nil:
-		return stmt.QueryContext(ctx, args...)
-	default:
-		return q.db.QueryContext(ctx, query, args...)
-	}
-`}},
+			Recv: &poet.Param{Name: "q", Type: "Queries", Pointer: true},
+			Name: "query",
+			Params: []poet.Param{
+				{Name: "ctx", Type: "context.Context"},
+				{Name: "stmt", Type: "sql.Stmt", Pointer: true},
+				{Name: "query", Type: "string"},
+				{Name: "args", Type: "...interface{}"},
+			},
+			Results: []poet.Param{{Type: "sql.Rows", Pointer: true}, {Type: "error"}},
+			Stmts: []poet.Stmt{poet.Switch{
+				Cases: []poet.Case{
+					{
+						Values: []string{"stmt != nil && q.tx != nil"},
+						Body: []poet.Stmt{poet.Return{
+							Values: []string{
+								"q.tx.StmtContext(ctx, stmt).QueryContext(ctx, args...)",
+							},
+						}},
+					},
+					{
+						Values: []string{"stmt != nil"},
+						Body: []poet.Stmt{poet.Return{
+							Values: []string{"stmt.QueryContext(ctx, args...)"},
+						}},
+					},
+					{
+						Body: []poet.Stmt{poet.Return{
+							Values: []string{"q.db.QueryContext(ctx, query, args...)"},
+						}},
+					},
+				},
+			}},
 		})
 
 		f.Decls = append(f.Decls, poet.Func{
-			Recv:    &poet.Param{Name: "q", Type: "*Queries"},
-			Name:    "queryRow",
-			Params:  []poet.Param{{Name: "ctx", Type: "context.Context"}, {Name: "stmt", Type: "*sql.Stmt"}, {Name: "query", Type: "string"}, {Name: "args", Type: "...interface{}"}},
-			Results: []poet.Param{{Type: "*sql.Row"}},
-			Stmts: []poet.Stmt{poet.RawStmt{Code: `	switch {
-	case stmt != nil && q.tx != nil:
-		return q.tx.StmtContext(ctx, stmt).QueryRowContext(ctx, args...)
-	case stmt != nil:
-		return stmt.QueryRowContext(ctx, args...)
-	default:
-		return q.db.QueryRowContext(ctx, query, args...)
-	}
-`}},
+			Recv: &poet.Param{Name: "q", Type: "Queries", Pointer: true},
+			Name: "queryRow",
+			Params: []poet.Param{
+				{Name: "ctx", Type: "context.Context"},
+				{Name: "stmt", Type: "sql.Stmt", Pointer: true},
+				{Name: "query", Type: "string"},
+				{Name: "args", Type: "...interface{}"},
+			},
+			Results: []poet.Param{{Type: "sql.Row", Pointer: true}},
+			Stmts: []poet.Stmt{poet.Switch{
+				Cases: []poet.Case{
+					{
+						Values: []string{"stmt != nil && q.tx != nil"},
+						Body: []poet.Stmt{poet.Return{
+							Values: []string{
+								"q.tx.StmtContext(ctx, stmt).QueryRowContext(ctx, args...)",
+							},
+						}},
+					},
+					{
+						Values: []string{"stmt != nil"},
+						Body: []poet.Stmt{poet.Return{
+							Values: []string{"stmt.QueryRowContext(ctx, args...)"},
+						}},
+					},
+					{
+						Body: []poet.Stmt{poet.Return{
+							Values: []string{"q.db.QueryRowContext(ctx, query, args...)"},
+						}},
+					},
+				},
+			}},
 		})
 	}
 
@@ -296,15 +353,15 @@ func (g *CodeGenerator) addDBCodePGX(f *poet.File) {
 	if g.tctx.EmitMethodsWithDBArgument {
 		f.Decls = append(f.Decls, poet.Func{
 			Name:    "New",
-			Results: []poet.Param{{Type: "*Queries"}},
-			Stmts: []poet.Stmt{poet.RawStmt{Code: "\treturn &Queries{}\n"}},
+			Results: []poet.Param{{Type: "Queries", Pointer: true}},
+			Stmts:   []poet.Stmt{poet.Return{Values: []string{"&Queries{}"}}},
 		})
 	} else {
 		f.Decls = append(f.Decls, poet.Func{
 			Name:    "New",
 			Params:  []poet.Param{{Name: "db", Type: "DBTX"}},
-			Results: []poet.Param{{Type: "*Queries"}},
-			Stmts: []poet.Stmt{poet.RawStmt{Code: "\treturn &Queries{db: db}\n"}},
+			Results: []poet.Param{{Type: "Queries", Pointer: true}},
+			Stmts:   []poet.Stmt{poet.Return{Values: []string{"&Queries{db: db}"}}},
 		})
 	}
 
@@ -321,11 +378,11 @@ func (g *CodeGenerator) addDBCodePGX(f *poet.File) {
 	// WithTx method
 	if !g.tctx.EmitMethodsWithDBArgument {
 		f.Decls = append(f.Decls, poet.Func{
-			Recv:    &poet.Param{Name: "q", Type: "*Queries"},
+			Recv:    &poet.Param{Name: "q", Type: "Queries", Pointer: true},
 			Name:    "WithTx",
 			Params:  []poet.Param{{Name: "tx", Type: "pgx.Tx"}},
-			Results: []poet.Param{{Type: "*Queries"}},
-			Stmts: []poet.Stmt{poet.RawStmt{Code: "\treturn &Queries{\n\t\tdb: tx,\n\t}\n"}},
+			Results: []poet.Param{{Type: "Queries", Pointer: true}},
+			Stmts:   []poet.Stmt{poet.Return{Values: []string{"&Queries{\n\t\tdb: tx,\n\t}"}}},
 		})
 	}
 }
@@ -353,33 +410,58 @@ func (g *CodeGenerator) addModelsCode(f *poet.File) {
 
 		// Scan method
 		f.Decls = append(f.Decls, poet.Func{
-			Recv:    &poet.Param{Name: "e", Type: "*" + enum.Name},
+			Recv:    &poet.Param{Name: "e", Type: enum.Name, Pointer: true},
 			Name:    "Scan",
 			Params:  []poet.Param{{Name: "src", Type: "interface{}"}},
 			Results: []poet.Param{{Type: "error"}},
-			Stmts: []poet.Stmt{poet.RawStmt{Code: fmt.Sprintf(`	switch s := src.(type) {
-	case []byte:
-		*e = %s(s)
-	case string:
-		*e = %s(s)
-	default:
-		return fmt.Errorf("unsupported scan type for %s: %%T", src)
-	}
-	return nil
-`, enum.Name, enum.Name, enum.Name)}},
+			Stmts: []poet.Stmt{
+				poet.Switch{
+					Expr: "s := src.(type)",
+					Cases: []poet.Case{
+						{
+							Values: []string{"[]byte"},
+							Body: []poet.Stmt{
+								poet.RawStmt{Code: fmt.Sprintf("\t\t*e = %s(s)\n", enum.Name)},
+							},
+						},
+						{
+							Values: []string{"string"},
+							Body: []poet.Stmt{
+								poet.RawStmt{Code: fmt.Sprintf("\t\t*e = %s(s)\n", enum.Name)},
+							},
+						},
+						{
+							Body: []poet.Stmt{poet.Return{Values: []string{
+								fmt.Sprintf(`fmt.Errorf("unsupported scan type for %s: %%T", src)`, enum.Name),
+							}}},
+						},
+					},
+				},
+				poet.Return{Values: []string{"nil"}},
+			},
 		})
 
 		// Null type
 		var nullFields []poet.Field
 		if enum.NameTag() != "" {
-			nullFields = append(nullFields, poet.Field{Name: enum.Name, Type: enum.Name, Tag: enum.NameTag()})
+			nullFields = append(nullFields, poet.Field{
+				Name: enum.Name, Type: enum.Name, Tag: enum.NameTag(),
+			})
 		} else {
-			nullFields = append(nullFields, poet.Field{Name: enum.Name, Type: enum.Name})
+			nullFields = append(nullFields, poet.Field{
+				Name: enum.Name, Type: enum.Name,
+			})
 		}
+		validComment := fmt.Sprintf("Valid is true if %s is not NULL", enum.Name)
 		if enum.ValidTag() != "" {
-			nullFields = append(nullFields, poet.Field{Name: "Valid", Type: "bool", Tag: enum.ValidTag(), TrailingComment: fmt.Sprintf("Valid is true if %s is not NULL", enum.Name)})
+			nullFields = append(nullFields, poet.Field{
+				Name: "Valid", Type: "bool", Tag: enum.ValidTag(),
+				TrailingComment: validComment,
+			})
 		} else {
-			nullFields = append(nullFields, poet.Field{Name: "Valid", Type: "bool", TrailingComment: fmt.Sprintf("Valid is true if %s is not NULL", enum.Name)})
+			nullFields = append(nullFields, poet.Field{
+				Name: "Valid", Type: "bool", TrailingComment: validComment,
+			})
 		}
 		f.Decls = append(f.Decls, poet.TypeDef{
 			Name: "Null" + enum.Name,
@@ -389,17 +471,21 @@ func (g *CodeGenerator) addModelsCode(f *poet.File) {
 		// Null Scan method
 		f.Decls = append(f.Decls, poet.Func{
 			Comment: "Scan implements the Scanner interface.",
-			Recv:    &poet.Param{Name: "ns", Type: "*Null" + enum.Name},
+			Recv:    &poet.Param{Name: "ns", Type: "Null" + enum.Name, Pointer: true},
 			Name:    "Scan",
 			Params:  []poet.Param{{Name: "value", Type: "interface{}"}},
 			Results: []poet.Param{{Type: "error"}},
-			Stmts: []poet.Stmt{poet.RawStmt{Code: fmt.Sprintf(`	if value == nil {
-		ns.%s, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.%s.Scan(value)
-`, enum.Name, enum.Name)}},
+			Stmts: []poet.Stmt{
+				poet.If{
+					Cond: "value == nil",
+					Body: []poet.Stmt{
+						poet.RawStmt{Code: fmt.Sprintf("\t\tns.%s, ns.Valid = \"\", false\n", enum.Name)},
+						poet.Return{Values: []string{"nil"}},
+					},
+				},
+				poet.RawStmt{Code: "\tns.Valid = true\n"},
+				poet.Return{Values: []string{fmt.Sprintf("ns.%s.Scan(value)", enum.Name)}},
+			},
 		})
 
 		// Null Value method
@@ -408,32 +494,34 @@ func (g *CodeGenerator) addModelsCode(f *poet.File) {
 			Recv:    &poet.Param{Name: "ns", Type: "Null" + enum.Name},
 			Name:    "Value",
 			Results: []poet.Param{{Type: "driver.Value"}, {Type: "error"}},
-			Stmts: []poet.Stmt{poet.RawStmt{Code: fmt.Sprintf(`	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.%s), nil
-`, enum.Name)}},
+			Stmts: []poet.Stmt{
+				poet.If{
+					Cond: "!ns.Valid",
+					Body: []poet.Stmt{poet.Return{Values: []string{"nil", "nil"}}},
+				},
+				poet.Return{Values: []string{fmt.Sprintf("string(ns.%s)", enum.Name), "nil"}},
+			},
 		})
 
 		// Valid method
 		if g.tctx.EmitEnumValidMethod {
-			var caseList strings.Builder
-			for i, c := range enum.Constants {
-				if i > 0 {
-					caseList.WriteString(",\n\t\t")
-				}
-				caseList.WriteString(c.Name)
+			var caseValues []string
+			for _, c := range enum.Constants {
+				caseValues = append(caseValues, c.Name)
 			}
 			f.Decls = append(f.Decls, poet.Func{
 				Recv:    &poet.Param{Name: "e", Type: enum.Name},
 				Name:    "Valid",
 				Results: []poet.Param{{Type: "bool"}},
-				Stmts: []poet.Stmt{poet.RawStmt{Code: fmt.Sprintf(`	switch e {
-	case %s:
-		return true
-	}
-	return false
-`, caseList.String())}},
+				Stmts: []poet.Stmt{
+					poet.Switch{
+						Expr: "e",
+						Cases: []poet.Case{
+							{Values: caseValues, Body: []poet.Stmt{poet.Return{Values: []string{"true"}}}},
+						},
+					},
+					poet.Return{Values: []string{"false"}},
+				},
 			})
 		}
 
@@ -446,7 +534,7 @@ func (g *CodeGenerator) addModelsCode(f *poet.File) {
 			f.Decls = append(f.Decls, poet.Func{
 				Name:    fmt.Sprintf("All%sValues", enum.Name),
 				Results: []poet.Param{{Type: "[]" + enum.Name}},
-				Stmts:   []poet.Stmt{poet.RawStmt{Code: fmt.Sprintf("\treturn []%s{\n%s\t}\n", enum.Name, valuesList.String())}},
+				Stmts:   []poet.Stmt{poet.Return{Values: []string{fmt.Sprintf("[]%s{\n%s\t}", enum.Name, valuesList.String())}}},
 			})
 		}
 	}
@@ -1253,19 +1341,24 @@ func (g *CodeGenerator) addCopyFromCodePGX(f *poet.File) {
 
 		// Next method
 		f.Decls = append(f.Decls, poet.Func{
-			Recv:    &poet.Param{Name: "r", Type: "*" + iterName},
+			Recv:    &poet.Param{Name: "r", Type: iterName, Pointer: true},
 			Name:    "Next",
 			Results: []poet.Param{{Type: "bool"}},
-			Stmts: []poet.Stmt{poet.RawStmt{Code: `	if len(r.rows) == 0 {
-		return false
-	}
-	if !r.skippedFirstNextCall {
-		r.skippedFirstNextCall = true
-		return true
-	}
-	r.rows = r.rows[1:]
-	return len(r.rows) > 0
-`}},
+			Stmts: []poet.Stmt{
+				poet.If{
+					Cond: "len(r.rows) == 0",
+					Body: []poet.Stmt{poet.Return{Values: []string{"false"}}},
+				},
+				poet.If{
+					Cond: "!r.skippedFirstNextCall",
+					Body: []poet.Stmt{
+						poet.RawStmt{Code: "\t\tr.skippedFirstNextCall = true\n"},
+						poet.Return{Values: []string{"true"}},
+					},
+				},
+				poet.RawStmt{Code: "\tr.rows = r.rows[1:]\n"},
+				poet.Return{Values: []string{"len(r.rows) > 0"}},
+			},
 		})
 
 		// Values method
@@ -1292,7 +1385,7 @@ func (g *CodeGenerator) addCopyFromCodePGX(f *poet.File) {
 			Recv:    &poet.Param{Name: "r", Type: iterName},
 			Name:    "Err",
 			Results: []poet.Param{{Type: "error"}},
-			Stmts: []poet.Stmt{poet.RawStmt{Code: "\treturn nil\n"}},
+			Stmts:   []poet.Stmt{poet.Return{Values: []string{"nil"}}},
 		})
 
 		// Main method
@@ -1600,10 +1693,13 @@ func (g *CodeGenerator) addBatchCodePGX(f *poet.File) {
 
 		// Close method
 		f.Decls = append(f.Decls, poet.Func{
-			Recv:    &poet.Param{Name: "b", Type: "*" + q.MethodName + "BatchResults"},
+			Recv:    &poet.Param{Name: "b", Type: q.MethodName + "BatchResults", Pointer: true},
 			Name:    "Close",
 			Results: []poet.Param{{Type: "error"}},
-			Stmts: []poet.Stmt{poet.RawStmt{Code: "\tb.closed = true\n\treturn b.br.Close()\n"}},
+			Stmts: []poet.Stmt{
+				poet.RawStmt{Code: "\tb.closed = true\n"},
+				poet.Return{Values: []string{"b.br.Close()"}},
+			},
 		})
 	}
 }

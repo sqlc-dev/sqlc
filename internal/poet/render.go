@@ -383,11 +383,18 @@ func renderSwitch(b *strings.Builder, s Switch, indent string) {
 			b.WriteString("default:\n")
 		} else {
 			b.WriteString("case ")
-			for i, v := range c.Values {
-				if i > 0 {
-					b.WriteString(", ")
+			if len(c.Values) == 1 {
+				b.WriteString(c.Values[0])
+			} else {
+				// Multiple values: put each on its own line
+				for i, v := range c.Values {
+					if i > 0 {
+						b.WriteString(",\n")
+						b.WriteString(indent)
+						b.WriteString("\t")
+					}
+					b.WriteString(v)
 				}
-				b.WriteString(v)
 			}
 			b.WriteString(":\n")
 		}
