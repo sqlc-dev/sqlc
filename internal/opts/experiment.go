@@ -14,7 +14,7 @@ import (
 //
 // Available experiments:
 //
-//	(none currently defined - add experiments here as they are introduced)
+//	analyzerv2 - enables database-only analyzer mode
 //
 // Example usage:
 //
@@ -28,8 +28,6 @@ type Experiment struct {
 	// AnalyzerV2 enables the database-only analyzer mode (analyzer.database: only)
 	// which uses the database for all type resolution instead of parsing schema files.
 	AnalyzerV2 bool
-	// ParseCmd enables the parse subcommand which outputs AST as JSON.
-	ParseCmd bool
 }
 
 // ExperimentFromEnv returns an Experiment initialized from the SQLCEXPERIMENT
@@ -77,7 +75,7 @@ func ExperimentFromString(val string) Experiment {
 // known experiment.
 func isKnownExperiment(name string) bool {
 	switch strings.ToLower(name) {
-	case "analyzerv2", "parsecmd":
+	case "analyzerv2":
 		return true
 	default:
 		return false
@@ -89,8 +87,6 @@ func setExperiment(e *Experiment, name string, enabled bool) {
 	switch strings.ToLower(name) {
 	case "analyzerv2":
 		e.AnalyzerV2 = enabled
-	case "parsecmd":
-		e.ParseCmd = enabled
 	}
 }
 
@@ -99,9 +95,6 @@ func (e Experiment) Enabled() []string {
 	var enabled []string
 	if e.AnalyzerV2 {
 		enabled = append(enabled, "analyzerv2")
-	}
-	if e.ParseCmd {
-		enabled = append(enabled, "parsecmd")
 	}
 	return enabled
 }
