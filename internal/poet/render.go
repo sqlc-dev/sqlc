@@ -315,6 +315,12 @@ func renderStmt(b *strings.Builder, s Stmt, indent string) {
 		renderCallStmt(b, s, indent)
 	case VarDecl:
 		renderVarDecl(b, s, indent)
+	case GoStmt:
+		renderGoStmt(b, s, indent)
+	case Continue:
+		renderContinue(b, s, indent)
+	case Break:
+		renderBreak(b, s, indent)
 	}
 }
 
@@ -458,4 +464,62 @@ func renderVarDecl(b *strings.Builder, v VarDecl, indent string) {
 		b.WriteString(v.Value)
 	}
 	b.WriteString("\n")
+}
+
+func renderGoStmt(b *strings.Builder, g GoStmt, indent string) {
+	b.WriteString(indent)
+	b.WriteString("go ")
+	b.WriteString(g.Call)
+	b.WriteString("\n")
+}
+
+func renderContinue(b *strings.Builder, c Continue, indent string) {
+	b.WriteString(indent)
+	b.WriteString("continue")
+	if c.Label != "" {
+		b.WriteString(" ")
+		b.WriteString(c.Label)
+	}
+	b.WriteString("\n")
+}
+
+func renderBreak(b *strings.Builder, br Break, indent string) {
+	b.WriteString(indent)
+	b.WriteString("break")
+	if br.Label != "" {
+		b.WriteString(" ")
+		b.WriteString(br.Label)
+	}
+	b.WriteString("\n")
+}
+
+// RenderFuncLit renders a function literal to a string.
+// This is used by FuncLit.Render() and can also be called directly.
+func RenderFuncLit(f FuncLit) string {
+	var b strings.Builder
+	b.WriteString("func(")
+	renderParams(&b, f.Params)
+	b.WriteString(")")
+	if len(f.Results) > 0 {
+		b.WriteString(" ")
+		if len(f.Results) == 1 && f.Results[0].Name == "" {
+			if f.Results[0].Pointer {
+				b.WriteString("*")
+			}
+			b.WriteString(f.Results[0].Type)
+		} else {
+			b.WriteString("(")
+			renderParams(&b, f.Results)
+			b.WriteString(")")
+		}
+	}
+	b.WriteString(" {\n")
+	renderStmts(&b, f.Body, "\t")
+	b.WriteString("}")
+	return b.String()
+}
+
+// Render implements the Expr interface for FuncLit.
+func (f FuncLit) Render() string {
+	return RenderFuncLit(f)
 }

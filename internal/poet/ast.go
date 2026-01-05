@@ -2,6 +2,8 @@
 // that properly support comment placement.
 package poet
 
+import "strings"
+
 // File represents a Go source file.
 type File struct {
 	BuildTags    string
@@ -220,3 +222,150 @@ type VarDecl struct {
 }
 
 func (VarDecl) isStmt() {}
+
+// GoStmt represents a go statement (goroutine).
+type GoStmt struct {
+	Call string // The function call to run as a goroutine
+}
+
+func (GoStmt) isStmt() {}
+
+// Continue represents a continue statement.
+type Continue struct {
+	Label string // Optional label
+}
+
+func (Continue) isStmt() {}
+
+// Break represents a break statement.
+type Break struct {
+	Label string // Optional label
+}
+
+func (Break) isStmt() {}
+
+// Expr is an interface for expression types that can be rendered to strings.
+// These can be used in Return.Values, Assign.Right, etc.
+type Expr interface {
+	Render() string
+}
+
+// CallExpr represents a function or method call expression.
+type CallExpr struct {
+	Func string   // Function name or receiver.method
+	Args []string // Arguments
+}
+
+func (c CallExpr) Render() string {
+	var b strings.Builder
+	b.WriteString(c.Func)
+	b.WriteString("(")
+	for i, arg := range c.Args {
+		if i > 0 {
+			b.WriteString(", ")
+		}
+		b.WriteString(arg)
+	}
+	b.WriteString(")")
+	return b.String()
+}
+
+// StructLit represents a struct literal expression.
+type StructLit struct {
+	Type      string      // Type name (e.g., "Queries")
+	Pointer   bool        // If true, prefix with &
+	Multiline bool        // If true, always use multi-line format
+	Fields    [][2]string // Field name-value pairs (use slice to preserve order)
+}
+
+func (s StructLit) Render() string {
+	var b strings.Builder
+	if s.Pointer {
+		b.WriteString("&")
+	}
+	b.WriteString(s.Type)
+	b.WriteString("{")
+	if len(s.Fields) <= 2 && !s.Multiline {
+		// Compact format for small struct literals
+		for i, f := range s.Fields {
+			if i > 0 {
+				b.WriteString(", ")
+			}
+			b.WriteString(f[0])
+			b.WriteString(": ")
+			b.WriteString(f[1])
+		}
+	} else if len(s.Fields) > 0 {
+		// Multi-line format for larger struct literals or when explicitly requested
+		b.WriteString("\n")
+		for _, f := range s.Fields {
+			b.WriteString("\t\t")
+			b.WriteString(f[0])
+			b.WriteString(": ")
+			b.WriteString(f[1])
+			b.WriteString(",\n")
+		}
+		b.WriteString("\t")
+	}
+	b.WriteString("}")
+	return b.String()
+}
+
+// SliceLit represents a slice literal expression.
+type SliceLit struct {
+	Type   string   // Element type (e.g., "interface{}")
+	Values []string // Elements
+}
+
+func (s SliceLit) Render() string {
+	var b strings.Builder
+	b.WriteString("[]")
+	b.WriteString(s.Type)
+	b.WriteString("{")
+	for i, v := range s.Values {
+		if i > 0 {
+			b.WriteString(", ")
+		}
+		b.WriteString(v)
+	}
+	b.WriteString("}")
+	return b.String()
+}
+
+// TypeCast represents a type conversion expression.
+type TypeCast struct {
+	Type  string // Target type
+	Value string // Value to convert
+}
+
+func (t TypeCast) Render() string {
+	return t.Type + "(" + t.Value + ")"
+}
+
+// FuncLit represents an anonymous function literal.
+type FuncLit struct {
+	Params  []Param
+	Results []Param
+	Body    []Stmt
+}
+
+// Note: FuncLit.Render() is implemented in render.go since it needs renderStmts
+
+// Selector represents a field or method selector expression (a.b.c).
+type Selector struct {
+	Parts []string // e.g., ["r", "rows", "0", "Field"] for r.rows[0].Field
+}
+
+func (s Selector) Render() string {
+	return strings.Join(s.Parts, ".")
+}
+
+// Index represents an index or slice expression.
+type Index struct {
+	Expr  string // Base expression
+	Index string // Index value (or "start:end" for slice)
+}
+
+func (i Index) Render() string {
+	return i.Expr + "[" + i.Index + "]"
+}

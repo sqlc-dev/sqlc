@@ -127,14 +127,20 @@ func (g *CodeGenerator) addDBCodeStd(f *poet.File) {
 		f.Decls = append(f.Decls, poet.Func{
 			Name:    "New",
 			Results: []poet.Param{{Type: "Queries", Pointer: true}},
-			Stmts:   []poet.Stmt{poet.Return{Values: []string{"&Queries{}"}}},
+			Stmts: []poet.Stmt{poet.Return{Values: []string{
+				poet.StructLit{Type: "Queries", Pointer: true}.Render(),
+			}}},
 		})
 	} else {
 		f.Decls = append(f.Decls, poet.Func{
 			Name:    "New",
 			Params:  []poet.Param{{Name: "db", Type: "DBTX"}},
 			Results: []poet.Param{{Type: "Queries", Pointer: true}},
-			Stmts:   []poet.Stmt{poet.Return{Values: []string{"&Queries{db: db}"}}},
+			Stmts: []poet.Stmt{poet.Return{Values: []string{
+				poet.StructLit{Type: "Queries", Pointer: true, Fields: [][2]string{
+					{"db", "db"},
+				}}.Render(),
+			}}},
 		})
 	}
 
@@ -302,23 +308,21 @@ func (g *CodeGenerator) addDBCodeStd(f *poet.File) {
 
 	// WithTx method
 	if !g.tctx.EmitMethodsWithDBArgument {
-		var withTxBody strings.Builder
-		withTxBody.WriteString("\treturn &Queries{\n")
-		withTxBody.WriteString("\t\tdb: tx,\n")
+		withTxFields := [][2]string{{"db", "tx"}}
 		if g.tctx.EmitPreparedQueries {
-			withTxBody.WriteString("\t\ttx: tx,\n")
+			withTxFields = append(withTxFields, [2]string{"tx", "tx"})
 			for _, query := range g.tctx.GoQueries {
-				fmt.Fprintf(&withTxBody, "\t\t%s: q.%s,\n", query.FieldName, query.FieldName)
+				withTxFields = append(withTxFields, [2]string{query.FieldName, "q." + query.FieldName})
 			}
 		}
-		withTxBody.WriteString("\t}\n")
-
 		f.Decls = append(f.Decls, poet.Func{
 			Recv:    &poet.Param{Name: "q", Type: "*Queries"},
 			Name:    "WithTx",
 			Params:  []poet.Param{{Name: "tx", Type: "*sql.Tx"}},
 			Results: []poet.Param{{Type: "*Queries"}},
-			Stmts: []poet.Stmt{poet.RawStmt{Code: withTxBody.String()}},
+			Stmts: []poet.Stmt{poet.Return{Values: []string{
+				poet.StructLit{Type: "Queries", Pointer: true, Multiline: true, Fields: withTxFields}.Render(),
+			}}},
 		})
 	}
 }
@@ -354,14 +358,20 @@ func (g *CodeGenerator) addDBCodePGX(f *poet.File) {
 		f.Decls = append(f.Decls, poet.Func{
 			Name:    "New",
 			Results: []poet.Param{{Type: "Queries", Pointer: true}},
-			Stmts:   []poet.Stmt{poet.Return{Values: []string{"&Queries{}"}}},
+			Stmts: []poet.Stmt{poet.Return{Values: []string{
+				poet.StructLit{Type: "Queries", Pointer: true}.Render(),
+			}}},
 		})
 	} else {
 		f.Decls = append(f.Decls, poet.Func{
 			Name:    "New",
 			Params:  []poet.Param{{Name: "db", Type: "DBTX"}},
 			Results: []poet.Param{{Type: "Queries", Pointer: true}},
-			Stmts:   []poet.Stmt{poet.Return{Values: []string{"&Queries{db: db}"}}},
+			Stmts: []poet.Stmt{poet.Return{Values: []string{
+				poet.StructLit{Type: "Queries", Pointer: true, Fields: [][2]string{
+					{"db", "db"},
+				}}.Render(),
+			}}},
 		})
 	}
 
@@ -382,7 +392,11 @@ func (g *CodeGenerator) addDBCodePGX(f *poet.File) {
 			Name:    "WithTx",
 			Params:  []poet.Param{{Name: "tx", Type: "pgx.Tx"}},
 			Results: []poet.Param{{Type: "Queries", Pointer: true}},
-			Stmts:   []poet.Stmt{poet.Return{Values: []string{"&Queries{\n\t\tdb: tx,\n\t}"}}},
+			Stmts: []poet.Stmt{poet.Return{Values: []string{
+				poet.StructLit{Type: "Queries", Pointer: true, Multiline: true, Fields: [][2]string{
+					{"db", "tx"},
+				}}.Render(),
+			}}},
 		})
 	}
 }
@@ -409,6 +423,7 @@ func (g *CodeGenerator) addModelsCode(f *poet.File) {
 		f.Decls = append(f.Decls, poet.ConstBlock{Consts: consts})
 
 		// Scan method
+		typeCast := poet.TypeCast{Type: enum.Name, Value: "s"}.Render()
 		f.Decls = append(f.Decls, poet.Func{
 			Recv:    &poet.Param{Name: "e", Type: enum.Name, Pointer: true},
 			Name:    "Scan",
@@ -421,24 +436,21 @@ func (g *CodeGenerator) addModelsCode(f *poet.File) {
 						{
 							Values: []string{"[]byte"},
 							Body: []poet.Stmt{
-								poet.Assign{
-									Left: []string{"*e"}, Op: "=",
-									Right: []string{fmt.Sprintf("%s(s)", enum.Name)},
-								},
+								poet.Assign{Left: []string{"*e"}, Op: "=", Right: []string{typeCast}},
 							},
 						},
 						{
 							Values: []string{"string"},
 							Body: []poet.Stmt{
-								poet.Assign{
-									Left: []string{"*e"}, Op: "=",
-									Right: []string{fmt.Sprintf("%s(s)", enum.Name)},
-								},
+								poet.Assign{Left: []string{"*e"}, Op: "=", Right: []string{typeCast}},
 							},
 						},
 						{
 							Body: []poet.Stmt{poet.Return{Values: []string{
-								fmt.Sprintf(`fmt.Errorf("unsupported scan type for %s: %%T", src)`, enum.Name),
+								poet.CallExpr{
+									Func: "fmt.Errorf",
+									Args: []string{fmt.Sprintf(`"unsupported scan type for %s: %%T"`, enum.Name), "src"},
+								}.Render(),
 							}}},
 						},
 					},
@@ -509,7 +521,10 @@ func (g *CodeGenerator) addModelsCode(f *poet.File) {
 					Cond: "!ns.Valid",
 					Body: []poet.Stmt{poet.Return{Values: []string{"nil", "nil"}}},
 				},
-				poet.Return{Values: []string{fmt.Sprintf("string(ns.%s)", enum.Name), "nil"}},
+				poet.Return{Values: []string{
+					poet.TypeCast{Type: "string", Value: "ns." + enum.Name}.Render(),
+					"nil",
+				}},
 			},
 		})
 
@@ -537,14 +552,16 @@ func (g *CodeGenerator) addModelsCode(f *poet.File) {
 
 		// AllValues method
 		if g.tctx.EmitAllEnumValues {
-			var valuesList strings.Builder
+			var enumValues []string
 			for _, c := range enum.Constants {
-				fmt.Fprintf(&valuesList, "\t\t%s,\n", c.Name)
+				enumValues = append(enumValues, c.Name)
 			}
 			f.Decls = append(f.Decls, poet.Func{
 				Name:    fmt.Sprintf("All%sValues", enum.Name),
 				Results: []poet.Param{{Type: "[]" + enum.Name}},
-				Stmts:   []poet.Stmt{poet.Return{Values: []string{fmt.Sprintf("[]%s{\n%s\t}", enum.Name, valuesList.String())}}},
+				Stmts: []poet.Stmt{poet.Return{Values: []string{
+					poet.SliceLit{Type: enum.Name, Values: enumValues}.Render(),
+				}}},
 			})
 		}
 	}
