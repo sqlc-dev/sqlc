@@ -1186,23 +1186,30 @@ func (g *CodeGenerator) addQueryExecLastIDStd(f *poet.File, q Query) {
 
 	// Fall back to RawStmt for slice queries
 	if q.Arg.HasSqlcSlices() {
-		var body strings.Builder
-		g.writeQueryExecStdCall(&body, q, "result, err :=")
-		body.WriteString("\tif err != nil {\n")
-		if g.tctx.WrapErrors {
-			fmt.Fprintf(&body, "\t\treturn 0, fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
-		} else {
-			body.WriteString("\t\treturn 0, err\n")
-		}
-		body.WriteString("\t}\n")
-		body.WriteString("\treturn result.LastInsertId()\n")
+		var stmts []poet.Stmt
+
+		// Query exec call (complex dynamic SQL handling)
+		var queryExec strings.Builder
+		g.writeQueryExecStdCall(&queryExec, q, "result, err :=")
+		stmts = append(stmts, poet.RawStmt{Code: queryExec.String()})
+
+		// if err != nil { return 0, err }
+		errReturn := g.wrapErrorReturn(q, "0")
+		stmts = append(stmts, poet.If{
+			Cond: "err != nil",
+			Body: []poet.Stmt{poet.Return{Values: errReturn}},
+		})
+
+		// return result.LastInsertId()
+		stmts = append(stmts, poet.Return{Values: []string{"result.LastInsertId()"}})
+
 		f.Decls = append(f.Decls, poet.Func{
 			Comment: g.queryComments(q),
 			Recv:    &poet.Param{Name: "q", Type: "Queries", Pointer: true},
 			Name:    q.MethodName,
 			Params:  params,
 			Results: []poet.Param{{Type: "int64"}, {Type: "error"}},
-			Stmts:   []poet.Stmt{poet.RawStmt{Code: body.String()}},
+			Stmts:   stmts,
 		})
 		return
 	}
@@ -1241,23 +1248,41 @@ func (g *CodeGenerator) addQueryExecResultStd(f *poet.File, q Query) {
 
 	// Fall back to RawStmt for slice queries
 	if q.Arg.HasSqlcSlices() {
-		var body strings.Builder
+		var stmts []poet.Stmt
+		var queryExec strings.Builder
+
 		if g.tctx.WrapErrors {
-			g.writeQueryExecStdCall(&body, q, "result, err :=")
-			body.WriteString("\tif err != nil {\n")
-			fmt.Fprintf(&body, "\t\terr = fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
-			body.WriteString("\t}\n")
-			body.WriteString("\treturn result, err\n")
+			// result, err := <query call>
+			g.writeQueryExecStdCall(&queryExec, q, "result, err :=")
+			stmts = append(stmts, poet.RawStmt{Code: queryExec.String()})
+
+			// if err != nil { err = fmt.Errorf(...) }
+			stmts = append(stmts, poet.If{
+				Cond: "err != nil",
+				Body: []poet.Stmt{
+					poet.Assign{
+						Left:  []string{"err"},
+						Op:    "=",
+						Right: []string{fmt.Sprintf(`fmt.Errorf("query %s: %%w", err)`, q.MethodName)},
+					},
+				},
+			})
+
+			// return result, err
+			stmts = append(stmts, poet.Return{Values: []string{"result", "err"}})
 		} else {
-			g.writeQueryExecStdCall(&body, q, "return")
+			// return <query call>
+			g.writeQueryExecStdCall(&queryExec, q, "return")
+			stmts = append(stmts, poet.RawStmt{Code: queryExec.String()})
 		}
+
 		f.Decls = append(f.Decls, poet.Func{
 			Comment: g.queryComments(q),
 			Recv:    &poet.Param{Name: "q", Type: "Queries", Pointer: true},
 			Name:    q.MethodName,
 			Params:  params,
 			Results: []poet.Param{{Type: "sql.Result"}, {Type: "error"}},
-			Stmts:   []poet.Stmt{poet.RawStmt{Code: body.String()}},
+			Stmts:   stmts,
 		})
 		return
 	}
@@ -1524,26 +1549,40 @@ func (g *CodeGenerator) addQueryOnePGX(f *poet.File, q Query) {
 		db = "db"
 	}
 
-	var body strings.Builder
 	qParams := q.Arg.Params()
 	if qParams != "" {
 		qParams = ", " + qParams
 	}
-	fmt.Fprintf(&body, "\trow := %s.QueryRow(ctx, %s%s)\n", db, q.ConstantName, qParams)
+
+	var stmts []poet.Stmt
+	stmts = append(stmts, poet.Assign{
+		Left:  []string{"row"},
+		Op:    ":=",
+		Right: []string{fmt.Sprintf("%s.QueryRow(ctx, %s%s)", db, q.ConstantName, qParams)},
+	})
 
 	if q.Arg.Pair() != q.Ret.Pair() || q.Arg.DefineType() != q.Ret.DefineType() {
-		fmt.Fprintf(&body, "\tvar %s %s\n", q.Ret.Name, q.Ret.Type())
+		stmts = append(stmts, poet.VarDecl{Name: q.Ret.Name, Type: q.Ret.Type()})
 	}
 
-	fmt.Fprintf(&body, "\terr := row.Scan(%s)\n", q.Ret.Scan())
+	stmts = append(stmts, poet.Assign{
+		Left:  []string{"err"},
+		Op:    ":=",
+		Right: []string{fmt.Sprintf("row.Scan(%s)", q.Ret.Scan())},
+	})
 
 	if g.tctx.WrapErrors {
-		body.WriteString("\tif err != nil {\n")
-		fmt.Fprintf(&body, "\t\terr = fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
-		body.WriteString("\t}\n")
+		stmts = append(stmts, poet.If{
+			Cond: "err != nil",
+			Body: []poet.Stmt{poet.Assign{
+				Left:  []string{"err"},
+				Op:    "=",
+				Right: []string{fmt.Sprintf("fmt.Errorf(\"query %s: %%w\", err)", q.MethodName)},
+			}},
+		})
 	}
 
-	fmt.Fprintf(&body, "\treturn %s, err\n", q.Ret.ReturnName())
+	stmts = append(stmts, poet.Return{Values: []string{q.Ret.ReturnName(), "err"}})
 
 	params := g.buildQueryParamsPGX(q)
 	f.Decls = append(f.Decls, poet.Func{
@@ -1552,7 +1591,7 @@ func (g *CodeGenerator) addQueryOnePGX(f *poet.File, q Query) {
 		Name:    q.MethodName,
 		Params:  params,
 		Results: []poet.Param{{Type: q.Ret.DefineType()}, {Type: "error"}},
-		Stmts:   []poet.Stmt{poet.RawStmt{Code: body.String()}},
+		Stmts:   stmts,
 	})
 }
 
@@ -1562,49 +1601,64 @@ func (g *CodeGenerator) addQueryManyPGX(f *poet.File, q Query) {
 		db = "db"
 	}
 
-	var body strings.Builder
 	qParams := q.Arg.Params()
 	if qParams != "" {
 		qParams = ", " + qParams
 	}
-	fmt.Fprintf(&body, "\trows, err := %s.Query(ctx, %s%s)\n", db, q.ConstantName, qParams)
 
-	body.WriteString("\tif err != nil {\n")
+	// Build error return value
+	var errReturn []string
 	if g.tctx.WrapErrors {
-		fmt.Fprintf(&body, "\t\treturn nil, fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
+		errReturn = []string{"nil", fmt.Sprintf("fmt.Errorf(\"query %s: %%w\", err)", q.MethodName)}
 	} else {
-		body.WriteString("\t\treturn nil, err\n")
+		errReturn = []string{"nil", "err"}
 	}
-	body.WriteString("\t}\n")
-	body.WriteString("\tdefer rows.Close()\n")
+
+	var stmts []poet.Stmt
+	stmts = append(stmts, poet.Assign{
+		Left:  []string{"rows", "err"},
+		Op:    ":=",
+		Right: []string{fmt.Sprintf("%s.Query(ctx, %s%s)", db, q.ConstantName, qParams)},
+	})
+
+	stmts = append(stmts, poet.If{
+		Cond: "err != nil",
+		Body: []poet.Stmt{poet.Return{Values: errReturn}},
+	})
+
+	stmts = append(stmts, poet.Defer{Call: "rows.Close()"})
 
 	if g.tctx.EmitEmptySlices {
-		fmt.Fprintf(&body, "\titems := []%s{}\n", q.Ret.DefineType())
+		stmts = append(stmts, poet.Assign{
+			Left:  []string{"items"},
+			Op:    ":=",
+			Right: []string{fmt.Sprintf("[]%s{}", q.Ret.DefineType())},
+		})
 	} else {
-		fmt.Fprintf(&body, "\tvar items []%s\n", q.Ret.DefineType())
+		stmts = append(stmts, poet.VarDecl{Name: "items", Type: "[]" + q.Ret.DefineType()})
 	}
 
-	body.WriteString("\tfor rows.Next() {\n")
-	fmt.Fprintf(&body, "\t\tvar %s %s\n", q.Ret.Name, q.Ret.Type())
-	fmt.Fprintf(&body, "\t\tif err := rows.Scan(%s); err != nil {\n", q.Ret.Scan())
-	if g.tctx.WrapErrors {
-		fmt.Fprintf(&body, "\t\t\treturn nil, fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
-	} else {
-		body.WriteString("\t\t\treturn nil, err\n")
-	}
-	body.WriteString("\t\t}\n")
-	fmt.Fprintf(&body, "\t\titems = append(items, %s)\n", q.Ret.ReturnName())
-	body.WriteString("\t}\n")
+	// For loop body
+	var forBody []poet.Stmt
+	forBody = append(forBody, poet.VarDecl{Name: q.Ret.Name, Type: q.Ret.Type()})
+	forBody = append(forBody, poet.If{
+		Cond: fmt.Sprintf("err := rows.Scan(%s); err != nil", q.Ret.Scan()),
+		Body: []poet.Stmt{poet.Return{Values: errReturn}},
+	})
+	forBody = append(forBody, poet.Assign{
+		Left:  []string{"items"},
+		Op:    "=",
+		Right: []string{fmt.Sprintf("append(items, %s)", q.Ret.ReturnName())},
+	})
 
-	body.WriteString("\tif err := rows.Err(); err != nil {\n")
-	if g.tctx.WrapErrors {
-		fmt.Fprintf(&body, "\t\treturn nil, fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
-	} else {
-		body.WriteString("\t\treturn nil, err\n")
-	}
-	body.WriteString("\t}\n")
+	stmts = append(stmts, poet.For{Cond: "rows.Next()", Body: forBody})
 
-	body.WriteString("\treturn items, nil\n")
+	stmts = append(stmts, poet.If{
+		Cond: "err := rows.Err(); err != nil",
+		Body: []poet.Stmt{poet.Return{Values: errReturn}},
+	})
+
+	stmts = append(stmts, poet.Return{Values: []string{"items", "nil"}})
 
 	params := g.buildQueryParamsPGX(q)
 	f.Decls = append(f.Decls, poet.Func{
@@ -1613,7 +1667,7 @@ func (g *CodeGenerator) addQueryManyPGX(f *poet.File, q Query) {
 		Name:    q.MethodName,
 		Params:  params,
 		Results: []poet.Param{{Type: "[]" + q.Ret.DefineType()}, {Type: "error"}},
-		Stmts:   []poet.Stmt{poet.RawStmt{Code: body.String()}},
+		Stmts:   stmts,
 	})
 }
 
@@ -1623,20 +1677,26 @@ func (g *CodeGenerator) addQueryExecPGX(f *poet.File, q Query) {
 		db = "db"
 	}
 
-	var body strings.Builder
 	qParams := q.Arg.Params()
 	if qParams != "" {
 		qParams = ", " + qParams
 	}
-	fmt.Fprintf(&body, "\t_, err := %s.Exec(ctx, %s%s)\n", db, q.ConstantName, qParams)
+
+	var stmts []poet.Stmt
+	stmts = append(stmts, poet.Assign{
+		Left:  []string{"_", "err"},
+		Op:    ":=",
+		Right: []string{fmt.Sprintf("%s.Exec(ctx, %s%s)", db, q.ConstantName, qParams)},
+	})
 
 	if g.tctx.WrapErrors {
-		body.WriteString("\tif err != nil {\n")
-		fmt.Fprintf(&body, "\t\treturn fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
-		body.WriteString("\t}\n")
-		body.WriteString("\treturn nil\n")
+		stmts = append(stmts, poet.If{
+			Cond: "err != nil",
+			Body: []poet.Stmt{poet.Return{Values: []string{fmt.Sprintf("fmt.Errorf(\"query %s: %%w\", err)", q.MethodName)}}},
+		})
+		stmts = append(stmts, poet.Return{Values: []string{"nil"}})
 	} else {
-		body.WriteString("\treturn err\n")
+		stmts = append(stmts, poet.Return{Values: []string{"err"}})
 	}
 
 	params := g.buildQueryParamsPGX(q)
@@ -1646,7 +1706,7 @@ func (g *CodeGenerator) addQueryExecPGX(f *poet.File, q Query) {
 		Name:    q.MethodName,
 		Params:  params,
 		Results: []poet.Param{{Type: "error"}},
-		Stmts:   []poet.Stmt{poet.RawStmt{Code: body.String()}},
+		Stmts:   stmts,
 	})
 }
 
@@ -1656,21 +1716,32 @@ func (g *CodeGenerator) addQueryExecRowsPGX(f *poet.File, q Query) {
 		db = "db"
 	}
 
-	var body strings.Builder
 	qParams := q.Arg.Params()
 	if qParams != "" {
 		qParams = ", " + qParams
 	}
-	fmt.Fprintf(&body, "\tresult, err := %s.Exec(ctx, %s%s)\n", db, q.ConstantName, qParams)
 
-	body.WriteString("\tif err != nil {\n")
+	// Build error return value
+	var errReturn []string
 	if g.tctx.WrapErrors {
-		fmt.Fprintf(&body, "\t\treturn 0, fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
+		errReturn = []string{"0", fmt.Sprintf("fmt.Errorf(\"query %s: %%w\", err)", q.MethodName)}
 	} else {
-		body.WriteString("\t\treturn 0, err\n")
+		errReturn = []string{"0", "err"}
 	}
-	body.WriteString("\t}\n")
-	body.WriteString("\treturn result.RowsAffected(), nil\n")
+
+	var stmts []poet.Stmt
+	stmts = append(stmts, poet.Assign{
+		Left:  []string{"result", "err"},
+		Op:    ":=",
+		Right: []string{fmt.Sprintf("%s.Exec(ctx, %s%s)", db, q.ConstantName, qParams)},
+	})
+
+	stmts = append(stmts, poet.If{
+		Cond: "err != nil",
+		Body: []poet.Stmt{poet.Return{Values: errReturn}},
+	})
+
+	stmts = append(stmts, poet.Return{Values: []string{"result.RowsAffected()", "nil"}})
 
 	params := g.buildQueryParamsPGX(q)
 	f.Decls = append(f.Decls, poet.Func{
@@ -1679,7 +1750,7 @@ func (g *CodeGenerator) addQueryExecRowsPGX(f *poet.File, q Query) {
 		Name:    q.MethodName,
 		Params:  params,
 		Results: []poet.Param{{Type: "int64"}, {Type: "error"}},
-		Stmts:   []poet.Stmt{poet.RawStmt{Code: body.String()}},
+		Stmts:   stmts,
 	})
 }
 
@@ -1689,20 +1760,29 @@ func (g *CodeGenerator) addQueryExecResultPGX(f *poet.File, q Query) {
 		db = "db"
 	}
 
-	var body strings.Builder
 	qParams := q.Arg.Params()
 	if qParams != "" {
 		qParams = ", " + qParams
 	}
 
+	var stmts []poet.Stmt
 	if g.tctx.WrapErrors {
-		fmt.Fprintf(&body, "\tresult, err := %s.Exec(ctx, %s%s)\n", db, q.ConstantName, qParams)
-		body.WriteString("\tif err != nil {\n")
-		fmt.Fprintf(&body, "\t\terr = fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
-		body.WriteString("\t}\n")
-		body.WriteString("\treturn result, err\n")
+		stmts = append(stmts, poet.Assign{
+			Left:  []string{"result", "err"},
+			Op:    ":=",
+			Right: []string{fmt.Sprintf("%s.Exec(ctx, %s%s)", db, q.ConstantName, qParams)},
+		})
+		stmts = append(stmts, poet.If{
+			Cond: "err != nil",
+			Body: []poet.Stmt{poet.Assign{
+				Left:  []string{"err"},
+				Op:    "=",
+				Right: []string{fmt.Sprintf("fmt.Errorf(\"query %s: %%w\", err)", q.MethodName)},
+			}},
+		})
+		stmts = append(stmts, poet.Return{Values: []string{"result", "err"}})
 	} else {
-		fmt.Fprintf(&body, "\treturn %s.Exec(ctx, %s%s)\n", db, q.ConstantName, qParams)
+		stmts = append(stmts, poet.Return{Values: []string{fmt.Sprintf("%s.Exec(ctx, %s%s)", db, q.ConstantName, qParams)}})
 	}
 
 	params := g.buildQueryParamsPGX(q)
@@ -1712,7 +1792,7 @@ func (g *CodeGenerator) addQueryExecResultPGX(f *poet.File, q Query) {
 		Name:    q.MethodName,
 		Params:  params,
 		Results: []poet.Param{{Type: "pgconn.CommandTag"}, {Type: "error"}},
-		Stmts:   []poet.Stmt{poet.RawStmt{Code: body.String()}},
+		Stmts:   stmts,
 	})
 }
 
@@ -1870,21 +1950,31 @@ func (g *CodeGenerator) addCopyFromCodeMySQL(f *poet.File) {
 		}
 		colList := strings.Join(colNames, ", ")
 
-		var mainBody strings.Builder
-		mainBody.WriteString("\tpr, pw := io.Pipe()\n")
-		mainBody.WriteString("\tdefer pr.Close()\n")
-		fmt.Fprintf(&mainBody, "\trh := fmt.Sprintf(\"%s_%%d\", atomic.AddUint32(&readerHandlerSequenceFor%s, 1))\n", q.MethodName, q.MethodName)
-		mainBody.WriteString("\tmysql.RegisterReaderHandler(rh, func() io.Reader { return pr })\n")
-		mainBody.WriteString("\tdefer mysql.DeregisterReaderHandler(rh)\n")
-		fmt.Fprintf(&mainBody, "\tgo convertRowsFor%s(pw, %s)\n", q.MethodName, q.Arg.Name)
-		mainBody.WriteString("\t// The string interpolation is necessary because LOAD DATA INFILE requires\n")
-		mainBody.WriteString("\t// the file name to be given as a literal string.\n")
-		fmt.Fprintf(&mainBody, "\tresult, err := %s.ExecContext(ctx, fmt.Sprintf(\"LOAD DATA LOCAL INFILE '%%s' INTO TABLE %s %%s (%s)\", \"Reader::\"+rh, mysqltsv.Escaping))\n",
-			db, q.TableIdentifierForMySQL(), colList)
-		mainBody.WriteString("\tif err != nil {\n")
-		mainBody.WriteString("\t\treturn 0, err\n")
-		mainBody.WriteString("\t}\n")
-		mainBody.WriteString("\treturn result.RowsAffected()\n")
+		var mainStmts []poet.Stmt
+		mainStmts = append(mainStmts, poet.Assign{
+			Left: []string{"pr", "pw"}, Op: ":=", Right: []string{"io.Pipe()"},
+		})
+		mainStmts = append(mainStmts, poet.Defer{Call: "pr.Close()"})
+		mainStmts = append(mainStmts, poet.Assign{
+			Left:  []string{"rh"},
+			Op:    ":=",
+			Right: []string{fmt.Sprintf("fmt.Sprintf(\"%s_%%d\", atomic.AddUint32(&readerHandlerSequenceFor%s, 1))", q.MethodName, q.MethodName)},
+		})
+		mainStmts = append(mainStmts, poet.CallStmt{Call: "mysql.RegisterReaderHandler(rh, func() io.Reader { return pr })"})
+		mainStmts = append(mainStmts, poet.Defer{Call: "mysql.DeregisterReaderHandler(rh)"})
+		mainStmts = append(mainStmts, poet.GoStmt{Call: fmt.Sprintf("convertRowsFor%s(pw, %s)", q.MethodName, q.Arg.Name)})
+		// Add comment explaining string interpolation requirement
+		mainStmts = append(mainStmts, poet.RawStmt{Code: "\t// The string interpolation is necessary because LOAD DATA INFILE requires\n\t// the file name to be given as a literal string.\n"})
+		mainStmts = append(mainStmts, poet.Assign{
+			Left:  []string{"result", "err"},
+			Op:    ":=",
+			Right: []string{fmt.Sprintf("%s.ExecContext(ctx, fmt.Sprintf(\"LOAD DATA LOCAL INFILE '%%s' INTO TABLE %s %%s (%s)\", \"Reader::\"+rh, mysqltsv.Escaping))", db, q.TableIdentifierForMySQL(), colList)},
+		})
+		mainStmts = append(mainStmts, poet.If{
+			Cond: "err != nil",
+			Body: []poet.Stmt{poet.Return{Values: []string{"0", "err"}}},
+		})
+		mainStmts = append(mainStmts, poet.Return{Values: []string{"result.RowsAffected()"}})
 
 		comment := g.queryComments(q)
 		comment += fmt.Sprintf("\n// %s uses MySQL's LOAD DATA LOCAL INFILE and is not atomic.", q.MethodName)
@@ -1900,7 +1990,7 @@ func (g *CodeGenerator) addCopyFromCodeMySQL(f *poet.File) {
 			Name:    q.MethodName,
 			Params:  params,
 			Results: []poet.Param{{Type: "int64"}, {Type: "error"}},
-			Stmts:   []poet.Stmt{poet.RawStmt{Code: mainBody.String()}},
+			Stmts:   mainStmts,
 		})
 	}
 }
@@ -1999,95 +2089,130 @@ func (g *CodeGenerator) addBatchCodePGX(f *poet.File) {
 		// Result method based on command type
 		switch q.Cmd {
 		case ":batchexec":
+			var execForBody []poet.Stmt
+			execForBody = append(execForBody, poet.If{
+				Cond: "b.closed",
+				Body: []poet.Stmt{
+					poet.If{
+						Cond: "f != nil",
+						Body: []poet.Stmt{poet.CallStmt{Call: "f(t, ErrBatchAlreadyClosed)"}},
+					},
+					poet.Continue{},
+				},
+			})
+			execForBody = append(execForBody, poet.Assign{
+				Left: []string{"_", "err"}, Op: ":=", Right: []string{"b.br.Exec()"},
+			})
+			execForBody = append(execForBody, poet.If{
+				Cond: "f != nil",
+				Body: []poet.Stmt{poet.CallStmt{Call: "f(t, err)"}},
+			})
+
 			f.Decls = append(f.Decls, poet.Func{
 				Recv:   &poet.Param{Name: "b", Type: "*" + q.MethodName + "BatchResults"},
 				Name:   "Exec",
 				Params: []poet.Param{{Name: "f", Type: "func(int, error)"}},
-				Stmts: []poet.Stmt{poet.RawStmt{Code: `	defer b.br.Close()
-	for t := 0; t < b.tot; t++ {
-		if b.closed {
-			if f != nil {
-				f(t, ErrBatchAlreadyClosed)
-			}
-			continue
-		}
-		_, err := b.br.Exec()
-		if f != nil {
-			f(t, err)
-		}
-	}
-`}},
+				Stmts: []poet.Stmt{
+					poet.Defer{Call: "b.br.Close()"},
+					poet.For{Init: "t := 0", Cond: "t < b.tot", Post: "t++", Body: execForBody},
+				},
 			})
 
 		case ":batchmany":
-			var batchManyBody strings.Builder
-			batchManyBody.WriteString("\tdefer b.br.Close()\n")
-			batchManyBody.WriteString("\tfor t := 0; t < b.tot; t++ {\n")
+			// Build inner function literal as string (complex nested structure)
+			var innerFunc strings.Builder
+			innerFunc.WriteString("func() error {\n")
+			innerFunc.WriteString("\t\t\trows, err := b.br.Query()\n")
+			innerFunc.WriteString("\t\t\tif err != nil {\n")
+			innerFunc.WriteString("\t\t\t\treturn err\n")
+			innerFunc.WriteString("\t\t\t}\n")
+			innerFunc.WriteString("\t\t\tdefer rows.Close()\n")
+			innerFunc.WriteString("\t\t\tfor rows.Next() {\n")
+			fmt.Fprintf(&innerFunc, "\t\t\t\tvar %s %s\n", q.Ret.Name, q.Ret.Type())
+			fmt.Fprintf(&innerFunc, "\t\t\t\tif err := rows.Scan(%s); err != nil {\n", q.Ret.Scan())
+			innerFunc.WriteString("\t\t\t\t\treturn err\n")
+			innerFunc.WriteString("\t\t\t\t}\n")
+			fmt.Fprintf(&innerFunc, "\t\t\t\titems = append(items, %s)\n", q.Ret.ReturnName())
+			innerFunc.WriteString("\t\t\t}\n")
+			innerFunc.WriteString("\t\t\treturn rows.Err()\n")
+			innerFunc.WriteString("\t\t}()")
+
+			// Build main for loop body
+			var manyForBody []poet.Stmt
 			if g.tctx.EmitEmptySlices {
-				fmt.Fprintf(&batchManyBody, "\t\titems := []%s{}\n", q.Ret.DefineType())
+				manyForBody = append(manyForBody, poet.Assign{
+					Left: []string{"items"}, Op: ":=", Right: []string{fmt.Sprintf("[]%s{}", q.Ret.DefineType())},
+				})
 			} else {
-				fmt.Fprintf(&batchManyBody, "\t\tvar items []%s\n", q.Ret.DefineType())
+				manyForBody = append(manyForBody, poet.VarDecl{Name: "items", Type: "[]" + q.Ret.DefineType()})
 			}
-			batchManyBody.WriteString("\t\tif b.closed {\n")
-			batchManyBody.WriteString("\t\t\tif f != nil {\n")
-			batchManyBody.WriteString("\t\t\t\tf(t, items, ErrBatchAlreadyClosed)\n")
-			batchManyBody.WriteString("\t\t\t}\n")
-			batchManyBody.WriteString("\t\t\tcontinue\n")
-			batchManyBody.WriteString("\t\t}\n")
-			batchManyBody.WriteString("\t\terr := func() error {\n")
-			batchManyBody.WriteString("\t\t\trows, err := b.br.Query()\n")
-			batchManyBody.WriteString("\t\t\tif err != nil {\n")
-			batchManyBody.WriteString("\t\t\t\treturn err\n")
-			batchManyBody.WriteString("\t\t\t}\n")
-			batchManyBody.WriteString("\t\t\tdefer rows.Close()\n")
-			batchManyBody.WriteString("\t\t\tfor rows.Next() {\n")
-			fmt.Fprintf(&batchManyBody, "\t\t\t\tvar %s %s\n", q.Ret.Name, q.Ret.Type())
-			fmt.Fprintf(&batchManyBody, "\t\t\t\tif err := rows.Scan(%s); err != nil {\n", q.Ret.Scan())
-			batchManyBody.WriteString("\t\t\t\t\treturn err\n")
-			batchManyBody.WriteString("\t\t\t\t}\n")
-			fmt.Fprintf(&batchManyBody, "\t\t\t\titems = append(items, %s)\n", q.Ret.ReturnName())
-			batchManyBody.WriteString("\t\t\t}\n")
-			batchManyBody.WriteString("\t\t\treturn rows.Err()\n")
-			batchManyBody.WriteString("\t\t}()\n")
-			batchManyBody.WriteString("\t\tif f != nil {\n")
-			batchManyBody.WriteString("\t\t\tf(t, items, err)\n")
-			batchManyBody.WriteString("\t\t}\n")
-			batchManyBody.WriteString("\t}\n")
+			manyForBody = append(manyForBody, poet.If{
+				Cond: "b.closed",
+				Body: []poet.Stmt{
+					poet.If{
+						Cond: "f != nil",
+						Body: []poet.Stmt{poet.CallStmt{Call: "f(t, items, ErrBatchAlreadyClosed)"}},
+					},
+					poet.Continue{},
+				},
+			})
+			manyForBody = append(manyForBody, poet.Assign{
+				Left: []string{"err"}, Op: ":=", Right: []string{innerFunc.String()},
+			})
+			manyForBody = append(manyForBody, poet.If{
+				Cond: "f != nil",
+				Body: []poet.Stmt{poet.CallStmt{Call: "f(t, items, err)"}},
+			})
 
 			f.Decls = append(f.Decls, poet.Func{
 				Recv:   &poet.Param{Name: "b", Type: "*" + q.MethodName + "BatchResults"},
 				Name:   "Query",
 				Params: []poet.Param{{Name: "f", Type: fmt.Sprintf("func(int, []%s, error)", q.Ret.DefineType())}},
-				Stmts:  []poet.Stmt{poet.RawStmt{Code: batchManyBody.String()}},
+				Stmts: []poet.Stmt{
+					poet.Defer{Call: "b.br.Close()"},
+					poet.For{Init: "t := 0", Cond: "t < b.tot", Post: "t++", Body: manyForBody},
+				},
 			})
 
 		case ":batchone":
-			var batchOneBody strings.Builder
-			batchOneBody.WriteString("\tdefer b.br.Close()\n")
-			batchOneBody.WriteString("\tfor t := 0; t < b.tot; t++ {\n")
-			fmt.Fprintf(&batchOneBody, "\t\tvar %s %s\n", q.Ret.Name, q.Ret.Type())
-			batchOneBody.WriteString("\t\tif b.closed {\n")
-			batchOneBody.WriteString("\t\t\tif f != nil {\n")
+			// Build closed error value based on return type
+			closedRetVal := q.Ret.Name
 			if q.Ret.IsPointer() {
-				batchOneBody.WriteString("\t\t\t\tf(t, nil, ErrBatchAlreadyClosed)\n")
-			} else {
-				fmt.Fprintf(&batchOneBody, "\t\t\t\tf(t, %s, ErrBatchAlreadyClosed)\n", q.Ret.Name)
+				closedRetVal = "nil"
 			}
-			batchOneBody.WriteString("\t\t\t}\n")
-			batchOneBody.WriteString("\t\t\tcontinue\n")
-			batchOneBody.WriteString("\t\t}\n")
-			batchOneBody.WriteString("\t\trow := b.br.QueryRow()\n")
-			fmt.Fprintf(&batchOneBody, "\t\terr := row.Scan(%s)\n", q.Ret.Scan())
-			batchOneBody.WriteString("\t\tif f != nil {\n")
-			fmt.Fprintf(&batchOneBody, "\t\t\tf(t, %s, err)\n", q.Ret.ReturnName())
-			batchOneBody.WriteString("\t\t}\n")
-			batchOneBody.WriteString("\t}\n")
+
+			// Build for loop body
+			var oneForBody []poet.Stmt
+			oneForBody = append(oneForBody, poet.VarDecl{Name: q.Ret.Name, Type: q.Ret.Type()})
+			oneForBody = append(oneForBody, poet.If{
+				Cond: "b.closed",
+				Body: []poet.Stmt{
+					poet.If{
+						Cond: "f != nil",
+						Body: []poet.Stmt{poet.CallStmt{Call: fmt.Sprintf("f(t, %s, ErrBatchAlreadyClosed)", closedRetVal)}},
+					},
+					poet.Continue{},
+				},
+			})
+			oneForBody = append(oneForBody, poet.Assign{
+				Left: []string{"row"}, Op: ":=", Right: []string{"b.br.QueryRow()"},
+			})
+			oneForBody = append(oneForBody, poet.Assign{
+				Left: []string{"err"}, Op: ":=", Right: []string{fmt.Sprintf("row.Scan(%s)", q.Ret.Scan())},
+			})
+			oneForBody = append(oneForBody, poet.If{
+				Cond: "f != nil",
+				Body: []poet.Stmt{poet.CallStmt{Call: fmt.Sprintf("f(t, %s, err)", q.Ret.ReturnName())}},
+			})
 
 			f.Decls = append(f.Decls, poet.Func{
 				Recv:   &poet.Param{Name: "b", Type: "*" + q.MethodName + "BatchResults"},
 				Name:   "QueryRow",
 				Params: []poet.Param{{Name: "f", Type: fmt.Sprintf("func(int, %s, error)", q.Ret.DefineType())}},
-				Stmts:  []poet.Stmt{poet.RawStmt{Code: batchOneBody.String()}},
+				Stmts: []poet.Stmt{
+					poet.Defer{Call: "b.br.Close()"},
+					poet.For{Init: "t := 0", Cond: "t < b.tot", Post: "t++", Body: oneForBody},
+				},
 			})
 		}
 
