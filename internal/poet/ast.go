@@ -211,3 +211,12 @@ type CallStmt struct {
 }
 
 func (CallStmt) isStmt() {}
+
+// VarDecl represents a variable declaration statement.
+type VarDecl struct {
+	Name  string // Variable name
+	Type  string // Type (optional if Value is set)
+	Value string // Initial value (optional)
+}
+
+func (VarDecl) isStmt() {}

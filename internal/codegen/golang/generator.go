@@ -738,185 +738,455 @@ func (g *CodeGenerator) queryComments(q Query) string {
 }
 
 func (g *CodeGenerator) addQueryOneStd(f *poet.File, q Query) {
-	var body strings.Builder
-	g.writeQueryExecStdCall(&body, q, "row :=")
-
-	if q.Arg.Pair() != q.Ret.Pair() || q.Arg.DefineType() != q.Ret.DefineType() {
-		fmt.Fprintf(&body, "\tvar %s %s\n", q.Ret.Name, q.Ret.Type())
-	}
-
-	fmt.Fprintf(&body, "\terr := row.Scan(%s)\n", q.Ret.Scan())
-
-	if g.tctx.WrapErrors {
-		body.WriteString("\tif err != nil {\n")
-		fmt.Fprintf(&body, "\t\terr = fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
-		body.WriteString("\t}\n")
-	}
-
-	fmt.Fprintf(&body, "\treturn %s, err\n", q.Ret.ReturnName())
-
 	params := g.buildQueryParams(q)
+
+	// Fall back to RawStmt for slice queries (complex handling)
+	if q.Arg.HasSqlcSlices() {
+		var body strings.Builder
+		g.writeQueryExecStdCall(&body, q, "row :=")
+		if q.Arg.Pair() != q.Ret.Pair() || q.Arg.DefineType() != q.Ret.DefineType() {
+			fmt.Fprintf(&body, "\tvar %s %s\n", q.Ret.Name, q.Ret.Type())
+		}
+		fmt.Fprintf(&body, "\terr := row.Scan(%s)\n", q.Ret.Scan())
+		if g.tctx.WrapErrors {
+			body.WriteString("\tif err != nil {\n")
+			fmt.Fprintf(&body, "\t\terr = fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
+			body.WriteString("\t}\n")
+		}
+		fmt.Fprintf(&body, "\treturn %s, err\n", q.Ret.ReturnName())
+		f.Decls = append(f.Decls, poet.Func{
+			Comment: g.queryComments(q),
+			Recv:    &poet.Param{Name: "q", Type: "Queries", Pointer: true},
+			Name:    q.MethodName,
+			Params:  params,
+			Results: []poet.Param{{Type: q.Ret.DefineType()}, {Type: "error"}},
+			Stmts:   []poet.Stmt{poet.RawStmt{Code: body.String()}},
+		})
+		return
+	}
+
+	var stmts []poet.Stmt
+
+	// row := <query call>
+	stmts = append(stmts, poet.Assign{
+		Left:  []string{"row"},
+		Op:    ":=",
+		Right: []string{g.queryExecStdCallExpr(q)},
+	})
+
+	// var <name> <type> (if arg and ret are different)
+	if q.Arg.Pair() != q.Ret.Pair() || q.Arg.DefineType() != q.Ret.DefineType() {
+		stmts = append(stmts, poet.VarDecl{Name: q.Ret.Name, Type: q.Ret.Type()})
+	}
+
+	// err := row.Scan(<scan args>)
+	stmts = append(stmts, poet.Assign{
+		Left:  []string{"err"},
+		Op:    ":=",
+		Right: []string{fmt.Sprintf("row.Scan(%s)", q.Ret.Scan())},
+	})
+
+	// if err != nil { err = fmt.Errorf(...) }
+	if g.tctx.WrapErrors {
+		stmts = append(stmts, poet.If{
+			Cond: "err != nil",
+			Body: []poet.Stmt{
+				poet.Assign{
+					Left:  []string{"err"},
+					Op:    "=",
+					Right: []string{fmt.Sprintf(`fmt.Errorf("query %s: %%w", err)`, q.MethodName)},
+				},
+			},
+		})
+	}
+
+	// return <name>, err
+	stmts = append(stmts, poet.Return{Values: []string{q.Ret.ReturnName(), "err"}})
+
 	f.Decls = append(f.Decls, poet.Func{
 		Comment: g.queryComments(q),
-		Recv:    &poet.Param{Name: "q", Type: "*Queries"},
+		Recv:    &poet.Param{Name: "q", Type: "Queries", Pointer: true},
 		Name:    q.MethodName,
 		Params:  params,
 		Results: []poet.Param{{Type: q.Ret.DefineType()}, {Type: "error"}},
-		Stmts: []poet.Stmt{poet.RawStmt{Code: body.String()}},
+		Stmts:   stmts,
 	})
 }
 
 func (g *CodeGenerator) addQueryManyStd(f *poet.File, q Query) {
-	var body strings.Builder
-	g.writeQueryExecStdCall(&body, q, "rows, err :=")
-
-	body.WriteString("\tif err != nil {\n")
-	if g.tctx.WrapErrors {
-		fmt.Fprintf(&body, "\t\treturn nil, fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
-	} else {
-		body.WriteString("\t\treturn nil, err\n")
-	}
-	body.WriteString("\t}\n")
-	body.WriteString("\tdefer rows.Close()\n")
-
-	if g.tctx.EmitEmptySlices {
-		fmt.Fprintf(&body, "\titems := []%s{}\n", q.Ret.DefineType())
-	} else {
-		fmt.Fprintf(&body, "\tvar items []%s\n", q.Ret.DefineType())
-	}
-
-	body.WriteString("\tfor rows.Next() {\n")
-	fmt.Fprintf(&body, "\t\tvar %s %s\n", q.Ret.Name, q.Ret.Type())
-	fmt.Fprintf(&body, "\t\tif err := rows.Scan(%s); err != nil {\n", q.Ret.Scan())
-	if g.tctx.WrapErrors {
-		fmt.Fprintf(&body, "\t\t\treturn nil, fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
-	} else {
-		body.WriteString("\t\t\treturn nil, err\n")
-	}
-	body.WriteString("\t\t}\n")
-	fmt.Fprintf(&body, "\t\titems = append(items, %s)\n", q.Ret.ReturnName())
-	body.WriteString("\t}\n")
-
-	body.WriteString("\tif err := rows.Close(); err != nil {\n")
-	if g.tctx.WrapErrors {
-		fmt.Fprintf(&body, "\t\treturn nil, fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
-	} else {
-		body.WriteString("\t\treturn nil, err\n")
-	}
-	body.WriteString("\t}\n")
-
-	body.WriteString("\tif err := rows.Err(); err != nil {\n")
-	if g.tctx.WrapErrors {
-		fmt.Fprintf(&body, "\t\treturn nil, fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
-	} else {
-		body.WriteString("\t\treturn nil, err\n")
-	}
-	body.WriteString("\t}\n")
-
-	body.WriteString("\treturn items, nil\n")
-
 	params := g.buildQueryParams(q)
+
+	// Fall back to RawStmt for slice queries (complex handling)
+	if q.Arg.HasSqlcSlices() {
+		var body strings.Builder
+		g.writeQueryExecStdCall(&body, q, "rows, err :=")
+		body.WriteString("\tif err != nil {\n")
+		if g.tctx.WrapErrors {
+			fmt.Fprintf(&body, "\t\treturn nil, fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
+		} else {
+			body.WriteString("\t\treturn nil, err\n")
+		}
+		body.WriteString("\t}\n")
+		body.WriteString("\tdefer rows.Close()\n")
+		if g.tctx.EmitEmptySlices {
+			fmt.Fprintf(&body, "\titems := []%s{}\n", q.Ret.DefineType())
+		} else {
+			fmt.Fprintf(&body, "\tvar items []%s\n", q.Ret.DefineType())
+		}
+		body.WriteString("\tfor rows.Next() {\n")
+		fmt.Fprintf(&body, "\t\tvar %s %s\n", q.Ret.Name, q.Ret.Type())
+		fmt.Fprintf(&body, "\t\tif err := rows.Scan(%s); err != nil {\n", q.Ret.Scan())
+		if g.tctx.WrapErrors {
+			fmt.Fprintf(&body, "\t\t\treturn nil, fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
+		} else {
+			body.WriteString("\t\t\treturn nil, err\n")
+		}
+		body.WriteString("\t\t}\n")
+		fmt.Fprintf(&body, "\t\titems = append(items, %s)\n", q.Ret.ReturnName())
+		body.WriteString("\t}\n")
+		body.WriteString("\tif err := rows.Close(); err != nil {\n")
+		if g.tctx.WrapErrors {
+			fmt.Fprintf(&body, "\t\treturn nil, fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
+		} else {
+			body.WriteString("\t\treturn nil, err\n")
+		}
+		body.WriteString("\t}\n")
+		body.WriteString("\tif err := rows.Err(); err != nil {\n")
+		if g.tctx.WrapErrors {
+			fmt.Fprintf(&body, "\t\treturn nil, fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
+		} else {
+			body.WriteString("\t\treturn nil, err\n")
+		}
+		body.WriteString("\t}\n")
+		body.WriteString("\treturn items, nil\n")
+		f.Decls = append(f.Decls, poet.Func{
+			Comment: g.queryComments(q),
+			Recv:    &poet.Param{Name: "q", Type: "Queries", Pointer: true},
+			Name:    q.MethodName,
+			Params:  params,
+			Results: []poet.Param{{Type: "[]" + q.Ret.DefineType()}, {Type: "error"}},
+			Stmts:   []poet.Stmt{poet.RawStmt{Code: body.String()}},
+		})
+		return
+	}
+
+	var stmts []poet.Stmt
+
+	// rows, err := <query call>
+	stmts = append(stmts, poet.Assign{
+		Left:  []string{"rows", "err"},
+		Op:    ":=",
+		Right: []string{g.queryExecStdCallExpr(q)},
+	})
+
+	// if err != nil { return nil, err }
+	errReturn := g.wrapErrorReturn(q, "nil")
+	stmts = append(stmts, poet.If{
+		Cond: "err != nil",
+		Body: []poet.Stmt{poet.Return{Values: errReturn}},
+	})
+
+	// defer rows.Close()
+	stmts = append(stmts, poet.Defer{Call: "rows.Close()"})
+
+	// var items []<type> or items := []<type>{}
+	if g.tctx.EmitEmptySlices {
+		stmts = append(stmts, poet.Assign{
+			Left:  []string{"items"},
+			Op:    ":=",
+			Right: []string{fmt.Sprintf("[]%s{}", q.Ret.DefineType())},
+		})
+	} else {
+		stmts = append(stmts, poet.VarDecl{
+			Name: "items",
+			Type: "[]" + q.Ret.DefineType(),
+		})
+	}
+
+	// for rows.Next() { ... }
+	scanErrReturn := g.wrapErrorReturn(q, "nil")
+	stmts = append(stmts, poet.For{
+		Range: "rows.Next()",
+		Body: []poet.Stmt{
+			poet.VarDecl{Name: q.Ret.Name, Type: q.Ret.Type()},
+			poet.If{
+				Init: fmt.Sprintf("err := rows.Scan(%s)", q.Ret.Scan()),
+				Cond: "err != nil",
+				Body: []poet.Stmt{poet.Return{Values: scanErrReturn}},
+			},
+			poet.Assign{
+				Left:  []string{"items"},
+				Op:    "=",
+				Right: []string{fmt.Sprintf("append(items, %s)", q.Ret.ReturnName())},
+			},
+		},
+	})
+
+	// if err := rows.Close(); err != nil { return nil, err }
+	closeErrReturn := g.wrapErrorReturn(q, "nil")
+	stmts = append(stmts, poet.If{
+		Init: "err := rows.Close()",
+		Cond: "err != nil",
+		Body: []poet.Stmt{poet.Return{Values: closeErrReturn}},
+	})
+
+	// if err := rows.Err(); err != nil { return nil, err }
+	rowsErrReturn := g.wrapErrorReturn(q, "nil")
+	stmts = append(stmts, poet.If{
+		Init: "err := rows.Err()",
+		Cond: "err != nil",
+		Body: []poet.Stmt{poet.Return{Values: rowsErrReturn}},
+	})
+
+	// return items, nil
+	stmts = append(stmts, poet.Return{Values: []string{"items", "nil"}})
+
 	f.Decls = append(f.Decls, poet.Func{
 		Comment: g.queryComments(q),
-		Recv:    &poet.Param{Name: "q", Type: "*Queries"},
+		Recv:    &poet.Param{Name: "q", Type: "Queries", Pointer: true},
 		Name:    q.MethodName,
 		Params:  params,
 		Results: []poet.Param{{Type: "[]" + q.Ret.DefineType()}, {Type: "error"}},
-		Stmts: []poet.Stmt{poet.RawStmt{Code: body.String()}},
+		Stmts:   stmts,
 	})
 }
 
+// wrapErrorReturn returns the return values for an error return.
+// firstVal is the first value to return (e.g., "nil", "0").
+func (g *CodeGenerator) wrapErrorReturn(q Query, firstVal string) []string {
+	if g.tctx.WrapErrors {
+		return []string{firstVal, fmt.Sprintf(`fmt.Errorf("query %s: %%w", err)`, q.MethodName)}
+	}
+	return []string{firstVal, "err"}
+}
+
 func (g *CodeGenerator) addQueryExecStd(f *poet.File, q Query) {
-	var body strings.Builder
-	g.writeQueryExecStdCall(&body, q, "_, err :=")
+	params := g.buildQueryParams(q)
+
+	// Fall back to RawStmt for slice queries (complex handling)
+	if q.Arg.HasSqlcSlices() {
+		var body strings.Builder
+		g.writeQueryExecStdCall(&body, q, "_, err :=")
+		if g.tctx.WrapErrors {
+			body.WriteString("\tif err != nil {\n")
+			fmt.Fprintf(&body, "\t\terr = fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
+			body.WriteString("\t}\n")
+		}
+		body.WriteString("\treturn err\n")
+		f.Decls = append(f.Decls, poet.Func{
+			Comment: g.queryComments(q),
+			Recv:    &poet.Param{Name: "q", Type: "Queries", Pointer: true},
+			Name:    q.MethodName,
+			Params:  params,
+			Results: []poet.Param{{Type: "error"}},
+			Stmts:   []poet.Stmt{poet.RawStmt{Code: body.String()}},
+		})
+		return
+	}
+
+	var stmts []poet.Stmt
+	stmts = append(stmts, poet.Assign{
+		Left:  []string{"_", "err"},
+		Op:    ":=",
+		Right: []string{g.queryExecStdCallExpr(q)},
+	})
 
 	if g.tctx.WrapErrors {
-		body.WriteString("\tif err != nil {\n")
-		fmt.Fprintf(&body, "\t\terr = fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
-		body.WriteString("\t}\n")
+		stmts = append(stmts, poet.If{
+			Cond: "err != nil",
+			Body: []poet.Stmt{
+				poet.Assign{
+					Left:  []string{"err"},
+					Op:    "=",
+					Right: []string{fmt.Sprintf(`fmt.Errorf("query %s: %%w", err)`, q.MethodName)},
+				},
+			},
+		})
 	}
-	body.WriteString("\treturn err\n")
+	stmts = append(stmts, poet.Return{Values: []string{"err"}})
 
-	params := g.buildQueryParams(q)
 	f.Decls = append(f.Decls, poet.Func{
 		Comment: g.queryComments(q),
-		Recv:    &poet.Param{Name: "q", Type: "*Queries"},
+		Recv:    &poet.Param{Name: "q", Type: "Queries", Pointer: true},
 		Name:    q.MethodName,
 		Params:  params,
 		Results: []poet.Param{{Type: "error"}},
-		Stmts: []poet.Stmt{poet.RawStmt{Code: body.String()}},
+		Stmts:   stmts,
 	})
 }
 
 func (g *CodeGenerator) addQueryExecRowsStd(f *poet.File, q Query) {
-	var body strings.Builder
-	g.writeQueryExecStdCall(&body, q, "result, err :=")
-
-	body.WriteString("\tif err != nil {\n")
-	if g.tctx.WrapErrors {
-		fmt.Fprintf(&body, "\t\treturn 0, fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
-	} else {
-		body.WriteString("\t\treturn 0, err\n")
-	}
-	body.WriteString("\t}\n")
-	body.WriteString("\treturn result.RowsAffected()\n")
-
 	params := g.buildQueryParams(q)
+
+	// Fall back to RawStmt for slice queries
+	if q.Arg.HasSqlcSlices() {
+		var body strings.Builder
+		g.writeQueryExecStdCall(&body, q, "result, err :=")
+		body.WriteString("\tif err != nil {\n")
+		if g.tctx.WrapErrors {
+			fmt.Fprintf(&body, "\t\treturn 0, fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
+		} else {
+			body.WriteString("\t\treturn 0, err\n")
+		}
+		body.WriteString("\t}\n")
+		body.WriteString("\treturn result.RowsAffected()\n")
+		f.Decls = append(f.Decls, poet.Func{
+			Comment: g.queryComments(q),
+			Recv:    &poet.Param{Name: "q", Type: "Queries", Pointer: true},
+			Name:    q.MethodName,
+			Params:  params,
+			Results: []poet.Param{{Type: "int64"}, {Type: "error"}},
+			Stmts:   []poet.Stmt{poet.RawStmt{Code: body.String()}},
+		})
+		return
+	}
+
+	var stmts []poet.Stmt
+
+	// result, err := <query call>
+	stmts = append(stmts, poet.Assign{
+		Left:  []string{"result", "err"},
+		Op:    ":=",
+		Right: []string{g.queryExecStdCallExpr(q)},
+	})
+
+	// if err != nil { return 0, err }
+	errReturn := g.wrapErrorReturn(q, "0")
+	stmts = append(stmts, poet.If{
+		Cond: "err != nil",
+		Body: []poet.Stmt{poet.Return{Values: errReturn}},
+	})
+
+	// return result.RowsAffected()
+	stmts = append(stmts, poet.Return{Values: []string{"result.RowsAffected()"}})
+
 	f.Decls = append(f.Decls, poet.Func{
 		Comment: g.queryComments(q),
-		Recv:    &poet.Param{Name: "q", Type: "*Queries"},
+		Recv:    &poet.Param{Name: "q", Type: "Queries", Pointer: true},
 		Name:    q.MethodName,
 		Params:  params,
 		Results: []poet.Param{{Type: "int64"}, {Type: "error"}},
-		Stmts: []poet.Stmt{poet.RawStmt{Code: body.String()}},
+		Stmts:   stmts,
 	})
 }
 
 func (g *CodeGenerator) addQueryExecLastIDStd(f *poet.File, q Query) {
-	var body strings.Builder
-	g.writeQueryExecStdCall(&body, q, "result, err :=")
-
-	body.WriteString("\tif err != nil {\n")
-	if g.tctx.WrapErrors {
-		fmt.Fprintf(&body, "\t\treturn 0, fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
-	} else {
-		body.WriteString("\t\treturn 0, err\n")
-	}
-	body.WriteString("\t}\n")
-	body.WriteString("\treturn result.LastInsertId()\n")
-
 	params := g.buildQueryParams(q)
+
+	// Fall back to RawStmt for slice queries
+	if q.Arg.HasSqlcSlices() {
+		var body strings.Builder
+		g.writeQueryExecStdCall(&body, q, "result, err :=")
+		body.WriteString("\tif err != nil {\n")
+		if g.tctx.WrapErrors {
+			fmt.Fprintf(&body, "\t\treturn 0, fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
+		} else {
+			body.WriteString("\t\treturn 0, err\n")
+		}
+		body.WriteString("\t}\n")
+		body.WriteString("\treturn result.LastInsertId()\n")
+		f.Decls = append(f.Decls, poet.Func{
+			Comment: g.queryComments(q),
+			Recv:    &poet.Param{Name: "q", Type: "Queries", Pointer: true},
+			Name:    q.MethodName,
+			Params:  params,
+			Results: []poet.Param{{Type: "int64"}, {Type: "error"}},
+			Stmts:   []poet.Stmt{poet.RawStmt{Code: body.String()}},
+		})
+		return
+	}
+
+	var stmts []poet.Stmt
+
+	// result, err := <query call>
+	stmts = append(stmts, poet.Assign{
+		Left:  []string{"result", "err"},
+		Op:    ":=",
+		Right: []string{g.queryExecStdCallExpr(q)},
+	})
+
+	// if err != nil { return 0, err }
+	errReturn := g.wrapErrorReturn(q, "0")
+	stmts = append(stmts, poet.If{
+		Cond: "err != nil",
+		Body: []poet.Stmt{poet.Return{Values: errReturn}},
+	})
+
+	// return result.LastInsertId()
+	stmts = append(stmts, poet.Return{Values: []string{"result.LastInsertId()"}})
+
 	f.Decls = append(f.Decls, poet.Func{
 		Comment: g.queryComments(q),
-		Recv:    &poet.Param{Name: "q", Type: "*Queries"},
+		Recv:    &poet.Param{Name: "q", Type: "Queries", Pointer: true},
 		Name:    q.MethodName,
 		Params:  params,
 		Results: []poet.Param{{Type: "int64"}, {Type: "error"}},
-		Stmts: []poet.Stmt{poet.RawStmt{Code: body.String()}},
+		Stmts:   stmts,
 	})
 }
 
 func (g *CodeGenerator) addQueryExecResultStd(f *poet.File, q Query) {
-	var body strings.Builder
+	params := g.buildQueryParams(q)
 
-	if g.tctx.WrapErrors {
-		g.writeQueryExecStdCall(&body, q, "result, err :=")
-		body.WriteString("\tif err != nil {\n")
-		fmt.Fprintf(&body, "\t\terr = fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
-		body.WriteString("\t}\n")
-		body.WriteString("\treturn result, err\n")
-	} else {
-		g.writeQueryExecStdCall(&body, q, "return")
+	// Fall back to RawStmt for slice queries
+	if q.Arg.HasSqlcSlices() {
+		var body strings.Builder
+		if g.tctx.WrapErrors {
+			g.writeQueryExecStdCall(&body, q, "result, err :=")
+			body.WriteString("\tif err != nil {\n")
+			fmt.Fprintf(&body, "\t\terr = fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
+			body.WriteString("\t}\n")
+			body.WriteString("\treturn result, err\n")
+		} else {
+			g.writeQueryExecStdCall(&body, q, "return")
+		}
+		f.Decls = append(f.Decls, poet.Func{
+			Comment: g.queryComments(q),
+			Recv:    &poet.Param{Name: "q", Type: "Queries", Pointer: true},
+			Name:    q.MethodName,
+			Params:  params,
+			Results: []poet.Param{{Type: "sql.Result"}, {Type: "error"}},
+			Stmts:   []poet.Stmt{poet.RawStmt{Code: body.String()}},
+		})
+		return
 	}
 
-	params := g.buildQueryParams(q)
+	var stmts []poet.Stmt
+
+	if g.tctx.WrapErrors {
+		// result, err := <query call>
+		stmts = append(stmts, poet.Assign{
+			Left:  []string{"result", "err"},
+			Op:    ":=",
+			Right: []string{g.queryExecStdCallExpr(q)},
+		})
+
+		// if err != nil { err = fmt.Errorf(...) }
+		stmts = append(stmts, poet.If{
+			Cond: "err != nil",
+			Body: []poet.Stmt{
+				poet.Assign{
+					Left:  []string{"err"},
+					Op:    "=",
+					Right: []string{fmt.Sprintf(`fmt.Errorf("query %s: %%w", err)`, q.MethodName)},
+				},
+			},
+		})
+
+		// return result, err
+		stmts = append(stmts, poet.Return{Values: []string{"result", "err"}})
+	} else {
+		// return <query call>
+		stmts = append(stmts, poet.Return{Values: []string{g.queryExecStdCallExpr(q)}})
+	}
+
 	f.Decls = append(f.Decls, poet.Func{
 		Comment: g.queryComments(q),
-		Recv:    &poet.Param{Name: "q", Type: "*Queries"},
+		Recv:    &poet.Param{Name: "q", Type: "Queries", Pointer: true},
 		Name:    q.MethodName,
 		Params:  params,
 		Results: []poet.Param{{Type: "sql.Result"}, {Type: "error"}},
-		Stmts: []poet.Stmt{poet.RawStmt{Code: body.String()}},
+		Stmts:   stmts,
 	})
 }
 
@@ -947,6 +1217,16 @@ func (g *CodeGenerator) writeQueryExecStdCall(body *strings.Builder, q Query, re
 		return
 	}
 
+	fmt.Fprintf(body, "\t%s %s\n", retval, g.queryExecStdCallExpr(q))
+}
+
+// queryExecStdCallExpr returns the method call expression for a query.
+func (g *CodeGenerator) queryExecStdCallExpr(q Query) string {
+	db := "q.db"
+	if g.tctx.EmitMethodsWithDBArgument {
+		db = "db"
+	}
+
 	var method string
 	switch q.Cmd {
 	case ":one":
@@ -969,19 +1249,15 @@ func (g *CodeGenerator) writeQueryExecStdCall(body *strings.Builder, q Query, re
 		}
 	}
 
-	if g.tctx.EmitPreparedQueries {
-		params := q.Arg.Params()
-		if params != "" {
-			params = ", " + params
-		}
-		fmt.Fprintf(body, "\t%s %s(ctx, q.%s, %s%s)\n", retval, method, q.FieldName, q.ConstantName, params)
-	} else {
-		params := q.Arg.Params()
-		if params != "" {
-			params = ", " + params
-		}
-		fmt.Fprintf(body, "\t%s %s(ctx, %s%s)\n", retval, method, q.ConstantName, params)
+	params := q.Arg.Params()
+	if params != "" {
+		params = ", " + params
 	}
+
+	if g.tctx.EmitPreparedQueries {
+		return fmt.Sprintf("%s(ctx, q.%s, %s%s)", method, q.FieldName, q.ConstantName, params)
+	}
+	return fmt.Sprintf("%s(ctx, %s%s)", method, q.ConstantName, params)
 }
 
 func (g *CodeGenerator) writeQuerySliceExec(body *strings.Builder, q Query, retval, db string, isPGX bool) {

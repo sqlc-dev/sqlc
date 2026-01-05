@@ -313,6 +313,8 @@ func renderStmt(b *strings.Builder, s Stmt, indent string) {
 		renderAssign(b, s, indent)
 	case CallStmt:
 		renderCallStmt(b, s, indent)
+	case VarDecl:
+		renderVarDecl(b, s, indent)
 	}
 }
 
@@ -440,5 +442,20 @@ func renderAssign(b *strings.Builder, a Assign, indent string) {
 func renderCallStmt(b *strings.Builder, c CallStmt, indent string) {
 	b.WriteString(indent)
 	b.WriteString(c.Call)
+	b.WriteString("\n")
+}
+
+func renderVarDecl(b *strings.Builder, v VarDecl, indent string) {
+	b.WriteString(indent)
+	b.WriteString("var ")
+	b.WriteString(v.Name)
+	if v.Type != "" {
+		b.WriteString(" ")
+		b.WriteString(v.Type)
+	}
+	if v.Value != "" {
+		b.WriteString(" = ")
+		b.WriteString(v.Value)
+	}
 	b.WriteString("\n")
 }
