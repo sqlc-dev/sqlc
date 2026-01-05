@@ -1053,21 +1053,37 @@ func (g *CodeGenerator) addQueryExecStd(f *poet.File, q Query) {
 
 	// Fall back to RawStmt for slice queries (complex handling)
 	if q.Arg.HasSqlcSlices() {
-		var body strings.Builder
-		g.writeQueryExecStdCall(&body, q, "_, err :=")
+		var stmts []poet.Stmt
+
+		// Query exec call (complex dynamic SQL handling)
+		var queryExec strings.Builder
+		g.writeQueryExecStdCall(&queryExec, q, "_, err :=")
+		stmts = append(stmts, poet.RawStmt{Code: queryExec.String()})
+
+		// if err != nil { err = fmt.Errorf(...) }
 		if g.tctx.WrapErrors {
-			body.WriteString("\tif err != nil {\n")
-			fmt.Fprintf(&body, "\t\terr = fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
-			body.WriteString("\t}\n")
+			stmts = append(stmts, poet.If{
+				Cond: "err != nil",
+				Body: []poet.Stmt{
+					poet.Assign{
+						Left:  []string{"err"},
+						Op:    "=",
+						Right: []string{fmt.Sprintf(`fmt.Errorf("query %s: %%w", err)`, q.MethodName)},
+					},
+				},
+			})
 		}
-		body.WriteString("\treturn err\n")
+
+		// return err
+		stmts = append(stmts, poet.Return{Values: []string{"err"}})
+
 		f.Decls = append(f.Decls, poet.Func{
 			Comment: g.queryComments(q),
 			Recv:    &poet.Param{Name: "q", Type: "Queries", Pointer: true},
 			Name:    q.MethodName,
 			Params:  params,
 			Results: []poet.Param{{Type: "error"}},
-			Stmts:   []poet.Stmt{poet.RawStmt{Code: body.String()}},
+			Stmts:   stmts,
 		})
 		return
 	}
@@ -1108,23 +1124,30 @@ func (g *CodeGenerator) addQueryExecRowsStd(f *poet.File, q Query) {
 
 	// Fall back to RawStmt for slice queries
 	if q.Arg.HasSqlcSlices() {
-		var body strings.Builder
-		g.writeQueryExecStdCall(&body, q, "result, err :=")
-		body.WriteString("\tif err != nil {\n")
-		if g.tctx.WrapErrors {
-			fmt.Fprintf(&body, "\t\treturn 0, fmt.Errorf(\"query %s: %%w\", err)\n", q.MethodName)
-		} else {
-			body.WriteString("\t\treturn 0, err\n")
-		}
-		body.WriteString("\t}\n")
-		body.WriteString("\treturn result.RowsAffected()\n")
+		var stmts []poet.Stmt
+
+		// Query exec call (complex dynamic SQL handling)
+		var queryExec strings.Builder
+		g.writeQueryExecStdCall(&queryExec, q, "result, err :=")
+		stmts = append(stmts, poet.RawStmt{Code: queryExec.String()})
+
+		// if err != nil { return 0, err }
+		errReturn := g.wrapErrorReturn(q, "0")
+		stmts = append(stmts, poet.If{
+			Cond: "err != nil",
+			Body: []poet.Stmt{poet.Return{Values: errReturn}},
+		})
+
+		// return result.RowsAffected()
+		stmts = append(stmts, poet.Return{Values: []string{"result.RowsAffected()"}})
+
 		f.Decls = append(f.Decls, poet.Func{
 			Comment: g.queryComments(q),
 			Recv:    &poet.Param{Name: "q", Type: "Queries", Pointer: true},
 			Name:    q.MethodName,
 			Params:  params,
 			Results: []poet.Param{{Type: "int64"}, {Type: "error"}},
-			Stmts:   []poet.Stmt{poet.RawStmt{Code: body.String()}},
+			Stmts:   stmts,
 		})
 		return
 	}
