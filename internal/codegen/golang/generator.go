@@ -421,13 +421,19 @@ func (g *CodeGenerator) addModelsCode(f *poet.File) {
 						{
 							Values: []string{"[]byte"},
 							Body: []poet.Stmt{
-								poet.RawStmt{Code: fmt.Sprintf("\t\t*e = %s(s)\n", enum.Name)},
+								poet.Assign{
+									Left: []string{"*e"}, Op: "=",
+									Right: []string{fmt.Sprintf("%s(s)", enum.Name)},
+								},
 							},
 						},
 						{
 							Values: []string{"string"},
 							Body: []poet.Stmt{
-								poet.RawStmt{Code: fmt.Sprintf("\t\t*e = %s(s)\n", enum.Name)},
+								poet.Assign{
+									Left: []string{"*e"}, Op: "=",
+									Right: []string{fmt.Sprintf("%s(s)", enum.Name)},
+								},
 							},
 						},
 						{
@@ -479,11 +485,15 @@ func (g *CodeGenerator) addModelsCode(f *poet.File) {
 				poet.If{
 					Cond: "value == nil",
 					Body: []poet.Stmt{
-						poet.RawStmt{Code: fmt.Sprintf("\t\tns.%s, ns.Valid = \"\", false\n", enum.Name)},
+						poet.Assign{
+							Left:  []string{"ns." + enum.Name, "ns.Valid"},
+							Op:    "=",
+							Right: []string{`""`, "false"},
+						},
 						poet.Return{Values: []string{"nil"}},
 					},
 				},
-				poet.RawStmt{Code: "\tns.Valid = true\n"},
+				poet.Assign{Left: []string{"ns.Valid"}, Op: "=", Right: []string{"true"}},
 				poet.Return{Values: []string{fmt.Sprintf("ns.%s.Scan(value)", enum.Name)}},
 			},
 		})
@@ -1352,11 +1362,14 @@ func (g *CodeGenerator) addCopyFromCodePGX(f *poet.File) {
 				poet.If{
 					Cond: "!r.skippedFirstNextCall",
 					Body: []poet.Stmt{
-						poet.RawStmt{Code: "\t\tr.skippedFirstNextCall = true\n"},
+						poet.Assign{
+							Left: []string{"r.skippedFirstNextCall"}, Op: "=",
+							Right: []string{"true"},
+						},
 						poet.Return{Values: []string{"true"}},
 					},
 				},
-				poet.RawStmt{Code: "\tr.rows = r.rows[1:]\n"},
+				poet.Assign{Left: []string{"r.rows"}, Op: "=", Right: []string{"r.rows[1:]"}},
 				poet.Return{Values: []string{"len(r.rows) > 0"}},
 			},
 		})
@@ -1697,7 +1710,7 @@ func (g *CodeGenerator) addBatchCodePGX(f *poet.File) {
 			Name:    "Close",
 			Results: []poet.Param{{Type: "error"}},
 			Stmts: []poet.Stmt{
-				poet.RawStmt{Code: "\tb.closed = true\n"},
+				poet.Assign{Left: []string{"b.closed"}, Op: "=", Right: []string{"true"}},
 				poet.Return{Values: []string{"b.br.Close()"}},
 			},
 		})

@@ -307,6 +307,12 @@ func renderStmt(b *strings.Builder, s Stmt, indent string) {
 		renderIf(b, s, indent)
 	case Switch:
 		renderSwitch(b, s, indent)
+	case Defer:
+		renderDefer(b, s, indent)
+	case Assign:
+		renderAssign(b, s, indent)
+	case CallStmt:
+		renderCallStmt(b, s, indent)
 	}
 }
 
@@ -402,4 +408,37 @@ func renderSwitch(b *strings.Builder, s Switch, indent string) {
 	}
 	b.WriteString(indent)
 	b.WriteString("}\n")
+}
+
+func renderDefer(b *strings.Builder, d Defer, indent string) {
+	b.WriteString(indent)
+	b.WriteString("defer ")
+	b.WriteString(d.Call)
+	b.WriteString("\n")
+}
+
+func renderAssign(b *strings.Builder, a Assign, indent string) {
+	b.WriteString(indent)
+	for i, l := range a.Left {
+		if i > 0 {
+			b.WriteString(", ")
+		}
+		b.WriteString(l)
+	}
+	b.WriteString(" ")
+	b.WriteString(a.Op)
+	b.WriteString(" ")
+	for i, r := range a.Right {
+		if i > 0 {
+			b.WriteString(", ")
+		}
+		b.WriteString(r)
+	}
+	b.WriteString("\n")
+}
+
+func renderCallStmt(b *strings.Builder, c CallStmt, indent string) {
+	b.WriteString(indent)
+	b.WriteString(c.Call)
+	b.WriteString("\n")
 }

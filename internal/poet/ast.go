@@ -188,3 +188,26 @@ type Case struct {
 	Values []string // Case values (empty for default case)
 	Body   []Stmt
 }
+
+// Defer represents a defer statement.
+type Defer struct {
+	Call string // The function call to defer
+}
+
+func (Defer) isStmt() {}
+
+// Assign represents an assignment statement.
+type Assign struct {
+	Left  []string // Left-hand side (variable names)
+	Op    string   // Assignment operator: "=", ":=", "+=", etc.
+	Right []string // Right-hand side (expressions)
+}
+
+func (Assign) isStmt() {}
+
+// CallStmt represents a function call as a statement.
+type CallStmt struct {
+	Call string // The function call expression
+}
+
+func (CallStmt) isStmt() {}
