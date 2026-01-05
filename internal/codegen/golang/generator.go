@@ -146,41 +146,60 @@ func (g *CodeGenerator) addDBCodeStd(f *poet.File) {
 
 	// Prepare and Close functions for prepared queries
 	if g.tctx.EmitPreparedQueries {
-		var prepareBody strings.Builder
-		prepareBody.WriteString("\tq := Queries{db: db}\n")
-		prepareBody.WriteString("\tvar err error\n")
+		// Build Prepare function statements
+		var prepareStmts []poet.Stmt
+		prepareStmts = append(prepareStmts, poet.Assign{
+			Left:  []string{"q"},
+			Op:    ":=",
+			Right: []string{poet.StructLit{Type: "Queries", Fields: [][2]string{{"db", "db"}}}.Render()},
+		})
+		prepareStmts = append(prepareStmts, poet.VarDecl{Name: "err", Type: "error"})
 		if len(g.tctx.GoQueries) == 0 {
-			prepareBody.WriteString("\t_ = err\n")
+			prepareStmts = append(prepareStmts, poet.Assign{Left: []string{"_"}, Op: "=", Right: []string{"err"}})
 		}
 		for _, query := range g.tctx.GoQueries {
-			fmt.Fprintf(&prepareBody, "\tif q.%s, err = db.PrepareContext(ctx, %s); err != nil {\n", query.FieldName, query.ConstantName)
-			fmt.Fprintf(&prepareBody, "\t\treturn nil, fmt.Errorf(\"error preparing query %s: %%w\", err)\n", query.MethodName)
-			prepareBody.WriteString("\t}\n")
+			prepareStmts = append(prepareStmts, poet.If{
+				Init: fmt.Sprintf("q.%s, err = db.PrepareContext(ctx, %s)", query.FieldName, query.ConstantName),
+				Cond: "err != nil",
+				Body: []poet.Stmt{poet.Return{Values: []string{
+					"nil",
+					fmt.Sprintf(`fmt.Errorf("error preparing query %s: %%w", err)`, query.MethodName),
+				}}},
+			})
 		}
-		prepareBody.WriteString("\treturn &q, nil\n")
+		prepareStmts = append(prepareStmts, poet.Return{Values: []string{"&q", "nil"}})
 
 		f.Decls = append(f.Decls, poet.Func{
 			Name:    "Prepare",
 			Params:  []poet.Param{{Name: "ctx", Type: "context.Context"}, {Name: "db", Type: "DBTX"}},
 			Results: []poet.Param{{Type: "*Queries"}, {Type: "error"}},
-			Stmts: []poet.Stmt{poet.RawStmt{Code: prepareBody.String()}},
+			Stmts:   prepareStmts,
 		})
 
-		var closeBody strings.Builder
-		closeBody.WriteString("\tvar err error\n")
+		// Build Close function statements
+		var closeStmts []poet.Stmt
+		closeStmts = append(closeStmts, poet.VarDecl{Name: "err", Type: "error"})
 		for _, query := range g.tctx.GoQueries {
-			fmt.Fprintf(&closeBody, "\tif q.%s != nil {\n", query.FieldName)
-			fmt.Fprintf(&closeBody, "\t\tif cerr := q.%s.Close(); cerr != nil {\n", query.FieldName)
-			fmt.Fprintf(&closeBody, "\t\t\terr = fmt.Errorf(\"error closing %s: %%w\", cerr)\n", query.FieldName)
-			closeBody.WriteString("\t\t}\n\t}\n")
+			closeStmts = append(closeStmts, poet.If{
+				Cond: fmt.Sprintf("q.%s != nil", query.FieldName),
+				Body: []poet.Stmt{poet.If{
+					Init: fmt.Sprintf("cerr := q.%s.Close()", query.FieldName),
+					Cond: "cerr != nil",
+					Body: []poet.Stmt{poet.Assign{
+						Left:  []string{"err"},
+						Op:    "=",
+						Right: []string{fmt.Sprintf(`fmt.Errorf("error closing %s: %%w", cerr)`, query.FieldName)},
+					}},
+				}},
+			})
 		}
-		closeBody.WriteString("\treturn err\n")
+		closeStmts = append(closeStmts, poet.Return{Values: []string{"err"}})
 
 		f.Decls = append(f.Decls, poet.Func{
 			Recv:    &poet.Param{Name: "q", Type: "*Queries"},
 			Name:    "Close",
 			Results: []poet.Param{{Type: "error"}},
-			Stmts: []poet.Stmt{poet.RawStmt{Code: closeBody.String()}},
+			Stmts:   closeStmts,
 		})
 
 		// Helper functions
