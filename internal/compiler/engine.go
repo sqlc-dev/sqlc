@@ -8,6 +8,8 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/dbmanager"
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
+	"github.com/sqlc-dev/sqlc/internal/engine/mssql"
+	mssqlanalyze "github.com/sqlc-dev/sqlc/internal/engine/mssql/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	pganalyze "github.com/sqlc-dev/sqlc/internal/engine/postgresql/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
@@ -111,6 +113,25 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 				)
 			}
 		}
+	case config.EngineMSSQL:
+		parser := mssql.NewParser()
+		c.parser = parser
+		c.catalog = mssql.NewCatalog()
+		c.selector = newDefaultSelector()
+
+		// MSSQL only supports database-only mode
+		if conf.Database == nil {
+			return nil, fmt.Errorf("mssql engine requires database configuration")
+		}
+		if conf.Database.URI == "" && !conf.Database.Managed {
+			return nil, fmt.Errorf("mssql engine requires database.uri or database.managed")
+		}
+		c.databaseOnlyMode = true
+		// Create the MSSQL analyzer (implements Analyzer interface)
+		mssqlAnalyzer := mssqlanalyze.New(*conf.Database)
+		c.analyzer = analyzer.Cached(mssqlAnalyzer, combo.Global, *conf.Database)
+		// Create the expander using the analyzer as the column getter
+		c.expander = expander.New(c.analyzer, parser, parser)
 	default:
 		return nil, fmt.Errorf("unknown engine: %s", conf.Engine)
 	}

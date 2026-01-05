@@ -113,7 +113,7 @@ func TestReplay(t *testing.T) {
 	// t.Parallel()
 	ctx := context.Background()
 
-	var mysqlURI, postgresURI string
+	var mysqlURI, postgresURI, mssqlURI string
 
 	// First, check environment variables
 	if uri := os.Getenv("POSTGRESQL_SERVER_URI"); uri != "" {
@@ -122,9 +122,12 @@ func TestReplay(t *testing.T) {
 	if uri := os.Getenv("MYSQL_SERVER_URI"); uri != "" {
 		mysqlURI = uri
 	}
+	if uri := os.Getenv("MSSQL_SERVER_URI"); uri != "" {
+		mssqlURI = uri
+	}
 
 	// Try Docker for any missing databases
-	if postgresURI == "" || mysqlURI == "" {
+	if postgresURI == "" || mysqlURI == "" || mssqlURI == "" {
 		if err := docker.Installed(); err == nil {
 			if postgresURI == "" {
 				host, err := docker.StartPostgreSQLServer(ctx)
@@ -142,11 +145,19 @@ func TestReplay(t *testing.T) {
 					mysqlURI = host
 				}
 			}
+			if mssqlURI == "" {
+				host, err := docker.StartMSSQLServer(ctx)
+				if err != nil {
+					t.Logf("docker mssql startup failed: %s", err)
+				} else {
+					mssqlURI = host
+				}
+			}
 		}
 	}
 
 	// Try native installation for any missing databases (Linux only)
-	if postgresURI == "" || mysqlURI == "" {
+	if postgresURI == "" || mysqlURI == "" || mssqlURI == "" {
 		if err := native.Supported(); err == nil {
 			if postgresURI == "" {
 				host, err := native.StartPostgreSQLServer(ctx)
@@ -164,12 +175,21 @@ func TestReplay(t *testing.T) {
 					mysqlURI = host
 				}
 			}
+			if mssqlURI == "" {
+				host, err := native.StartMSSQLServer(ctx)
+				if err != nil {
+					t.Logf("native mssql startup failed: %s", err)
+				} else {
+					mssqlURI = host
+				}
+			}
 		}
 	}
 
 	// Log which databases are available
 	t.Logf("PostgreSQL available: %v (URI: %s)", postgresURI != "", postgresURI)
 	t.Logf("MySQL available: %v (URI: %s)", mysqlURI != "", mysqlURI)
+	t.Logf("MSSQL available: %v (URI: %s)", mssqlURI != "", mssqlURI)
 
 	contexts := map[string]textContext{
 		"base": {
@@ -191,6 +211,11 @@ func TestReplay(t *testing.T) {
 							Engine: config.EngineMySQL,
 							URI:    mysqlURI,
 						},
+						{
+							Name:   "mssql",
+							Engine: config.EngineMSSQL,
+							URI:    mssqlURI,
+						},
 					}
 
 					for i := range c.SQL {
@@ -207,6 +232,10 @@ func TestReplay(t *testing.T) {
 							c.SQL[i].Database = &config.Database{
 								Managed: true,
 							}
+						case config.EngineMSSQL:
+							c.SQL[i].Database = &config.Database{
+								Managed: true,
+							}
 						default:
 							// pass
 						}
@@ -215,7 +244,7 @@ func TestReplay(t *testing.T) {
 			},
 			Enabled: func() bool {
 				// Enabled if at least one database URI is available
-				return postgresURI != "" || mysqlURI != ""
+				return postgresURI != "" || mysqlURI != "" || mssqlURI != ""
 			},
 		},
 	}
