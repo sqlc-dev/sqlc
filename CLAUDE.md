@@ -339,6 +339,25 @@ docker compose up -d
 3. **Use specific package tests:** Faster iteration during development
 4. **Start databases early:** `docker compose up -d` before running integration tests
 5. **Read existing tests:** Good examples in `/internal/engine/postgresql/*_test.go`
+6. **Always run go fmt:** Format code before committing (see Code Formatting below)
+
+## Code Formatting
+
+**Always run `go fmt` before committing changes.** This ensures consistent code style across the codebase.
+
+```bash
+# Format specific packages
+go fmt ./internal/codegen/golang/...
+go fmt ./internal/poet/...
+
+# Format all packages
+go fmt ./...
+```
+
+For the code generation packages specifically:
+```bash
+go fmt ./internal/codegen/golang/... ./internal/poet/...
+```
 
 ## Git Workflow
 
