@@ -79,8 +79,7 @@ type Func struct {
 	Name    string
 	Params  []Param
 	Results []Param
-	Body    string // Raw body code (used if Stmts is empty)
-	Stmts   []Stmt // Structured statements (preferred over Body)
+	Stmts   []Stmt
 }
 
 func (Func) isDecl() {}
@@ -174,3 +173,18 @@ type If struct {
 }
 
 func (If) isStmt() {}
+
+// Switch represents a switch statement.
+type Switch struct {
+	Init  string // Optional init statement
+	Expr  string // Expression to switch on (empty for type switch or bool switch)
+	Cases []Case
+}
+
+func (Switch) isStmt() {}
+
+// Case represents a case clause in a switch statement.
+type Case struct {
+	Values []string // Case values (empty for default case)
+	Body   []Stmt
+}

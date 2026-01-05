@@ -254,11 +254,7 @@ func renderFunc(b *strings.Builder, f Func) {
 		}
 	}
 	b.WriteString(" {\n")
-	if len(f.Stmts) > 0 {
-		renderStmts(b, f.Stmts, "\t")
-	} else {
-		b.WriteString(f.Body)
-	}
+	renderStmts(b, f.Stmts, "\t")
 	b.WriteString("}\n")
 }
 
@@ -309,6 +305,8 @@ func renderStmt(b *strings.Builder, s Stmt, indent string) {
 		renderFor(b, s, indent)
 	case If:
 		renderIf(b, s, indent)
+	case Switch:
+		renderSwitch(b, s, indent)
 	}
 }
 
@@ -368,4 +366,33 @@ func renderIf(b *strings.Builder, i If, indent string) {
 		b.WriteString("}")
 	}
 	b.WriteString("\n")
+}
+
+func renderSwitch(b *strings.Builder, s Switch, indent string) {
+	b.WriteString(indent)
+	b.WriteString("switch ")
+	if s.Init != "" {
+		b.WriteString(s.Init)
+		b.WriteString("; ")
+	}
+	b.WriteString(s.Expr)
+	b.WriteString(" {\n")
+	for _, c := range s.Cases {
+		b.WriteString(indent)
+		if len(c.Values) == 0 {
+			b.WriteString("default:\n")
+		} else {
+			b.WriteString("case ")
+			for i, v := range c.Values {
+				if i > 0 {
+					b.WriteString(", ")
+				}
+				b.WriteString(v)
+			}
+			b.WriteString(":\n")
+		}
+		renderStmts(b, c.Body, indent+"\t")
+	}
+	b.WriteString(indent)
+	b.WriteString("}\n")
 }
