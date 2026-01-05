@@ -74,20 +74,22 @@ func (TypeDef) isDecl() {}
 
 // Func represents a function declaration.
 type Func struct {
-	Comment  string
-	Recv     *Param   // nil for non-methods
-	Name     string
-	Params   []Param
-	Results  []Param
-	Body     string   // Raw body code
+	Comment string
+	Recv    *Param // nil for non-methods
+	Name    string
+	Params  []Param
+	Results []Param
+	Body    string // Raw body code (used if Stmts is empty)
+	Stmts   []Stmt // Structured statements (preferred over Body)
 }
 
 func (Func) isDecl() {}
 
 // Param represents a function parameter or result.
 type Param struct {
-	Name string
-	Type string
+	Name    string
+	Type    string
+	Pointer bool // If true, type is rendered as *Type
 }
 
 // TypeExpr represents a type expression.
@@ -132,3 +134,43 @@ type TypeName struct {
 }
 
 func (TypeName) isTypeExpr() {}
+
+// Stmt represents a statement in a function body.
+type Stmt interface {
+	isStmt()
+}
+
+// RawStmt is raw Go code as a statement.
+type RawStmt struct {
+	Code string
+}
+
+func (RawStmt) isStmt() {}
+
+// Return represents a return statement.
+type Return struct {
+	Values []string // Expressions to return
+}
+
+func (Return) isStmt() {}
+
+// For represents a for loop.
+type For struct {
+	Init  string // e.g., "i := 0"
+	Cond  string // e.g., "i < 10"
+	Post  string // e.g., "i++"
+	Range string // If set, renders as "for Range {" (e.g., "_, v := range items")
+	Body  []Stmt
+}
+
+func (For) isStmt() {}
+
+// If represents an if statement.
+type If struct {
+	Init string // Optional init statement (e.g., "err := foo()")
+	Cond string // Condition expression
+	Body []Stmt
+	Else []Stmt // Optional else body
+}
+
+func (If) isStmt() {}

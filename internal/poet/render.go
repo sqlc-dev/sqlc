@@ -230,6 +230,9 @@ func renderFunc(b *strings.Builder, f Func) {
 		b.WriteString("(")
 		b.WriteString(f.Recv.Name)
 		b.WriteString(" ")
+		if f.Recv.Pointer {
+			b.WriteString("*")
+		}
 		b.WriteString(f.Recv.Type)
 		b.WriteString(") ")
 	}
@@ -240,6 +243,9 @@ func renderFunc(b *strings.Builder, f Func) {
 	if len(f.Results) > 0 {
 		b.WriteString(" ")
 		if len(f.Results) == 1 && f.Results[0].Name == "" {
+			if f.Results[0].Pointer {
+				b.WriteString("*")
+			}
 			b.WriteString(f.Results[0].Type)
 		} else {
 			b.WriteString("(")
@@ -248,7 +254,11 @@ func renderFunc(b *strings.Builder, f Func) {
 		}
 	}
 	b.WriteString(" {\n")
-	b.WriteString(f.Body)
+	if len(f.Stmts) > 0 {
+		renderStmts(b, f.Stmts, "\t")
+	} else {
+		b.WriteString(f.Body)
+	}
 	b.WriteString("}\n")
 }
 
@@ -260,6 +270,9 @@ func renderParams(b *strings.Builder, params []Param) {
 		if p.Name != "" {
 			b.WriteString(p.Name)
 			b.WriteString(" ")
+		}
+		if p.Pointer {
+			b.WriteString("*")
 		}
 		b.WriteString(p.Type)
 	}
@@ -278,4 +291,81 @@ func writeComment(b *strings.Builder, comment, indent string) {
 		}
 		b.WriteString("\n")
 	}
+}
+
+func renderStmts(b *strings.Builder, stmts []Stmt, indent string) {
+	for _, s := range stmts {
+		renderStmt(b, s, indent)
+	}
+}
+
+func renderStmt(b *strings.Builder, s Stmt, indent string) {
+	switch s := s.(type) {
+	case RawStmt:
+		b.WriteString(s.Code)
+	case Return:
+		renderReturn(b, s, indent)
+	case For:
+		renderFor(b, s, indent)
+	case If:
+		renderIf(b, s, indent)
+	}
+}
+
+func renderReturn(b *strings.Builder, r Return, indent string) {
+	b.WriteString(indent)
+	b.WriteString("return")
+	if len(r.Values) > 0 {
+		b.WriteString(" ")
+		for i, v := range r.Values {
+			if i > 0 {
+				b.WriteString(", ")
+			}
+			b.WriteString(v)
+		}
+	}
+	b.WriteString("\n")
+}
+
+func renderFor(b *strings.Builder, f For, indent string) {
+	b.WriteString(indent)
+	b.WriteString("for ")
+	if f.Range != "" {
+		b.WriteString(f.Range)
+	} else {
+		if f.Init != "" {
+			b.WriteString(f.Init)
+		}
+		b.WriteString("; ")
+		b.WriteString(f.Cond)
+		b.WriteString("; ")
+		if f.Post != "" {
+			b.WriteString(f.Post)
+		}
+	}
+	b.WriteString(" {\n")
+	renderStmts(b, f.Body, indent+"\t")
+	b.WriteString(indent)
+	b.WriteString("}\n")
+}
+
+func renderIf(b *strings.Builder, i If, indent string) {
+	b.WriteString(indent)
+	b.WriteString("if ")
+	if i.Init != "" {
+		b.WriteString(i.Init)
+		b.WriteString("; ")
+	}
+	b.WriteString(i.Cond)
+	b.WriteString(" {\n")
+	renderStmts(b, i.Body, indent+"\t")
+	b.WriteString(indent)
+	b.WriteString("}")
+	if len(i.Else) > 0 {
+		b.WriteString(" else {\n")
+		renderStmts(b, i.Else, indent+"\t")
+		b.WriteString(indent)
+		b.WriteString("}")
+	}
+	b.WriteString("\n")
 }
