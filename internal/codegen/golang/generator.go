@@ -349,9 +349,21 @@ func (g *CodeGenerator) addDBCodeStd(f *poet.File) {
 func (g *CodeGenerator) addDBCodePGX(f *poet.File) {
 	// DBTX interface
 	methods := []poet.Method{
-		{Name: "Exec", Params: []poet.Param{{Name: "", Type: "context.Context"}, {Name: "", Type: "string"}, {Name: "", Type: "...interface{}"}}, Results: []poet.Param{{Type: "pgconn.CommandTag"}, {Type: "error"}}},
-		{Name: "Query", Params: []poet.Param{{Name: "", Type: "context.Context"}, {Name: "", Type: "string"}, {Name: "", Type: "...interface{}"}}, Results: []poet.Param{{Type: "pgx.Rows"}, {Type: "error"}}},
-		{Name: "QueryRow", Params: []poet.Param{{Name: "", Type: "context.Context"}, {Name: "", Type: "string"}, {Name: "", Type: "...interface{}"}}, Results: []poet.Param{{Type: "pgx.Row"}}},
+		{
+			Name:    "Exec",
+			Params:  []poet.Param{{Type: "context.Context"}, {Type: "string"}, {Type: "...interface{}"}},
+			Results: []poet.Param{{Type: "pgconn.CommandTag"}, {Type: "error"}},
+		},
+		{
+			Name:    "Query",
+			Params:  []poet.Param{{Type: "context.Context"}, {Type: "string"}, {Type: "...interface{}"}},
+			Results: []poet.Param{{Type: "pgx.Rows"}, {Type: "error"}},
+		},
+		{
+			Name:    "QueryRow",
+			Params:  []poet.Param{{Type: "context.Context"}, {Type: "string"}, {Type: "...interface{}"}},
+			Results: []poet.Param{{Type: "pgx.Row"}},
+		},
 	}
 	if g.tctx.UsesCopyFrom {
 		methods = append(methods, poet.Method{
