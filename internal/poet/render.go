@@ -295,6 +295,13 @@ func renderStmts(b *strings.Builder, stmts []Stmt, indent string) {
 	}
 }
 
+// RenderStmt renders a single statement to a string with the given indentation.
+func RenderStmt(s Stmt, indent string) string {
+	var b strings.Builder
+	renderStmt(&b, s, indent)
+	return b.String()
+}
+
 func renderStmt(b *strings.Builder, s Stmt, indent string) {
 	switch s := s.(type) {
 	case RawStmt:

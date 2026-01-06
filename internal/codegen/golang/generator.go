@@ -1408,37 +1408,56 @@ func (g *CodeGenerator) queryExecStdCallExpr(q Query) string {
 	return fmt.Sprintf("%s(ctx, %s%s)", method, q.ConstantName, params)
 }
 
-func (g *CodeGenerator) writeQuerySliceExec(body *strings.Builder, q Query, retval, db string, isPGX bool) {
-	body.WriteString("\tquery := " + q.ConstantName + "\n")
-	body.WriteString("\tvar queryParams []interface{}\n")
+func (g *CodeGenerator) buildQuerySliceExecStmts(q Query, retval, db string) []poet.Stmt {
+	var stmts []poet.Stmt
+
+	stmts = append(stmts, poet.Assign{
+		Left: []string{"query"}, Op: ":=", Right: []string{q.ConstantName},
+	})
+	stmts = append(stmts, poet.VarDecl{Name: "queryParams", Type: "[]interface{}"})
+
+	// Helper to build slice handling statements
+	buildSliceHandling := func(varName, colName string) poet.Stmt {
+		return poet.If{
+			Cond: fmt.Sprintf("len(%s) > 0", varName),
+			Body: []poet.Stmt{
+				poet.For{
+					Range: fmt.Sprintf("_, v := range %s", varName),
+					Body: []poet.Stmt{
+						poet.Assign{
+							Left: []string{"queryParams"}, Op: "=",
+							Right: []string{"append(queryParams, v)"},
+						},
+					},
+				},
+				poet.Assign{
+					Left: []string{"query"}, Op: "=",
+					Right: []string{fmt.Sprintf(`strings.Replace(query, "/*SLICE:%s*/?", strings.Repeat(",?", len(%s))[1:], 1)`, colName, varName)},
+				},
+			},
+			Else: []poet.Stmt{
+				poet.Assign{
+					Left: []string{"query"}, Op: "=",
+					Right: []string{fmt.Sprintf(`strings.Replace(query, "/*SLICE:%s*/?", "NULL", 1)`, colName)},
+				},
+			},
+		}
+	}
 
 	if q.Arg.Struct != nil {
 		for _, fld := range q.Arg.Struct.Fields {
 			varName := q.Arg.VariableForField(fld)
 			if fld.HasSqlcSlice() {
-				fmt.Fprintf(body, "\tif len(%s) > 0 {\n", varName)
-				fmt.Fprintf(body, "\t\tfor _, v := range %s {\n", varName)
-				body.WriteString("\t\t\tqueryParams = append(queryParams, v)\n")
-				body.WriteString("\t\t}\n")
-				fmt.Fprintf(body, "\t\tquery = strings.Replace(query, \"/*SLICE:%s*/?\" , strings.Repeat(\",?\", len(%s))[1:], 1)\n", fld.Column.Name, varName)
-				body.WriteString("\t} else {\n")
-				fmt.Fprintf(body, "\t\tquery = strings.Replace(query, \"/*SLICE:%s*/?\" , \"NULL\", 1)\n", fld.Column.Name)
-				body.WriteString("\t}\n")
+				stmts = append(stmts, buildSliceHandling(varName, fld.Column.Name))
 			} else {
-				fmt.Fprintf(body, "\tqueryParams = append(queryParams, %s)\n", varName)
+				stmts = append(stmts, poet.Assign{
+					Left: []string{"queryParams"}, Op: "=",
+					Right: []string{fmt.Sprintf("append(queryParams, %s)", varName)},
+				})
 			}
 		}
 	} else {
-		argName := q.Arg.Name
-		colName := q.Arg.Column.Name
-		fmt.Fprintf(body, "\tif len(%s) > 0 {\n", argName)
-		fmt.Fprintf(body, "\t\tfor _, v := range %s {\n", argName)
-		body.WriteString("\t\t\tqueryParams = append(queryParams, v)\n")
-		body.WriteString("\t\t}\n")
-		fmt.Fprintf(body, "\t\tquery = strings.Replace(query, \"/*SLICE:%s*/?\" , strings.Repeat(\",?\", len(%s))[1:], 1)\n", colName, argName)
-		body.WriteString("\t} else {\n")
-		fmt.Fprintf(body, "\t\tquery = strings.Replace(query, \"/*SLICE:%s*/?\" , \"NULL\", 1)\n", colName)
-		body.WriteString("\t}\n")
+		stmts = append(stmts, buildSliceHandling(q.Arg.Name, q.Arg.Column.Name))
 	}
 
 	var method string
@@ -1463,10 +1482,34 @@ func (g *CodeGenerator) writeQuerySliceExec(body *strings.Builder, q Query, retv
 		}
 	}
 
+	var callExpr string
 	if g.tctx.EmitPreparedQueries {
-		fmt.Fprintf(body, "\t%s %s(ctx, nil, query, queryParams...)\n", retval, method)
+		callExpr = fmt.Sprintf("%s(ctx, nil, query, queryParams...)", method)
 	} else {
-		fmt.Fprintf(body, "\t%s %s(ctx, query, queryParams...)\n", retval, method)
+		callExpr = fmt.Sprintf("%s(ctx, query, queryParams...)", method)
+	}
+
+	// Parse retval to determine assignment type
+	parts := strings.SplitN(retval, " ", 2)
+	if len(parts) == 2 {
+		lhs := strings.Split(strings.TrimSpace(parts[0]), ",")
+		for i := range lhs {
+			lhs[i] = strings.TrimSpace(lhs[i])
+		}
+		op := strings.TrimSpace(parts[1])
+		stmts = append(stmts, poet.Assign{Left: lhs, Op: op, Right: []string{callExpr}})
+	} else {
+		// Simple return or call
+		stmts = append(stmts, poet.RawStmt{Code: fmt.Sprintf("\t%s %s\n", retval, callExpr)})
+	}
+
+	return stmts
+}
+
+func (g *CodeGenerator) writeQuerySliceExec(body *strings.Builder, q Query, retval, db string, isPGX bool) {
+	stmts := g.buildQuerySliceExecStmts(q, retval, db)
+	for _, stmt := range stmts {
+		body.WriteString(poet.RenderStmt(stmt, "\t"))
 	}
 }
 
