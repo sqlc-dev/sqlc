@@ -360,6 +360,7 @@ type FuncLit struct {
 	Params  []Param
 	Results []Param
 	Body    []Stmt
+	Indent  string // Base indentation for body statements (default: "\t")
 }
 
 // Note: FuncLit.Render() is implemented in render.go since it needs renderStmts

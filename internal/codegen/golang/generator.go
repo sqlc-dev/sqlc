@@ -2119,23 +2119,37 @@ func (g *CodeGenerator) addBatchCodePGX(f *poet.File) {
 			})
 
 		case ":batchmany":
-			// Build inner function literal as string (complex nested structure)
-			var innerFunc strings.Builder
-			innerFunc.WriteString("func() error {\n")
-			innerFunc.WriteString("\t\t\trows, err := b.br.Query()\n")
-			innerFunc.WriteString("\t\t\tif err != nil {\n")
-			innerFunc.WriteString("\t\t\t\treturn err\n")
-			innerFunc.WriteString("\t\t\t}\n")
-			innerFunc.WriteString("\t\t\tdefer rows.Close()\n")
-			innerFunc.WriteString("\t\t\tfor rows.Next() {\n")
-			fmt.Fprintf(&innerFunc, "\t\t\t\tvar %s %s\n", q.Ret.Name, q.Ret.Type())
-			fmt.Fprintf(&innerFunc, "\t\t\t\tif err := rows.Scan(%s); err != nil {\n", q.Ret.Scan())
-			innerFunc.WriteString("\t\t\t\t\treturn err\n")
-			innerFunc.WriteString("\t\t\t\t}\n")
-			fmt.Fprintf(&innerFunc, "\t\t\t\titems = append(items, %s)\n", q.Ret.ReturnName())
-			innerFunc.WriteString("\t\t\t}\n")
-			innerFunc.WriteString("\t\t\treturn rows.Err()\n")
-			innerFunc.WriteString("\t\t}()")
+			// Build inner function literal body
+			var innerFuncBody []poet.Stmt
+			innerFuncBody = append(innerFuncBody, poet.Assign{
+				Left: []string{"rows", "err"}, Op: ":=", Right: []string{"b.br.Query()"},
+			})
+			innerFuncBody = append(innerFuncBody, poet.If{
+				Cond: "err != nil",
+				Body: []poet.Stmt{poet.Return{Values: []string{"err"}}},
+			})
+			innerFuncBody = append(innerFuncBody, poet.Defer{Call: "rows.Close()"})
+
+			// Build rows loop body
+			var rowsLoopBody []poet.Stmt
+			rowsLoopBody = append(rowsLoopBody, poet.VarDecl{Name: q.Ret.Name, Type: q.Ret.Type()})
+			rowsLoopBody = append(rowsLoopBody, poet.If{
+				Cond: fmt.Sprintf("err := rows.Scan(%s); err != nil", q.Ret.Scan()),
+				Body: []poet.Stmt{poet.Return{Values: []string{"err"}}},
+			})
+			rowsLoopBody = append(rowsLoopBody, poet.Assign{
+				Left: []string{"items"}, Op: "=", Right: []string{fmt.Sprintf("append(items, %s)", q.Ret.ReturnName())},
+			})
+
+			innerFuncBody = append(innerFuncBody, poet.For{Cond: "rows.Next()", Body: rowsLoopBody})
+			innerFuncBody = append(innerFuncBody, poet.Return{Values: []string{"rows.Err()"}})
+
+			// Build function literal with proper indentation (3 tabs for body inside for loop inside func)
+			innerFunc := poet.FuncLit{
+				Results: []poet.Param{{Type: "error"}},
+				Body:    innerFuncBody,
+				Indent:  "\t\t\t",
+			}
 
 			// Build main for loop body
 			var manyForBody []poet.Stmt
@@ -2157,7 +2171,7 @@ func (g *CodeGenerator) addBatchCodePGX(f *poet.File) {
 				},
 			})
 			manyForBody = append(manyForBody, poet.Assign{
-				Left: []string{"err"}, Op: ":=", Right: []string{innerFunc.String()},
+				Left: []string{"err"}, Op: ":=", Right: []string{innerFunc.Render() + "()"},
 			})
 			manyForBody = append(manyForBody, poet.If{
 				Cond: "f != nil",

@@ -514,7 +514,15 @@ func RenderFuncLit(f FuncLit) string {
 		}
 	}
 	b.WriteString(" {\n")
-	renderStmts(&b, f.Body, "\t")
+	indent := f.Indent
+	if indent == "" {
+		indent = "\t"
+	}
+	renderStmts(&b, f.Body, indent)
+	// Write closing brace with one less tab than body content
+	if len(indent) > 0 {
+		b.WriteString(indent[:len(indent)-1])
+	}
 	b.WriteString("}")
 	return b.String()
 }
