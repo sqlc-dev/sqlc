@@ -514,7 +514,10 @@ func (c *cc) convertMultiSelect_stmtContext(n *parser.Select_stmtContext) ast.No
 	limitCount, limitOffset := c.convertLimit_stmtContext(n.Limit_stmt())
 	selectStmt.LimitCount = limitCount
 	selectStmt.LimitOffset = limitOffset
-	selectStmt.WithClause = &ast.WithClause{Ctes: &ctes}
+	// Only set WithClause if there are CTEs
+	if len(ctes.Items) > 0 {
+		selectStmt.WithClause = &ast.WithClause{Ctes: &ctes}
+	}
 	return selectStmt
 }
 
@@ -759,6 +762,13 @@ func (c *cc) convertLiteral(n *parser.Expr_literalContext) ast.Node {
 				Location: n.GetStart().GetStart(),
 			}
 		}
+
+		if literal.NULL_() != nil {
+			return &ast.A_Const{
+				Val:      &ast.Null{},
+				Location: n.GetStart().GetStart(),
+			}
+		}
 	}
 	return todo("convertLiteral", n)
 }
@@ -776,8 +786,14 @@ func (c *cc) convertBinaryNode(n *parser.Expr_binaryContext) ast.Node {
 }
 
 func (c *cc) convertBoolNode(n *parser.Expr_boolContext) ast.Node {
+	var op ast.BoolExprType
+	if n.AND_() != nil {
+		op = ast.BoolExprTypeAnd
+	} else if n.OR_() != nil {
+		op = ast.BoolExprTypeOr
+	}
 	return &ast.BoolExpr{
-		// TODO: Set op
+		Boolop: op,
 		Args: &ast.List{
 			Items: []ast.Node{
 				c.convert(n.Expr(0)),
@@ -785,6 +801,49 @@ func (c *cc) convertBoolNode(n *parser.Expr_boolContext) ast.Node {
 			},
 		},
 	}
+}
+
+func (c *cc) convertUnaryExpr(n *parser.Expr_unaryContext) ast.Node {
+	op := n.Unary_operator()
+	if op == nil {
+		return c.convert(n.Expr())
+	}
+
+	// Get the inner expression
+	expr := c.convert(n.Expr())
+
+	// Check the operator type
+	if opCtx, ok := op.(*parser.Unary_operatorContext); ok {
+		if opCtx.NOT_() != nil {
+			// NOT expression
+			return &ast.BoolExpr{
+				Boolop: ast.BoolExprTypeNot,
+				Args: &ast.List{
+					Items: []ast.Node{expr},
+				},
+			}
+		}
+		if opCtx.MINUS() != nil {
+			// Negative number: -expr
+			return &ast.A_Expr{
+				Name: &ast.List{Items: []ast.Node{&ast.String{Str: "-"}}},
+				Rexpr: expr,
+			}
+		}
+		if opCtx.PLUS() != nil {
+			// Positive number: +expr (just return expr)
+			return expr
+		}
+		if opCtx.TILDE() != nil {
+			// Bitwise NOT: ~expr
+			return &ast.A_Expr{
+				Name: &ast.List{Items: []ast.Node{&ast.String{Str: "~"}}},
+				Rexpr: expr,
+			}
+		}
+	}
+
+	return expr
 }
 
 func (c *cc) convertParam(n *parser.Expr_bindContext) ast.Node {
@@ -816,7 +875,52 @@ func (c *cc) convertParam(n *parser.Expr_bindContext) ast.Node {
 }
 
 func (c *cc) convertInSelectNode(n *parser.Expr_in_selectContext) ast.Node {
-	return c.convert(n.Select_stmt())
+	// Check if this is EXISTS or NOT EXISTS
+	if n.EXISTS_() != nil {
+		linkType := ast.EXISTS_SUBLINK
+		sublink := &ast.SubLink{
+			SubLinkType: linkType,
+			Subselect:   c.convert(n.Select_stmt()),
+		}
+		if n.NOT_() != nil {
+			// NOT EXISTS is represented as a BoolExpr NOT wrapping the EXISTS
+			return &ast.BoolExpr{
+				Boolop: ast.BoolExprTypeNot,
+				Args: &ast.List{
+					Items: []ast.Node{sublink},
+				},
+			}
+		}
+		return sublink
+	}
+
+	// Check if this is an IN/NOT IN expression: expr IN (SELECT ...)
+	if n.IN_() != nil && len(n.AllExpr()) > 0 {
+		linkType := ast.ANY_SUBLINK
+		sublink := &ast.SubLink{
+			SubLinkType: linkType,
+			Testexpr:    c.convert(n.Expr(0)),
+			Subselect:   c.convert(n.Select_stmt()),
+		}
+		if n.NOT_() != nil {
+			return &ast.A_Expr{
+				Kind:  ast.A_Expr_Kind_OP,
+				Name:  &ast.List{Items: []ast.Node{&ast.String{Str: "NOT IN"}}},
+				Lexpr: c.convert(n.Expr(0)),
+				Rexpr: &ast.SubLink{
+					SubLinkType: ast.EXPR_SUBLINK,
+					Subselect:   c.convert(n.Select_stmt()),
+				},
+			}
+		}
+		return sublink
+	}
+
+	// Plain subquery in parentheses (SELECT ...)
+	return &ast.SubLink{
+		SubLinkType: ast.EXPR_SUBLINK,
+		Subselect:   c.convert(n.Select_stmt()),
+	}
 }
 
 func (c *cc) convertReturning_caluseContext(n parser.IReturning_clauseContext) *ast.List {
@@ -887,12 +991,8 @@ func (c *cc) convertInsert_stmtContext(n *parser.Insert_stmtContext) ast.Node {
 	}
 
 	if hasDefaultValues {
-		// For DEFAULT VALUES, create an empty select statement
-		insert.SelectStmt = &ast.SelectStmt{
-			FromClause:  &ast.List{},
-			TargetList:  &ast.List{},
-			ValuesLists: &ast.List{Items: []ast.Node{&ast.List{}}}, // Single empty values list
-		}
+		// For DEFAULT VALUES, set the flag instead of creating an empty values list
+		insert.DefaultValues = true
 	} else if n.Select_stmt() != nil {
 		if ss, ok := c.convert(n.Select_stmt()).(*ast.SelectStmt); ok {
 			ss.ValuesLists = &ast.List{}
@@ -976,6 +1076,11 @@ func (c *cc) convertTablesOrSubquery(n []parser.ITable_or_subqueryContext) []ast
 			tables = append(tables, rv)
 		} else if from.Table_function_name() != nil {
 			rel := from.Table_function_name().GetText()
+			// Convert function arguments
+			var args []ast.Node
+			for _, expr := range from.AllExpr() {
+				args = append(args, c.convert(expr))
+			}
 			rf := &ast.RangeFunction{
 				Functions: &ast.List{
 					Items: []ast.Node{
@@ -989,7 +1094,7 @@ func (c *cc) convertTablesOrSubquery(n []parser.ITable_or_subqueryContext) []ast
 								},
 							},
 							Args: &ast.List{
-								Items: []ast.Node{&ast.TODO{}},
+								Items: args,
 							},
 							Location: from.GetStart().GetStart(),
 						},
@@ -1188,6 +1293,9 @@ func (c *cc) convert(node node) ast.Node {
 
 	case *parser.Expr_binaryContext:
 		return c.convertBinaryNode(n)
+
+	case *parser.Expr_unaryContext:
+		return c.convertUnaryExpr(n)
 
 	case *parser.Expr_in_selectContext:
 		return c.convertInSelectNode(n)

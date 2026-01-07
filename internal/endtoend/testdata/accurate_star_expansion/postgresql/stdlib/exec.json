@@ -1,0 +1,6 @@
+{
+  "contexts": ["managed-db"],
+  "env": {
+    "SQLCEXPERIMENT": "analyzerv2"
+  }
+}

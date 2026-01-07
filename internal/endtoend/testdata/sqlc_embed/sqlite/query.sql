@@ -15,7 +15,7 @@ SELECT sqlc.embed(users), sqlc.embed(users) FROM users;
 
 -- name: Join :one
 SELECT sqlc.embed(u), sqlc.embed(p) FROM posts AS p
-INNER JOIN users AS u ON p.user_id = u.users.id;
+INNER JOIN users AS u ON p.user_id = u.id;
 
 -- name: WithSchema :one
 SELECT sqlc.embed(bu) FROM baz.users AS bu;

@@ -16,6 +16,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/pgx/poolcache"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 	"github.com/sqlc-dev/sqlc/internal/sqltest/docker"
+	"github.com/sqlc-dev/sqlc/internal/sqltest/native"
 )
 
 var flight singleflight.Group
@@ -41,8 +42,15 @@ func postgreSQL(t *testing.T, migrations []string, rw bool) string {
 				t.Fatal(err)
 			}
 			dburi = u
+		} else if ierr := native.Supported(); ierr == nil {
+			// Fall back to native installation when Docker is not available
+			u, err := native.StartPostgreSQLServer(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			dburi = u
 		} else {
-			t.Skip("POSTGRESQL_SERVER_URI is empty")
+			t.Skip("POSTGRESQL_SERVER_URI is empty and neither Docker nor native installation is available")
 		}
 	}
 

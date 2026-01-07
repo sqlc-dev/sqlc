@@ -1,9 +1,20 @@
 /* examples copied from https://www.sqlite.org/lang_createtrigger.html
    only expectation in sqlc is that they parse, codegen is unaffected */
 
-CREATE TRIGGER update_customer_address UPDATE OF address ON customers
+CREATE TABLE trigger_customers (
+    name TEXT PRIMARY KEY,
+    address TEXT
+);
+
+CREATE TABLE trigger_orders (
+    id INTEGER PRIMARY KEY,
+    customer_name TEXT,
+    address TEXT
+);
+
+CREATE TRIGGER update_customer_address UPDATE OF address ON trigger_customers
 BEGIN
-    UPDATE orders SET address = new.address WHERE customer_name = old.name;
+    UPDATE trigger_orders SET address = new.address WHERE customer_name = old.name;
 END;
 
 CREATE TABLE customer(

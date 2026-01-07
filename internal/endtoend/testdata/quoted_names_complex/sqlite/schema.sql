@@ -12,7 +12,7 @@ ALTER TABLE products ADD COLUMN "Price Info" text;
 
 -- Test mixed case operations across different statement types
 INSERT INTO "user profiles" ("profile data") VALUES ('test data');
-UPDATE "ORDERS" SET data = 'updated' WHERE id = 1;
+UPDATE "customer_orders" SET data = 'updated' WHERE id = 1;
 DELETE FROM products WHERE id = 1;
 
 -- Test DROP with various identifier formats

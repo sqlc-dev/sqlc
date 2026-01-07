@@ -13,7 +13,7 @@ jobs:
     name: build ${{ matrix.goos }}/${{ matrix.goarch }}
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: actions/setup-go@v6
       with:
         go-version: '1.25.0'
@@ -25,7 +25,7 @@ jobs:
   test:
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: actions/setup-go@v6
       with:
         go-version: '1.25.0'

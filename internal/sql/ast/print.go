@@ -4,10 +4,11 @@ import (
 	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/debug"
+	"github.com/sqlc-dev/sqlc/internal/sql/format"
 )
 
-type formatter interface {
-	Format(*TrackedBuffer)
+type nodeFormatter interface {
+	Format(*TrackedBuffer, format.Dialect)
 }
 
 type TrackedBuffer struct {
@@ -16,21 +17,20 @@ type TrackedBuffer struct {
 
 // NewTrackedBuffer creates a new TrackedBuffer.
 func NewTrackedBuffer() *TrackedBuffer {
-	buf := &TrackedBuffer{
+	return &TrackedBuffer{
 		Builder: new(strings.Builder),
 	}
-	return buf
 }
 
-func (t *TrackedBuffer) astFormat(n Node) {
-	if ft, ok := n.(formatter); ok {
-		ft.Format(t)
+func (t *TrackedBuffer) astFormat(n Node, d format.Dialect) {
+	if ft, ok := n.(nodeFormatter); ok {
+		ft.Format(t, d)
 	} else {
 		debug.Dump(n)
 	}
 }
 
-func (t *TrackedBuffer) join(n *List, sep string) {
+func (t *TrackedBuffer) join(n *List, d format.Dialect, sep string) {
 	if n == nil {
 		return
 	}
@@ -41,14 +41,14 @@ func (t *TrackedBuffer) join(n *List, sep string) {
 		if i > 0 {
 			t.WriteString(sep)
 		}
-		t.astFormat(item)
+		t.astFormat(item, d)
 	}
 }
 
-func Format(n Node) string {
+func Format(n Node, d format.Dialect) string {
 	tb := NewTrackedBuffer()
-	if ft, ok := n.(formatter); ok {
-		ft.Format(tb)
+	if ft, ok := n.(nodeFormatter); ok {
+		ft.Format(tb, d)
 	}
 	return tb.String()
 }

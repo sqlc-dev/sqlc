@@ -122,8 +122,75 @@ type SQL struct {
 	Analyzer             Analyzer  `json:"analyzer" yaml:"analyzer"`
 }
 
+// AnalyzerDatabase represents the database analyzer setting.
+// It can be a boolean (true/false) or the string "only" for database-only mode.
+type AnalyzerDatabase struct {
+	value   *bool  // nil means not set, true/false for boolean values
+	isOnly  bool   // true when set to "only"
+}
+
+// IsEnabled returns true if the database analyzer should be used.
+// Returns true for both `true` and `"only"` settings.
+func (a AnalyzerDatabase) IsEnabled() bool {
+	if a.isOnly {
+		return true
+	}
+	return a.value == nil || *a.value
+}
+
+// IsOnly returns true if the analyzer is set to "only" mode.
+func (a AnalyzerDatabase) IsOnly() bool {
+	return a.isOnly
+}
+
+func (a *AnalyzerDatabase) UnmarshalJSON(data []byte) error {
+	// Try to unmarshal as boolean first
+	var b bool
+	if err := json.Unmarshal(data, &b); err == nil {
+		a.value = &b
+		a.isOnly = false
+		return nil
+	}
+
+	// Try to unmarshal as string
+	var s string
+	if err := json.Unmarshal(data, &s); err == nil {
+		if s == "only" {
+			a.isOnly = true
+			a.value = nil
+			return nil
+		}
+		return errors.New("analyzer.database must be true, false, or \"only\"")
+	}
+
+	return errors.New("analyzer.database must be true, false, or \"only\"")
+}
+
+func (a *AnalyzerDatabase) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	// Try to unmarshal as boolean first
+	var b bool
+	if err := unmarshal(&b); err == nil {
+		a.value = &b
+		a.isOnly = false
+		return nil
+	}
+
+	// Try to unmarshal as string
+	var s string
+	if err := unmarshal(&s); err == nil {
+		if s == "only" {
+			a.isOnly = true
+			a.value = nil
+			return nil
+		}
+		return errors.New("analyzer.database must be true, false, or \"only\"")
+	}
+
+	return errors.New("analyzer.database must be true, false, or \"only\"")
+}
+
 type Analyzer struct {
-	Database *bool `json:"database" yaml:"database"`
+	Database AnalyzerDatabase `json:"database" yaml:"database"`
 }
 
 // TODO: Figure out a better name for this
