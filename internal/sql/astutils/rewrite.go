@@ -495,6 +495,7 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 
 	case *ast.CompositeTypeStmt:
 		a.apply(n, "TypeName", nil, n.TypeName)
+		a.apply(n, "ColDefList", nil, n.ColDefList)
 
 	case *ast.Const:
 		a.apply(n, "Xpr", nil, n.Xpr)
