@@ -1,17 +1,12 @@
 package golang
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"go/format"
 	"strings"
-	"text/template"
 
 	"github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
-	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
@@ -171,7 +166,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		Structs: structs,
 	}
 
-	tctx := tmplCtx{
+	tctx := &tmplCtx{
 		EmitInterface:             options.EmitInterface,
 		EmitJSONTags:              options.EmitJsonTags,
 		JsonTagsIDUppercase:       options.JsonTagsIdUppercase,
@@ -209,64 +204,9 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		return nil, errors.New(":batch* commands are only supported by pgx")
 	}
 
-	funcMap := template.FuncMap{
-		"lowerTitle": sdk.LowerTitle,
-		"comment":    sdk.DoubleSlashComment,
-		"escape":     sdk.EscapeBacktick,
-		"imports":    i.Imports,
-		"hasImports": i.HasImports,
-		"hasPrefix":  strings.HasPrefix,
-
-		// These methods are Go specific, they do not belong in the codegen package
-		// (as that is language independent)
-		"dbarg":               tctx.codegenDbarg,
-		"emitPreparedQueries": tctx.codegenEmitPreparedQueries,
-		"queryMethod":         tctx.codegenQueryMethod,
-		"queryRetval":         tctx.codegenQueryRetval,
-	}
-
-	tmpl := template.Must(
-		template.New("table").
-			Funcs(funcMap).
-			ParseFS(
-				templates,
-				"templates/*.tmpl",
-				"templates/*/*.tmpl",
-			),
-	)
-
 	output := map[string]string{}
 
-	execute := func(name, templateName string) error {
-		imports := i.Imports(name)
-		replacedQueries := replaceConflictedArg(imports, queries)
-
-		var b bytes.Buffer
-		w := bufio.NewWriter(&b)
-		tctx.SourceName = name
-		tctx.GoQueries = replacedQueries
-		err := tmpl.ExecuteTemplate(w, templateName, &tctx)
-		w.Flush()
-		if err != nil {
-			return err
-		}
-		code, err := format.Source(b.Bytes())
-		if err != nil {
-			fmt.Println(b.String())
-			return fmt.Errorf("source error: %w", err)
-		}
-
-		if templateName == "queryFile" && options.OutputFilesSuffix != "" {
-			name += options.OutputFilesSuffix
-		}
-
-		if !strings.HasSuffix(name, ".go") {
-			name += ".go"
-		}
-		output[name] = string(code)
-		return nil
-	}
-
+	// File names
 	dbFileName := "db.go"
 	if options.OutputDbFileName != "" {
 		dbFileName = options.OutputDbFileName
@@ -283,46 +223,89 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 	if options.OutputCopyfromFileName != "" {
 		copyfromFileName = options.OutputCopyfromFileName
 	}
-
 	batchFileName := "batch.go"
 	if options.OutputBatchFileName != "" {
 		batchFileName = options.OutputBatchFileName
 	}
 
-	if err := execute(dbFileName, "dbFile"); err != nil {
-		return nil, err
+	// Generate db.go
+	tctx.SourceName = dbFileName
+	tctx.GoQueries = replaceConflictedArg(i.Imports(dbFileName), queries)
+	gen := NewCodeGenerator(tctx, i)
+
+	code, err := gen.GenerateDBFile()
+	if err != nil {
+		return nil, fmt.Errorf("db file error: %w", err)
 	}
-	if err := execute(modelsFileName, "modelsFile"); err != nil {
-		return nil, err
+	output[dbFileName] = string(code)
+
+	// Generate models.go
+	tctx.SourceName = modelsFileName
+	tctx.GoQueries = replaceConflictedArg(i.Imports(modelsFileName), queries)
+	code, err = gen.GenerateModelsFile()
+	if err != nil {
+		return nil, fmt.Errorf("models file error: %w", err)
 	}
+	output[modelsFileName] = string(code)
+
+	// Generate querier.go
 	if options.EmitInterface {
-		if err := execute(querierFileName, "interfaceFile"); err != nil {
-			return nil, err
+		tctx.SourceName = querierFileName
+		tctx.GoQueries = replaceConflictedArg(i.Imports(querierFileName), queries)
+		code, err = gen.GenerateQuerierFile()
+		if err != nil {
+			return nil, fmt.Errorf("querier file error: %w", err)
 		}
+		output[querierFileName] = string(code)
 	}
+
+	// Generate copyfrom.go
 	if tctx.UsesCopyFrom {
-		if err := execute(copyfromFileName, "copyfromFile"); err != nil {
-			return nil, err
+		tctx.SourceName = copyfromFileName
+		tctx.GoQueries = replaceConflictedArg(i.Imports(copyfromFileName), queries)
+		code, err = gen.GenerateCopyFromFile()
+		if err != nil {
+			return nil, fmt.Errorf("copyfrom file error: %w", err)
 		}
+		output[copyfromFileName] = string(code)
 	}
+
+	// Generate batch.go
 	if tctx.UsesBatch {
-		if err := execute(batchFileName, "batchFile"); err != nil {
-			return nil, err
+		tctx.SourceName = batchFileName
+		tctx.GoQueries = replaceConflictedArg(i.Imports(batchFileName), queries)
+		code, err = gen.GenerateBatchFile()
+		if err != nil {
+			return nil, fmt.Errorf("batch file error: %w", err)
 		}
+		output[batchFileName] = string(code)
 	}
 
-	files := map[string]struct{}{}
+	// Generate query files
+	sourceFiles := map[string]struct{}{}
 	for _, gq := range queries {
-		files[gq.SourceName] = struct{}{}
+		sourceFiles[gq.SourceName] = struct{}{}
 	}
 
-	for source := range files {
-		if err := execute(source, "queryFile"); err != nil {
-			return nil, err
+	for source := range sourceFiles {
+		tctx.SourceName = source
+		tctx.GoQueries = replaceConflictedArg(i.Imports(source), queries)
+		code, err = gen.GenerateQueryFile(source)
+		if err != nil {
+			return nil, fmt.Errorf("query file error for %s: %w", source, err)
 		}
-	}
-	resp := plugin.GenerateResponse{}
 
+		filename := source
+		if options.OutputFilesSuffix != "" {
+			filename += options.OutputFilesSuffix
+		}
+		if !strings.HasSuffix(filename, ".go") {
+			filename += ".go"
+		}
+		output[filename] = string(code)
+	}
+
+	resp := plugin.GenerateResponse{}
 	for filename, code := range output {
 		resp.Files = append(resp.Files, &plugin.File{
 			Name:     filename,
