@@ -31,8 +31,6 @@ Python    `rayakame/sqlc-gen-better-python`_  N/A              Beta             
 
 Plugins developed by our Community can also be found using the `github topic`_.
 
-:code:`sqlc-plugin`_
-
 Community projects
 ******************
 
