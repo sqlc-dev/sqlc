@@ -29,7 +29,9 @@ Python    `rayakame/sqlc-gen-better-python`_  N/A              Beta             
 [Any]     `fdietze/sqlc-gen-from-template`_   Stable           Stable           Stable
 ========  ==================================  ===============  ===============  ===============
 
-Plugins developed by our Community can also be found using the `github topic <https://github.com/topics/sqlc-plugin>`_ :code:`sqlc-plugin`.
+Plugins developed by our Community can also be found using the `github topic`_.
+
+:code:`sqlc-plugin`_
 
 Community projects
 ******************
@@ -53,3 +55,4 @@ Gleam     `daniellionel01/parrot`_           Stable           Stable           S
 .. _tinyzimmer/sqlc-gen-zig: https://github.com/tinyzimmer/sqlc-gen-zig
 .. _daniellionel01/parrot: https://github.com/daniellionel01/parrot
 .. _rayakame/sqlc-gen-better-python: https://github.com/rayakame/sqlc-gen-better-python
+.. _github topic: https://github.com/topics/sqlc-plugin
