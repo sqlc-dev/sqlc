@@ -23,6 +23,8 @@ func IsMathematicalOperator(s string) bool {
 	case "-":
 	case "*":
 	case "/":
+	case "div": // TODO: MySQL-specific operator - should be moved to engine-specific logic
+	case "mod": // TODO: MySQL-specific operator - should be moved to engine-specific logic
 	case "%":
 	case "^":
 	case "|/":
