@@ -77,25 +77,30 @@ func combineAnalysis(prev *analysis, a *analyzer.Analysis) *analysis {
 			Column: convertColumn(p.Column),
 		})
 	}
-	if len(prev.Columns) == len(cols) {
-		for i := range prev.Columns {
-			// Only override column types if the analyzer provides a specific type
-			// (not "any"), since the catalog-based inference may have better info
-			if cols[i].DataType != "any" {
-				prev.Columns[i].DataType = cols[i].DataType
-				prev.Columns[i].IsArray = cols[i].IsArray
-				prev.Columns[i].ArrayDims = cols[i].ArrayDims
+	// Only update columns if the analyzer returned column info
+	// An empty slice from the analyzer means it couldn't determine columns,
+	// so we should keep the catalog-inferred columns
+	if len(cols) > 0 {
+		if len(prev.Columns) == len(cols) {
+			for i := range prev.Columns {
+				// Only override column types if the analyzer provides a specific type
+				// (not "any"), since the catalog-based inference may have better info
+				if cols[i].DataType != "any" {
+					prev.Columns[i].DataType = cols[i].DataType
+					prev.Columns[i].IsArray = cols[i].IsArray
+					prev.Columns[i].ArrayDims = cols[i].ArrayDims
+				}
 			}
-		}
-	} else {
-		embedding := false
-		for i := range prev.Columns {
-			if prev.Columns[i].EmbedTable != nil {
-				embedding = true
+		} else {
+			embedding := false
+			for i := range prev.Columns {
+				if prev.Columns[i].EmbedTable != nil {
+					embedding = true
+				}
 			}
-		}
-		if !embedding {
-			prev.Columns = cols
+			if !embedding {
+				prev.Columns = cols
+			}
 		}
 	}
 	if len(prev.Parameters) == len(params) {

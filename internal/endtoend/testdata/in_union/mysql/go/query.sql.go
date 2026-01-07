@@ -11,7 +11,7 @@ import (
 
 const getAuthors = `-- name: GetAuthors :many
 SELECT id, name, bio FROM authors
-WHERE author_id IN (SELECT author_id FROM book1 UNION SELECT author_id FROM book2)
+WHERE id IN (SELECT author_id FROM book1 UNION SELECT author_id FROM book2)
 `
 
 func (q *Queries) GetAuthors(ctx context.Context) ([]Author, error) {

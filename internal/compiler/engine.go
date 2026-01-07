@@ -8,6 +8,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/dbmanager"
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
+	mysqlanalyze "github.com/sqlc-dev/sqlc/internal/engine/dolphin/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	pganalyze "github.com/sqlc-dev/sqlc/internal/engine/postgresql/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
@@ -82,6 +83,15 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 		c.parser = dolphin.NewParser()
 		c.catalog = dolphin.NewCatalog()
 		c.selector = newDefaultSelector()
+		if conf.Database != nil {
+			if conf.Analyzer.Database == nil || *conf.Analyzer.Database {
+				c.analyzer = analyzer.Cached(
+					mysqlanalyze.New(combo.Global.Servers, *conf.Database),
+					combo.Global,
+					*conf.Database,
+				)
+			}
+		}
 	case config.EnginePostgreSQL:
 		parser := postgresql.NewParser()
 		c.parser = parser

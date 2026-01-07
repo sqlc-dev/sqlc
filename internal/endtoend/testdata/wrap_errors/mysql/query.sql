@@ -1,6 +1,6 @@
 -- name: GetAuthor :one
 SELECT * FROM authors
-WHERE id = $1 LIMIT 1;
+WHERE id = ? LIMIT 1;
 
 -- name: ListAuthors :many
 SELECT * FROM authors
@@ -10,21 +10,21 @@ ORDER BY name;
 INSERT INTO authors (
           name, bio
 ) VALUES (
-  $1, $2
+  ?, ?
 );
 
 -- name: DeleteAuthorExec :exec
 DELETE FROM authors
-WHERE id = $1;
+WHERE id = ?;
 
 -- name: DeleteAuthorExecRows :execrows
 DELETE FROM authors
-WHERE id = $1;
+WHERE id = ?;
 
 -- name: DeleteAuthorExecLastID :execlastid
 DELETE FROM authors
-WHERE id = $1;
+WHERE id = ?;
 
 -- name: DeleteAuthorExecResult :execresult
 DELETE FROM authors
-WHERE id = $1;
+WHERE id = ?;
