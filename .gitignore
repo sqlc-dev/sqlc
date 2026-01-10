@@ -9,3 +9,4 @@ __pycache__
 .devenv*
 devenv.local.nix
 
+/bin/sqlc
