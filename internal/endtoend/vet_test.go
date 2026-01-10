@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/sqlc-dev/sqlc/internal/cmd"
+	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/sqltest"
 	"github.com/sqlc-dev/sqlc/internal/sqltest/local"
 )
@@ -69,11 +70,11 @@ func TestExamplesVet(t *testing.T) {
 			}
 
 			var stderr bytes.Buffer
-			opts := &cmd.Options{
+			o := &cmd.Options{
 				Stderr: &stderr,
-				Env:    cmd.Env{},
+				Env:    cmd.Env{Debug: opts.DebugFromString("")},
 			}
-			err := cmd.Vet(ctx, path, "", opts)
+			err := cmd.Vet(ctx, path, "", o)
 			if err != nil {
 				t.Fatalf("sqlc vet failed: %s %s", err, stderr.String())
 			}

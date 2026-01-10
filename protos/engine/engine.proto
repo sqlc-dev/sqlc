@@ -1,0 +1,176 @@
+syntax = "proto3";
+
+package engine;
+
+// Go code is generated to pkg/engine for external plugin developers
+option go_package = "github.com/sqlc-dev/sqlc/pkg/engine";
+
+// EngineService defines the interface for database engine plugins.
+// Engine plugins are responsible for parsing SQL statements and providing
+// database-specific functionality.
+service EngineService {
+  // Parse parses SQL statements from the input and returns parsed statements.
+  rpc Parse (ParseRequest) returns (ParseResponse);
+  
+  // GetCatalog returns the initial catalog with built-in types and schemas.
+  rpc GetCatalog (GetCatalogRequest) returns (GetCatalogResponse);
+  
+  // IsReservedKeyword checks if a string is a reserved keyword.
+  rpc IsReservedKeyword (IsReservedKeywordRequest) returns (IsReservedKeywordResponse);
+  
+  // GetCommentSyntax returns the comment syntax supported by this engine.
+  rpc GetCommentSyntax (GetCommentSyntaxRequest) returns (GetCommentSyntaxResponse);
+  
+  // GetDialect returns the SQL dialect information for formatting.
+  rpc GetDialect (GetDialectRequest) returns (GetDialectResponse);
+}
+
+// ParseRequest contains the SQL to parse.
+message ParseRequest {
+  string sql = 1;
+}
+
+// ParseResponse contains the parsed statements.
+message ParseResponse {
+  repeated Statement statements = 1;
+}
+
+// Statement represents a parsed SQL statement.
+message Statement {
+  // The raw SQL text of the statement.
+  string raw_sql = 1;
+  
+  // The position in the input where this statement starts.
+  int32 stmt_location = 2;
+  
+  // The length of the statement in bytes.
+  int32 stmt_len = 3;
+  
+  // The AST of the statement encoded as JSON.
+  // The JSON structure follows the internal AST format.
+  bytes ast_json = 4;
+}
+
+// GetCatalogRequest is empty for now.
+message GetCatalogRequest {}
+
+// GetCatalogResponse contains the initial catalog.
+message GetCatalogResponse {
+  Catalog catalog = 1;
+}
+
+// Catalog represents the database catalog.
+message Catalog {
+  string comment = 1;
+  string default_schema = 2;
+  string name = 3;
+  repeated Schema schemas = 4;
+}
+
+// Schema represents a database schema.
+message Schema {
+  string name = 1;
+  string comment = 2;
+  repeated Table tables = 3;
+  repeated Enum enums = 4;
+  repeated Function functions = 5;
+  repeated Type types = 6;
+}
+
+// Table represents a database table.
+message Table {
+  string catalog = 1;
+  string schema = 2;
+  string name = 3;
+  repeated Column columns = 4;
+  string comment = 5;
+}
+
+// Column represents a table column.
+message Column {
+  string name = 1;
+  string data_type = 2;
+  bool not_null = 3;
+  bool is_array = 4;
+  int32 array_dims = 5;
+  string comment = 6;
+  int32 length = 7;
+  bool is_unsigned = 8;
+}
+
+// Enum represents an enum type.
+message Enum {
+  string schema = 1;
+  string name = 2;
+  repeated string values = 3;
+  string comment = 4;
+}
+
+// Function represents a database function.
+message Function {
+  string schema = 1;
+  string name = 2;
+  repeated FunctionArg args = 3;
+  DataType return_type = 4;
+  string comment = 5;
+}
+
+// FunctionArg represents a function argument.
+message FunctionArg {
+  string name = 1;
+  DataType type = 2;
+  bool has_default = 3;
+}
+
+// DataType represents a SQL data type.
+message DataType {
+  string catalog = 1;
+  string schema = 2;
+  string name = 3;
+}
+
+// Type represents a composite or custom type.
+message Type {
+  string schema = 1;
+  string name = 2;
+  string comment = 3;
+}
+
+// IsReservedKeywordRequest contains the keyword to check.
+message IsReservedKeywordRequest {
+  string keyword = 1;
+}
+
+// IsReservedKeywordResponse contains the result.
+message IsReservedKeywordResponse {
+  bool is_reserved = 1;
+}
+
+// GetCommentSyntaxRequest is empty.
+message GetCommentSyntaxRequest {}
+
+// GetCommentSyntaxResponse contains supported comment syntax.
+message GetCommentSyntaxResponse {
+  bool dash = 1;       // -- comment
+  bool slash_star = 2; // /* comment */
+  bool hash = 3;       // # comment
+}
+
+// GetDialectRequest is empty.
+message GetDialectRequest {}
+
+// GetDialectResponse contains dialect information.
+message GetDialectResponse {
+  // The character(s) used for quoting identifiers (e.g., ", `, [)
+  string quote_char = 1;
+  
+  // The parameter style: "positional" ($1, ?), "named" (@name, :name)
+  string param_style = 2;
+  
+  // The parameter prefix (e.g., $, ?, @, :)
+  string param_prefix = 3;
+  
+  // The cast syntax: "double_colon" (::), "cast_function" (CAST(x AS y))
+  string cast_syntax = 4;
+}
+

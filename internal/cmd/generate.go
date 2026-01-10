@@ -350,6 +350,7 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql OutputPair,
 		case plug.Process != nil:
 			handler = &process.Runner{
 				Cmd:    plug.Process.Cmd,
+				Dir:    combo.Dir,
 				Env:    plug.Env,
 				Format: plug.Process.Format,
 			}
