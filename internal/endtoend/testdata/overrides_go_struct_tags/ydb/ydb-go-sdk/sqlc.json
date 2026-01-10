@@ -1,0 +1,29 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "name": "override",
+      "engine": "ydb",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "sql_package": "ydb-go-sdk",
+      "overrides": [
+        {
+          "column": "foo.id",
+          "go_struct_tag": "x:\"y\""
+        },
+        {
+          "db_type": "Text",
+          "go_struct_tag": "utype:\"notnull_text\""
+        },
+        {
+          "db_type": "Text",
+          "go_type": "string",
+          "nullable": true,
+          "go_struct_tag": "utype:\"nullable_text\""
+        }
+      ]
+    }
+  ]
+}

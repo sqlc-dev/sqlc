@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"strconv"
 
+	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
@@ -118,11 +119,17 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		case *limitOffset:
 			defaultP := named.NewInferredParam("offset", true)
 			p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
+
+			dataType := "integer"
+			if comp.conf.Engine == config.EngineYDB {
+				dataType = "uint64"
+			}
+
 			a = append(a, Parameter{
 				Number: ref.ref.Number,
 				Column: &Column{
 					Name:         p.Name(),
-					DataType:     "integer",
+					DataType:     dataType,
 					NotNull:      p.NotNull(),
 					IsNamedParam: isNamed,
 				},
@@ -131,11 +138,17 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		case *limitCount:
 			defaultP := named.NewInferredParam("limit", true)
 			p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
+
+			dataType := "integer"
+			if comp.conf.Engine == config.EngineYDB {
+				dataType = "uint64"
+			}
+
 			a = append(a, Parameter{
 				Number: ref.ref.Number,
 				Column: &Column{
 					Name:         p.Name(),
-					DataType:     "integer",
+					DataType:     dataType,
 					NotNull:      p.NotNull(),
 					IsNamedParam: isNamed,
 				},

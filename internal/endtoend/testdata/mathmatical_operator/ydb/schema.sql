@@ -1,0 +1,1 @@
+CREATE TABLE foo (num Int32 NOT NULL, PRIMARY KEY (num));
