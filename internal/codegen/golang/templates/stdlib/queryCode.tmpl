@@ -125,7 +125,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{end}}
 
 {{define "queryCodeStdExec"}}
-    {{- if .Arg.HasSqlcSlices }}
+    {{- if or .Arg.HasSqlcSlices  .Arg.HasSqlcSorts }}
         query := {{.ConstantName}}
         var queryParams []interface{}
         {{- if .Arg.Struct }}
@@ -140,23 +140,61 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
                     } else {
                       query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/?", "NULL", 1)
                     }
+                {{- else if .HasSqlcSort }}
+                  {{- $opts := .SqlcSortOpts }}
+                  {{- $defVal := $opts.DefaultField }}
+                  {{- $replace := print "/*SORT:" .Column.Name ":" $defVal "*/?" }}
+                  {{- $valVar := print "val" .Name }}
+                  {{- if $opts.IsOrder }}
+                    {{- $defVal = $opts.DefaultOrder }}
+                    {{- $replace = print "/*ORDER:" .Column.Name ":" $defVal "*/" }}
+                  {{- end }}
+                  {{ $valVar }} := any({{$arg.VariableValueForField .}}).(string)
+                  {{- if $defVal }}
+                    if {{ $valVar }} == "" {
+                      {{ $valVar }} = "{{ $defVal }}"
+                    }
+                  {{- end }}
+                  {{- if $opts.IsOrder }}
+                    {{ $valVar }} = strings.ToLower({{ $valVar }})
+                    if {{ $valVar }} != "asc" && {{ $valVar }} != "desc" {
+                        {{ $valVar }} = "asc"
+                    }
+                  {{- else }}
+                    if {{ $valVar }} == "" {
+                      {{ $valVar }} = "1"
+                    }
+                  {{- end }}
+                  query = strings.Replace(query, "{{$replace}}", {{ $valVar }}, 1)
                 {{- else }}
                   queryParams = append(queryParams, {{$arg.VariableForField .}})
                 {{- end }}
             {{- end }}
         {{- else }}
-            {{- /* Single argument parameter to this goroutine (they are not packed
-                in a struct), because .Arg.HasSqlcSlices further up above was true,
-                this section is 100% a slice (impossible to get here otherwise).
-            */}}
-            if len({{.Arg.Name}}) > 0 {
-              for _, v := range {{.Arg.Name}} {
-                queryParams = append(queryParams, v)
+            {{- if .Arg.HasSqlcSlices }}
+               {{- /* Single argument parameter to this goroutine (they are not packed
+                   in a struct), because .Arg.HasSqlcSlices further up above was true,
+                   this section is 100% a slice (impossible to get here otherwise).
+               */}}
+               if len({{.Arg.Name}}) > 0 {
+                 for _, v := range {{.Arg.Name}} {
+                   queryParams = append(queryParams, v)
+                 }
+                 query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", strings.Repeat(",?", len({{.Arg.Name}}))[1:], 1)
+               } else {
+                 query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", "NULL", 1)
+               }
+            {{- else if .Arg.HasSqlcSorts }}
+              {{- /* Single argument parameter to this goroutine (they are not packed
+                  in a struct), because .Arg.HasSqlcSorts further up above was true,
+                  this section is 100% a slice (impossible to get here otherwise).
+              */}}
+              {{- $valVar := print .Arg.Name "Val" }}
+              {{ $valVar }} := any({{.Arg.VariableValue nil}}).(string)
+              if {{ $valVar }} != "" {
+                query = strings.Replace(query, "/*SORT:{{.Arg.Column.Name}}:*/?", {{ $valVar }}, 1)
               }
-              query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", strings.Repeat(",?", len({{.Arg.Name}}))[1:], 1)
-            } else {
-              query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", "NULL", 1)
-            }
+            {{- end }}
         {{- end }}
         {{- if emitPreparedQueries }}
         {{ queryRetval . }} {{ queryMethod . }}(ctx, nil, query, queryParams...)

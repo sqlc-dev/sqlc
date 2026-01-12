@@ -17,6 +17,12 @@ type Table struct {
 	Columns []*Column
 }
 
+type SqlcSortOpts struct {
+	IsOrder      bool
+	DefaultField string
+	DefaultOrder string
+}
+
 type Column struct {
 	Name         string
 	OriginalName string
@@ -37,7 +43,8 @@ type Column struct {
 	Type       *ast.TypeName
 	EmbedTable *ast.TableName
 
-	IsSqlcSlice bool // is this sqlc.slice()
+	IsSqlcSlice  bool          // is this sqlc.slice()
+	SqlcSortOpts *SqlcSortOpts // is this sqlc.sort()
 
 	skipTableRequiredCheck bool
 }

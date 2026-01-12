@@ -61,10 +61,12 @@ func (v QueryValue) Pairs() []Argument {
 	if !v.EmitStruct() && v.IsStruct() {
 		var out []Argument
 		for _, f := range v.Struct.Fields {
-			out = append(out, Argument{
-				Name: escape(toLowerCase(f.Name)),
-				Type: f.Type,
-			})
+			out = append(
+				out, Argument{
+					Name: escape(toLowerCase(f.Name)),
+					Type: f.Type,
+				},
+			)
 		}
 		return out
 	}
@@ -190,6 +192,34 @@ func (v QueryValue) HasSqlcSlices() bool {
 	return false
 }
 
+// When true, we have to build the arguments to q.db.QueryContext in addition to
+// munging the SQL
+func (v QueryValue) HasSqlcSorts() bool {
+	if v.Struct == nil {
+		return v.Column != nil && v.Column.SqlcSortOpts != nil
+	}
+	for _, v := range v.Struct.Fields {
+		if v.Column.SqlcSortOpts != nil {
+			return true
+		}
+	}
+	return false
+}
+
+// When true, we have to build the arguments to q.db.QueryContext in addition to
+// munging the SQL
+func (v QueryValue) HasSqlcNullSorts() bool {
+	if v.Struct == nil {
+		return v.Column != nil && v.Column.SqlcSortOpts != nil && !v.Column.NotNull
+	}
+	for _, v := range v.Struct.Fields {
+		if v.Column.SqlcSortOpts != nil && !v.Column.NotNull {
+			return true
+		}
+	}
+	return false
+}
+
 func (v QueryValue) Scan() string {
 	var out []string
 	if v.Struct == nil {
@@ -244,14 +274,47 @@ func (v QueryValue) CopyFromMySQLFields() []Field {
 	}
 }
 
-func (v QueryValue) VariableForField(f Field) string {
-	if !v.IsStruct() {
+func (v QueryValue) Variable(f *Field) string {
+	if !v.IsStruct() || f == nil {
 		return v.Name
 	}
 	if !v.EmitStruct() {
 		return toLowerCase(f.Name)
 	}
 	return v.Name + "." + f.Name
+}
+
+func (v QueryValue) VariableType(f *Field) string {
+	if !v.IsStruct() || f == nil {
+		return v.Type()
+	}
+	return f.Type
+}
+
+func (v QueryValue) VariableForField(f Field) string {
+	return v.Variable(&f)
+}
+
+func (v QueryValue) VariableValue(f *Field) string {
+	name := v.Variable(f)
+	var isNull bool
+	if !v.IsStruct() || f == nil {
+		isNull = v.Column != nil && !v.Column.NotNull
+	} else {
+		isNull = f.Column != nil && !f.Column.NotNull
+	}
+	if isNull {
+		return fmt.Sprintf(
+			"(func() (driver.Value) {v, _ := %s.Value(); if v == nil {dv := %s{Valid: true}; v, _ = dv.Value()}; return v})()",
+			name,
+			v.VariableType(f),
+		)
+	}
+	return name
+}
+
+func (v QueryValue) VariableValueForField(f Field) string {
+	return v.VariableValue(&f)
 }
 
 // A struct used to generate methods and fields on the Queries struct

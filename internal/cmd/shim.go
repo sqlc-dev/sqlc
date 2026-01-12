@@ -67,16 +67,20 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 		for _, typ := range s.Types {
 			switch typ := typ.(type) {
 			case *catalog.Enum:
-				enums = append(enums, &plugin.Enum{
-					Name:    typ.Name,
-					Comment: typ.Comment,
-					Vals:    typ.Vals,
-				})
+				enums = append(
+					enums, &plugin.Enum{
+						Name:    typ.Name,
+						Comment: typ.Comment,
+						Vals:    typ.Vals,
+					},
+				)
 			case *catalog.CompositeType:
-				cts = append(cts, &plugin.CompositeType{
-					Name:    typ.Name,
-					Comment: typ.Comment,
-				})
+				cts = append(
+					cts, &plugin.CompositeType{
+						Name:    typ.Name,
+						Comment: typ.Comment,
+					},
+				)
 			}
 		}
 		var tables []*plugin.Table
@@ -87,43 +91,49 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 				if c.Length != nil {
 					l = *c.Length
 				}
-				columns = append(columns, &plugin.Column{
-					Name: c.Name,
-					Type: &plugin.Identifier{
-						Catalog: c.Type.Catalog,
-						Schema:  c.Type.Schema,
-						Name:    c.Type.Name,
+				columns = append(
+					columns, &plugin.Column{
+						Name: c.Name,
+						Type: &plugin.Identifier{
+							Catalog: c.Type.Catalog,
+							Schema:  c.Type.Schema,
+							Name:    c.Type.Name,
+						},
+						Comment:   c.Comment,
+						NotNull:   c.IsNotNull,
+						Unsigned:  c.IsUnsigned,
+						IsArray:   c.IsArray,
+						ArrayDims: int32(c.ArrayDims),
+						Length:    int32(l),
+						Table: &plugin.Identifier{
+							Catalog: t.Rel.Catalog,
+							Schema:  t.Rel.Schema,
+							Name:    t.Rel.Name,
+						},
 					},
-					Comment:   c.Comment,
-					NotNull:   c.IsNotNull,
-					Unsigned:  c.IsUnsigned,
-					IsArray:   c.IsArray,
-					ArrayDims: int32(c.ArrayDims),
-					Length:    int32(l),
-					Table: &plugin.Identifier{
+				)
+			}
+			tables = append(
+				tables, &plugin.Table{
+					Rel: &plugin.Identifier{
 						Catalog: t.Rel.Catalog,
 						Schema:  t.Rel.Schema,
 						Name:    t.Rel.Name,
 					},
-				})
-			}
-			tables = append(tables, &plugin.Table{
-				Rel: &plugin.Identifier{
-					Catalog: t.Rel.Catalog,
-					Schema:  t.Rel.Schema,
-					Name:    t.Rel.Name,
+					Columns: columns,
+					Comment: t.Comment,
 				},
-				Columns: columns,
-				Comment: t.Comment,
-			})
+			)
 		}
-		schemas = append(schemas, &plugin.Schema{
-			Comment:        s.Comment,
-			Name:           s.Name,
-			Tables:         tables,
-			Enums:          enums,
-			CompositeTypes: cts,
-		})
+		schemas = append(
+			schemas, &plugin.Schema{
+				Comment:        s.Comment,
+				Name:           s.Name,
+				Tables:         tables,
+				Enums:          enums,
+				CompositeTypes: cts,
+			},
+		)
 	}
 	return &plugin.Catalog{
 		Name:          c.Name,
@@ -152,16 +162,18 @@ func pluginQueries(r *compiler.Result) []*plugin.Query {
 				Name:    q.InsertIntoTable.Name,
 			}
 		}
-		out = append(out, &plugin.Query{
-			Name:            q.Metadata.Name,
-			Cmd:             q.Metadata.Cmd,
-			Text:            q.SQL,
-			Comments:        q.Metadata.Comments,
-			Columns:         columns,
-			Params:          params,
-			Filename:        q.Metadata.Filename,
-			InsertIntoTable: iit,
-		})
+		out = append(
+			out, &plugin.Query{
+				Name:            q.Metadata.Name,
+				Cmd:             q.Metadata.Cmd,
+				Text:            q.SQL,
+				Comments:        q.Metadata.Comments,
+				Columns:         columns,
+				Params:          params,
+				Filename:        q.Metadata.Filename,
+				InsertIntoTable: iit,
+			},
+		)
 	}
 	return out
 }
@@ -183,6 +195,13 @@ func pluginQueryColumn(c *compiler.Column) *plugin.Column {
 		IsNamedParam: c.IsNamedParam,
 		IsFuncCall:   c.IsFuncCall,
 		IsSqlcSlice:  c.IsSqlcSlice,
+	}
+	if c.SqlcSortOpts != nil {
+		out.SqlcSortOpts = &plugin.SqlcSortOpts{
+			IsOrder:      c.SqlcSortOpts.IsOrder,
+			DefaultField: c.SqlcSortOpts.DefaultField,
+			DefaultOrder: c.SqlcSortOpts.DefaultOrder,
+		}
 	}
 
 	if c.Type != nil {

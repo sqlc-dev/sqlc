@@ -81,6 +81,12 @@ message Identifier {
   string name = 3;
 }
 
+message SqlcSortOpts {
+  bool is_order = 1;
+  string default_field = 2;
+  string default_order = 3;
+}
+
 message Column {
   string name = 1;
   bool not_null = 3;
@@ -96,6 +102,7 @@ message Column {
   string table_alias = 11;
   Identifier type = 12;
   bool is_sqlc_slice = 13;
+  optional SqlcSortOpts sqlc_sort_opts = 18;
   Identifier embed_table = 14;
   string original_name = 15;
   bool unsigned = 16;
