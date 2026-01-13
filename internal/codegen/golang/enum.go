@@ -3,6 +3,8 @@ package golang
 import (
 	"strings"
 	"unicode"
+
+	"github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
 )
 
 type Constant struct {
@@ -47,9 +49,16 @@ func EnumReplace(value string) string {
 
 // EnumValueName removes all non ident symbols (all but letters, numbers and
 // underscore) and converts snake case ident to camel case.
-func EnumValueName(value string) string {
+func EnumValueName(value string, options *opts.Options) string {
+	if rename := options.RenameEnum[value]; rename != "" {
+		return rename
+	}
 	parts := strings.Split(EnumReplace(value), "_")
 	for i, part := range parts {
+		if _, found := options.InitialismsMap[part]; found {
+			parts[i] = strings.ToUpper(part)
+			continue
+		}
 		parts[i] = titleFirst(part)
 	}
 
@@ -57,6 +66,10 @@ func EnumValueName(value string) string {
 }
 
 func titleFirst(s string) string {
+	if len(s) == 0 {
+		return s
+	}
+
 	r := []rune(s)
 	r[0] = unicode.ToUpper(r[0])
 

@@ -12,7 +12,9 @@
     "id_old": "IDNew",
     "bar_old": "BarNew",
     "foo_old": "FooNew",
-    "ip_protocol": "IPProtocol",
+    "ip_protocol": "IPProtocol"
+  },
+  "rename_enum": {
     "ip_protocol_tcp": "IPProtocolTCP"
   }
 }
