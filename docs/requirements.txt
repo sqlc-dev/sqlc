@@ -16,7 +16,7 @@ pytz==2025.2
 requests==2.32.5
 snowballstemmer==3.0.1
 sphinx-favicon==1.0.1
-sphinx-rtd-theme==3.0.2
+sphinx-rtd-theme==3.1.0
 sphinxcontrib-applehelp==2.0.0
 sphinxcontrib-devhelp==2.0.0
 sphinxcontrib-htmlhelp==2.1.0
@@ -24,4 +24,4 @@ sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==2.0.0
 sphinxcontrib-serializinghtml==2.0.0
 sphinxext-rediraffe==0.3.0
-urllib3==2.6.2
+urllib3==2.6.3
