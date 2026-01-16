@@ -7,25 +7,83 @@ package querytest
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const selectAll = `-- name: SelectAll :many
-SELECT get_test FROM public.get_test()
+SELECT test_id, test_date, test_time, test_string, test_varchar, test_double FROM public.get_test()
 `
 
-func (q *Queries) SelectAll(ctx context.Context) ([]interface{}, error) {
+type SelectAllRow struct {
+	TestID      pgtype.Int4
+	TestDate    pgtype.Date
+	TestTime    pgtype.Timestamptz
+	TestString  pgtype.Text
+	TestVarchar interface{}
+	TestDouble  pgtype.Float8
+}
+
+func (q *Queries) SelectAll(ctx context.Context) ([]SelectAllRow, error) {
 	rows, err := q.db.Query(ctx, selectAll)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []interface{}
+	var items []SelectAllRow
 	for rows.Next() {
-		var get_test interface{}
-		if err := rows.Scan(&get_test); err != nil {
+		var i SelectAllRow
+		if err := rows.Scan(
+			&i.TestID,
+			&i.TestDate,
+			&i.TestTime,
+			&i.TestString,
+			&i.TestVarchar,
+			&i.TestDouble,
+		); err != nil {
 			return nil, err
 		}
-		items = append(items, get_test)
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const selectWithTime = `-- name: SelectWithTime :many
+SELECT test_id, test_date, test_time, test_string, test_varchar, test_double FROM public.get_test($1::timestamp)
+`
+
+type SelectWithTimeRow struct {
+	TestID      pgtype.Int4
+	TestDate    pgtype.Date
+	TestTime    pgtype.Timestamptz
+	TestString  pgtype.Text
+	TestVarchar interface{}
+	TestDouble  pgtype.Float8
+}
+
+func (q *Queries) SelectWithTime(ctx context.Context, dollar_1 pgtype.Timestamp) ([]SelectWithTimeRow, error) {
+	rows, err := q.db.Query(ctx, selectWithTime, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SelectWithTimeRow
+	for rows.Next() {
+		var i SelectWithTimeRow
+		if err := rows.Scan(
+			&i.TestID,
+			&i.TestDate,
+			&i.TestTime,
+			&i.TestString,
+			&i.TestVarchar,
+			&i.TestDouble,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

@@ -599,8 +599,7 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 								DataType: arg.Type.Name,
 							})
 						}
-					}
-					if fn.ReturnType != nil {
+					} else if fn.ReturnType != nil {
 						table.Columns = []*Column{
 							{
 								Name:     colName,

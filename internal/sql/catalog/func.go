@@ -43,7 +43,7 @@ func (f *Function) OutArgs() []*Argument {
 	var args []*Argument
 	for _, a := range f.Args {
 		switch a.Mode {
-		case ast.FuncParamOut:
+		case ast.FuncParamOut, ast.FuncParamTable:
 			args = append(args, a)
 		}
 	}
