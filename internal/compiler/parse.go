@@ -71,7 +71,56 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	}
 
 	var anlys *analysis
-	if c.analyzer != nil {
+	if c.databaseOnlyMode && c.expander != nil {
+		// In database-only mode, use the expander for star expansion
+		// and rely entirely on the database analyzer for type resolution
+		expandedQuery, err := c.expander.Expand(ctx, rawSQL)
+		if err != nil {
+			return nil, fmt.Errorf("star expansion failed: %w", err)
+		}
+
+		// Parse named parameters from the expanded query
+		expandedStmts, err := c.parser.Parse(strings.NewReader(expandedQuery))
+		if err != nil {
+			return nil, fmt.Errorf("parsing expanded query failed: %w", err)
+		}
+		if len(expandedStmts) == 0 {
+			return nil, errors.New("no statements in expanded query")
+		}
+		expandedRaw := expandedStmts[0].Raw
+
+		// Use the analyzer to get type information from the database
+		result, err := c.analyzer.Analyze(ctx, expandedRaw, expandedQuery, c.schema, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		// Convert the analyzer result to the internal analysis format
+		var cols []*Column
+		for _, col := range result.Columns {
+			cols = append(cols, convertColumn(col))
+		}
+		var params []Parameter
+		for _, p := range result.Params {
+			params = append(params, Parameter{
+				Number: int(p.Number),
+				Column: convertColumn(p.Column),
+			})
+		}
+
+		// Determine the insert table if applicable
+		var table *ast.TableName
+		if insert, ok := expandedRaw.Stmt.(*ast.InsertStmt); ok {
+			table, _ = ParseTableName(insert.Relation)
+		}
+
+		anlys = &analysis{
+			Table:      table,
+			Columns:    cols,
+			Parameters: params,
+			Query:      expandedQuery,
+		}
+	} else if c.analyzer != nil {
 		inference, _ := c.inferQuery(raw, rawSQL)
 		if inference == nil {
 			inference = &analysis{}

@@ -79,7 +79,10 @@
                         "type": "object",
                         "properties": {
                             "database": {
-                                "type": "boolean"
+                                "oneOf": [
+                                    {"type": "boolean"},
+                                    {"const": "only"}
+                                ]
                             }
                         }
                     },
