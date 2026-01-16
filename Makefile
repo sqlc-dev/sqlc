@@ -1,4 +1,4 @@
-.PHONY: build build-endtoend test test-ci test-examples test-endtoend start psql mysqlsh proto
+.PHONY: build build-endtoend test test-ci test-examples test-endtoend start psql mysqlsh proto sqlc
 
 build:
 	go build ./...
@@ -23,17 +23,20 @@ build-endtoend:
 
 test-ci: test-examples build-endtoend vet
 
+sqlc:
+	go build -o ./bin/sqlc ./cmd/sqlc/
+
 sqlc-dev:
-	go build -o ~/bin/sqlc-dev ./cmd/sqlc/
+	go build -o ./bin/sqlc-dev ./cmd/sqlc/
 
 sqlc-pg-gen:
-	go build -o ~/bin/sqlc-pg-gen ./internal/tools/sqlc-pg-gen
+	go build -o ./bin/sqlc-pg-gen ./internal/tools/sqlc-pg-gen
 
 sqlc-gen-json:
-	go build -o ~/bin/sqlc-gen-json ./cmd/sqlc-gen-json
+	go build -o ./bin/sqlc-gen-json ./cmd/sqlc-gen-json
 
 test-json-process-plugin:
-	go build -o ~/bin/test-json-process-plugin ./scripts/test-json-process-plugin/
+	go build -o ./bin/test-json-process-plugin ./scripts/test-json-process-plugin/
 
 start:
 	docker compose up -d
