@@ -7,7 +7,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/dbmanager"
-	"github.com/sqlc-dev/sqlc/internal/engine/clickhouse"
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	pganalyze "github.com/sqlc-dev/sqlc/internal/engine/postgresql/analyzer"
@@ -82,10 +81,6 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 	case config.EngineMySQL:
 		c.parser = dolphin.NewParser()
 		c.catalog = dolphin.NewCatalog()
-		c.selector = newDefaultSelector()
-	case config.EngineClickHouse:
-		c.parser = clickhouse.NewParser()
-		c.catalog = clickhouse.NewCatalog()
 		c.selector = newDefaultSelector()
 	case config.EnginePostgreSQL:
 		parser := postgresql.NewParser()
