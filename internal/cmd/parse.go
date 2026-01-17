@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/sqlc-dev/sqlc/internal/engine/clickhouse"
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
@@ -27,7 +28,10 @@ Examples:
   echo "SELECT * FROM users" | sqlc parse --dialect mysql
 
   # Parse SQLite SQL
-  sqlc parse --dialect sqlite queries.sql`,
+  sqlc parse --dialect sqlite queries.sql
+
+  # Parse ClickHouse SQL
+  sqlc parse --dialect clickhouse queries.sql`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		dialect, err := cmd.Flags().GetString("dialect")
@@ -35,7 +39,7 @@ Examples:
 			return err
 		}
 		if dialect == "" {
-			return fmt.Errorf("--dialect flag is required (postgresql, mysql, or sqlite)")
+			return fmt.Errorf("--dialect flag is required (postgresql, mysql, sqlite, or clickhouse)")
 		}
 
 		// Determine input source
@@ -71,8 +75,11 @@ Examples:
 		case "sqlite":
 			parser := sqlite.NewParser()
 			stmts, err = parser.Parse(input)
+		case "clickhouse":
+			parser := clickhouse.NewParser()
+			stmts, err = parser.Parse(input)
 		default:
-			return fmt.Errorf("unsupported dialect: %s (use postgresql, mysql, or sqlite)", dialect)
+			return fmt.Errorf("unsupported dialect: %s (use postgresql, mysql, sqlite, or clickhouse)", dialect)
 		}
 		if err != nil {
 			return fmt.Errorf("parse error: %w", err)
