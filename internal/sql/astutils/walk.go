@@ -1134,9 +1134,6 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Options)
 		}
 
-	case *ast.Expr:
-		// pass
-
 	case *ast.FetchStmt:
 		// pass
 

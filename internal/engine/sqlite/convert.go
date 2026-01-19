@@ -311,10 +311,6 @@ func (c *cc) convertFuncContext(n *parser.Expr_functionContext) ast.Node {
 	return todo("convertFuncContext", n)
 }
 
-func (c *cc) convertExprContext(n *parser.ExprContext) ast.Node {
-	return &ast.Expr{}
-}
-
 func (c *cc) convertColumnNameExpr(n *parser.Expr_qualified_column_nameContext) *ast.ColumnRef {
 	var items []ast.Node
 	if schema, ok := n.Schema_name().(*parser.Schema_nameContext); ok {
@@ -826,7 +822,7 @@ func (c *cc) convertUnaryExpr(n *parser.Expr_unaryContext) ast.Node {
 		if opCtx.MINUS() != nil {
 			// Negative number: -expr
 			return &ast.A_Expr{
-				Name: &ast.List{Items: []ast.Node{&ast.String{Str: "-"}}},
+				Name:  &ast.List{Items: []ast.Node{&ast.String{Str: "-"}}},
 				Rexpr: expr,
 			}
 		}
@@ -837,7 +833,7 @@ func (c *cc) convertUnaryExpr(n *parser.Expr_unaryContext) ast.Node {
 		if opCtx.TILDE() != nil {
 			// Bitwise NOT: ~expr
 			return &ast.A_Expr{
-				Name: &ast.List{Items: []ast.Node{&ast.String{Str: "~"}}},
+				Name:  &ast.List{Items: []ast.Node{&ast.String{Str: "~"}}},
 				Rexpr: expr,
 			}
 		}
@@ -1266,9 +1262,6 @@ func (c *cc) convert(node node) ast.Node {
 
 	case *parser.Delete_stmt_limitedContext:
 		return c.convertDelete_stmtContext(n)
-
-	case *parser.ExprContext:
-		return c.convertExprContext(n)
 
 	case *parser.Expr_functionContext:
 		return c.convertFuncContext(n)
