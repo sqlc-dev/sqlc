@@ -21,6 +21,7 @@ func dataType(n *ast.TypeName) string {
 	}
 }
 
+// resolveCatalogRefs
 func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, params *named.ParamSet, embeds rewrite.EmbedSet) ([]Parameter, error) {
 	c := comp.catalog
 
@@ -67,10 +68,14 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				continue
 			}
 			// If the table name doesn't exist, first check if it's a CTE
-			if _, qcerr := qc.GetTable(fqn); qcerr != nil {
+			qctab, qcerr := qc.GetTable(fqn)
+			if qcerr != nil {
 				return nil, err
 			}
-			continue
+			table = catalog.Table{
+				Rel:     qctab.Rel,
+				Columns: convertCompilerColumnsToCatalogColumns(qctab.Columns),
+			}
 		}
 		err = indexTable(table)
 		if err != nil {
@@ -634,4 +639,33 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		}
 	}
 	return a, nil
+}
+
+func convertCompilerColumnsToCatalogColumns(qccols []*Column) []*catalog.Column {
+	ret := make([]*catalog.Column, len(qccols))
+	for i, v := range qccols {
+		ret[i] = convertCompilerColumnToCatalogColumn(v)
+	}
+	return ret
+}
+
+func convertCompilerColumnToCatalogColumn(qccol *Column) *catalog.Column {
+
+	var tn ast.TypeName
+	if qccol.Type != nil {
+		tn = *qccol.Type
+	} else {
+		tn = ast.TypeName{Name: qccol.DataType}
+	}
+
+	return &catalog.Column{
+		Name:       qccol.Name,
+		Type:       tn,
+		IsNotNull:  qccol.NotNull,
+		IsUnsigned: qccol.Unsigned,
+		IsArray:    qccol.IsArray,
+		ArrayDims:  qccol.ArrayDims,
+		Comment:    qccol.Comment,
+		Length:     qccol.Length,
+	}
 }
