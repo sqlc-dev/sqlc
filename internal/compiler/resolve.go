@@ -21,7 +21,6 @@ func dataType(n *ast.TypeName) string {
 	}
 }
 
-// resolveCatalogRefs
 func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, params *named.ParamSet, embeds rewrite.EmbedSet) ([]Parameter, error) {
 	c := comp.catalog
 
