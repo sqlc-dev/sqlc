@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strings"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -21,7 +20,6 @@ import (
 
 type Runner struct {
 	Cmd    string
-	Dir    string // Working directory for the plugin (config file directory)
 	Format string
 	Env    []string
 }
@@ -55,27 +53,14 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 		return fmt.Errorf("unknown plugin format: %s", r.Format)
 	}
 
-	// Parse command string to support formats like "go run ./path"
-	cmdParts := strings.Fields(r.Cmd)
-	if len(cmdParts) == 0 {
-		return fmt.Errorf("process: %s not found", r.Cmd)
-	}
-
 	// Check if the output plugin exists
-	path, err := exec.LookPath(cmdParts[0])
+	path, err := exec.LookPath(r.Cmd)
 	if err != nil {
 		return fmt.Errorf("process: %s not found", r.Cmd)
 	}
 
-	// Build arguments: rest of cmdParts + method
-	cmdArgs := append(cmdParts[1:], method)
-	cmd := exec.CommandContext(ctx, path, cmdArgs...)
+	cmd := exec.CommandContext(ctx, path, method)
 	cmd.Stdin = bytes.NewReader(stdin)
-	// Set working directory to config file directory for relative paths
-	if r.Dir != "" {
-		cmd.Dir = r.Dir
-	}
-	// Pass only SQLC_VERSION and explicitly configured environment variables
 	cmd.Env = []string{
 		fmt.Sprintf("SQLC_VERSION=%s", info.Version),
 	}
@@ -84,20 +69,6 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 			continue
 		}
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, os.Getenv(key)))
-	}
-	// For "go run" commands, inherit PATH and Go-related environment
-	if len(cmdParts) > 1 && cmdParts[0] == "go" {
-		for _, env := range os.Environ() {
-			if strings.HasPrefix(env, "PATH=") ||
-				strings.HasPrefix(env, "GOPATH=") ||
-				strings.HasPrefix(env, "GOROOT=") ||
-				strings.HasPrefix(env, "GOWORK=") ||
-				strings.HasPrefix(env, "HOME=") ||
-				strings.HasPrefix(env, "GOCACHE=") ||
-				strings.HasPrefix(env, "GOMODCACHE=") {
-				cmd.Env = append(cmd.Env, env)
-			}
-		}
 	}
 
 	out, err := cmd.Output()
