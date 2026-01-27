@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v6.32.1
-// source: engine/engine.proto
+// source: protos/engine/engine.proto
 
 package engine
 
@@ -21,17 +21,25 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// ParseRequest contains the SQL to parse.
+// ParseRequest contains the SQL to parse and either schema or connection parameters.
 type ParseRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Sql           string                 `protobuf:"bytes,1,opt,name=sql,proto3" json:"sql,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The SQL query text to parse.
+	Sql string `protobuf:"bytes,1,opt,name=sql,proto3" json:"sql,omitempty"`
+	// Either schema SQL or connection parameters for database-only mode.
+	//
+	// Types that are valid to be assigned to SchemaSource:
+	//
+	//	*ParseRequest_SchemaSql
+	//	*ParseRequest_ConnectionParams
+	SchemaSource  isParseRequest_SchemaSource `protobuf_oneof:"schema_source"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ParseRequest) Reset() {
 	*x = ParseRequest{}
-	mi := &file_engine_engine_proto_msgTypes[0]
+	mi := &file_protos_engine_engine_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -43,7 +51,7 @@ func (x *ParseRequest) String() string {
 func (*ParseRequest) ProtoMessage() {}
 
 func (x *ParseRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[0]
+	mi := &file_protos_engine_engine_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56,7 +64,7 @@ func (x *ParseRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ParseRequest.ProtoReflect.Descriptor instead.
 func (*ParseRequest) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{0}
+	return file_protos_engine_engine_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *ParseRequest) GetSql() string {
@@ -66,17 +74,121 @@ func (x *ParseRequest) GetSql() string {
 	return ""
 }
 
-// ParseResponse contains the parsed statements.
+func (x *ParseRequest) GetSchemaSource() isParseRequest_SchemaSource {
+	if x != nil {
+		return x.SchemaSource
+	}
+	return nil
+}
+
+func (x *ParseRequest) GetSchemaSql() string {
+	if x != nil {
+		if x, ok := x.SchemaSource.(*ParseRequest_SchemaSql); ok {
+			return x.SchemaSql
+		}
+	}
+	return ""
+}
+
+func (x *ParseRequest) GetConnectionParams() *ConnectionParams {
+	if x != nil {
+		if x, ok := x.SchemaSource.(*ParseRequest_ConnectionParams); ok {
+			return x.ConnectionParams
+		}
+	}
+	return nil
+}
+
+type isParseRequest_SchemaSource interface {
+	isParseRequest_SchemaSource()
+}
+
+type ParseRequest_SchemaSql struct {
+	// Schema SQL text (schema.sql) for schema-based parsing.
+	SchemaSql string `protobuf:"bytes,2,opt,name=schema_sql,json=schemaSql,proto3,oneof"`
+}
+
+type ParseRequest_ConnectionParams struct {
+	// Connection parameters for database-only mode.
+	ConnectionParams *ConnectionParams `protobuf:"bytes,3,opt,name=connection_params,json=connectionParams,proto3,oneof"`
+}
+
+func (*ParseRequest_SchemaSql) isParseRequest_SchemaSource() {}
+
+func (*ParseRequest_ConnectionParams) isParseRequest_SchemaSource() {}
+
+// ConnectionParams contains database connection parameters for database-only mode.
+type ConnectionParams struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Database connection string or DSN.
+	Dsn string `protobuf:"bytes,1,opt,name=dsn,proto3" json:"dsn,omitempty"`
+	// Additional connection parameters as key-value pairs.
+	Params        map[string]string `protobuf:"bytes,2,rep,name=params,proto3" json:"params,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ConnectionParams) Reset() {
+	*x = ConnectionParams{}
+	mi := &file_protos_engine_engine_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ConnectionParams) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ConnectionParams) ProtoMessage() {}
+
+func (x *ConnectionParams) ProtoReflect() protoreflect.Message {
+	mi := &file_protos_engine_engine_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ConnectionParams.ProtoReflect.Descriptor instead.
+func (*ConnectionParams) Descriptor() ([]byte, []int) {
+	return file_protos_engine_engine_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ConnectionParams) GetDsn() string {
+	if x != nil {
+		return x.Dsn
+	}
+	return ""
+}
+
+func (x *ConnectionParams) GetParams() map[string]string {
+	if x != nil {
+		return x.Params
+	}
+	return nil
+}
+
+// ParseResponse contains the processed SQL and information about parameters and columns.
 type ParseResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Statements    []*Statement           `protobuf:"bytes,1,rep,name=statements,proto3" json:"statements,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The processed SQL query text. In the simplest case, this is the same as input.
+	// In complex cases, wildcards (*) may be expanded based on the schema.
+	Sql string `protobuf:"bytes,1,opt,name=sql,proto3" json:"sql,omitempty"`
+	// Parameters found in the query (e.g., $1, ?, :name, sqlc.arg(), etc.).
+	Parameters []*Parameter `protobuf:"bytes,2,rep,name=parameters,proto3" json:"parameters,omitempty"`
+	// Result columns that the query returns.
+	Columns       []*Column `protobuf:"bytes,3,rep,name=columns,proto3" json:"columns,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ParseResponse) Reset() {
 	*x = ParseResponse{}
-	mi := &file_engine_engine_proto_msgTypes[1]
+	mi := &file_protos_engine_engine_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -88,7 +200,7 @@ func (x *ParseResponse) String() string {
 func (*ParseResponse) ProtoMessage() {}
 
 func (x *ParseResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[1]
+	mi := &file_protos_engine_engine_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -101,421 +213,145 @@ func (x *ParseResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ParseResponse.ProtoReflect.Descriptor instead.
 func (*ParseResponse) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{1}
+	return file_protos_engine_engine_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *ParseResponse) GetStatements() []*Statement {
+func (x *ParseResponse) GetSql() string {
 	if x != nil {
-		return x.Statements
+		return x.Sql
+	}
+	return ""
+}
+
+func (x *ParseResponse) GetParameters() []*Parameter {
+	if x != nil {
+		return x.Parameters
 	}
 	return nil
 }
 
-// Statement represents a parsed SQL statement.
-type Statement struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// The raw SQL text of the statement.
-	RawSql string `protobuf:"bytes,1,opt,name=raw_sql,json=rawSql,proto3" json:"raw_sql,omitempty"`
-	// The position in the input where this statement starts.
-	StmtLocation int32 `protobuf:"varint,2,opt,name=stmt_location,json=stmtLocation,proto3" json:"stmt_location,omitempty"`
-	// The length of the statement in bytes.
-	StmtLen int32 `protobuf:"varint,3,opt,name=stmt_len,json=stmtLen,proto3" json:"stmt_len,omitempty"`
-	// The AST of the statement encoded as JSON.
-	// The JSON structure follows the internal AST format.
-	AstJson       []byte `protobuf:"bytes,4,opt,name=ast_json,json=astJson,proto3" json:"ast_json,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Statement) Reset() {
-	*x = Statement{}
-	mi := &file_engine_engine_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Statement) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Statement) ProtoMessage() {}
-
-func (x *Statement) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Statement.ProtoReflect.Descriptor instead.
-func (*Statement) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *Statement) GetRawSql() string {
-	if x != nil {
-		return x.RawSql
-	}
-	return ""
-}
-
-func (x *Statement) GetStmtLocation() int32 {
-	if x != nil {
-		return x.StmtLocation
-	}
-	return 0
-}
-
-func (x *Statement) GetStmtLen() int32 {
-	if x != nil {
-		return x.StmtLen
-	}
-	return 0
-}
-
-func (x *Statement) GetAstJson() []byte {
-	if x != nil {
-		return x.AstJson
-	}
-	return nil
-}
-
-// GetCatalogRequest is empty for now.
-type GetCatalogRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetCatalogRequest) Reset() {
-	*x = GetCatalogRequest{}
-	mi := &file_engine_engine_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetCatalogRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetCatalogRequest) ProtoMessage() {}
-
-func (x *GetCatalogRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetCatalogRequest.ProtoReflect.Descriptor instead.
-func (*GetCatalogRequest) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{3}
-}
-
-// GetCatalogResponse contains the initial catalog.
-type GetCatalogResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Catalog       *Catalog               `protobuf:"bytes,1,opt,name=catalog,proto3" json:"catalog,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetCatalogResponse) Reset() {
-	*x = GetCatalogResponse{}
-	mi := &file_engine_engine_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetCatalogResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetCatalogResponse) ProtoMessage() {}
-
-func (x *GetCatalogResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetCatalogResponse.ProtoReflect.Descriptor instead.
-func (*GetCatalogResponse) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *GetCatalogResponse) GetCatalog() *Catalog {
-	if x != nil {
-		return x.Catalog
-	}
-	return nil
-}
-
-// Catalog represents the database catalog.
-type Catalog struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Comment       string                 `protobuf:"bytes,1,opt,name=comment,proto3" json:"comment,omitempty"`
-	DefaultSchema string                 `protobuf:"bytes,2,opt,name=default_schema,json=defaultSchema,proto3" json:"default_schema,omitempty"`
-	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Schemas       []*Schema              `protobuf:"bytes,4,rep,name=schemas,proto3" json:"schemas,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Catalog) Reset() {
-	*x = Catalog{}
-	mi := &file_engine_engine_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Catalog) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Catalog) ProtoMessage() {}
-
-func (x *Catalog) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Catalog.ProtoReflect.Descriptor instead.
-func (*Catalog) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *Catalog) GetComment() string {
-	if x != nil {
-		return x.Comment
-	}
-	return ""
-}
-
-func (x *Catalog) GetDefaultSchema() string {
-	if x != nil {
-		return x.DefaultSchema
-	}
-	return ""
-}
-
-func (x *Catalog) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *Catalog) GetSchemas() []*Schema {
-	if x != nil {
-		return x.Schemas
-	}
-	return nil
-}
-
-// Schema represents a database schema.
-type Schema struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Comment       string                 `protobuf:"bytes,2,opt,name=comment,proto3" json:"comment,omitempty"`
-	Tables        []*Table               `protobuf:"bytes,3,rep,name=tables,proto3" json:"tables,omitempty"`
-	Enums         []*Enum                `protobuf:"bytes,4,rep,name=enums,proto3" json:"enums,omitempty"`
-	Functions     []*Function            `protobuf:"bytes,5,rep,name=functions,proto3" json:"functions,omitempty"`
-	Types         []*Type                `protobuf:"bytes,6,rep,name=types,proto3" json:"types,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Schema) Reset() {
-	*x = Schema{}
-	mi := &file_engine_engine_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Schema) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Schema) ProtoMessage() {}
-
-func (x *Schema) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Schema.ProtoReflect.Descriptor instead.
-func (*Schema) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *Schema) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *Schema) GetComment() string {
-	if x != nil {
-		return x.Comment
-	}
-	return ""
-}
-
-func (x *Schema) GetTables() []*Table {
-	if x != nil {
-		return x.Tables
-	}
-	return nil
-}
-
-func (x *Schema) GetEnums() []*Enum {
-	if x != nil {
-		return x.Enums
-	}
-	return nil
-}
-
-func (x *Schema) GetFunctions() []*Function {
-	if x != nil {
-		return x.Functions
-	}
-	return nil
-}
-
-func (x *Schema) GetTypes() []*Type {
-	if x != nil {
-		return x.Types
-	}
-	return nil
-}
-
-// Table represents a database table.
-type Table struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Catalog       string                 `protobuf:"bytes,1,opt,name=catalog,proto3" json:"catalog,omitempty"`
-	Schema        string                 `protobuf:"bytes,2,opt,name=schema,proto3" json:"schema,omitempty"`
-	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Columns       []*Column              `protobuf:"bytes,4,rep,name=columns,proto3" json:"columns,omitempty"`
-	Comment       string                 `protobuf:"bytes,5,opt,name=comment,proto3" json:"comment,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Table) Reset() {
-	*x = Table{}
-	mi := &file_engine_engine_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Table) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Table) ProtoMessage() {}
-
-func (x *Table) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Table.ProtoReflect.Descriptor instead.
-func (*Table) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *Table) GetCatalog() string {
-	if x != nil {
-		return x.Catalog
-	}
-	return ""
-}
-
-func (x *Table) GetSchema() string {
-	if x != nil {
-		return x.Schema
-	}
-	return ""
-}
-
-func (x *Table) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *Table) GetColumns() []*Column {
+func (x *ParseResponse) GetColumns() []*Column {
 	if x != nil {
 		return x.Columns
 	}
 	return nil
 }
 
-func (x *Table) GetComment() string {
+// Parameter represents a query parameter.
+type Parameter struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Parameter name (if named) or empty for positional parameters.
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// Parameter position (1-based) for positional parameters.
+	Position int32 `protobuf:"varint,2,opt,name=position,proto3" json:"position,omitempty"`
+	// SQL data type of the parameter.
+	DataType string `protobuf:"bytes,3,opt,name=data_type,json=dataType,proto3" json:"data_type,omitempty"`
+	// Whether the parameter is nullable.
+	Nullable bool `protobuf:"varint,4,opt,name=nullable,proto3" json:"nullable,omitempty"`
+	// Whether the parameter is an array type.
+	IsArray bool `protobuf:"varint,5,opt,name=is_array,json=isArray,proto3" json:"is_array,omitempty"`
+	// Array dimensions if is_array is true.
+	ArrayDims     int32 `protobuf:"varint,6,opt,name=array_dims,json=arrayDims,proto3" json:"array_dims,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Parameter) Reset() {
+	*x = Parameter{}
+	mi := &file_protos_engine_engine_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Parameter) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Parameter) ProtoMessage() {}
+
+func (x *Parameter) ProtoReflect() protoreflect.Message {
+	mi := &file_protos_engine_engine_proto_msgTypes[3]
 	if x != nil {
-		return x.Comment
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Parameter.ProtoReflect.Descriptor instead.
+func (*Parameter) Descriptor() ([]byte, []int) {
+	return file_protos_engine_engine_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *Parameter) GetName() string {
+	if x != nil {
+		return x.Name
 	}
 	return ""
 }
 
-// Column represents a table column.
+func (x *Parameter) GetPosition() int32 {
+	if x != nil {
+		return x.Position
+	}
+	return 0
+}
+
+func (x *Parameter) GetDataType() string {
+	if x != nil {
+		return x.DataType
+	}
+	return ""
+}
+
+func (x *Parameter) GetNullable() bool {
+	if x != nil {
+		return x.Nullable
+	}
+	return false
+}
+
+func (x *Parameter) GetIsArray() bool {
+	if x != nil {
+		return x.IsArray
+	}
+	return false
+}
+
+func (x *Parameter) GetArrayDims() int32 {
+	if x != nil {
+		return x.ArrayDims
+	}
+	return 0
+}
+
+// Column represents a result column.
 type Column struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	DataType      string                 `protobuf:"bytes,2,opt,name=data_type,json=dataType,proto3" json:"data_type,omitempty"`
-	NotNull       bool                   `protobuf:"varint,3,opt,name=not_null,json=notNull,proto3" json:"not_null,omitempty"`
-	IsArray       bool                   `protobuf:"varint,4,opt,name=is_array,json=isArray,proto3" json:"is_array,omitempty"`
-	ArrayDims     int32                  `protobuf:"varint,5,opt,name=array_dims,json=arrayDims,proto3" json:"array_dims,omitempty"`
-	Comment       string                 `protobuf:"bytes,6,opt,name=comment,proto3" json:"comment,omitempty"`
-	Length        int32                  `protobuf:"varint,7,opt,name=length,proto3" json:"length,omitempty"`
-	IsUnsigned    bool                   `protobuf:"varint,8,opt,name=is_unsigned,json=isUnsigned,proto3" json:"is_unsigned,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Column name.
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// SQL data type of the column.
+	DataType string `protobuf:"bytes,2,opt,name=data_type,json=dataType,proto3" json:"data_type,omitempty"`
+	// Whether the column is nullable.
+	Nullable bool `protobuf:"varint,3,opt,name=nullable,proto3" json:"nullable,omitempty"`
+	// Whether the column is an array type.
+	IsArray bool `protobuf:"varint,4,opt,name=is_array,json=isArray,proto3" json:"is_array,omitempty"`
+	// Array dimensions if is_array is true.
+	ArrayDims int32 `protobuf:"varint,5,opt,name=array_dims,json=arrayDims,proto3" json:"array_dims,omitempty"`
+	// Table name this column belongs to (if known).
+	TableName string `protobuf:"bytes,6,opt,name=table_name,json=tableName,proto3" json:"table_name,omitempty"`
+	// Schema name this column belongs to (if known).
+	SchemaName    string `protobuf:"bytes,7,opt,name=schema_name,json=schemaName,proto3" json:"schema_name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Column) Reset() {
 	*x = Column{}
-	mi := &file_engine_engine_proto_msgTypes[8]
+	mi := &file_protos_engine_engine_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -527,7 +363,7 @@ func (x *Column) String() string {
 func (*Column) ProtoMessage() {}
 
 func (x *Column) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[8]
+	mi := &file_protos_engine_engine_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -540,7 +376,7 @@ func (x *Column) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Column.ProtoReflect.Descriptor instead.
 func (*Column) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{8}
+	return file_protos_engine_engine_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Column) GetName() string {
@@ -557,9 +393,9 @@ func (x *Column) GetDataType() string {
 	return ""
 }
 
-func (x *Column) GetNotNull() bool {
+func (x *Column) GetNullable() bool {
 	if x != nil {
-		return x.NotNull
+		return x.Nullable
 	}
 	return false
 }
@@ -578,840 +414,124 @@ func (x *Column) GetArrayDims() int32 {
 	return 0
 }
 
-func (x *Column) GetComment() string {
+func (x *Column) GetTableName() string {
 	if x != nil {
-		return x.Comment
+		return x.TableName
 	}
 	return ""
 }
 
-func (x *Column) GetLength() int32 {
+func (x *Column) GetSchemaName() string {
 	if x != nil {
-		return x.Length
-	}
-	return 0
-}
-
-func (x *Column) GetIsUnsigned() bool {
-	if x != nil {
-		return x.IsUnsigned
-	}
-	return false
-}
-
-// Enum represents an enum type.
-type Enum struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Schema        string                 `protobuf:"bytes,1,opt,name=schema,proto3" json:"schema,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Values        []string               `protobuf:"bytes,3,rep,name=values,proto3" json:"values,omitempty"`
-	Comment       string                 `protobuf:"bytes,4,opt,name=comment,proto3" json:"comment,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Enum) Reset() {
-	*x = Enum{}
-	mi := &file_engine_engine_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Enum) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Enum) ProtoMessage() {}
-
-func (x *Enum) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Enum.ProtoReflect.Descriptor instead.
-func (*Enum) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *Enum) GetSchema() string {
-	if x != nil {
-		return x.Schema
+		return x.SchemaName
 	}
 	return ""
 }
 
-func (x *Enum) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
+var File_protos_engine_engine_proto protoreflect.FileDescriptor
 
-func (x *Enum) GetValues() []string {
-	if x != nil {
-		return x.Values
-	}
-	return nil
-}
-
-func (x *Enum) GetComment() string {
-	if x != nil {
-		return x.Comment
-	}
-	return ""
-}
-
-// Function represents a database function.
-type Function struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Schema        string                 `protobuf:"bytes,1,opt,name=schema,proto3" json:"schema,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Args          []*FunctionArg         `protobuf:"bytes,3,rep,name=args,proto3" json:"args,omitempty"`
-	ReturnType    *DataType              `protobuf:"bytes,4,opt,name=return_type,json=returnType,proto3" json:"return_type,omitempty"`
-	Comment       string                 `protobuf:"bytes,5,opt,name=comment,proto3" json:"comment,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Function) Reset() {
-	*x = Function{}
-	mi := &file_engine_engine_proto_msgTypes[10]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Function) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Function) ProtoMessage() {}
-
-func (x *Function) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[10]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Function.ProtoReflect.Descriptor instead.
-func (*Function) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *Function) GetSchema() string {
-	if x != nil {
-		return x.Schema
-	}
-	return ""
-}
-
-func (x *Function) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *Function) GetArgs() []*FunctionArg {
-	if x != nil {
-		return x.Args
-	}
-	return nil
-}
-
-func (x *Function) GetReturnType() *DataType {
-	if x != nil {
-		return x.ReturnType
-	}
-	return nil
-}
-
-func (x *Function) GetComment() string {
-	if x != nil {
-		return x.Comment
-	}
-	return ""
-}
-
-// FunctionArg represents a function argument.
-type FunctionArg struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Type          *DataType              `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	HasDefault    bool                   `protobuf:"varint,3,opt,name=has_default,json=hasDefault,proto3" json:"has_default,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *FunctionArg) Reset() {
-	*x = FunctionArg{}
-	mi := &file_engine_engine_proto_msgTypes[11]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *FunctionArg) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*FunctionArg) ProtoMessage() {}
-
-func (x *FunctionArg) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[11]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use FunctionArg.ProtoReflect.Descriptor instead.
-func (*FunctionArg) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *FunctionArg) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *FunctionArg) GetType() *DataType {
-	if x != nil {
-		return x.Type
-	}
-	return nil
-}
-
-func (x *FunctionArg) GetHasDefault() bool {
-	if x != nil {
-		return x.HasDefault
-	}
-	return false
-}
-
-// DataType represents a SQL data type.
-type DataType struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Catalog       string                 `protobuf:"bytes,1,opt,name=catalog,proto3" json:"catalog,omitempty"`
-	Schema        string                 `protobuf:"bytes,2,opt,name=schema,proto3" json:"schema,omitempty"`
-	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DataType) Reset() {
-	*x = DataType{}
-	mi := &file_engine_engine_proto_msgTypes[12]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DataType) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DataType) ProtoMessage() {}
-
-func (x *DataType) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[12]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DataType.ProtoReflect.Descriptor instead.
-func (*DataType) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *DataType) GetCatalog() string {
-	if x != nil {
-		return x.Catalog
-	}
-	return ""
-}
-
-func (x *DataType) GetSchema() string {
-	if x != nil {
-		return x.Schema
-	}
-	return ""
-}
-
-func (x *DataType) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-// Type represents a composite or custom type.
-type Type struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Schema        string                 `protobuf:"bytes,1,opt,name=schema,proto3" json:"schema,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Comment       string                 `protobuf:"bytes,3,opt,name=comment,proto3" json:"comment,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Type) Reset() {
-	*x = Type{}
-	mi := &file_engine_engine_proto_msgTypes[13]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Type) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Type) ProtoMessage() {}
-
-func (x *Type) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[13]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Type.ProtoReflect.Descriptor instead.
-func (*Type) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *Type) GetSchema() string {
-	if x != nil {
-		return x.Schema
-	}
-	return ""
-}
-
-func (x *Type) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *Type) GetComment() string {
-	if x != nil {
-		return x.Comment
-	}
-	return ""
-}
-
-// IsReservedKeywordRequest contains the keyword to check.
-type IsReservedKeywordRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Keyword       string                 `protobuf:"bytes,1,opt,name=keyword,proto3" json:"keyword,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *IsReservedKeywordRequest) Reset() {
-	*x = IsReservedKeywordRequest{}
-	mi := &file_engine_engine_proto_msgTypes[14]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *IsReservedKeywordRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*IsReservedKeywordRequest) ProtoMessage() {}
-
-func (x *IsReservedKeywordRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[14]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use IsReservedKeywordRequest.ProtoReflect.Descriptor instead.
-func (*IsReservedKeywordRequest) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *IsReservedKeywordRequest) GetKeyword() string {
-	if x != nil {
-		return x.Keyword
-	}
-	return ""
-}
-
-// IsReservedKeywordResponse contains the result.
-type IsReservedKeywordResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	IsReserved    bool                   `protobuf:"varint,1,opt,name=is_reserved,json=isReserved,proto3" json:"is_reserved,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *IsReservedKeywordResponse) Reset() {
-	*x = IsReservedKeywordResponse{}
-	mi := &file_engine_engine_proto_msgTypes[15]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *IsReservedKeywordResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*IsReservedKeywordResponse) ProtoMessage() {}
-
-func (x *IsReservedKeywordResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[15]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use IsReservedKeywordResponse.ProtoReflect.Descriptor instead.
-func (*IsReservedKeywordResponse) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *IsReservedKeywordResponse) GetIsReserved() bool {
-	if x != nil {
-		return x.IsReserved
-	}
-	return false
-}
-
-// GetCommentSyntaxRequest is empty.
-type GetCommentSyntaxRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetCommentSyntaxRequest) Reset() {
-	*x = GetCommentSyntaxRequest{}
-	mi := &file_engine_engine_proto_msgTypes[16]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetCommentSyntaxRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetCommentSyntaxRequest) ProtoMessage() {}
-
-func (x *GetCommentSyntaxRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[16]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetCommentSyntaxRequest.ProtoReflect.Descriptor instead.
-func (*GetCommentSyntaxRequest) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{16}
-}
-
-// GetCommentSyntaxResponse contains supported comment syntax.
-type GetCommentSyntaxResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Dash          bool                   `protobuf:"varint,1,opt,name=dash,proto3" json:"dash,omitempty"`                            // -- comment
-	SlashStar     bool                   `protobuf:"varint,2,opt,name=slash_star,json=slashStar,proto3" json:"slash_star,omitempty"` // /* comment */
-	Hash          bool                   `protobuf:"varint,3,opt,name=hash,proto3" json:"hash,omitempty"`                            // # comment
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetCommentSyntaxResponse) Reset() {
-	*x = GetCommentSyntaxResponse{}
-	mi := &file_engine_engine_proto_msgTypes[17]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetCommentSyntaxResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetCommentSyntaxResponse) ProtoMessage() {}
-
-func (x *GetCommentSyntaxResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[17]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetCommentSyntaxResponse.ProtoReflect.Descriptor instead.
-func (*GetCommentSyntaxResponse) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{17}
-}
-
-func (x *GetCommentSyntaxResponse) GetDash() bool {
-	if x != nil {
-		return x.Dash
-	}
-	return false
-}
-
-func (x *GetCommentSyntaxResponse) GetSlashStar() bool {
-	if x != nil {
-		return x.SlashStar
-	}
-	return false
-}
-
-func (x *GetCommentSyntaxResponse) GetHash() bool {
-	if x != nil {
-		return x.Hash
-	}
-	return false
-}
-
-// GetDialectRequest is empty.
-type GetDialectRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetDialectRequest) Reset() {
-	*x = GetDialectRequest{}
-	mi := &file_engine_engine_proto_msgTypes[18]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetDialectRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetDialectRequest) ProtoMessage() {}
-
-func (x *GetDialectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[18]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetDialectRequest.ProtoReflect.Descriptor instead.
-func (*GetDialectRequest) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{18}
-}
-
-// GetDialectResponse contains dialect information.
-type GetDialectResponse struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// The character(s) used for quoting identifiers (e.g., ", `, [)
-	QuoteChar string `protobuf:"bytes,1,opt,name=quote_char,json=quoteChar,proto3" json:"quote_char,omitempty"`
-	// The parameter style: "positional" ($1, ?), "named" (@name, :name)
-	ParamStyle string `protobuf:"bytes,2,opt,name=param_style,json=paramStyle,proto3" json:"param_style,omitempty"`
-	// The parameter prefix (e.g., $, ?, @, :)
-	ParamPrefix string `protobuf:"bytes,3,opt,name=param_prefix,json=paramPrefix,proto3" json:"param_prefix,omitempty"`
-	// The cast syntax: "double_colon" (::), "cast_function" (CAST(x AS y))
-	CastSyntax    string `protobuf:"bytes,4,opt,name=cast_syntax,json=castSyntax,proto3" json:"cast_syntax,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetDialectResponse) Reset() {
-	*x = GetDialectResponse{}
-	mi := &file_engine_engine_proto_msgTypes[19]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetDialectResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetDialectResponse) ProtoMessage() {}
-
-func (x *GetDialectResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_engine_engine_proto_msgTypes[19]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetDialectResponse.ProtoReflect.Descriptor instead.
-func (*GetDialectResponse) Descriptor() ([]byte, []int) {
-	return file_engine_engine_proto_rawDescGZIP(), []int{19}
-}
-
-func (x *GetDialectResponse) GetQuoteChar() string {
-	if x != nil {
-		return x.QuoteChar
-	}
-	return ""
-}
-
-func (x *GetDialectResponse) GetParamStyle() string {
-	if x != nil {
-		return x.ParamStyle
-	}
-	return ""
-}
-
-func (x *GetDialectResponse) GetParamPrefix() string {
-	if x != nil {
-		return x.ParamPrefix
-	}
-	return ""
-}
-
-func (x *GetDialectResponse) GetCastSyntax() string {
-	if x != nil {
-		return x.CastSyntax
-	}
-	return ""
-}
-
-var File_engine_engine_proto protoreflect.FileDescriptor
-
-const file_engine_engine_proto_rawDesc = "" +
+const file_protos_engine_engine_proto_rawDesc = "" +
 	"\n" +
-	"\x13engine/engine.proto\x12\x06engine\" \n" +
+	"\x1aprotos/engine/engine.proto\x12\x06engine\"\x9b\x01\n" +
 	"\fParseRequest\x12\x10\n" +
-	"\x03sql\x18\x01 \x01(\tR\x03sql\"B\n" +
-	"\rParseResponse\x121\n" +
+	"\x03sql\x18\x01 \x01(\tR\x03sql\x12\x1f\n" +
 	"\n" +
-	"statements\x18\x01 \x03(\v2\x11.engine.StatementR\n" +
-	"statements\"\x7f\n" +
-	"\tStatement\x12\x17\n" +
-	"\araw_sql\x18\x01 \x01(\tR\x06rawSql\x12#\n" +
-	"\rstmt_location\x18\x02 \x01(\x05R\fstmtLocation\x12\x19\n" +
-	"\bstmt_len\x18\x03 \x01(\x05R\astmtLen\x12\x19\n" +
-	"\bast_json\x18\x04 \x01(\fR\aastJson\"\x13\n" +
-	"\x11GetCatalogRequest\"?\n" +
-	"\x12GetCatalogResponse\x12)\n" +
-	"\acatalog\x18\x01 \x01(\v2\x0f.engine.CatalogR\acatalog\"\x88\x01\n" +
-	"\aCatalog\x12\x18\n" +
-	"\acomment\x18\x01 \x01(\tR\acomment\x12%\n" +
-	"\x0edefault_schema\x18\x02 \x01(\tR\rdefaultSchema\x12\x12\n" +
-	"\x04name\x18\x03 \x01(\tR\x04name\x12(\n" +
-	"\aschemas\x18\x04 \x03(\v2\x0e.engine.SchemaR\aschemas\"\xd5\x01\n" +
-	"\x06Schema\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
-	"\acomment\x18\x02 \x01(\tR\acomment\x12%\n" +
-	"\x06tables\x18\x03 \x03(\v2\r.engine.TableR\x06tables\x12\"\n" +
-	"\x05enums\x18\x04 \x03(\v2\f.engine.EnumR\x05enums\x12.\n" +
-	"\tfunctions\x18\x05 \x03(\v2\x10.engine.FunctionR\tfunctions\x12\"\n" +
-	"\x05types\x18\x06 \x03(\v2\f.engine.TypeR\x05types\"\x91\x01\n" +
-	"\x05Table\x12\x18\n" +
-	"\acatalog\x18\x01 \x01(\tR\acatalog\x12\x16\n" +
-	"\x06schema\x18\x02 \x01(\tR\x06schema\x12\x12\n" +
-	"\x04name\x18\x03 \x01(\tR\x04name\x12(\n" +
-	"\acolumns\x18\x04 \x03(\v2\x0e.engine.ColumnR\acolumns\x12\x18\n" +
-	"\acomment\x18\x05 \x01(\tR\acomment\"\xe1\x01\n" +
+	"schema_sql\x18\x02 \x01(\tH\x00R\tschemaSql\x12G\n" +
+	"\x11connection_params\x18\x03 \x01(\v2\x18.engine.ConnectionParamsH\x00R\x10connectionParamsB\x0f\n" +
+	"\rschema_source\"\x9d\x01\n" +
+	"\x10ConnectionParams\x12\x10\n" +
+	"\x03dsn\x18\x01 \x01(\tR\x03dsn\x12<\n" +
+	"\x06params\x18\x02 \x03(\v2$.engine.ConnectionParams.ParamsEntryR\x06params\x1a9\n" +
+	"\vParamsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"~\n" +
+	"\rParseResponse\x12\x10\n" +
+	"\x03sql\x18\x01 \x01(\tR\x03sql\x121\n" +
+	"\n" +
+	"parameters\x18\x02 \x03(\v2\x11.engine.ParameterR\n" +
+	"parameters\x12(\n" +
+	"\acolumns\x18\x03 \x03(\v2\x0e.engine.ColumnR\acolumns\"\xae\x01\n" +
+	"\tParameter\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
+	"\bposition\x18\x02 \x01(\x05R\bposition\x12\x1b\n" +
+	"\tdata_type\x18\x03 \x01(\tR\bdataType\x12\x1a\n" +
+	"\bnullable\x18\x04 \x01(\bR\bnullable\x12\x19\n" +
+	"\bis_array\x18\x05 \x01(\bR\aisArray\x12\x1d\n" +
+	"\n" +
+	"array_dims\x18\x06 \x01(\x05R\tarrayDims\"\xcf\x01\n" +
 	"\x06Column\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1b\n" +
-	"\tdata_type\x18\x02 \x01(\tR\bdataType\x12\x19\n" +
-	"\bnot_null\x18\x03 \x01(\bR\anotNull\x12\x19\n" +
+	"\tdata_type\x18\x02 \x01(\tR\bdataType\x12\x1a\n" +
+	"\bnullable\x18\x03 \x01(\bR\bnullable\x12\x19\n" +
 	"\bis_array\x18\x04 \x01(\bR\aisArray\x12\x1d\n" +
 	"\n" +
-	"array_dims\x18\x05 \x01(\x05R\tarrayDims\x12\x18\n" +
-	"\acomment\x18\x06 \x01(\tR\acomment\x12\x16\n" +
-	"\x06length\x18\a \x01(\x05R\x06length\x12\x1f\n" +
-	"\vis_unsigned\x18\b \x01(\bR\n" +
-	"isUnsigned\"d\n" +
-	"\x04Enum\x12\x16\n" +
-	"\x06schema\x18\x01 \x01(\tR\x06schema\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
-	"\x06values\x18\x03 \x03(\tR\x06values\x12\x18\n" +
-	"\acomment\x18\x04 \x01(\tR\acomment\"\xac\x01\n" +
-	"\bFunction\x12\x16\n" +
-	"\x06schema\x18\x01 \x01(\tR\x06schema\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12'\n" +
-	"\x04args\x18\x03 \x03(\v2\x13.engine.FunctionArgR\x04args\x121\n" +
-	"\vreturn_type\x18\x04 \x01(\v2\x10.engine.DataTypeR\n" +
-	"returnType\x12\x18\n" +
-	"\acomment\x18\x05 \x01(\tR\acomment\"h\n" +
-	"\vFunctionArg\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12$\n" +
-	"\x04type\x18\x02 \x01(\v2\x10.engine.DataTypeR\x04type\x12\x1f\n" +
-	"\vhas_default\x18\x03 \x01(\bR\n" +
-	"hasDefault\"P\n" +
-	"\bDataType\x12\x18\n" +
-	"\acatalog\x18\x01 \x01(\tR\acatalog\x12\x16\n" +
-	"\x06schema\x18\x02 \x01(\tR\x06schema\x12\x12\n" +
-	"\x04name\x18\x03 \x01(\tR\x04name\"L\n" +
-	"\x04Type\x12\x16\n" +
-	"\x06schema\x18\x01 \x01(\tR\x06schema\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
-	"\acomment\x18\x03 \x01(\tR\acomment\"4\n" +
-	"\x18IsReservedKeywordRequest\x12\x18\n" +
-	"\akeyword\x18\x01 \x01(\tR\akeyword\"<\n" +
-	"\x19IsReservedKeywordResponse\x12\x1f\n" +
-	"\vis_reserved\x18\x01 \x01(\bR\n" +
-	"isReserved\"\x19\n" +
-	"\x17GetCommentSyntaxRequest\"a\n" +
-	"\x18GetCommentSyntaxResponse\x12\x12\n" +
-	"\x04dash\x18\x01 \x01(\bR\x04dash\x12\x1d\n" +
+	"array_dims\x18\x05 \x01(\x05R\tarrayDims\x12\x1d\n" +
 	"\n" +
-	"slash_star\x18\x02 \x01(\bR\tslashStar\x12\x12\n" +
-	"\x04hash\x18\x03 \x01(\bR\x04hash\"\x13\n" +
-	"\x11GetDialectRequest\"\x98\x01\n" +
-	"\x12GetDialectResponse\x12\x1d\n" +
-	"\n" +
-	"quote_char\x18\x01 \x01(\tR\tquoteChar\x12\x1f\n" +
-	"\vparam_style\x18\x02 \x01(\tR\n" +
-	"paramStyle\x12!\n" +
-	"\fparam_prefix\x18\x03 \x01(\tR\vparamPrefix\x12\x1f\n" +
-	"\vcast_syntax\x18\x04 \x01(\tR\n" +
-	"castSyntax2\x80\x03\n" +
+	"table_name\x18\x06 \x01(\tR\ttableName\x12\x1f\n" +
+	"\vschema_name\x18\a \x01(\tR\n" +
+	"schemaName2E\n" +
 	"\rEngineService\x124\n" +
-	"\x05Parse\x12\x14.engine.ParseRequest\x1a\x15.engine.ParseResponse\x12C\n" +
-	"\n" +
-	"GetCatalog\x12\x19.engine.GetCatalogRequest\x1a\x1a.engine.GetCatalogResponse\x12X\n" +
-	"\x11IsReservedKeyword\x12 .engine.IsReservedKeywordRequest\x1a!.engine.IsReservedKeywordResponse\x12U\n" +
-	"\x10GetCommentSyntax\x12\x1f.engine.GetCommentSyntaxRequest\x1a .engine.GetCommentSyntaxResponse\x12C\n" +
-	"\n" +
-	"GetDialect\x12\x19.engine.GetDialectRequest\x1a\x1a.engine.GetDialectResponseB%Z#github.com/sqlc-dev/sqlc/pkg/engineb\x06proto3"
+	"\x05Parse\x12\x14.engine.ParseRequest\x1a\x15.engine.ParseResponseB%Z#github.com/sqlc-dev/sqlc/pkg/engineb\x06proto3"
 
 var (
-	file_engine_engine_proto_rawDescOnce sync.Once
-	file_engine_engine_proto_rawDescData []byte
+	file_protos_engine_engine_proto_rawDescOnce sync.Once
+	file_protos_engine_engine_proto_rawDescData []byte
 )
 
-func file_engine_engine_proto_rawDescGZIP() []byte {
-	file_engine_engine_proto_rawDescOnce.Do(func() {
-		file_engine_engine_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_engine_engine_proto_rawDesc), len(file_engine_engine_proto_rawDesc)))
+func file_protos_engine_engine_proto_rawDescGZIP() []byte {
+	file_protos_engine_engine_proto_rawDescOnce.Do(func() {
+		file_protos_engine_engine_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_protos_engine_engine_proto_rawDesc), len(file_protos_engine_engine_proto_rawDesc)))
 	})
-	return file_engine_engine_proto_rawDescData
+	return file_protos_engine_engine_proto_rawDescData
 }
 
-var file_engine_engine_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
-var file_engine_engine_proto_goTypes = []any{
-	(*ParseRequest)(nil),              // 0: engine.ParseRequest
-	(*ParseResponse)(nil),             // 1: engine.ParseResponse
-	(*Statement)(nil),                 // 2: engine.Statement
-	(*GetCatalogRequest)(nil),         // 3: engine.GetCatalogRequest
-	(*GetCatalogResponse)(nil),        // 4: engine.GetCatalogResponse
-	(*Catalog)(nil),                   // 5: engine.Catalog
-	(*Schema)(nil),                    // 6: engine.Schema
-	(*Table)(nil),                     // 7: engine.Table
-	(*Column)(nil),                    // 8: engine.Column
-	(*Enum)(nil),                      // 9: engine.Enum
-	(*Function)(nil),                  // 10: engine.Function
-	(*FunctionArg)(nil),               // 11: engine.FunctionArg
-	(*DataType)(nil),                  // 12: engine.DataType
-	(*Type)(nil),                      // 13: engine.Type
-	(*IsReservedKeywordRequest)(nil),  // 14: engine.IsReservedKeywordRequest
-	(*IsReservedKeywordResponse)(nil), // 15: engine.IsReservedKeywordResponse
-	(*GetCommentSyntaxRequest)(nil),   // 16: engine.GetCommentSyntaxRequest
-	(*GetCommentSyntaxResponse)(nil),  // 17: engine.GetCommentSyntaxResponse
-	(*GetDialectRequest)(nil),         // 18: engine.GetDialectRequest
-	(*GetDialectResponse)(nil),        // 19: engine.GetDialectResponse
+var file_protos_engine_engine_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_protos_engine_engine_proto_goTypes = []any{
+	(*ParseRequest)(nil),     // 0: engine.ParseRequest
+	(*ConnectionParams)(nil), // 1: engine.ConnectionParams
+	(*ParseResponse)(nil),    // 2: engine.ParseResponse
+	(*Parameter)(nil),        // 3: engine.Parameter
+	(*Column)(nil),           // 4: engine.Column
+	nil,                      // 5: engine.ConnectionParams.ParamsEntry
 }
-var file_engine_engine_proto_depIdxs = []int32{
-	2,  // 0: engine.ParseResponse.statements:type_name -> engine.Statement
-	5,  // 1: engine.GetCatalogResponse.catalog:type_name -> engine.Catalog
-	6,  // 2: engine.Catalog.schemas:type_name -> engine.Schema
-	7,  // 3: engine.Schema.tables:type_name -> engine.Table
-	9,  // 4: engine.Schema.enums:type_name -> engine.Enum
-	10, // 5: engine.Schema.functions:type_name -> engine.Function
-	13, // 6: engine.Schema.types:type_name -> engine.Type
-	8,  // 7: engine.Table.columns:type_name -> engine.Column
-	11, // 8: engine.Function.args:type_name -> engine.FunctionArg
-	12, // 9: engine.Function.return_type:type_name -> engine.DataType
-	12, // 10: engine.FunctionArg.type:type_name -> engine.DataType
-	0,  // 11: engine.EngineService.Parse:input_type -> engine.ParseRequest
-	3,  // 12: engine.EngineService.GetCatalog:input_type -> engine.GetCatalogRequest
-	14, // 13: engine.EngineService.IsReservedKeyword:input_type -> engine.IsReservedKeywordRequest
-	16, // 14: engine.EngineService.GetCommentSyntax:input_type -> engine.GetCommentSyntaxRequest
-	18, // 15: engine.EngineService.GetDialect:input_type -> engine.GetDialectRequest
-	1,  // 16: engine.EngineService.Parse:output_type -> engine.ParseResponse
-	4,  // 17: engine.EngineService.GetCatalog:output_type -> engine.GetCatalogResponse
-	15, // 18: engine.EngineService.IsReservedKeyword:output_type -> engine.IsReservedKeywordResponse
-	17, // 19: engine.EngineService.GetCommentSyntax:output_type -> engine.GetCommentSyntaxResponse
-	19, // 20: engine.EngineService.GetDialect:output_type -> engine.GetDialectResponse
-	16, // [16:21] is the sub-list for method output_type
-	11, // [11:16] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+var file_protos_engine_engine_proto_depIdxs = []int32{
+	1, // 0: engine.ParseRequest.connection_params:type_name -> engine.ConnectionParams
+	5, // 1: engine.ConnectionParams.params:type_name -> engine.ConnectionParams.ParamsEntry
+	3, // 2: engine.ParseResponse.parameters:type_name -> engine.Parameter
+	4, // 3: engine.ParseResponse.columns:type_name -> engine.Column
+	0, // 4: engine.EngineService.Parse:input_type -> engine.ParseRequest
+	2, // 5: engine.EngineService.Parse:output_type -> engine.ParseResponse
+	5, // [5:6] is the sub-list for method output_type
+	4, // [4:5] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
-func init() { file_engine_engine_proto_init() }
-func file_engine_engine_proto_init() {
-	if File_engine_engine_proto != nil {
+func init() { file_protos_engine_engine_proto_init() }
+func file_protos_engine_engine_proto_init() {
+	if File_protos_engine_engine_proto != nil {
 		return
+	}
+	file_protos_engine_engine_proto_msgTypes[0].OneofWrappers = []any{
+		(*ParseRequest_SchemaSql)(nil),
+		(*ParseRequest_ConnectionParams)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_engine_engine_proto_rawDesc), len(file_engine_engine_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_protos_engine_engine_proto_rawDesc), len(file_protos_engine_engine_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   20,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_engine_engine_proto_goTypes,
-		DependencyIndexes: file_engine_engine_proto_depIdxs,
-		MessageInfos:      file_engine_engine_proto_msgTypes,
+		GoTypes:           file_protos_engine_engine_proto_goTypes,
+		DependencyIndexes: file_protos_engine_engine_proto_depIdxs,
+		MessageInfos:      file_protos_engine_engine_proto_msgTypes,
 	}.Build()
-	File_engine_engine_proto = out.File
-	file_engine_engine_proto_goTypes = nil
-	file_engine_engine_proto_depIdxs = nil
+	File_protos_engine_engine_proto = out.File
+	file_protos_engine_engine_proto_goTypes = nil
+	file_protos_engine_engine_proto_depIdxs = nil
 }

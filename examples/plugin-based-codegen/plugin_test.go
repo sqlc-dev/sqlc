@@ -27,7 +27,7 @@ func TestEnginePlugin(t *testing.T) {
 	}
 	defer os.Remove(pluginBin)
 
-	// Test Parse
+	// Test Parse without schema
 	t.Run("Parse", func(t *testing.T) {
 		req := &engine.ParseRequest{
 			Sql: "SELECT * FROM users WHERE id = ?;",
@@ -37,77 +37,51 @@ func TestEnginePlugin(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if len(resp.Statements) != 1 {
-			t.Fatalf("expected 1 statement, got %d", len(resp.Statements))
+		if resp.Sql == "" {
+			t.Fatal("expected non-empty sql in response")
 		}
-		t.Logf("✓ Parse: %s", resp.Statements[0].RawSql)
+		if len(resp.Parameters) != 1 {
+			t.Fatalf("expected 1 parameter, got %d", len(resp.Parameters))
+		}
+		t.Logf("✓ Parse: sql=%q params=%d columns=%d", resp.Sql, len(resp.Parameters), len(resp.Columns))
 	})
 
-	// Test GetCatalog
-	t.Run("GetCatalog", func(t *testing.T) {
-		req := &engine.GetCatalogRequest{}
-		resp := &engine.GetCatalogResponse{}
-		if err := invokePlugin(ctx, pluginBin, "get_catalog", req, resp); err != nil {
+	// Test Parse with schema (wildcard expansion)
+	t.Run("ParseWithSchema", func(t *testing.T) {
+		schemaSQL := `CREATE TABLE users (
+			id INTEGER PRIMARY KEY,
+			name TEXT NOT NULL,
+			email TEXT NOT NULL
+		);`
+		req := &engine.ParseRequest{
+			Sql:          "SELECT * FROM users WHERE id = ?;",
+			SchemaSource: &engine.ParseRequest_SchemaSql{SchemaSql: schemaSQL},
+		}
+		resp := &engine.ParseResponse{}
+		if err := invokePlugin(ctx, pluginBin, "parse", req, resp); err != nil {
 			t.Fatal(err)
 		}
 
-		if resp.Catalog == nil || resp.Catalog.Name != "sqlite3" {
-			t.Fatalf("expected catalog 'sqlite3', got %v", resp.Catalog)
+		if resp.Sql == "" {
+			t.Fatal("expected non-empty sql in response")
 		}
-		t.Logf("✓ GetCatalog: %s (schema: %s)", resp.Catalog.Name, resp.Catalog.DefaultSchema)
+		// With schema, wildcard should be expanded to explicit columns
+		if len(resp.Columns) != 3 {
+			t.Fatalf("expected 3 columns (id, name, email), got %d", len(resp.Columns))
+		}
+		if len(resp.Parameters) != 1 {
+			t.Fatalf("expected 1 parameter, got %d", len(resp.Parameters))
+		}
+		t.Logf("✓ ParseWithSchema: sql=%q params=%d columns=%v", resp.Sql, len(resp.Parameters), columnNames(resp.Columns))
 	})
+}
 
-	// Test IsReservedKeyword
-	t.Run("IsReservedKeyword", func(t *testing.T) {
-		tests := []struct {
-			keyword  string
-			expected bool
-		}{
-			{"SELECT", true},
-			{"PRAGMA", true},
-			{"users", false},
-		}
-
-		for _, tc := range tests {
-			req := &engine.IsReservedKeywordRequest{Keyword: tc.keyword}
-			resp := &engine.IsReservedKeywordResponse{}
-			if err := invokePlugin(ctx, pluginBin, "is_reserved_keyword", req, resp); err != nil {
-				t.Fatal(err)
-			}
-			if resp.IsReserved != tc.expected {
-				t.Errorf("IsReservedKeyword(%q) = %v, want %v", tc.keyword, resp.IsReserved, tc.expected)
-			}
-		}
-		t.Log("✓ IsReservedKeyword")
-	})
-
-	// Test GetDialect
-	t.Run("GetDialect", func(t *testing.T) {
-		req := &engine.GetDialectRequest{}
-		resp := &engine.GetDialectResponse{}
-		if err := invokePlugin(ctx, pluginBin, "get_dialect", req, resp); err != nil {
-			t.Fatal(err)
-		}
-
-		if resp.ParamStyle != "question" {
-			t.Errorf("expected param_style 'question', got '%s'", resp.ParamStyle)
-		}
-		t.Logf("✓ GetDialect: quote=%s param=%s", resp.QuoteChar, resp.ParamStyle)
-	})
-
-	// Test GetCommentSyntax
-	t.Run("GetCommentSyntax", func(t *testing.T) {
-		req := &engine.GetCommentSyntaxRequest{}
-		resp := &engine.GetCommentSyntaxResponse{}
-		if err := invokePlugin(ctx, pluginBin, "get_comment_syntax", req, resp); err != nil {
-			t.Fatal(err)
-		}
-
-		if !resp.Dash || !resp.SlashStar {
-			t.Errorf("expected dash and slash_star comments")
-		}
-		t.Logf("✓ GetCommentSyntax: dash=%v slash_star=%v", resp.Dash, resp.SlashStar)
-	})
+func columnNames(cols []*engine.Column) []string {
+	names := make([]string, len(cols))
+	for i, c := range cols {
+		names[i] = c.Name
+	}
+	return names
 }
 
 func invokePlugin(ctx context.Context, bin, method string, req, resp proto.Message) error {

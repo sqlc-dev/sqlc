@@ -6,171 +6,93 @@ package engine;
 option go_package = "github.com/sqlc-dev/sqlc/pkg/engine";
 
 // EngineService defines the interface for database engine plugins.
-// Engine plugins are responsible for parsing SQL statements and providing
-// database-specific functionality.
+// Engine plugins are responsible for parsing SQL statements and extracting
+// information about parameters and result columns.
 service EngineService {
-  // Parse parses SQL statements from the input and returns parsed statements.
+  // Parse parses SQL statements and returns the processed SQL along with
+  // information about parameters and result columns.
   rpc Parse (ParseRequest) returns (ParseResponse);
-  
-  // GetCatalog returns the initial catalog with built-in types and schemas.
-  rpc GetCatalog (GetCatalogRequest) returns (GetCatalogResponse);
-  
-  // IsReservedKeyword checks if a string is a reserved keyword.
-  rpc IsReservedKeyword (IsReservedKeywordRequest) returns (IsReservedKeywordResponse);
-  
-  // GetCommentSyntax returns the comment syntax supported by this engine.
-  rpc GetCommentSyntax (GetCommentSyntaxRequest) returns (GetCommentSyntaxResponse);
-  
-  // GetDialect returns the SQL dialect information for formatting.
-  rpc GetDialect (GetDialectRequest) returns (GetDialectResponse);
 }
 
-// ParseRequest contains the SQL to parse.
+// ParseRequest contains the SQL to parse and either schema or connection parameters.
 message ParseRequest {
+  // The SQL query text to parse.
   string sql = 1;
+  
+  // Either schema SQL or connection parameters for database-only mode.
+  oneof schema_source {
+    // Schema SQL text (schema.sql) for schema-based parsing.
+    string schema_sql = 2;
+    
+    // Connection parameters for database-only mode.
+    ConnectionParams connection_params = 3;
+  }
 }
 
-// ParseResponse contains the parsed statements.
+// ConnectionParams contains database connection parameters for database-only mode.
+message ConnectionParams {
+  // Database connection string or DSN.
+  string dsn = 1;
+  
+  // Additional connection parameters as key-value pairs.
+  map<string, string> params = 2;
+}
+
+// ParseResponse contains the processed SQL and information about parameters and columns.
 message ParseResponse {
-  repeated Statement statements = 1;
-}
-
-// Statement represents a parsed SQL statement.
-message Statement {
-  // The raw SQL text of the statement.
-  string raw_sql = 1;
+  // The processed SQL query text. In the simplest case, this is the same as input.
+  // In complex cases, wildcards (*) may be expanded based on the schema.
+  string sql = 1;
   
-  // The position in the input where this statement starts.
-  int32 stmt_location = 2;
+  // Parameters found in the query (e.g., $1, ?, :name, sqlc.arg(), etc.).
+  repeated Parameter parameters = 2;
   
-  // The length of the statement in bytes.
-  int32 stmt_len = 3;
-  
-  // The AST of the statement encoded as JSON.
-  // The JSON structure follows the internal AST format.
-  bytes ast_json = 4;
+  // Result columns that the query returns.
+  repeated Column columns = 3;
 }
 
-// GetCatalogRequest is empty for now.
-message GetCatalogRequest {}
-
-// GetCatalogResponse contains the initial catalog.
-message GetCatalogResponse {
-  Catalog catalog = 1;
-}
-
-// Catalog represents the database catalog.
-message Catalog {
-  string comment = 1;
-  string default_schema = 2;
-  string name = 3;
-  repeated Schema schemas = 4;
-}
-
-// Schema represents a database schema.
-message Schema {
+// Parameter represents a query parameter.
+message Parameter {
+  // Parameter name (if named) or empty for positional parameters.
   string name = 1;
-  string comment = 2;
-  repeated Table tables = 3;
-  repeated Enum enums = 4;
-  repeated Function functions = 5;
-  repeated Type types = 6;
+  
+  // Parameter position (1-based) for positional parameters.
+  int32 position = 2;
+  
+  // SQL data type of the parameter.
+  string data_type = 3;
+  
+  // Whether the parameter is nullable.
+  bool nullable = 4;
+  
+  // Whether the parameter is an array type.
+  bool is_array = 5;
+  
+  // Array dimensions if is_array is true.
+  int32 array_dims = 6;
 }
 
-// Table represents a database table.
-message Table {
-  string catalog = 1;
-  string schema = 2;
-  string name = 3;
-  repeated Column columns = 4;
-  string comment = 5;
-}
-
-// Column represents a table column.
+// Column represents a result column.
 message Column {
+  // Column name.
   string name = 1;
+  
+  // SQL data type of the column.
   string data_type = 2;
-  bool not_null = 3;
+  
+  // Whether the column is nullable.
+  bool nullable = 3;
+  
+  // Whether the column is an array type.
   bool is_array = 4;
+  
+  // Array dimensions if is_array is true.
   int32 array_dims = 5;
-  string comment = 6;
-  int32 length = 7;
-  bool is_unsigned = 8;
-}
-
-// Enum represents an enum type.
-message Enum {
-  string schema = 1;
-  string name = 2;
-  repeated string values = 3;
-  string comment = 4;
-}
-
-// Function represents a database function.
-message Function {
-  string schema = 1;
-  string name = 2;
-  repeated FunctionArg args = 3;
-  DataType return_type = 4;
-  string comment = 5;
-}
-
-// FunctionArg represents a function argument.
-message FunctionArg {
-  string name = 1;
-  DataType type = 2;
-  bool has_default = 3;
-}
-
-// DataType represents a SQL data type.
-message DataType {
-  string catalog = 1;
-  string schema = 2;
-  string name = 3;
-}
-
-// Type represents a composite or custom type.
-message Type {
-  string schema = 1;
-  string name = 2;
-  string comment = 3;
-}
-
-// IsReservedKeywordRequest contains the keyword to check.
-message IsReservedKeywordRequest {
-  string keyword = 1;
-}
-
-// IsReservedKeywordResponse contains the result.
-message IsReservedKeywordResponse {
-  bool is_reserved = 1;
-}
-
-// GetCommentSyntaxRequest is empty.
-message GetCommentSyntaxRequest {}
-
-// GetCommentSyntaxResponse contains supported comment syntax.
-message GetCommentSyntaxResponse {
-  bool dash = 1;       // -- comment
-  bool slash_star = 2; // /* comment */
-  bool hash = 3;       // # comment
-}
-
-// GetDialectRequest is empty.
-message GetDialectRequest {}
-
-// GetDialectResponse contains dialect information.
-message GetDialectResponse {
-  // The character(s) used for quoting identifiers (e.g., ", `, [)
-  string quote_char = 1;
   
-  // The parameter style: "positional" ($1, ?), "named" (@name, :name)
-  string param_style = 2;
+  // Table name this column belongs to (if known).
+  string table_name = 6;
   
-  // The parameter prefix (e.g., $, ?, @, :)
-  string param_prefix = 3;
-  
-  // The cast syntax: "double_colon" (::), "cast_function" (CAST(x AS y))
-  string cast_syntax = 4;
+  // Schema name this column belongs to (if known).
+  string schema_name = 7;
 }
 
