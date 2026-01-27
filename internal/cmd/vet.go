@@ -482,6 +482,10 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 	}
 	s.Queries = joined
 
+	if _, found := config.FindEnginePlugin(&combo.Global, string(s.Engine)); found {
+		return fmt.Errorf("vet does not support plugin engines (engine: %s)", s.Engine)
+	}
+
 	var name string
 	parseOpts := opts.Parser{
 		Debug: debug.Debug,

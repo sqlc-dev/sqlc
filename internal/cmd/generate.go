@@ -131,6 +131,17 @@ func readConfig(stderr io.Writer, dir, filename string) (string, *config.Config,
 	return configPath, &conf, nil
 }
 
+// GenerateInputs holds in-memory config and optional file contents so generate can run
+// without reading from disk (e.g. in tests). For production, Generate reads from FS and
+// fills FileContents before calling generate.
+type GenerateInputs struct {
+	Config      *config.Config
+	ConfigPath  string
+	Dir         string
+	FileContents map[string][]byte // path -> content; keys match paths used when reading (e.g. filepath.Join(dir, "schema.sql"))
+}
+
+// Generate runs codegen for the given directory and config file, reading all input from disk.
 func Generate(ctx context.Context, dir, filename string, o *Options) (map[string]string, error) {
 	e := o.Env
 	stderr := o.Stderr
@@ -151,27 +162,76 @@ func Generate(ctx context.Context, dir, filename string, o *Options) (map[string
 		return nil, err
 	}
 
-	// Comment on why these two methods exist
 	if conf.Cloud.Project != "" && e.Remote && !e.NoRemote {
 		return remoteGenerate(ctx, configPath, conf, dir, stderr)
 	}
 
-	g := &generator{
-		dir:    dir,
-		output: map[string]string{},
-	}
-
-	if err := processQuerySets(ctx, g, conf, dir, o); err != nil {
+	inputs := &GenerateInputs{Config: conf, ConfigPath: configPath, Dir: dir}
+	inputs.FileContents, err = loadFileContentsFromFS(conf, dir)
+	if err != nil {
 		return nil, err
 	}
+	return generate(ctx, inputs, o)
+}
 
+// generate performs codegen using in-memory inputs. It is used by Generate (with contents
+// loaded from disk) and by tests (with pre-filled Config and FileContents, no temp files).
+func generate(ctx context.Context, inputs *GenerateInputs, o *Options) (map[string]string, error) {
+	g := &generator{
+		dir:    inputs.Dir,
+		output: map[string]string{},
+	}
+	if o != nil && o.CodegenHandlerOverride != nil {
+		g.codegenHandlerOverride = o.CodegenHandlerOverride
+	}
+	if err := processQuerySets(ctx, g, inputs, o); err != nil {
+		return nil, err
+	}
 	return g.output, nil
 }
 
+// loadFileContentsFromFS reads all schema and query files referenced in conf into a map
+// path -> content, using dir to resolve paths.
+func loadFileContentsFromFS(conf *config.Config, dir string) (map[string][]byte, error) {
+	out := make(map[string][]byte)
+	for _, pkg := range conf.SQL {
+		for _, rel := range pkg.Schema {
+			path := filepath.Join(dir, rel)
+			files, err := sqlpath.Glob([]string{path})
+			if err != nil {
+				return nil, err
+			}
+			for _, f := range files {
+				b, err := os.ReadFile(f)
+				if err != nil {
+					return nil, err
+				}
+				out[f] = b
+			}
+		}
+		for _, rel := range pkg.Queries {
+			path := filepath.Join(dir, rel)
+			files, err := sqlpath.Glob([]string{path})
+			if err != nil {
+				return nil, err
+			}
+			for _, f := range files {
+				b, err := os.ReadFile(f)
+				if err != nil {
+					return nil, err
+				}
+				out[f] = b
+			}
+		}
+	}
+	return out, nil
+}
+
 type generator struct {
-	m      sync.Mutex
-	dir    string
-	output map[string]string
+	m                     sync.Mutex
+	dir                   string
+	output                map[string]string
+	codegenHandlerOverride grpc.ClientConnInterface
 }
 
 func (g *generator) Pairs(ctx context.Context, conf *config.Config) []OutputPair {
@@ -200,7 +260,7 @@ func (g *generator) Pairs(ctx context.Context, conf *config.Config) []OutputPair
 }
 
 func (g *generator) ProcessResult(ctx context.Context, combo config.CombinedSettings, sql OutputPair, result *compiler.Result) error {
-	out, resp, err := codegen(ctx, combo, sql, result)
+	out, resp, err := codegen(ctx, combo, sql, result, g.codegenHandlerOverride)
 	if err != nil {
 		return err
 	}
@@ -333,7 +393,7 @@ func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.C
 	return c.Result(), false
 }
 
-func codegen(ctx context.Context, combo config.CombinedSettings, sql OutputPair, result *compiler.Result) (string, *plugin.GenerateResponse, error) {
+func codegen(ctx context.Context, combo config.CombinedSettings, sql OutputPair, result *compiler.Result, codegenOverride grpc.ClientConnInterface) (string, *plugin.GenerateResponse, error) {
 	defer trace.StartRegion(ctx, "codegen").End()
 	req := codeGenRequest(result, combo)
 	var handler grpc.ClientConnInterface
@@ -341,43 +401,45 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql OutputPair,
 	switch {
 	case sql.Plugin != nil:
 		out = sql.Plugin.Out
-		plug, err := findPlugin(combo.Global, sql.Plugin.Plugin)
-		if err != nil {
-			return "", nil, fmt.Errorf("plugin not found: %s", err)
-		}
-
-		switch {
-		case plug.Process != nil:
-			handler = &process.Runner{
-				Cmd:    plug.Process.Cmd,
-				Dir:    combo.Dir,
-				Env:    plug.Env,
-				Format: plug.Process.Format,
+		if codegenOverride != nil {
+			handler = codegenOverride
+		} else {
+			plug, err := findPlugin(combo.Global, sql.Plugin.Plugin)
+			if err != nil {
+				return "", nil, fmt.Errorf("plugin not found: %s", err)
 			}
-		case plug.WASM != nil:
-			handler = &wasm.Runner{
-				URL:    plug.WASM.URL,
-				SHA256: plug.WASM.SHA256,
-				Env:    plug.Env,
-			}
-		default:
-			return "", nil, fmt.Errorf("unsupported plugin type")
-		}
 
+			switch {
+			case plug.Process != nil:
+				handler = &process.Runner{
+					Cmd:    plug.Process.Cmd,
+					Dir:    combo.Dir,
+					Env:    plug.Env,
+					Format: plug.Process.Format,
+				}
+			case plug.WASM != nil:
+				handler = &wasm.Runner{
+					URL:    plug.WASM.URL,
+					SHA256: plug.WASM.SHA256,
+					Env:    plug.Env,
+				}
+			default:
+				return "", nil, fmt.Errorf("unsupported plugin type")
+			}
+			global, found := combo.Global.Options[plug.Name]
+			if found {
+				opts, err := convert.YAMLtoJSON(global)
+				if err != nil {
+					return "", nil, fmt.Errorf("invalid global options: %w", err)
+				}
+				req.GlobalOptions = opts
+			}
+		}
 		opts, err := convert.YAMLtoJSON(sql.Plugin.Options)
 		if err != nil {
 			return "", nil, fmt.Errorf("invalid plugin options: %w", err)
 		}
 		req.PluginOptions = opts
-
-		global, found := combo.Global.Options[plug.Name]
-		if found {
-			opts, err := convert.YAMLtoJSON(global)
-			if err != nil {
-				return "", nil, fmt.Errorf("invalid global options: %w", err)
-			}
-			req.GlobalOptions = opts
-		}
 
 	case sql.Gen.Go != nil:
 		out = combo.Go.Out

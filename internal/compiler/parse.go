@@ -27,8 +27,6 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		return nil, err
 	}
 
-	// rewrite queries to remove sqlc.* functions
-
 	raw, ok := stmt.(*ast.RawStmt)
 	if !ok {
 		return nil, errors.New("node is not a statement")
