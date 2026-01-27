@@ -58,11 +58,11 @@ func TestExamples(t *testing.T) {
 			t.Parallel()
 			path := filepath.Join(examples, tc)
 			var stderr bytes.Buffer
-			o := &cmd.Options{
-				Env:    cmd.Env{Debug: opts.DebugFromString("")},
+			opts := &cmd.Options{
+				Env:    cmd.Env{},
 				Stderr: &stderr,
 			}
-			output, err := cmd.Generate(ctx, path, "", o)
+			output, err := cmd.Generate(ctx, path, "", opts)
 			if err != nil {
 				t.Fatalf("sqlc generate failed: %s", stderr.String())
 			}
