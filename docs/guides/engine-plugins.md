@@ -18,7 +18,7 @@ An engine plugin is an external process that implements one RPC:
 
 - **Parse** — accepts the query text and either schema SQL or connection parameters, and returns processed SQL, parameter list, and result columns.
 
-Process plugins (e.g. written in Go) talk to sqlc over **stdin/stdout** using **Protocol Buffers**. The schema is defined in `engine/engine.proto`.
+Process plugins (e.g. written in Go) talk to sqlc over **stdin/stdout** using **Protocol Buffers**. The protocol is defined in `protos/engine/engine.proto`.
 
 ## Compatibility
 
@@ -62,7 +62,9 @@ sql:
 |-------|-------------|
 | `name` | Engine name used in `sql[].engine` |
 | `process.cmd` | Command to run (PATH or absolute path) |
-| `env` | Environment variables passed to the plugin |
+| `env` | Environment variable names passed to the plugin |
+
+Each engine must define either `process` (with `cmd`) or `wasm` (with `url` and `sha256`). See [Configuration reference](../reference/config.md) for the full `engines` schema.
 
 ## Implementing an engine plugin (Go)
 
@@ -152,7 +154,7 @@ The definition lives in `engine/engine.proto` (and generated Go in `pkg/engine`)
 
 ## Example
 
-A minimal engine that parses SQLite-style SQL and expands `*` using a schema is in this repository under `examples/plugin-based-codegen/plugins/sqlc-engine-sqlite3/`. It pairs with the Rust codegen example in the same `plugin-based-codegen` sample.
+The protocol and Go SDK are in this repository: `protos/engine/engine.proto` and `pkg/engine/` (including `sdk.go` with `engine.Run` and `engine.Handler`). Use them to build a binary that implements the Parse RPC; register it under `engines` in sqlc.yaml as shown above.
 
 ## Architecture
 
