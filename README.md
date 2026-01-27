@@ -29,6 +29,14 @@ Check out [an interactive example](https://play.sqlc.dev/) to see it in action, 
 
 Additional languages can be added via [plugins](https://docs.sqlc.dev/en/latest/reference/language-support.html#community-language-support).
 
+## Supported database engines
+
+- PostgreSQL
+- MySQL
+- SQLite
+
+Additional database engines can be added via [engine plugins](https://docs.sqlc.dev/en/latest/howto/engine-plugins.html).
+
 ## Sponsors
 
 Development is possible thanks to our sponsors. If you would like to support sqlc,

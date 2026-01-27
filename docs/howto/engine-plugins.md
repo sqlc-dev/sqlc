@@ -1,26 +1,35 @@
-# Database Engine Plugins
+# External Database Engines (Engine Plugins)
 
-sqlc supports adding custom database backends through engine plugins. This allows you to use sqlc with databases that aren't natively supported (like MyDB, CockroachDB, or other SQL-compatible databases).
+Engine plugins let you use sqlc with databases that are not built-in. You can add support for other SQL-compatible systems (e.g. CockroachDB, TiDB, or custom engines) by implementing a small external program that parses SQL and returns parameters and result columns.
+
+## Why use an engine plugin?
+
+- Use sqlc with a database that doesn’t have native support.
+- Reuse an existing SQL parser or dialect in a separate binary.
+- Keep engine-specific logic outside the sqlc core.
+
+Data returned by the engine plugin (SQL text, parameters, columns) is passed through to [codegen plugins](../guides/plugins.md) without an extra compiler/AST step. The plugin is the single place that defines how queries are interpreted for that engine.
 
 ## Overview
 
-Engine plugins are external programs that implement the sqlc engine interface:
-- **Process plugins** (Go): Communicate via **Protocol Buffers** over stdin/stdout
-- **WASM plugins** (any language): Communicate via **JSON** over stdin/stdout
+An engine plugin is an external process that implements one RPC:
 
-## Compatibility Guarantee
+- **Parse** — accepts the query text and either schema SQL or connection parameters, and returns processed SQL, parameter list, and result columns.
 
-For Go process plugins, compatibility is guaranteed at **compile time**:
+Process plugins (e.g. written in Go) talk to sqlc over **stdin/stdout** using **Protocol Buffers**. The schema is defined in `engine/engine.proto`.
+
+## Compatibility
+
+For Go plugins, compatibility is enforced at **compile time** by importing the engine package:
 
 ```go
 import "github.com/sqlc-dev/sqlc/pkg/engine"
 ```
 
-When you import this package:
-- If your plugin compiles successfully → it's compatible with this version of sqlc
-- If types change incompatibly → your plugin won't compile until you update it
+- If the plugin builds, it matches this version of the engine API.
+- If the API changes in a breaking way, the plugin stops compiling until it’s updated.
 
-The Protocol Buffer schema ensures binary compatibility. No version negotiation needed.
+No version handshake is required; the proto schema defines the contract.
 
 ## Configuration
 
@@ -29,223 +38,138 @@ The Protocol Buffer schema ensures binary compatibility. No version negotiation 
 ```yaml
 version: "2"
 
-# Define engine plugins
 engines:
   - name: mydb
     process:
       cmd: sqlc-engine-mydb
     env:
-      - MYDB_CONNECTION_STRING
+      - MYDB_DSN
 
 sql:
-  - engine: mydb             # Use the MyDB engine
+  - engine: mydb
     schema: "schema.sql"
     queries: "queries.sql"
-    gen:
-      go:
-        package: db
+    codegen:
+      - plugin: go
         out: db
 ```
 
-### Configuration Options
+### Engine options
 
 | Field | Description |
 |-------|-------------|
-| `name` | Unique name for the engine (used in `sql[].engine`) |
-| `process.cmd` | Command to run (must be in PATH or absolute path) |
-| `wasm.url` | URL to download WASM module (`file://` or `https://`) |
-| `wasm.sha256` | SHA256 checksum of the WASM module |
-| `env` | Environment variables to pass to the plugin |
+| `name` | Engine name used in `sql[].engine` |
+| `process.cmd` | Command to run (PATH or absolute path) |
+| `env` | Environment variables passed to the plugin |
 
-## Creating a Go Engine Plugin
+## Implementing an engine plugin (Go)
 
-### 1. Import the SDK
-
-```go
-import "github.com/sqlc-dev/sqlc/pkg/engine"
-```
-
-### 2. Implement the Handler
+### 1. Dependencies and entrypoint
 
 ```go
 package main
 
-import (
-    "github.com/sqlc-dev/sqlc/pkg/engine"
-)
+import "github.com/sqlc-dev/sqlc/pkg/engine"
 
 func main() {
     engine.Run(engine.Handler{
-        PluginName:        "mydb",
-        PluginVersion:     "1.0.0",
-        Parse:             handleParse,
-        GetCatalog:        handleGetCatalog,
-        IsReservedKeyword: handleIsReservedKeyword,
-        GetCommentSyntax:  handleGetCommentSyntax,
-        GetDialect:        handleGetDialect,
+        PluginName:    "mydb",
+        PluginVersion: "1.0.0",
+        Parse:         handleParse,
     })
 }
 ```
 
-### 3. Implement Methods
+The engine API exposes only **Parse**. There are no separate methods for catalog, keywords, comment syntax, or dialect.
 
-#### Parse
+### 2. Parse
 
-Parses SQL text into statements with AST.
+**Request**
+
+- `sql` — The query text to parse.
+- `schema_source` — One of:
+  - `schema_sql`: schema as in a schema.sql file (used for schema-based parsing).
+  - `connection_params`: DSN and options for database-only mode.
+
+**Response**
+
+- `sql` — Processed query text. Often the same as input; with a schema you may expand `*` into explicit columns.
+- `parameters` — List of parameters (position/name, type, nullable, array, etc.).
+- `columns` — List of result columns (name, type, nullable, table/schema if known).
+
+Example handler:
 
 ```go
 func handleParse(req *engine.ParseRequest) (*engine.ParseResponse, error) {
     sql := req.GetSql()
-    // Parse SQL using your database's parser
-    
-    return &engine.ParseResponse{
-        Statements: []*engine.Statement{
-            {
-                RawSql:       sql,
-                StmtLocation: 0,
-                StmtLen:      int32(len(sql)),
-                AstJson:      astJSON, // AST encoded as JSON bytes
-            },
-        },
-    }, nil
-}
-```
 
-#### GetCatalog
-
-Returns the initial catalog with built-in types and functions.
-
-```go
-func handleGetCatalog(req *engine.GetCatalogRequest) (*engine.GetCatalogResponse, error) {
-    return &engine.GetCatalogResponse{
-        Catalog: &engine.Catalog{
-            DefaultSchema: "public",
-            Name:          "mydb",
-            Schemas: []*engine.Schema{
-                {
-                    Name: "public",
-                    Functions: []*engine.Function{
-                        {Name: "now", ReturnType: &engine.DataType{Name: "timestamp"}},
-                    },
-                },
-            },
-        },
-    }, nil
-}
-```
-
-#### IsReservedKeyword
-
-Checks if a string is a reserved keyword.
-
-```go
-func handleIsReservedKeyword(req *engine.IsReservedKeywordRequest) (*engine.IsReservedKeywordResponse, error) {
-    reserved := map[string]bool{
-        "select": true, "from": true, "where": true,
+    var schema *SchemaInfo
+    if s := req.GetSchemaSql(); s != "" {
+        schema = parseSchema(s)
     }
-    return &engine.IsReservedKeywordResponse{
-        IsReserved: reserved[strings.ToLower(req.GetKeyword())],
+    // Or use req.GetConnectionParams() for database-only mode.
+
+    parameters := extractParameters(sql)
+    columns := extractColumns(sql, schema)
+    processedSQL := processSQL(sql, schema) // e.g. expand SELECT *
+
+    return &engine.ParseResponse{
+        Sql:        processedSQL,
+        Parameters: parameters,
+        Columns:    columns,
     }, nil
 }
 ```
 
-#### GetCommentSyntax
+Parameter and column types use the `Parameter` and `Column` messages in `engine.proto` (name, position, data_type, nullable, is_array, array_dims; for columns, table_name and schema_name are optional).
 
-Returns supported SQL comment syntax.
+Support for sqlc placeholders (`sqlc.arg()`, `sqlc.narg()`, `sqlc.slice()`, `sqlc.embed()`) is up to the plugin: it can parse and map them into `parameters` (and schema usage) as needed.
 
-```go
-func handleGetCommentSyntax(req *engine.GetCommentSyntaxRequest) (*engine.GetCommentSyntaxResponse, error) {
-    return &engine.GetCommentSyntaxResponse{
-        Dash:      true,  // -- comment
-        SlashStar: true,  // /* comment */
-        Hash:      false, // # comment
-    }, nil
-}
-```
-
-#### GetDialect
-
-Returns SQL dialect information for formatting.
-
-```go
-func handleGetDialect(req *engine.GetDialectRequest) (*engine.GetDialectResponse, error) {
-    return &engine.GetDialectResponse{
-        QuoteChar:   "`",             // Identifier quoting character
-        ParamStyle:  "dollar",        // $1, $2, ...
-        ParamPrefix: "$",             // Parameter prefix
-        CastSyntax:  "cast_function", // CAST(x AS type) or "double_colon" for ::
-    }, nil
-}
-```
-
-### 4. Build and Install
+### 3. Build and run
 
 ```bash
 go build -o sqlc-engine-mydb .
-mv sqlc-engine-mydb /usr/local/bin/
+# Ensure sqlc-engine-mydb is on PATH or use an absolute path in process.cmd
 ```
 
 ## Protocol
 
-### Process Plugins (Go)
-
-Process plugins use **Protocol Buffers** for serialization:
+Process plugins use Protocol Buffers on stdin/stdout:
 
 ```
-sqlc → stdin (protobuf) → plugin → stdout (protobuf) → sqlc
+sqlc  →  stdin (protobuf)  →  plugin  →  stdout (protobuf)  →  sqlc
 ```
 
-The proto schema is published at `buf.build/sqlc/sqlc` in `engine/engine.proto`.
+Invocation:
 
-Methods are invoked as command-line arguments:
 ```bash
-sqlc-engine-mydb parse        # stdin: ParseRequest, stdout: ParseResponse
-sqlc-engine-mydb get_catalog  # stdin: GetCatalogRequest, stdout: GetCatalogResponse
+sqlc-engine-mydb parse   # stdin: ParseRequest, stdout: ParseResponse
 ```
 
-### WASM Plugins
+The definition lives in `engine/engine.proto` (and generated Go in `pkg/engine`).
 
-WASM plugins use **JSON** for broader language compatibility:
+## Example
 
-```
-sqlc → stdin (JSON) → wasm module → stdout (JSON) → sqlc
-```
-
-## Full Example
-
-See `examples/plugin-based-codegen/` for a complete engine plugin implementation.
+A minimal engine that parses SQLite-style SQL and expands `*` using a schema is in this repository under `examples/plugin-based-codegen/plugins/sqlc-engine-sqlite3/`. It pairs with the Rust codegen example in the same `plugin-based-codegen` sample.
 
 ## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  sqlc generate                                                  │
-│                                                                 │
-│  1. Read sqlc.yaml                                              │
-│  2. Find engine: mydb → look up in engines[]                    │
-│  3. Run: sqlc-engine-mydb parse < schema.sql                    │
-│  4. Get AST via protobuf on stdout                              │
-│  5. Generate Go code                                            │
+│  1. Read sqlc.yaml, find engine for this sql block              │
+│  2. Call plugin: parse (sql + schema_sql or connection_params)   │
+│  3. Use returned sql, parameters, columns in codegen             │
 └─────────────────────────────────────────────────────────────────┘
 
-Process Plugin Communication (Protobuf):
-
     sqlc                          sqlc-engine-mydb
-    ────                          ────────────────
-      │                                  │
-      │──── spawn process ─────────────► │
-      │     args: ["parse"]              │
-      │                                  │
-      │──── protobuf on stdin ─────────► │
-      │     ParseRequest{sql: "..."}     │
-      │                                  │
-      │◄─── protobuf on stdout ───────── │
-      │     ParseResponse{statements}    │
-      │                                  │
+      │──── spawn, args: ["parse"] ──────────────────────────────► │
+      │──── stdin: ParseRequest{sql, schema_sql|connection_params} ► │
+      │◄─── stdout: ParseResponse{sql, parameters, columns} ─────── │
 ```
 
-## See Also
+## See also
 
-- [Codegen Plugins](plugins.md) - For custom code generators
-- [Configuration Reference](../reference/config.md)
+- [Codegen plugins](../guides/plugins.md) — Custom code generators that consume engine output.
+- [Configuration reference](../reference/config.md)
 - Proto schema: `protos/engine/engine.proto`
