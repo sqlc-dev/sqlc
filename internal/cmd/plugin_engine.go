@@ -45,12 +45,12 @@ func (r *engineProcessRunner) invoke(ctx context.Context, method string, req, re
 
 	cmdParts := strings.Fields(r.Cmd)
 	if len(cmdParts) == 0 {
-		return fmt.Errorf("engine plugin not found: %s\n\nMake sure the plugin is installed and available in PATH.\nInstall with: go install <plugin-module>@latest", r.Cmd)
+		return fmt.Errorf("engine plugin not found: %s\n\nSee the engine plugins documentation: https://docs.sqlc.dev/en/latest/guides/engine-plugins.html", r.Cmd)
 	}
 
 	path, err := exec.LookPath(cmdParts[0])
 	if err != nil {
-		return fmt.Errorf("engine plugin not found: %s\n\nMake sure the plugin is installed and available in PATH.\nInstall with: go install <plugin-module>@latest", r.Cmd)
+		return fmt.Errorf("engine plugin not found: %s\n\nSee the engine plugins documentation: https://docs.sqlc.dev/en/latest/guides/engine-plugins.html", r.Cmd)
 	}
 
 	args := append(cmdParts[1:], method)
@@ -97,8 +97,7 @@ func runPluginQuerySet(ctx context.Context, rp ResultProcessor, name, dir string
 	enginePlugin, found := config.FindEnginePlugin(&combo.Global, string(combo.Package.Engine))
 	if !found || enginePlugin.Process == nil {
 		e := string(combo.Package.Engine)
-		return fmt.Errorf("unknown engine: %s\n\nTo use a custom database engine, add it to the 'engines' section of sqlc.yaml:\n\n  engines:\n    - name: %s\n      process:\n        cmd: sqlc-engine-%s\n\nThen install the plugin: go install github.com/example/sqlc-engine-%s@latest",
-			e, e, e, e)
+		return fmt.Errorf("unknown engine: %s\n\nAdd the engine to the 'engines' section of sqlc.yaml. See the engine plugins documentation: https://docs.sqlc.dev/en/latest/guides/engine-plugins.html", e)
 	}
 
 	var parseFn func(schemaSQL, querySQL string) (*pb.ParseResponse, error)

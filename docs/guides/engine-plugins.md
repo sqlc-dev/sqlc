@@ -66,6 +66,20 @@ sql:
 
 Each engine must define either `process` (with `cmd`) or `wasm` (with `url` and `sha256`). See [Configuration reference](../reference/config.md) for the full `engines` schema.
 
+### How sqlc finds the process plugin
+
+For an engine with `process.cmd`, sqlc resolves and runs the plugin as follows:
+
+1. **Command parsing** — `process.cmd` is split on whitespace. The first token is the executable; any further tokens are passed as arguments, and sqlc appends the RPC method name (`parse`) when invoking the plugin.
+
+2. **Executable lookup** — The first token is resolved the same way as in the shell:
+   - If it contains a path separator (e.g. `/usr/bin/sqlc-engine-mydb` or `./bin/sqlc-engine-mydb`), it is treated as a path. Absolute paths are used as-is; relative paths are taken relative to the **current working directory of the process running sqlc**.
+   - If it has no path separator, the executable is looked up in the **PATH** of the process running sqlc. The plugin binary must be on PATH (e.g. after `go install` or adding its directory to PATH) or `process.cmd` must be an absolute path.
+
+3. **Working directory** — The plugin process is started with its working directory set to the **directory containing the sqlc config file**. That directory is used for resolving relative paths inside the plugin, not for resolving `process.cmd` itself.
+
+If the executable cannot be found or `process.cmd` is empty, sqlc reports an error and refers to this documentation.
+
 ## Implementing an engine plugin (Go)
 
 ### 1. Dependencies and entrypoint
