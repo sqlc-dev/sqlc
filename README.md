@@ -35,7 +35,7 @@ Additional languages can be added via [plugins](https://docs.sqlc.dev/en/latest/
 - MySQL
 - SQLite
 
-Additional database engines can be added via [engine plugins](https://docs.sqlc.dev/en/latest/howto/engine-plugins.html).
+Additional database engines can be added via [engine plugins](https://docs.sqlc.dev/en/latest/guides/engine-plugins.html).
 
 ## Sponsors
 

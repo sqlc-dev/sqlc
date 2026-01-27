@@ -4,11 +4,11 @@ Engine plugins let you use sqlc with databases that are not built-in. You can ad
 
 ## Why use an engine plugin?
 
-- Use sqlc with a database that doesn’t have native support.
+- Use sqlc with a database that doesn't have native support.
 - Reuse an existing SQL parser or dialect in a separate binary.
 - Keep engine-specific logic outside the sqlc core.
 
-Data returned by the engine plugin (SQL text, parameters, columns) is passed through to [codegen plugins](../guides/plugins.md) without an extra compiler/AST step. The plugin is the single place that defines how queries are interpreted for that engine.
+Data returned by the engine plugin (SQL text, parameters, columns) is passed through to [codegen plugins](plugins.md) without an extra compiler/AST step. The plugin is the single place that defines how queries are interpreted for that engine.
 
 **Limitation:** `sqlc vet` does not support plugin engines. Use vet only with built-in engines (postgresql, mysql, sqlite).
 
@@ -29,7 +29,7 @@ import "github.com/sqlc-dev/sqlc/pkg/engine"
 ```
 
 - If the plugin builds, it matches this version of the engine API.
-- If the API changes in a breaking way, the plugin stops compiling until it’s updated.
+- If the API changes in a breaking way, the plugin stops compiling until it's updated.
 
 No version handshake is required; the proto schema defines the contract.
 
@@ -156,7 +156,7 @@ A minimal engine that parses SQLite-style SQL and expands `*` using a schema is 
 
 ## Architecture
 
-For each `sql[]` block, `sqlc generate` branches on the configured engine: built-in (postgresql, mysql, sqlite) use the compiler and catalog; any engine listed under `engines:` in sqlc.yaml uses the plugin path (no compiler, schema + queries go to the plugin’s Parse RPC, then output goes to codegen).
+For each `sql[]` block, `sqlc generate` branches on the configured engine: built-in (postgresql, mysql, sqlite) use the compiler and catalog; any engine listed under `engines:` in sqlc.yaml uses the plugin path (no compiler, schema + queries go to the plugin's Parse RPC, then output goes to codegen).
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -174,6 +174,6 @@ For each `sql[]` block, `sqlc generate` branches on the configured engine: built
 
 ## See also
 
-- [Codegen plugins](../guides/plugins.md) — Custom code generators that consume engine output.
+- [Codegen plugins](plugins.md) — Custom code generators that consume engine output.
 - [Configuration reference](../reference/config.md)
 - Proto schema: `protos/engine/engine.proto`

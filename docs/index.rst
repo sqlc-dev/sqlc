@@ -66,7 +66,6 @@ code ever again.
    howto/embedding.md
    howto/overrides.md
    howto/rename.md
-   howto/engine-plugins.md
 
 .. toctree::
    :maxdepth: 3
@@ -97,5 +96,6 @@ code ever again.
    howto/ci-cd.md
    guides/using-go-and-pgx.rst
    guides/plugins.md
+   guides/engine-plugins.md
    guides/development.md
    guides/privacy.md
