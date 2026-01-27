@@ -13,7 +13,7 @@ package cmd
 //     takes Sql/Params/Columns from it, builds compiler.Result → plugin.GenerateRequest, and the codegen mock
 //     receives that. So "plugin engine → ParseRequest contract → codegen" is validated.
 //   - TestPluginPipeline_WithoutOverride_UsesPluginPackage: with PluginParseFunc nil, generate fails with an error
-//     that is NOT "unknown engine", so we did enter runPluginQuerySet and call plugin.NewProcessRunner/ParseRequest.
+//     that is NOT "unknown engine", so we did enter runPluginQuerySet and call the engine process runner.
 //     The plugin package is required for that path. Vet does not support plugin engines.
 
 import (
@@ -73,7 +73,7 @@ type codegenMockRecord struct {
 //  4. Codegen plugin receives that request. We assert it contains the same SQL, params,
 //     and columns, and that query name/cmd come from the query file comments.
 //
-// Note: internal/engine/plugin is not called here because we use PluginParseFunc.
+// Note: the engine process runner is not called here because we use PluginParseFunc.
 // That mock replaces the real ProcessRunner entirely. This test validates the cmd
 // pipeline and the data contract at the boundaries; coverage of the plugin package
 // comes from other tests (e.g. process runner, or an E2E test with a real engine binary).
@@ -219,11 +219,11 @@ func TestPluginPipeline_FullPipeline(t *testing.T) {
 }
 
 // TestPluginPipeline_WithoutOverride_UsesPluginPackage proves that when PluginParseFunc
-// is not set, the pipeline calls internal/engine/plugin (NewProcessRunner + ParseRequest).
+// is not set, the pipeline calls the engine process runner (newEngineProcessRunner + parseRequest).
 // It runs generate with a plugin engine and nil PluginParseFunc; we expect failure
 // (e.g. from running "echo" as the engine binary), but the error must NOT be
 // "unknown engine" — so we know we went past config lookup and into the plugin path.
-// If you add panic("azaza") at the start of plugin.NewProcessRunner or ParseRequest,
+// If you add panic("azaza") at the start of newEngineProcessRunner or parseRequest,
 // this test will panic, confirming that the plugin package is actually invoked.
 func TestPluginPipeline_WithoutOverride_UsesPluginPackage(t *testing.T) {
 	ctx := context.Background()
@@ -246,7 +246,7 @@ func TestPluginPipeline_WithoutOverride_UsesPluginPackage(t *testing.T) {
 	o := &Options{
 		Env:             Env{Debug: debug},
 		Stderr:          &stderr,
-		PluginParseFunc: nil, // do not override — must use internal/engine/plugin
+		PluginParseFunc: nil, // do not override — must use built-in engine process runner
 		CodegenHandlerOverride: ext.HandleFunc(func(_ context.Context, _ *plugin.GenerateRequest) (*plugin.GenerateResponse, error) {
 			return &plugin.GenerateResponse{}, nil
 		}),
@@ -261,7 +261,7 @@ func TestPluginPipeline_WithoutOverride_UsesPluginPackage(t *testing.T) {
 		t.Fatal("expected generate to fail when using real plugin runner with cmd=echo; nil error means plugin path was not exercised as intended")
 	}
 	if strings.Contains(err.Error(), "unknown engine") {
-		t.Errorf("error is %q — we never entered the plugin path (plugin package was not used). With PluginParseFunc=nil, runPluginQuerySet must call plugin.NewProcessRunner and ParseRequest.", err.Error())
+		t.Errorf("error is %q — we never entered the plugin path. With PluginParseFunc=nil, runPluginQuerySet must call the engine process runner.", err.Error())
 	}
 }
 

@@ -13,7 +13,6 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/compiler"
 	"github.com/sqlc-dev/sqlc/internal/config"
-	"github.com/sqlc-dev/sqlc/internal/engine/plugin"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/multierr"
 	"github.com/sqlc-dev/sqlc/internal/source"
@@ -41,13 +40,13 @@ func runPluginQuerySet(ctx context.Context, rp ResultProcessor, name, dir string
 	if o != nil && o.PluginParseFunc != nil {
 		parseFn = o.PluginParseFunc
 	} else {
-		r := plugin.NewProcessRunner(enginePlugin.Process.Cmd, combo.Dir, enginePlugin.Env)
+		r := newEngineProcessRunner(enginePlugin.Process.Cmd, combo.Dir, enginePlugin.Env)
 		parseFn = func(schemaSQL, querySQL string) (*pb.ParseResponse, error) {
 			req := &pb.ParseRequest{Sql: querySQL}
 			if schemaSQL != "" {
 				req.SchemaSource = &pb.ParseRequest_SchemaSql{SchemaSql: schemaSQL}
 			}
-			return r.ParseRequest(ctx, req)
+			return r.parseRequest(ctx, req)
 		}
 	}
 

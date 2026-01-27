@@ -10,6 +10,8 @@ Engine plugins let you use sqlc with databases that are not built-in. You can ad
 
 Data returned by the engine plugin (SQL text, parameters, columns) is passed through to [codegen plugins](../guides/plugins.md) without an extra compiler/AST step. The plugin is the single place that defines how queries are interpreted for that engine.
 
+**Limitation:** `sqlc vet` does not support plugin engines. Use vet only with built-in engines (postgresql, mysql, sqlite).
+
 ## Overview
 
 An engine plugin is an external process that implements one RPC:
@@ -154,11 +156,13 @@ A minimal engine that parses SQLite-style SQL and expands `*` using a schema is 
 
 ## Architecture
 
+For each `sql[]` block, `sqlc generate` branches on the configured engine: built-in (postgresql, mysql, sqlite) use the compiler and catalog; any engine listed under `engines:` in sqlc.yaml uses the plugin path (no compiler, schema + queries go to the plugin’s Parse RPC, then output goes to codegen).
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  sqlc generate                                                  │
 │  1. Read sqlc.yaml, find engine for this sql block              │
-│  2. Call plugin: parse (sql + schema_sql or connection_params)   │
+│  2. If plugin engine: call plugin parse (sql + schema_sql etc.)  │
 │  3. Use returned sql, parameters, columns in codegen             │
 └─────────────────────────────────────────────────────────────────┘
 
