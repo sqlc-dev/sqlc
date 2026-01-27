@@ -12,15 +12,18 @@
 // The Protocol Buffer schema is published at buf.build/sqlc/sqlc and ensures
 // binary compatibility between sqlc and plugins.
 //
-// # Generating engine.pb.go
+// # Generating engine.pb.go and engine_grpc.pb.go
 //
 // Run from the repository root:
 //
-//	make proto-engine
+//	make proto-engine-plugin
 //
 // or:
 //
-//	protoc --go_out=. --go_opt=module=github.com/sqlc-dev/sqlc protos/engine/engine.proto
+//	protoc -I. \
+//		--go_out=. --go_opt=module=github.com/sqlc-dev/sqlc --go_opt=Mprotos/engine/engine.proto=github.com/sqlc-dev/sqlc/pkg/engine \
+//		--go-grpc_out=. --go-grpc_opt=module=github.com/sqlc-dev/sqlc --go-grpc_opt=Mprotos/engine/engine.proto=github.com/sqlc-dev/sqlc/pkg/engine \
+//		protos/engine/engine.proto
 //
 // Example plugin:
 //
@@ -36,7 +39,7 @@
 //		})
 //	}
 //
-//go:generate protoc -I../.. --go_out=../.. --go_opt=module=github.com/sqlc-dev/sqlc protos/engine/engine.proto
+//go:generate sh -c "cd ../.. && make proto-engine-plugin"
 package engine
 
 import (
