@@ -248,9 +248,6 @@ func (c *Catalog) alterTableSetSchema(stmt *ast.AlterTableSetSchemaStmt) error {
 }
 
 func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
-	if stmt.Name == nil {
-		return fmt.Errorf("create table statement missing table name")
-	}
 	ns := stmt.Name.Schema
 	if ns == "" {
 		ns = c.DefaultSchema
