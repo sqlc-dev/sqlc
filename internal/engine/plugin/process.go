@@ -21,15 +21,22 @@ import (
 	pb "github.com/sqlc-dev/sqlc/pkg/engine"
 )
 
+// dialectConfig holds dialect options. Plugin API no longer provides these; we use defaults.
+type dialectConfig struct {
+	QuoteChar   string
+	ParamStyle  string
+	ParamPrefix string
+	CastSyntax  string
+}
+
 // ProcessRunner runs an engine plugin as an external process.
 type ProcessRunner struct {
 	Cmd string
 	Dir string // Working directory for the plugin (config file directory)
 	Env []string
 
-	// Cached responses
-	commentSyntax *pb.GetCommentSyntaxResponse
-	dialect       *pb.GetDialectResponse
+	// Default dialect when plugin does not expose GetDialect (new API has only Parse)
+	dialect *dialectConfig
 }
 
 // NewProcessRunner creates a new ProcessRunner.
@@ -87,6 +94,9 @@ func (r *ProcessRunner) invoke(ctx context.Context, method string, req, resp pro
 }
 
 // Parse implements engine.Parser.
+// The plugin returns Sql, Parameters, and Columns (no AST). We produce a single
+// synthetic statement so the rest of the pipeline can run; downstream may need
+// to use plugin output directly for codegen when that path exists.
 func (r *ProcessRunner) Parse(reader io.Reader) ([]ast.Statement, error) {
 	sql, err := io.ReadAll(reader)
 	if err != nil {
@@ -100,73 +110,49 @@ func (r *ProcessRunner) Parse(reader io.Reader) ([]ast.Statement, error) {
 		return nil, err
 	}
 
-	var stmts []ast.Statement
-	for _, s := range resp.Statements {
-		// Parse the AST JSON into an ast.Node
-		node, err := parseASTJSON(s.AstJson)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse AST: %w", err)
-		}
-
-		stmts = append(stmts, ast.Statement{
-			Raw: &ast.RawStmt{
-				Stmt:         node,
-				StmtLocation: int(s.StmtLocation),
-				StmtLen:      int(s.StmtLen),
-			},
-		})
+	// New API: resp has Sql, Parameters, Columns (no Statements/AST).
+	// Return one synthetic statement so callers that expect []ast.Statement still compile.
+	sqlText := resp.Sql
+	if sqlText == "" {
+		sqlText = string(sql)
 	}
-
-	return stmts, nil
+	return []ast.Statement{
+		{
+			Raw: &ast.RawStmt{
+				Stmt:         &ast.TODO{},
+				StmtLocation: 0,
+				StmtLen:      len(sqlText),
+			},
+		},
+	}, nil
 }
 
 // CommentSyntax implements engine.Parser.
+// Plugin API no longer has GetCommentSyntax; use common defaults.
 func (r *ProcessRunner) CommentSyntax() source.CommentSyntax {
-	if r.commentSyntax == nil {
-		req := &pb.GetCommentSyntaxRequest{}
-		resp := &pb.GetCommentSyntaxResponse{}
-		if err := r.invoke(context.Background(), "get_comment_syntax", req, resp); err != nil {
-			// Default to common SQL comment syntax
-			return source.CommentSyntax{
-				Dash:      true,
-				SlashStar: true,
-			}
-		}
-		r.commentSyntax = resp
-	}
-
 	return source.CommentSyntax{
-		Dash:      r.commentSyntax.Dash,
-		SlashStar: r.commentSyntax.SlashStar,
-		Hash:      r.commentSyntax.Hash,
+		Dash:      true,
+		SlashStar: true,
+		Hash:      false,
 	}
 }
 
 // IsReservedKeyword implements engine.Parser.
-func (r *ProcessRunner) IsReservedKeyword(s string) bool {
-	req := &pb.IsReservedKeywordRequest{Keyword: s}
-	resp := &pb.IsReservedKeywordResponse{}
-	if err := r.invoke(context.Background(), "is_reserved_keyword", req, resp); err != nil {
-		return false
-	}
-	return resp.IsReserved
+// Plugin API no longer has IsReservedKeyword; assume not reserved.
+func (r *ProcessRunner) IsReservedKeyword(string) bool {
+	return false
 }
 
 // GetCatalog returns the initial catalog for this engine.
+// Plugin API no longer has GetCatalog; return an empty catalog.
 func (r *ProcessRunner) GetCatalog() (*catalog.Catalog, error) {
-	req := &pb.GetCatalogRequest{}
-	resp := &pb.GetCatalogResponse{}
-	if err := r.invoke(context.Background(), "get_catalog", req, resp); err != nil {
-		return nil, err
-	}
-
-	return convertCatalog(resp.Catalog), nil
+	return catalog.New(""), nil
 }
 
 // QuoteIdent implements engine.Dialect.
 func (r *ProcessRunner) QuoteIdent(s string) string {
 	r.ensureDialect()
-	if r.IsReservedKeyword(s) && r.dialect.QuoteChar != "" {
+	if r.dialect.QuoteChar != "" {
 		return r.dialect.QuoteChar + s + r.dialect.QuoteChar
 	}
 	return s
@@ -217,107 +203,13 @@ func (r *ProcessRunner) Cast(arg, typeName string) string {
 
 func (r *ProcessRunner) ensureDialect() {
 	if r.dialect == nil {
-		req := &pb.GetDialectRequest{}
-		resp := &pb.GetDialectResponse{}
-		if err := r.invoke(context.Background(), "get_dialect", req, resp); err != nil {
-			// Use defaults
-			r.dialect = &pb.GetDialectResponse{
-				QuoteChar:   `"`,
-				ParamStyle:  "dollar",
-				ParamPrefix: "@",
-				CastSyntax:  "cast_function",
-			}
-		} else {
-			r.dialect = resp
+		r.dialect = &dialectConfig{
+			QuoteChar:   `"`,
+			ParamStyle:  "dollar",
+			ParamPrefix: "@",
+			CastSyntax:  "cast_function",
 		}
 	}
-}
-
-// convertCatalog converts a protobuf Catalog to catalog.Catalog.
-func convertCatalog(c *pb.Catalog) *catalog.Catalog {
-	if c == nil {
-		return catalog.New("")
-	}
-
-	cat := catalog.New(c.DefaultSchema)
-	cat.Name = c.Name
-	cat.Comment = c.Comment
-
-	// Clear default schemas and add from plugin
-	cat.Schemas = make([]*catalog.Schema, 0, len(c.Schemas))
-	for _, s := range c.Schemas {
-		schema := &catalog.Schema{
-			Name:    s.Name,
-			Comment: s.Comment,
-		}
-
-		for _, t := range s.Tables {
-			table := &catalog.Table{
-				Rel: &ast.TableName{
-					Catalog: t.Catalog,
-					Schema:  t.Schema,
-					Name:    t.Name,
-				},
-				Comment: t.Comment,
-			}
-			for _, col := range t.Columns {
-				table.Columns = append(table.Columns, &catalog.Column{
-					Name:       col.Name,
-					Type:       ast.TypeName{Name: col.DataType},
-					IsNotNull:  col.NotNull,
-					IsArray:    col.IsArray,
-					ArrayDims:  int(col.ArrayDims),
-					Comment:    col.Comment,
-					Length:     toPointer(int(col.Length)),
-					IsUnsigned: col.IsUnsigned,
-				})
-			}
-			schema.Tables = append(schema.Tables, table)
-		}
-
-		for _, e := range s.Enums {
-			enum := &catalog.Enum{
-				Name:    e.Name,
-				Comment: e.Comment,
-			}
-			enum.Vals = append(enum.Vals, e.Values...)
-			schema.Types = append(schema.Types, enum)
-		}
-
-		for _, f := range s.Functions {
-			fn := &catalog.Function{
-				Name:       f.Name,
-				Comment:    f.Comment,
-				ReturnType: &ast.TypeName{Schema: f.ReturnType.GetSchema(), Name: f.ReturnType.GetName()},
-			}
-			for _, arg := range f.Args {
-				fn.Args = append(fn.Args, &catalog.Argument{
-					Name:       arg.Name,
-					Type:       &ast.TypeName{Schema: arg.Type.GetSchema(), Name: arg.Type.GetName()},
-					HasDefault: arg.HasDefault,
-				})
-			}
-			schema.Funcs = append(schema.Funcs, fn)
-		}
-
-		for _, t := range s.Types {
-			schema.Types = append(schema.Types, &catalog.CompositeType{
-				Name:    t.Name,
-				Comment: t.Comment,
-			})
-		}
-
-		cat.Schemas = append(cat.Schemas, schema)
-	}
-
-	return cat
-}
-
-func toPointer(n int) *int {
-	if n == 0 {
-		return nil
-	}
-	return &n
 }
 
 // parseASTJSON parses AST JSON into an ast.Node.
