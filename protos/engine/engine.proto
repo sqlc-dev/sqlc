@@ -2,9 +2,6 @@ syntax = "proto3";
 
 package engine;
 
-// Go code is generated to pkg/engine for external plugin developers
-option go_package = "github.com/sqlc-dev/sqlc/pkg/engine";
-
 // EngineService defines the interface for database engine plugins.
 // Engine plugins are responsible for parsing SQL statements and extracting
 // information about parameters and result columns.
