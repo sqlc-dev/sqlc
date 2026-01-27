@@ -112,8 +112,7 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 			}
 		}
 	default:
-		return nil, fmt.Errorf("unknown engine: %s\n\nTo use a custom database engine, add it to the 'engines' section of sqlc.yaml:\n\n  engines:\n    - name: %s\n      process:\n        cmd: sqlc-engine-%s\n\nThen install the plugin: go install github.com/example/sqlc-engine-%s@latest",
-			conf.Engine, conf.Engine, conf.Engine, conf.Engine)
+		return nil, fmt.Errorf("unknown engine: %s", conf.Engine)
 	}
 	return c, nil
 }
