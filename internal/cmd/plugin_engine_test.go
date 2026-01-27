@@ -120,7 +120,7 @@ func TestPluginPipeline_FullPipeline(t *testing.T) {
 		t.Fatalf("parse config: %v", err)
 	}
 
-	inputs := &GenerateInputs{
+	inputs := &sourceFiles{
 		Config:     &conf,
 		ConfigPath: "sqlc.yaml",
 		Dir:        ".",
@@ -231,7 +231,7 @@ func TestPluginPipeline_WithoutOverride_UsesPluginPackage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("parse config: %v", err)
 	}
-	inputs := &GenerateInputs{
+	inputs := &sourceFiles{
 		Config:     &conf,
 		ConfigPath: "sqlc.yaml",
 		Dir:        ".",

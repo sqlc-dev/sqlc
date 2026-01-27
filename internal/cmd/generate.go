@@ -131,13 +131,13 @@ func readConfig(stderr io.Writer, dir, filename string) (string, *config.Config,
 	return configPath, &conf, nil
 }
 
-// GenerateInputs holds in-memory config and optional file contents so generate can run
+// sourceFiles holds in-memory config and optional file contents so generate can run
 // without reading from disk (e.g. in tests). For production, Generate reads from FS and
 // fills FileContents before calling generate.
-type GenerateInputs struct {
-	Config      *config.Config
-	ConfigPath  string
-	Dir         string
+type sourceFiles struct {
+	Config       *config.Config
+	ConfigPath   string
+	Dir          string
 	FileContents map[string][]byte // path -> content; keys match paths used when reading (e.g. filepath.Join(dir, "schema.sql"))
 }
 
@@ -166,7 +166,7 @@ func Generate(ctx context.Context, dir, filename string, o *Options) (map[string
 		return remoteGenerate(ctx, configPath, conf, dir, stderr)
 	}
 
-	inputs := &GenerateInputs{Config: conf, ConfigPath: configPath, Dir: dir}
+	inputs := &sourceFiles{Config: conf, ConfigPath: configPath, Dir: dir}
 	inputs.FileContents, err = loadFileContentsFromFS(conf, dir)
 	if err != nil {
 		return nil, err
@@ -176,7 +176,7 @@ func Generate(ctx context.Context, dir, filename string, o *Options) (map[string
 
 // generate performs codegen using in-memory inputs. It is used by Generate (with contents
 // loaded from disk) and by tests (with pre-filled Config and FileContents, no temp files).
-func generate(ctx context.Context, inputs *GenerateInputs, o *Options) (map[string]string, error) {
+func generate(ctx context.Context, inputs *sourceFiles, o *Options) (map[string]string, error) {
 	g := &generator{
 		dir:    inputs.Dir,
 		output: map[string]string{},
@@ -228,9 +228,9 @@ func loadFileContentsFromFS(conf *config.Config, dir string) (map[string][]byte,
 }
 
 type generator struct {
-	m                     sync.Mutex
-	dir                   string
-	output                map[string]string
+	m                      sync.Mutex
+	dir                    string
+	output                 map[string]string
 	codegenHandlerOverride grpc.ClientConnInterface
 }
 

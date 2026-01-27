@@ -29,7 +29,7 @@ var defaultCommentSyntax = metadata.CommentSyntax(source.CommentSyntax{Dash: tru
 // engine plugin via ParseRequest; the responses are turned into compiler.Result and
 // passed to ProcessResult. No AST or compiler parsing is used.
 // When inputs.FileContents is set, schema/query bytes are taken from it (no disk read).
-func runPluginQuerySet(ctx context.Context, rp ResultProcessor, name, dir string, sql OutputPair, combo config.CombinedSettings, inputs *GenerateInputs, o *Options) error {
+func runPluginQuerySet(ctx context.Context, rp ResultProcessor, name, dir string, sql OutputPair, combo config.CombinedSettings, inputs *sourceFiles, o *Options) error {
 	enginePlugin, found := config.FindEnginePlugin(&combo.Global, string(combo.Package.Engine))
 	if !found || enginePlugin.Process == nil {
 		e := string(combo.Package.Engine)

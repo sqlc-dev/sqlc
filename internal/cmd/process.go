@@ -51,11 +51,11 @@ func Process(ctx context.Context, rp ResultProcessor, dir, filename string, o *O
 		return err
 	}
 
-	inputs := &GenerateInputs{Config: conf, ConfigPath: configPath, Dir: dir}
+	inputs := &sourceFiles{Config: conf, ConfigPath: configPath, Dir: dir}
 	return processQuerySets(ctx, rp, inputs, o)
 }
 
-func processQuerySets(ctx context.Context, rp ResultProcessor, inputs *GenerateInputs, o *Options) error {
+func processQuerySets(ctx context.Context, rp ResultProcessor, inputs *sourceFiles, o *Options) error {
 	stderr := o.Stderr
 	conf := inputs.Config
 	dir := inputs.Dir
