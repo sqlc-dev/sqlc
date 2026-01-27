@@ -424,6 +424,13 @@ func isTableRequired(n ast.Node, col *Column, prior int) int {
 		if aliasMatch && tableMatch {
 			return prior
 		}
+	case *ast.RangeSubselect:
+		// For subqueries, match only by alias since there's no table name
+		if n.Alias != nil && col.TableAlias != "" {
+			if *n.Alias.Aliasname == col.TableAlias {
+				return prior
+			}
+		}
 	case *ast.JoinExpr:
 		helper := func(l, r int) int {
 			if res := isTableRequired(n.Larg, col, l); res != tableNotFound {
