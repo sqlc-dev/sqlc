@@ -21,6 +21,80 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// Cmd is the query command/type. Matches sqlc's ":one", ":many", ":exec", etc.
+type Cmd int32
+
+const (
+	Cmd_CMD_UNSPECIFIED  Cmd = 0
+	Cmd_CMD_ONE          Cmd = 1
+	Cmd_CMD_MANY         Cmd = 2
+	Cmd_CMD_EXEC         Cmd = 3
+	Cmd_CMD_EXEC_RESULT  Cmd = 4
+	Cmd_CMD_EXEC_ROWS    Cmd = 5
+	Cmd_CMD_EXEC_LAST_ID Cmd = 6
+	Cmd_CMD_COPY_FROM    Cmd = 7
+	Cmd_CMD_BATCH_EXEC   Cmd = 8
+	Cmd_CMD_BATCH_MANY   Cmd = 9
+	Cmd_CMD_BATCH_ONE    Cmd = 10
+)
+
+// Enum value maps for Cmd.
+var (
+	Cmd_name = map[int32]string{
+		0:  "CMD_UNSPECIFIED",
+		1:  "CMD_ONE",
+		2:  "CMD_MANY",
+		3:  "CMD_EXEC",
+		4:  "CMD_EXEC_RESULT",
+		5:  "CMD_EXEC_ROWS",
+		6:  "CMD_EXEC_LAST_ID",
+		7:  "CMD_COPY_FROM",
+		8:  "CMD_BATCH_EXEC",
+		9:  "CMD_BATCH_MANY",
+		10: "CMD_BATCH_ONE",
+	}
+	Cmd_value = map[string]int32{
+		"CMD_UNSPECIFIED":  0,
+		"CMD_ONE":          1,
+		"CMD_MANY":         2,
+		"CMD_EXEC":         3,
+		"CMD_EXEC_RESULT":  4,
+		"CMD_EXEC_ROWS":    5,
+		"CMD_EXEC_LAST_ID": 6,
+		"CMD_COPY_FROM":    7,
+		"CMD_BATCH_EXEC":   8,
+		"CMD_BATCH_MANY":   9,
+		"CMD_BATCH_ONE":    10,
+	}
+)
+
+func (x Cmd) Enum() *Cmd {
+	p := new(Cmd)
+	*p = x
+	return p
+}
+
+func (x Cmd) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Cmd) Descriptor() protoreflect.EnumDescriptor {
+	return file_protos_engine_engine_proto_enumTypes[0].Descriptor()
+}
+
+func (Cmd) Type() protoreflect.EnumType {
+	return &file_protos_engine_engine_proto_enumTypes[0]
+}
+
+func (x Cmd) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Cmd.Descriptor instead.
+func (Cmd) EnumDescriptor() ([]byte, []int) {
+	return file_protos_engine_engine_proto_rawDescGZIP(), []int{0}
+}
+
 // ParseRequest contains the SQL to parse and either schema or connection parameters.
 type ParseRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -172,23 +246,100 @@ func (x *ConnectionParams) GetParams() map[string]string {
 	return nil
 }
 
-// ParseResponse contains the processed SQL and information about parameters and columns.
-type ParseResponse struct {
+// Statement is one parsed query block: name/cmd from " name: X :cmd", plus sql and type info.
+type Statement struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// The processed SQL query text. In the simplest case, this is the same as input.
-	// In complex cases, wildcards (*) may be expanded based on the schema.
-	Sql string `protobuf:"bytes,1,opt,name=sql,proto3" json:"sql,omitempty"`
-	// Parameters found in the query (e.g., $1, ?, :name, sqlc.arg(), etc.).
-	Parameters []*Parameter `protobuf:"bytes,2,rep,name=parameters,proto3" json:"parameters,omitempty"`
-	// Result columns that the query returns.
-	Columns       []*Column `protobuf:"bytes,3,rep,name=columns,proto3" json:"columns,omitempty"`
+	// Query name (from "-- name: GetUser" etc.).
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// Command/type for this statement.
+	Cmd Cmd `protobuf:"varint,2,opt,name=cmd,proto3,enum=engine.Cmd" json:"cmd,omitempty"`
+	// Processed SQL for this statement (wildcards expanded if applicable).
+	Sql string `protobuf:"bytes,3,opt,name=sql,proto3" json:"sql,omitempty"`
+	// Parameters for this statement.
+	Parameters []*Parameter `protobuf:"bytes,4,rep,name=parameters,proto3" json:"parameters,omitempty"`
+	// Result columns for this statement.
+	Columns       []*Column `protobuf:"bytes,5,rep,name=columns,proto3" json:"columns,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Statement) Reset() {
+	*x = Statement{}
+	mi := &file_protos_engine_engine_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Statement) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Statement) ProtoMessage() {}
+
+func (x *Statement) ProtoReflect() protoreflect.Message {
+	mi := &file_protos_engine_engine_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Statement.ProtoReflect.Descriptor instead.
+func (*Statement) Descriptor() ([]byte, []int) {
+	return file_protos_engine_engine_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *Statement) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Statement) GetCmd() Cmd {
+	if x != nil {
+		return x.Cmd
+	}
+	return Cmd_CMD_UNSPECIFIED
+}
+
+func (x *Statement) GetSql() string {
+	if x != nil {
+		return x.Sql
+	}
+	return ""
+}
+
+func (x *Statement) GetParameters() []*Parameter {
+	if x != nil {
+		return x.Parameters
+	}
+	return nil
+}
+
+func (x *Statement) GetColumns() []*Column {
+	if x != nil {
+		return x.Columns
+	}
+	return nil
+}
+
+// ParseResponse contains the processed statements. The plugin receives the full query file
+// and schema (or connection params); it returns one Statement per query block.
+type ParseResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Statements    []*Statement           `protobuf:"bytes,1,rep,name=statements,proto3" json:"statements,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ParseResponse) Reset() {
 	*x = ParseResponse{}
-	mi := &file_protos_engine_engine_proto_msgTypes[2]
+	mi := &file_protos_engine_engine_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -200,7 +351,7 @@ func (x *ParseResponse) String() string {
 func (*ParseResponse) ProtoMessage() {}
 
 func (x *ParseResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_engine_engine_proto_msgTypes[2]
+	mi := &file_protos_engine_engine_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -213,26 +364,12 @@ func (x *ParseResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ParseResponse.ProtoReflect.Descriptor instead.
 func (*ParseResponse) Descriptor() ([]byte, []int) {
-	return file_protos_engine_engine_proto_rawDescGZIP(), []int{2}
+	return file_protos_engine_engine_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *ParseResponse) GetSql() string {
+func (x *ParseResponse) GetStatements() []*Statement {
 	if x != nil {
-		return x.Sql
-	}
-	return ""
-}
-
-func (x *ParseResponse) GetParameters() []*Parameter {
-	if x != nil {
-		return x.Parameters
-	}
-	return nil
-}
-
-func (x *ParseResponse) GetColumns() []*Column {
-	if x != nil {
-		return x.Columns
+		return x.Statements
 	}
 	return nil
 }
@@ -258,7 +395,7 @@ type Parameter struct {
 
 func (x *Parameter) Reset() {
 	*x = Parameter{}
-	mi := &file_protos_engine_engine_proto_msgTypes[3]
+	mi := &file_protos_engine_engine_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -270,7 +407,7 @@ func (x *Parameter) String() string {
 func (*Parameter) ProtoMessage() {}
 
 func (x *Parameter) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_engine_engine_proto_msgTypes[3]
+	mi := &file_protos_engine_engine_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -283,7 +420,7 @@ func (x *Parameter) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Parameter.ProtoReflect.Descriptor instead.
 func (*Parameter) Descriptor() ([]byte, []int) {
-	return file_protos_engine_engine_proto_rawDescGZIP(), []int{3}
+	return file_protos_engine_engine_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Parameter) GetName() string {
@@ -351,7 +488,7 @@ type Column struct {
 
 func (x *Column) Reset() {
 	*x = Column{}
-	mi := &file_protos_engine_engine_proto_msgTypes[4]
+	mi := &file_protos_engine_engine_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -363,7 +500,7 @@ func (x *Column) String() string {
 func (*Column) ProtoMessage() {}
 
 func (x *Column) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_engine_engine_proto_msgTypes[4]
+	mi := &file_protos_engine_engine_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -376,7 +513,7 @@ func (x *Column) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Column.ProtoReflect.Descriptor instead.
 func (*Column) Descriptor() ([]byte, []int) {
-	return file_protos_engine_engine_proto_rawDescGZIP(), []int{4}
+	return file_protos_engine_engine_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Column) GetName() string {
@@ -444,13 +581,19 @@ const file_protos_engine_engine_proto_rawDesc = "" +
 	"\x06params\x18\x02 \x03(\v2$.engine.ConnectionParams.ParamsEntryR\x06params\x1a9\n" +
 	"\vParamsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"~\n" +
-	"\rParseResponse\x12\x10\n" +
-	"\x03sql\x18\x01 \x01(\tR\x03sql\x121\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xad\x01\n" +
+	"\tStatement\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1d\n" +
+	"\x03cmd\x18\x02 \x01(\x0e2\v.engine.CmdR\x03cmd\x12\x10\n" +
+	"\x03sql\x18\x03 \x01(\tR\x03sql\x121\n" +
 	"\n" +
-	"parameters\x18\x02 \x03(\v2\x11.engine.ParameterR\n" +
+	"parameters\x18\x04 \x03(\v2\x11.engine.ParameterR\n" +
 	"parameters\x12(\n" +
-	"\acolumns\x18\x03 \x03(\v2\x0e.engine.ColumnR\acolumns\"\xae\x01\n" +
+	"\acolumns\x18\x05 \x03(\v2\x0e.engine.ColumnR\acolumns\"B\n" +
+	"\rParseResponse\x121\n" +
+	"\n" +
+	"statements\x18\x01 \x03(\v2\x11.engine.StatementR\n" +
+	"statements\"\xae\x01\n" +
 	"\tParameter\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
 	"\bposition\x18\x02 \x01(\x05R\bposition\x12\x1b\n" +
@@ -469,7 +612,20 @@ const file_protos_engine_engine_proto_rawDesc = "" +
 	"\n" +
 	"table_name\x18\x06 \x01(\tR\ttableName\x12\x1f\n" +
 	"\vschema_name\x18\a \x01(\tR\n" +
-	"schemaName2E\n" +
+	"schemaName*\xcf\x01\n" +
+	"\x03Cmd\x12\x13\n" +
+	"\x0fCMD_UNSPECIFIED\x10\x00\x12\v\n" +
+	"\aCMD_ONE\x10\x01\x12\f\n" +
+	"\bCMD_MANY\x10\x02\x12\f\n" +
+	"\bCMD_EXEC\x10\x03\x12\x13\n" +
+	"\x0fCMD_EXEC_RESULT\x10\x04\x12\x11\n" +
+	"\rCMD_EXEC_ROWS\x10\x05\x12\x14\n" +
+	"\x10CMD_EXEC_LAST_ID\x10\x06\x12\x11\n" +
+	"\rCMD_COPY_FROM\x10\a\x12\x12\n" +
+	"\x0eCMD_BATCH_EXEC\x10\b\x12\x12\n" +
+	"\x0eCMD_BATCH_MANY\x10\t\x12\x11\n" +
+	"\rCMD_BATCH_ONE\x10\n" +
+	"2E\n" +
 	"\rEngineService\x124\n" +
 	"\x05Parse\x12\x14.engine.ParseRequest\x1a\x15.engine.ParseResponseb\x06proto3"
 
@@ -485,27 +641,32 @@ func file_protos_engine_engine_proto_rawDescGZIP() []byte {
 	return file_protos_engine_engine_proto_rawDescData
 }
 
-var file_protos_engine_engine_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_protos_engine_engine_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_protos_engine_engine_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_protos_engine_engine_proto_goTypes = []any{
-	(*ParseRequest)(nil),     // 0: engine.ParseRequest
-	(*ConnectionParams)(nil), // 1: engine.ConnectionParams
-	(*ParseResponse)(nil),    // 2: engine.ParseResponse
-	(*Parameter)(nil),        // 3: engine.Parameter
-	(*Column)(nil),           // 4: engine.Column
-	nil,                      // 5: engine.ConnectionParams.ParamsEntry
+	(Cmd)(0),                 // 0: engine.Cmd
+	(*ParseRequest)(nil),     // 1: engine.ParseRequest
+	(*ConnectionParams)(nil), // 2: engine.ConnectionParams
+	(*Statement)(nil),        // 3: engine.Statement
+	(*ParseResponse)(nil),    // 4: engine.ParseResponse
+	(*Parameter)(nil),        // 5: engine.Parameter
+	(*Column)(nil),           // 6: engine.Column
+	nil,                      // 7: engine.ConnectionParams.ParamsEntry
 }
 var file_protos_engine_engine_proto_depIdxs = []int32{
-	1, // 0: engine.ParseRequest.connection_params:type_name -> engine.ConnectionParams
-	5, // 1: engine.ConnectionParams.params:type_name -> engine.ConnectionParams.ParamsEntry
-	3, // 2: engine.ParseResponse.parameters:type_name -> engine.Parameter
-	4, // 3: engine.ParseResponse.columns:type_name -> engine.Column
-	0, // 4: engine.EngineService.Parse:input_type -> engine.ParseRequest
-	2, // 5: engine.EngineService.Parse:output_type -> engine.ParseResponse
-	5, // [5:6] is the sub-list for method output_type
-	4, // [4:5] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	2, // 0: engine.ParseRequest.connection_params:type_name -> engine.ConnectionParams
+	7, // 1: engine.ConnectionParams.params:type_name -> engine.ConnectionParams.ParamsEntry
+	0, // 2: engine.Statement.cmd:type_name -> engine.Cmd
+	5, // 3: engine.Statement.parameters:type_name -> engine.Parameter
+	6, // 4: engine.Statement.columns:type_name -> engine.Column
+	3, // 5: engine.ParseResponse.statements:type_name -> engine.Statement
+	1, // 6: engine.EngineService.Parse:input_type -> engine.ParseRequest
+	4, // 7: engine.EngineService.Parse:output_type -> engine.ParseResponse
+	7, // [7:8] is the sub-list for method output_type
+	6, // [6:7] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_protos_engine_engine_proto_init() }
@@ -522,13 +683,14 @@ func file_protos_engine_engine_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_protos_engine_engine_proto_rawDesc), len(file_protos_engine_engine_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   6,
+			NumEnums:      1,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_protos_engine_engine_proto_goTypes,
 		DependencyIndexes: file_protos_engine_engine_proto_depIdxs,
+		EnumInfos:         file_protos_engine_engine_proto_enumTypes,
 		MessageInfos:      file_protos_engine_engine_proto_msgTypes,
 	}.Build()
 	File_protos_engine_engine_proto = out.File

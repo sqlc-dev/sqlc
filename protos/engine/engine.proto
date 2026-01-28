@@ -35,17 +35,39 @@ message ConnectionParams {
   map<string, string> params = 2;
 }
 
-// ParseResponse contains the processed SQL and information about parameters and columns.
+// Cmd is the query command/type. Matches sqlc's ":one", ":many", ":exec", etc.
+enum Cmd {
+  CMD_UNSPECIFIED = 0;
+  CMD_ONE = 1;
+  CMD_MANY = 2;
+  CMD_EXEC = 3;
+  CMD_EXEC_RESULT = 4;
+  CMD_EXEC_ROWS = 5;
+  CMD_EXEC_LAST_ID = 6;
+  CMD_COPY_FROM = 7;
+  CMD_BATCH_EXEC = 8;
+  CMD_BATCH_MANY = 9;
+  CMD_BATCH_ONE = 10;
+}
+
+// Statement is one parsed query block: name/cmd from " name: X :cmd", plus sql and type info.
+message Statement {
+  // Query name (from "-- name: GetUser" etc.).
+  string name = 1;
+  // Command/type for this statement.
+  Cmd cmd = 2;
+  // Processed SQL for this statement (wildcards expanded if applicable).
+  string sql = 3;
+  // Parameters for this statement.
+  repeated Parameter parameters = 4;
+  // Result columns for this statement.
+  repeated Column columns = 5;
+}
+
+// ParseResponse contains the processed statements. The plugin receives the full query file
+// and schema (or connection params); it returns one Statement per query block.
 message ParseResponse {
-  // The processed SQL query text. In the simplest case, this is the same as input.
-  // In complex cases, wildcards (*) may be expanded based on the schema.
-  string sql = 1;
-  
-  // Parameters found in the query (e.g., $1, ?, :name, sqlc.arg(), etc.).
-  repeated Parameter parameters = 2;
-  
-  // Result columns that the query returns.
-  repeated Column columns = 3;
+  repeated Statement statements = 1;
 }
 
 // Parameter represents a query parameter.

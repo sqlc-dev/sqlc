@@ -17,7 +17,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/multierr"
-	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 	"google.golang.org/protobuf/proto"
@@ -85,9 +84,6 @@ func (r *engineProcessRunner) parseRequest(ctx context.Context, req *pb.ParseReq
 	}
 	return resp, nil
 }
-
-// defaultCommentSyntax is used when parsing query names from plugin-engine query files.
-var defaultCommentSyntax = metadata.CommentSyntax(source.CommentSyntax{Dash: true, SlashStar: true, Hash: false})
 
 // runPluginQuerySet runs the plugin-engine path: schema and queries are sent to the
 // engine plugin via ParseRequest; the responses are turned into compiler.Result and
@@ -177,26 +173,24 @@ func runPluginQuerySet(ctx context.Context, rp resultProcessor, name, dir string
 			continue
 		}
 		queryContent := string(blob)
-		blocks, err := metadata.QueryBlocks(queryContent, defaultCommentSyntax)
+		resp, err := parseFn(queryContent)
 		if err != nil {
 			merr.Add(filename, queryContent, 0, err)
 			continue
 		}
-		for _, b := range blocks {
-			resp, err := parseFn(b.SQL)
-			if err != nil {
-				merr.Add(filename, queryContent, 0, err)
-				continue
-			}
-			q := pluginResponseToCompilerQuery(b.Name, b.Cmd, filepath.Base(filename), resp)
+		baseName := filepath.Base(filename)
+		stmts := resp.GetStatements()
+		for _, st := range stmts {
+			q := statementToCompilerQuery(st, baseName)
 			if q == nil {
 				continue
 			}
-			if _, exists := set[b.Name]; exists {
-				merr.Add(filename, queryContent, 0, fmt.Errorf("duplicate query name: %s", b.Name))
+			qName := st.GetName()
+			if _, exists := set[qName]; exists {
+				merr.Add(filename, queryContent, 0, fmt.Errorf("duplicate query name: %s", qName))
 				continue
 			}
-			set[b.Name] = struct{}{}
+			set[qName] = struct{}{}
 			queries = append(queries, q)
 		}
 	}
@@ -236,14 +230,17 @@ func loadSchemaSQL(schemaPaths []string, readFile func(string) ([]byte, error)) 
 	return strings.Join(parts, "\n"), nil
 }
 
-func pluginResponseToCompilerQuery(name, cmd, filename string, resp *pb.ParseResponse) *compiler.Query {
-	sqlTrimmed := strings.TrimSpace(resp.GetSql())
+// statementToCompilerQuery converts one engine.Statement from the plugin into a compiler.Query.
+func statementToCompilerQuery(st *pb.Statement, filename string) *compiler.Query {
+	if st == nil {
+		return nil
+	}
+	sqlTrimmed := strings.TrimSpace(st.GetSql())
 	if sqlTrimmed == "" {
 		return nil
 	}
-
 	var params []compiler.Parameter
-	for _, p := range resp.GetParameters() {
+	for _, p := range st.GetParameters() {
 		col := &compiler.Column{
 			DataType:  p.GetDataType(),
 			NotNull:   !p.GetNullable(),
@@ -256,9 +253,8 @@ func pluginResponseToCompilerQuery(name, cmd, filename string, resp *pb.ParseRes
 		}
 		params = append(params, compiler.Parameter{Number: pos, Column: col})
 	}
-
 	var columns []*compiler.Column
-	for _, c := range resp.GetColumns() {
+	for _, c := range st.GetColumns() {
 		columns = append(columns, &compiler.Column{
 			Name:      c.GetName(),
 			DataType:  c.GetDataType(),
@@ -267,12 +263,11 @@ func pluginResponseToCompilerQuery(name, cmd, filename string, resp *pb.ParseRes
 			ArrayDims: int(c.GetArrayDims()),
 		})
 	}
-
 	return &compiler.Query{
 		SQL: sqlTrimmed,
 		Metadata: metadata.Metadata{
-			Name:     name,
-			Cmd:      cmd,
+			Name:     st.GetName(),
+			Cmd:      pb.CmdToString(st.GetCmd()),
 			Filename: filename,
 		},
 		Params:  params,

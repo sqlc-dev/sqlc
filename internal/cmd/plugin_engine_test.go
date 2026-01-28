@@ -106,9 +106,10 @@ func TestPluginPipeline_FullPipeline(t *testing.T) {
 		engineRecord.QuerySQL = querySQL
 		engineRecord.CalledWith = append(engineRecord.CalledWith, struct{ SchemaSQL, QuerySQL string }{schemaSQL, querySQL})
 		return &pb.ParseResponse{
-			Sql:        engineRecord.ReturnedSQL,
-			Parameters: engineRecord.ReturnedParams,
-			Columns:    engineRecord.ReturnedCols,
+			Statements: []*pb.Statement{{
+				Name: "GetUser", Cmd: pb.Cmd_CMD_ONE, Sql: engineRecord.ReturnedSQL,
+				Parameters: engineRecord.ReturnedParams, Columns: engineRecord.ReturnedCols,
+			}},
 		}, nil
 	}
 
@@ -277,8 +278,8 @@ func TestPluginPipeline_WithoutOverride_UsesPluginPackage(t *testing.T) {
 	}
 }
 
-// TestPluginPipeline_NBlocksNCalls verifies that N sqlc blocks in query.sql yield N plugin Parse calls,
-// and each call receives the schema (or connection params in databaseOnly mode).
+// TestPluginPipeline_NBlocksNCalls verifies that one Parse call receives full query.sql and schema,
+// and the plugin returns N statements (one per query block); sqlc then generates N helpers.
 func TestPluginPipeline_NBlocksNCalls(t *testing.T) {
 	const (
 		schemaContent = "CREATE TABLE users (id INT, name TEXT);"
@@ -286,19 +287,21 @@ func TestPluginPipeline_NBlocksNCalls(t *testing.T) {
 		block2        = "-- name: ListUsers :many\nSELECT id, name FROM users ORDER BY id"
 	)
 	queryContent := block1 + "\n\n" + block2
-	// QueryBlocks slices from " name: " line to the next " name: " (exclusive), so first block includes "\n\n".
-	expectedBlock1 := block1 + "\n\n"
-	expectedBlock2 := block2
 
 	engineRecord := &engineMockRecord{
-		ReturnedSQL: "SELECT id, name FROM users WHERE id = $1",
 		ReturnedParams: []*pb.Parameter{{Position: 1, DataType: "int", Nullable: false}},
 		ReturnedCols:   []*pb.Column{{Name: "id", DataType: "int", Nullable: false}, {Name: "name", DataType: "text", Nullable: false}},
 	}
+	var codegenReq *plugin.GenerateRequest
 	pluginParse := func(schemaSQL, querySQL string) (*pb.ParseResponse, error) {
 		engineRecord.Calls++
 		engineRecord.CalledWith = append(engineRecord.CalledWith, struct{ SchemaSQL, QuerySQL string }{schemaSQL, querySQL})
-		return &pb.ParseResponse{Sql: querySQL, Parameters: engineRecord.ReturnedParams, Columns: engineRecord.ReturnedCols}, nil
+		return &pb.ParseResponse{
+			Statements: []*pb.Statement{
+				{Name: "GetUser", Cmd: pb.Cmd_CMD_ONE, Sql: "SELECT id, name FROM users WHERE id = $1", Parameters: engineRecord.ReturnedParams, Columns: engineRecord.ReturnedCols},
+				{Name: "ListUsers", Cmd: pb.Cmd_CMD_MANY, Sql: "SELECT id, name FROM users ORDER BY id", Parameters: nil, Columns: engineRecord.ReturnedCols},
+			},
+		}, nil
 	}
 	conf, _ := config.ParseConfig(strings.NewReader(testPluginPipelineConfig))
 	inputs := &sourceFiles{
@@ -309,25 +312,29 @@ func TestPluginPipeline_NBlocksNCalls(t *testing.T) {
 	debug.ProcessPlugins = true
 	o := &Options{
 		Env: Env{Debug: debug}, Stderr: &bytes.Buffer{}, PluginParseFunc: pluginParse,
-		CodegenHandlerOverride: ext.HandleFunc(func(_ context.Context, req *plugin.GenerateRequest) (*plugin.GenerateResponse, error) { return &plugin.GenerateResponse{}, nil }),
+		CodegenHandlerOverride: ext.HandleFunc(func(_ context.Context, req *plugin.GenerateRequest) (*plugin.GenerateResponse, error) {
+			codegenReq = req
+			return &plugin.GenerateResponse{}, nil
+		}),
 	}
 	_, err := generate(context.Background(), inputs, o)
 	if err != nil {
 		t.Fatalf("generate failed: %v", err)
 	}
-	if n := len(engineRecord.CalledWith); n != 2 {
-		t.Errorf("expected 2 Parse calls (2 blocks), got %d", n)
+	if engineRecord.Calls != 1 {
+		t.Errorf("expected 1 Parse call (full query.sql), got %d", engineRecord.Calls)
 	}
-	for i, call := range engineRecord.CalledWith {
-		if call.SchemaSQL != schemaContent {
-			t.Errorf("Parse call %d: every call must receive schema; got schemaSQL %q", i+1, call.SchemaSQL)
-		}
+	if len(engineRecord.CalledWith) != 1 {
+		t.Fatalf("expected 1 CalledWith, got %d", len(engineRecord.CalledWith))
 	}
-	if len(engineRecord.CalledWith) >= 1 && engineRecord.CalledWith[0].QuerySQL != expectedBlock1 {
-		t.Errorf("Parse call 1: query must be first block; got %q", engineRecord.CalledWith[0].QuerySQL)
+	if engineRecord.CalledWith[0].SchemaSQL != schemaContent {
+		t.Errorf("Parse must receive schema; got %q", engineRecord.CalledWith[0].SchemaSQL)
 	}
-	if len(engineRecord.CalledWith) >= 2 && engineRecord.CalledWith[1].QuerySQL != expectedBlock2 {
-		t.Errorf("Parse call 2: query must be second block; got %q", engineRecord.CalledWith[1].QuerySQL)
+	if engineRecord.CalledWith[0].QuerySQL != queryContent {
+		t.Errorf("Parse must receive full query.sql; got %q", engineRecord.CalledWith[0].QuerySQL)
+	}
+	if codegenReq == nil || len(codegenReq.Queries) != 2 {
+		t.Errorf("codegen must receive 2 queries (from 2 statements); got %d", len(codegenReq.Queries))
 	}
 }
 
@@ -364,7 +371,9 @@ func TestPluginPipeline_DatabaseOnly_ReceivesNoSchema(t *testing.T) {
 	pluginParse := func(schemaSQL, querySQL string) (*pb.ParseResponse, error) {
 		engineRecord.Calls++
 		engineRecord.CalledWith = append(engineRecord.CalledWith, struct{ SchemaSQL, QuerySQL string }{schemaSQL, querySQL})
-		return &pb.ParseResponse{Sql: querySQL, Parameters: nil, Columns: engineRecord.ReturnedCols}, nil
+		return &pb.ParseResponse{
+			Statements: []*pb.Statement{{Name: "GetOne", Cmd: pb.Cmd_CMD_ONE, Sql: "SELECT 1", Parameters: nil, Columns: engineRecord.ReturnedCols}},
+		}, nil
 	}
 	conf, err := config.ParseConfig(strings.NewReader(testPluginPipelineConfigDatabaseOnly))
 	if err != nil {

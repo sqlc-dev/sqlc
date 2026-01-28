@@ -16,7 +16,7 @@ Data returned by the engine plugin (SQL text, parameters, columns) is passed thr
 
 An engine plugin is an external process that implements one RPC:
 
-- **Parse** — accepts the query text and either schema SQL or connection parameters, and returns processed SQL, parameter list, and result columns.
+- **Parse** — accepts the **entire contents** of one query file (e.g. `query.sql`) and either schema SQL or connection parameters; returns **one Statement per query block** in that file (each with sql, parameters, columns, and name/cmd).
 
 Process plugins (e.g. written in Go) talk to sqlc over **stdin/stdout** using **Protocol Buffers**. The protocol is defined in `protos/engine/engine.proto`.
 
@@ -102,24 +102,38 @@ The engine API exposes only **Parse**. There are no separate methods for catalog
 
 ### 2. Parse
 
+sqlc calls Parse **once per query file** (e.g. once for `query.sql`). The plugin receives the full file contents and returns one **Statement** per query block in that file. sqlc then passes each statement to the codegen plugin as a separate query.
+
 **Request**
 
-- `sql` — The query text to parse.
+- `sql` — The **entire contents** of one query file (all query blocks, with `-- name: X :one`-style comments).
 - `schema_source` — One of:
-  - `schema_sql`: schema as in a schema.sql file (used for schema-based parsing).
+  - `schema_sql`: full schema as in schema.sql (for schema-based parsing).
   - `connection_params`: DSN and options for database-only mode.
 
 **Response**
 
-- `sql` — Processed query text. Often the same as input; with a schema you may expand `*` into explicit columns.
-- `parameters` — List of parameters (position/name, type, nullable, array, etc.).
-- `columns` — List of result columns (name, type, nullable, table/schema if known).
+Return `statements`: one `Statement` per query block. Each `Statement` has:
 
-Example handler:
+- `name` — Query name (from `-- name: GetUser` etc.).
+- `cmd` — Command/type: use the `Cmd` enum (`engine.Cmd_CMD_ONE`, `engine.Cmd_CMD_MANY`, `engine.Cmd_CMD_EXEC`, etc.). See `protos/engine/engine.proto` for the full list.
+- `sql` — Processed SQL for that block (as-is or with `*` expanded using schema).
+- `parameters` — Parameters for this statement.
+- `columns` — Result columns (names, types, nullability, etc.) for this statement.
+
+The engine package provides helpers (optional) to split `query.sql` and parse `"-- name: X :cmd"` lines in the same way as the built-in engines:
+
+- `engine.CommentSyntax` — Which comment styles to accept (`Dash`, `SlashStar`, `Hash`).
+- `engine.ParseNameAndCmd(line, syntax)` — Parses a single line like `"-- name: ListAuthors :many"` → `(name, cmd, ok)`. `cmd` is `engine.Cmd`.
+- `engine.QueryBlocks(content, syntax)` — Splits file content into `[]engine.QueryBlock` (each has `Name`, `Cmd`, `SQL`).
+- `engine.StatementMeta(name, cmd, sql)` — Builds a `*engine.Statement` with name/cmd/sql set; you add parameters and columns.
+
+Example handler using helpers:
 
 ```go
 func handleParse(req *engine.ParseRequest) (*engine.ParseResponse, error) {
-    sql := req.GetSql()
+    queryFileContent := req.GetSql()
+    syntax := engine.CommentSyntax{Dash: true, SlashStar: true, Hash: true}
 
     var schema *SchemaInfo
     if s := req.GetSchemaSql(); s != "" {
@@ -127,15 +141,15 @@ func handleParse(req *engine.ParseRequest) (*engine.ParseResponse, error) {
     }
     // Or use req.GetConnectionParams() for database-only mode.
 
-    parameters := extractParameters(sql)
-    columns := extractColumns(sql, schema)
-    processedSQL := processSQL(sql, schema) // e.g. expand SELECT *
-
-    return &engine.ParseResponse{
-        Sql:        processedSQL,
-        Parameters: parameters,
-        Columns:    columns,
-    }, nil
+    blocks, _ := engine.QueryBlocks(queryFileContent, syntax)
+    var statements []*engine.Statement
+    for _, b := range blocks {
+        st := engine.StatementMeta(b.Name, b.Cmd, processSQL(b.SQL, schema))
+        st.Parameters = extractParameters(b.SQL)
+        st.Columns = extractColumns(b.SQL, schema)
+        statements = append(statements, st)
+    }
+    return &engine.ParseResponse{Statements: statements}, nil
 }
 ```
 
@@ -164,7 +178,7 @@ Invocation:
 sqlc-engine-mydb parse   # stdin: ParseRequest, stdout: ParseResponse
 ```
 
-The definition lives in `engine/engine.proto` (and generated Go in `pkg/engine`).
+The definition lives in `protos/engine/engine.proto` (generated Go in `pkg/engine`). After editing the proto, run `make proto-engine-plugin` to regenerate the Go code.
 
 ## Example
 
@@ -172,20 +186,21 @@ The protocol and Go SDK are in this repository: `protos/engine/engine.proto` and
 
 ## Architecture
 
-For each `sql[]` block, `sqlc generate` branches on the configured engine: built-in (postgresql, mysql, sqlite) use the compiler and catalog; any engine listed under `engines:` in sqlc.yaml uses the plugin path (no compiler, schema + queries go to the plugin's Parse RPC, then output goes to codegen).
+For each `sql[]` block, `sqlc generate` branches on the configured engine: built-in (postgresql, mysql, sqlite) use the compiler and catalog; any engine listed under `engines:` in sqlc.yaml uses the plugin path (no compiler). For the plugin path, sqlc calls Parse **once per query file**, sending the full file contents and schema (or connection params). The plugin returns **N statements** (one per query block); sqlc passes each statement to codegen as a separate query.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  sqlc generate                                                  │
-│  1. Read sqlc.yaml, find engine for this sql block              │
-│  2. If plugin engine: call plugin parse (sql + schema_sql etc.)  │
-│  3. Use returned sql, parameters, columns in codegen             │
+│  sqlc generate (plugin engine)                                  │
+│  1. Per query file: one Parse(schema_sql|connection_params,      │
+│     full query file content)                                    │
+│  2. ParseResponse.statements = one Statement per query block     │
+│  3. Each statement → one codegen query (N helpers)               │
 └─────────────────────────────────────────────────────────────────┘
 
     sqlc                          sqlc-engine-mydb
       │──── spawn, args: ["parse"] ──────────────────────────────► │
-      │──── stdin: ParseRequest{sql, schema_sql|connection_params} ► │
-      │◄─── stdout: ParseResponse{sql, parameters, columns} ─────── │
+      │──── stdin: ParseRequest{sql=full query.sql, schema_sql|…}  ► │
+      │◄─── stdout: ParseResponse{statements: [stmt1, stmt2, …]} ── │
 ```
 
 ## See also
