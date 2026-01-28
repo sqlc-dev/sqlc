@@ -19,19 +19,19 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/opts"
 )
 
-type OutputPair struct {
+type outputPair struct {
 	Gen    config.SQLGen
 	Plugin *config.Codegen
 
 	config.SQL
 }
 
-type ResultProcessor interface {
-	Pairs(context.Context, *config.Config) []OutputPair
-	ProcessResult(context.Context, config.CombinedSettings, OutputPair, *compiler.Result) error
+type resultProcessor interface {
+	Pairs(context.Context, *config.Config) []outputPair
+	ProcessResult(context.Context, config.CombinedSettings, outputPair, *compiler.Result) error
 }
 
-func Process(ctx context.Context, rp ResultProcessor, dir, filename string, o *Options) error {
+func Process(ctx context.Context, rp resultProcessor, dir, filename string, o *Options) error {
 	e := o.Env
 	stderr := o.Stderr
 
@@ -55,7 +55,7 @@ func Process(ctx context.Context, rp ResultProcessor, dir, filename string, o *O
 	return processQuerySets(ctx, rp, inputs, o)
 }
 
-func processQuerySets(ctx context.Context, rp ResultProcessor, inputs *sourceFiles, o *Options) error {
+func processQuerySets(ctx context.Context, rp resultProcessor, inputs *sourceFiles, o *Options) error {
 	stderr := o.Stderr
 	conf := inputs.Config
 	dir := inputs.Dir

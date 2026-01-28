@@ -93,25 +93,11 @@ var defaultCommentSyntax = metadata.CommentSyntax(source.CommentSyntax{Dash: tru
 // engine plugin via ParseRequest; the responses are turned into compiler.Result and
 // passed to ProcessResult. No AST or compiler parsing is used.
 // When inputs.FileContents is set, schema/query bytes are taken from it (no disk read).
-func runPluginQuerySet(ctx context.Context, rp ResultProcessor, name, dir string, sql OutputPair, combo config.CombinedSettings, inputs *sourceFiles, o *Options) error {
+func runPluginQuerySet(ctx context.Context, rp resultProcessor, name, dir string, sql outputPair, combo config.CombinedSettings, inputs *sourceFiles, o *Options) error {
 	enginePlugin, found := config.FindEnginePlugin(&combo.Global, string(combo.Package.Engine))
 	if !found || enginePlugin.Process == nil {
 		e := string(combo.Package.Engine)
 		return fmt.Errorf("unknown engine: %s\n\nAdd the engine to the 'engines' section of sqlc.yaml. See the engine plugins documentation: https://docs.sqlc.dev/en/latest/guides/engine-plugins.html", e)
-	}
-
-	var parseFn func(schemaSQL, querySQL string) (*pb.ParseResponse, error)
-	if o != nil && o.PluginParseFunc != nil {
-		parseFn = o.PluginParseFunc
-	} else {
-		r := newEngineProcessRunner(enginePlugin.Process.Cmd, combo.Dir, enginePlugin.Env)
-		parseFn = func(schemaSQL, querySQL string) (*pb.ParseResponse, error) {
-			req := &pb.ParseRequest{Sql: querySQL}
-			if schemaSQL != "" {
-				req.SchemaSource = &pb.ParseRequest_SchemaSql{SchemaSql: schemaSQL}
-			}
-			return r.parseRequest(ctx, req)
-		}
 	}
 
 	readFile := func(path string) ([]byte, error) {
@@ -123,24 +109,54 @@ func runPluginQuerySet(ctx context.Context, rp ResultProcessor, name, dir string
 		return os.ReadFile(path)
 	}
 
+	databaseOnly := combo.Package.Analyzer.Database.IsOnly() && combo.Package.Database != nil && combo.Package.Database.URI != ""
+
 	var schemaSQL string
-	var err error
-	if inputs != nil && inputs.FileContents != nil {
-		var parts []string
-		for _, p := range sql.Schema {
-			if b, ok := inputs.FileContents[p]; ok {
-				parts = append(parts, string(b))
+	if !databaseOnly {
+		var err error
+		if inputs != nil && inputs.FileContents != nil {
+			var parts []string
+			for _, p := range sql.Schema {
+				if b, ok := inputs.FileContents[p]; ok {
+					parts = append(parts, string(b))
+				}
+			}
+			schemaSQL = strings.Join(parts, "\n")
+		} else {
+			schemaSQL, err = loadSchemaSQL(sql.Schema, readFile)
+			if err != nil {
+				return err
 			}
 		}
-		schemaSQL = strings.Join(parts, "\n")
+	}
+
+	type parseFuncType func(querySQL string) (*pb.ParseResponse, error)
+	var parseFn parseFuncType
+	if o != nil && o.PluginParseFunc != nil {
+		schemaStr := schemaSQL
+		if databaseOnly {
+			schemaStr = ""
+		}
+		parseFn = func(querySQL string) (*pb.ParseResponse, error) {
+			return o.PluginParseFunc(schemaStr, querySQL)
+		}
 	} else {
-		schemaSQL, err = loadSchemaSQL(sql.Schema, readFile)
-		if err != nil {
-			return err
+		r := newEngineProcessRunner(enginePlugin.Process.Cmd, combo.Dir, enginePlugin.Env)
+		parseFn = func(querySQL string) (*pb.ParseResponse, error) {
+			req := &pb.ParseRequest{Sql: querySQL}
+			if databaseOnly {
+				req.SchemaSource = &pb.ParseRequest_ConnectionParams{
+					ConnectionParams: &pb.ConnectionParams{Dsn: combo.Package.Database.URI},
+				}
+			} else {
+				req.SchemaSource = &pb.ParseRequest_SchemaSql{SchemaSql: schemaSQL}
+			}
+			return r.parseRequest(ctx, req)
 		}
 	}
 
 	var queryPaths []string
+	var err error
 	if inputs != nil && inputs.FileContents != nil {
 		queryPaths = sql.Queries
 	} else {
@@ -161,32 +177,28 @@ func runPluginQuerySet(ctx context.Context, rp ResultProcessor, name, dir string
 			continue
 		}
 		queryContent := string(blob)
-		nameStr, cmd, err := metadata.ParseQueryNameAndType(queryContent, defaultCommentSyntax)
+		blocks, err := metadata.QueryBlocks(queryContent, defaultCommentSyntax)
 		if err != nil {
 			merr.Add(filename, queryContent, 0, err)
 			continue
 		}
-		if nameStr == "" {
-			continue
+		for _, b := range blocks {
+			resp, err := parseFn(b.SQL)
+			if err != nil {
+				merr.Add(filename, queryContent, 0, err)
+				continue
+			}
+			q := pluginResponseToCompilerQuery(b.Name, b.Cmd, filepath.Base(filename), resp)
+			if q == nil {
+				continue
+			}
+			if _, exists := set[b.Name]; exists {
+				merr.Add(filename, queryContent, 0, fmt.Errorf("duplicate query name: %s", b.Name))
+				continue
+			}
+			set[b.Name] = struct{}{}
+			queries = append(queries, q)
 		}
-
-		resp, err := parseFn(schemaSQL, queryContent)
-		if err != nil {
-			merr.Add(filename, queryContent, 0, err)
-			continue
-		}
-
-		q := pluginResponseToCompilerQuery(nameStr, cmd, filepath.Base(filename), resp)
-		if q == nil {
-			continue
-		}
-
-		if _, exists := set[nameStr]; exists {
-			merr.Add(filename, queryContent, 0, fmt.Errorf("duplicate query name: %s", nameStr))
-			continue
-		}
-		set[nameStr] = struct{}{}
-		queries = append(queries, q)
 	}
 
 	if len(merr.Errs()) > 0 {

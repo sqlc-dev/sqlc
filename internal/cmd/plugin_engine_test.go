@@ -9,12 +9,12 @@ package cmd
 //     mock → codegen request) and that the plugin package is used when PluginParseFunc is nil.
 //
 // Proof that the technology works:
-//   - TestPluginPipeline_FullPipeline: with PluginParseFunc set, the pipeline sends schema+query into the mock,
-//     takes Sql/Params/Columns from it, builds compiler.Result → plugin.GenerateRequest, and the codegen mock
-//     receives that. So "plugin engine → ParseRequest contract → codegen" is validated.
+//   - TestPluginPipeline_FullPipeline: one block → one Parse call; that call receives schema; codegen gets the result.
+//   - TestPluginPipeline_NBlocksNCalls: N blocks in query.sql → exactly N Parse calls; each call receives schema.
+//   - TestPluginPipeline_DatabaseOnly_ReceivesNoSchema: with analyzer.database: only + database.uri, each Parse
+//     call receives empty schema (the real runner would get connection_params in ParseRequest).
 //   - TestPluginPipeline_WithoutOverride_UsesPluginPackage: with PluginParseFunc nil, generate fails with an error
 //     that is NOT "unknown engine", so we did enter runPluginQuerySet and call the engine process runner.
-//     The plugin package is required for that path. Vet does not support plugin engines.
 
 import (
 	"bytes"
@@ -50,10 +50,13 @@ engines:
 // engineMockRecord holds what the engine-plugin mock received and returned.
 // Used to validate that the pipeline passes schema + raw query in, and that
 // the plugin's Sql/Parameters/Columns are what later reach codegen.
+// CalledWith records each Parse call so we can assert N blocks → N calls and
+// that every call received schema (or "" in databaseOnly mode).
 type engineMockRecord struct {
 	Calls          int
-	SchemaSQL      string
-	QuerySQL       string
+	SchemaSQL      string // last call (backward compat)
+	QuerySQL       string // last call (backward compat)
+	CalledWith     []struct{ SchemaSQL, QuerySQL string }
 	ReturnedSQL    string
 	ReturnedParams []*pb.Parameter
 	ReturnedCols   []*pb.Column
@@ -101,6 +104,7 @@ func TestPluginPipeline_FullPipeline(t *testing.T) {
 		engineRecord.Calls++
 		engineRecord.SchemaSQL = schemaSQL
 		engineRecord.QuerySQL = querySQL
+		engineRecord.CalledWith = append(engineRecord.CalledWith, struct{ SchemaSQL, QuerySQL string }{schemaSQL, querySQL})
 		return &pb.ParseResponse{
 			Sql:        engineRecord.ReturnedSQL,
 			Parameters: engineRecord.ReturnedParams,
@@ -146,12 +150,20 @@ func TestPluginPipeline_FullPipeline(t *testing.T) {
 	}
 
 	// ---- 1) Validate what was sent INTO the engine plugin ----
+	// N blocks in query.sql must yield N Parse calls; each call must receive schema (or connection in databaseOnly).
 	if engineRecord.Calls != 1 {
-		t.Errorf("engine mock called %d times, want 1", engineRecord.Calls)
+		t.Errorf("engine mock called %d times, want 1 (one block → one Parse call)", engineRecord.Calls)
+	}
+	if len(engineRecord.CalledWith) != 1 {
+		t.Errorf("engine mock CalledWith has %d entries, want 1", len(engineRecord.CalledWith))
+	}
+	if len(engineRecord.CalledWith) > 0 && engineRecord.CalledWith[0].SchemaSQL != schemaContent {
+		t.Errorf("every Parse call must receive schema: got %q", engineRecord.CalledWith[0].SchemaSQL)
 	}
 	if engineRecord.SchemaSQL != schemaContent {
 		t.Errorf("engine received schema:\n  got:  %q\n  want: %q", engineRecord.SchemaSQL, schemaContent)
 	}
+	// With one block, query SQL is the whole block (same as queryContent)
 	if engineRecord.QuerySQL != queryContent {
 		t.Errorf("engine received query:\n  got:  %q\n  want: %q", engineRecord.QuerySQL, queryContent)
 	}
@@ -262,6 +274,124 @@ func TestPluginPipeline_WithoutOverride_UsesPluginPackage(t *testing.T) {
 	}
 	if strings.Contains(err.Error(), "unknown engine") {
 		t.Errorf("error is %q — we never entered the plugin path. With PluginParseFunc=nil, runPluginQuerySet must call the engine process runner.", err.Error())
+	}
+}
+
+// TestPluginPipeline_NBlocksNCalls verifies that N sqlc blocks in query.sql yield N plugin Parse calls,
+// and each call receives the schema (or connection params in databaseOnly mode).
+func TestPluginPipeline_NBlocksNCalls(t *testing.T) {
+	const (
+		schemaContent = "CREATE TABLE users (id INT, name TEXT);"
+		block1        = "-- name: GetUser :one\nSELECT id, name FROM users WHERE id = $1"
+		block2        = "-- name: ListUsers :many\nSELECT id, name FROM users ORDER BY id"
+	)
+	queryContent := block1 + "\n\n" + block2
+	// QueryBlocks slices from " name: " line to the next " name: " (exclusive), so first block includes "\n\n".
+	expectedBlock1 := block1 + "\n\n"
+	expectedBlock2 := block2
+
+	engineRecord := &engineMockRecord{
+		ReturnedSQL: "SELECT id, name FROM users WHERE id = $1",
+		ReturnedParams: []*pb.Parameter{{Position: 1, DataType: "int", Nullable: false}},
+		ReturnedCols:   []*pb.Column{{Name: "id", DataType: "int", Nullable: false}, {Name: "name", DataType: "text", Nullable: false}},
+	}
+	pluginParse := func(schemaSQL, querySQL string) (*pb.ParseResponse, error) {
+		engineRecord.Calls++
+		engineRecord.CalledWith = append(engineRecord.CalledWith, struct{ SchemaSQL, QuerySQL string }{schemaSQL, querySQL})
+		return &pb.ParseResponse{Sql: querySQL, Parameters: engineRecord.ReturnedParams, Columns: engineRecord.ReturnedCols}, nil
+	}
+	conf, _ := config.ParseConfig(strings.NewReader(testPluginPipelineConfig))
+	inputs := &sourceFiles{
+		Config: &conf, ConfigPath: "sqlc.yaml", Dir: ".",
+		FileContents: map[string][]byte{"schema.sql": []byte(schemaContent), "query.sql": []byte(queryContent)},
+	}
+	debug := opts.DebugFromString("")
+	debug.ProcessPlugins = true
+	o := &Options{
+		Env: Env{Debug: debug}, Stderr: &bytes.Buffer{}, PluginParseFunc: pluginParse,
+		CodegenHandlerOverride: ext.HandleFunc(func(_ context.Context, req *plugin.GenerateRequest) (*plugin.GenerateResponse, error) { return &plugin.GenerateResponse{}, nil }),
+	}
+	_, err := generate(context.Background(), inputs, o)
+	if err != nil {
+		t.Fatalf("generate failed: %v", err)
+	}
+	if n := len(engineRecord.CalledWith); n != 2 {
+		t.Errorf("expected 2 Parse calls (2 blocks), got %d", n)
+	}
+	for i, call := range engineRecord.CalledWith {
+		if call.SchemaSQL != schemaContent {
+			t.Errorf("Parse call %d: every call must receive schema; got schemaSQL %q", i+1, call.SchemaSQL)
+		}
+	}
+	if len(engineRecord.CalledWith) >= 1 && engineRecord.CalledWith[0].QuerySQL != expectedBlock1 {
+		t.Errorf("Parse call 1: query must be first block; got %q", engineRecord.CalledWith[0].QuerySQL)
+	}
+	if len(engineRecord.CalledWith) >= 2 && engineRecord.CalledWith[1].QuerySQL != expectedBlock2 {
+		t.Errorf("Parse call 2: query must be second block; got %q", engineRecord.CalledWith[1].QuerySQL)
+	}
+}
+
+const testPluginPipelineConfigDatabaseOnly = `version: "2"
+sql:
+  - engine: "testeng"
+    schema: ["schema.sql"]
+    queries: ["query.sql"]
+    analyzer:
+      database: only
+    database:
+      uri: "postgres://localhost/test"
+    codegen:
+      - plugin: "mock"
+        out: "."
+plugins:
+  - name: "mock"
+    process:
+      cmd: "echo"
+engines:
+  - name: "testeng"
+    process:
+      cmd: "echo"
+`
+
+// TestPluginPipeline_DatabaseOnly_ReceivesNoSchema verifies that in databaseOnly mode (analyzer.database: only +
+// database.uri) the plugin receives empty schema and the core would pass connection_params to the real runner.
+// The mock only sees (schemaSQL, querySQL); in databaseOnly we pass schemaSQL="".
+func TestPluginPipeline_DatabaseOnly_ReceivesNoSchema(t *testing.T) {
+	const queryContent = "-- name: GetOne :one\nSELECT 1"
+	engineRecord := &engineMockRecord{
+		ReturnedSQL: "SELECT 1", ReturnedParams: nil, ReturnedCols: []*pb.Column{{Name: "?column?", DataType: "int", Nullable: true}},
+	}
+	pluginParse := func(schemaSQL, querySQL string) (*pb.ParseResponse, error) {
+		engineRecord.Calls++
+		engineRecord.CalledWith = append(engineRecord.CalledWith, struct{ SchemaSQL, QuerySQL string }{schemaSQL, querySQL})
+		return &pb.ParseResponse{Sql: querySQL, Parameters: nil, Columns: engineRecord.ReturnedCols}, nil
+	}
+	conf, err := config.ParseConfig(strings.NewReader(testPluginPipelineConfigDatabaseOnly))
+	if err != nil {
+		t.Fatalf("parse config: %v", err)
+	}
+	inputs := &sourceFiles{
+		Config: &conf, ConfigPath: "sqlc.yaml", Dir: ".",
+		FileContents: map[string][]byte{"schema.sql": []byte("CREATE TABLE t (id INT);"), "query.sql": []byte(queryContent)},
+	}
+	debug := opts.DebugFromString("")
+	debug.ProcessPlugins = true
+	o := &Options{
+		Env: Env{Debug: debug}, Stderr: &bytes.Buffer{}, PluginParseFunc: pluginParse,
+		CodegenHandlerOverride: ext.HandleFunc(func(_ context.Context, req *plugin.GenerateRequest) (*plugin.GenerateResponse, error) { return &plugin.GenerateResponse{}, nil }),
+	}
+	_, err = generate(context.Background(), inputs, o)
+	if err != nil {
+		t.Fatalf("generate failed: %v", err)
+	}
+	if len(engineRecord.CalledWith) != 1 {
+		t.Errorf("expected 1 Parse call, got %d", len(engineRecord.CalledWith))
+	}
+	if len(engineRecord.CalledWith) > 0 && engineRecord.CalledWith[0].SchemaSQL != "" {
+		t.Errorf("databaseOnly mode: each Parse call must receive empty schema (connection_params are used by real runner); got %q", engineRecord.CalledWith[0].SchemaSQL)
+	}
+	if len(engineRecord.CalledWith) > 0 && engineRecord.CalledWith[0].QuerySQL != queryContent {
+		t.Errorf("query SQL must still be passed; got %q", engineRecord.CalledWith[0].QuerySQL)
 	}
 }
 
