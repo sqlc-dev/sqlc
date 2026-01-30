@@ -3,15 +3,20 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type DeleteStmt struct {
-	Relations     *List
-	UsingClause   *List
-	WhereClause   Node
-	LimitCount    Node
+	Relations   *List
+	UsingClause *List
+	WhereClause Node
+	LimitCount  Node
+
 	ReturningList *List
 	WithClause    *WithClause
 	// MySQL multi-table DELETE support
 	Targets    *List // Tables to delete from (e.g., jt.*, pt.*)
 	FromClause Node  // FROM clause with JOINs (Node to support JoinExpr)
+	// YDB specific
+	Batch        bool
+	OnCols       *List
+	OnSelectStmt Node
 }
 
 func (n *DeleteStmt) Pos() int {
@@ -26,6 +31,9 @@ func (n *DeleteStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n.WithClause != nil {
 		buf.astFormat(n.WithClause, d)
 		buf.WriteString(" ")
+	}
+	if n.Batch {
+		buf.WriteString("BATCH ")
 	}
 
 	buf.WriteString("DELETE ")
@@ -54,6 +62,20 @@ func (n *DeleteStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	if set(n.WhereClause) {
 		buf.WriteString(" WHERE ")
 		buf.astFormat(n.WhereClause, d)
+	}
+
+	if items(n.OnCols) || set(n.OnSelectStmt) {
+		buf.WriteString(" ON ")
+
+		if items(n.OnCols) {
+			buf.WriteString("(")
+			buf.astFormat(n.OnCols, d)
+			buf.WriteString(") ")
+		}
+
+		if set(n.OnSelectStmt) {
+			buf.astFormat(n.OnSelectStmt, d)
+		}
 	}
 
 	if set(n.LimitCount) {

@@ -20,6 +20,14 @@
       "rules": [
         "sqlc/db-prepare"
       ]
+    },
+    {
+      "path": "ydb",
+      "name": "jets",
+      "schema": "ydb/schema.sql",
+      "queries": "ydb/query-building.sql",
+      "engine": "ydb",
+      "sql_package": "ydb-go-sdk"
     }
   ]
 }

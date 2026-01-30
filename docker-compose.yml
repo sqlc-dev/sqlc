@@ -19,3 +19,18 @@ services:
       POSTGRES_DB: postgres
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_USER: postgres
+
+  ydb:
+    image: ydbplatform/local-ydb:latest
+    ports:
+      - "2135:2135"
+      - "2136:2136"
+      - "8765:8765"
+    restart: always
+    hostname: localhost
+    environment:
+      - YDB_USE_IN_MEMORY_PDISKS=true
+      - GRPC_TLS_PORT=2135
+      - GRPC_PORT=2136
+      - MON_PORT=8765
+      

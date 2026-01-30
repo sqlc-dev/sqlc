@@ -12,6 +12,7 @@ import (
 	pganalyze "github.com/sqlc-dev/sqlc/internal/engine/postgresql/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
 	sqliteanalyze "github.com/sqlc-dev/sqlc/internal/engine/sqlite/analyzer"
+	"github.com/sqlc-dev/sqlc/internal/engine/ydb"
 	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 	"github.com/sqlc-dev/sqlc/internal/x/expander"
@@ -78,6 +79,10 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 				)
 			}
 		}
+	case config.EngineYDB:
+		c.parser = ydb.NewParser()
+		c.catalog = ydb.NewCatalog()
+		c.selector = newDefaultSelector()
 	case config.EngineMySQL:
 		c.parser = dolphin.NewParser()
 		c.catalog = dolphin.NewCatalog()

@@ -47,6 +47,7 @@ type Options struct {
 	Initialisms                 *[]string         `json:"initialisms,omitempty" yaml:"initialisms"`
 
 	InitialismsMap map[string]struct{} `json:"-" yaml:"-"`
+	Engine         string              `json:"-" yaml:"-"`
 }
 
 type GlobalOptions struct {
@@ -72,6 +73,11 @@ func Parse(req *plugin.GenerateRequest) (*Options, error) {
 		}
 		maps.Copy(options.Rename, global.Rename)
 	}
+
+	if req.Settings != nil {
+		options.Engine = req.Settings.Engine
+	}
+
 	return options, nil
 }
 

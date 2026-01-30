@@ -1,0 +1,16 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "name": "querytest",
+      "path": "go",
+      "engine": "ydb",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "sql_package": "ydb-go-sdk",
+      "emit_interface": true,
+      "emit_result_struct_pointers": true,
+      "emit_params_struct_pointers": true
+    }
+  ]
+}
