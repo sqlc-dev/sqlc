@@ -115,6 +115,7 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 				},
 				Columns: columns,
 				Comment: t.Comment,
+				Hidden:  t.Hidden,
 			})
 		}
 		schemas = append(schemas, &plugin.Schema{
