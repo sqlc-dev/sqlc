@@ -17,6 +17,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/multierr"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 	"google.golang.org/protobuf/proto"
@@ -242,6 +243,7 @@ func statementToCompilerQuery(st *pb.Statement, filename string) *compiler.Query
 	var params []compiler.Parameter
 	for _, p := range st.GetParameters() {
 		col := &compiler.Column{
+			Name:      p.GetName(),
 			DataType:  p.GetDataType(),
 			NotNull:   !p.GetNullable(),
 			IsArray:   p.GetIsArray(),
@@ -255,13 +257,17 @@ func statementToCompilerQuery(st *pb.Statement, filename string) *compiler.Query
 	}
 	var columns []*compiler.Column
 	for _, c := range st.GetColumns() {
-		columns = append(columns, &compiler.Column{
+		col := &compiler.Column{
 			Name:      c.GetName(),
 			DataType:  c.GetDataType(),
 			NotNull:   !c.GetNullable(),
 			IsArray:   c.GetIsArray(),
 			ArrayDims: int(c.GetArrayDims()),
-		})
+		}
+		if tn := c.GetTableName(); tn != "" {
+			col.Table = &ast.TableName{Name: tn}
+		}
+		columns = append(columns, col)
 	}
 	return &compiler.Query{
 		SQL: sqlTrimmed,
