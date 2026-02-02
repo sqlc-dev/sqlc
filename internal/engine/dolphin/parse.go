@@ -59,7 +59,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	}
 	var stmts []ast.Statement
 	for i := range stmtNodes {
-		converter := &cc{}
+		converter := &cc{sql: string(blob)}
 		out := converter.convert(stmtNodes[i])
 		if _, ok := out.(*ast.TODO); ok {
 			continue
