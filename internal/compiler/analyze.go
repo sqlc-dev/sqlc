@@ -44,6 +44,14 @@ func convertTypeName(id *analyzer.Identifier) *ast.TypeName {
 
 func convertColumn(c *analyzer.Column) *Column {
 	length := int(c.Length)
+	var sortOpts *SqlcSortOpts
+	if c.SqlcSortOpts != nil {
+		sortOpts = &SqlcSortOpts{
+			IsOrder:      c.SqlcSortOpts.IsOrder,
+			DefaultField: c.SqlcSortOpts.DefaultField,
+			DefaultOrder: c.SqlcSortOpts.DefaultOrder,
+		}
+	}
 	return &Column{
 		Name:         c.Name,
 		OriginalName: c.OriginalName,
@@ -62,6 +70,7 @@ func convertColumn(c *analyzer.Column) *Column {
 		Type:         convertTypeName(c.Type),
 		EmbedTable:   convertTableName(c.EmbedTable),
 		IsSqlcSlice:  c.IsSqlcSlice,
+		SqlcSortOpts: sortOpts,
 	}
 }
 
@@ -72,10 +81,12 @@ func combineAnalysis(prev *analysis, a *analyzer.Analysis) *analysis {
 	}
 	var params []Parameter
 	for _, p := range a.Params {
-		params = append(params, Parameter{
-			Number: int(p.Number),
-			Column: convertColumn(p.Column),
-		})
+		params = append(
+			params, Parameter{
+				Number: int(p.Number),
+				Column: convertColumn(p.Column),
+			},
+		)
 	}
 	if len(prev.Columns) == len(cols) {
 		for i := range prev.Columns {

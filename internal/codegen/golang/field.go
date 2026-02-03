@@ -29,6 +29,18 @@ func (gf Field) HasSqlcSlice() bool {
 	return gf.Column.IsSqlcSlice
 }
 
+func (gf Field) HasSqlcSort() bool {
+	return gf.Column.SqlcSortOpts != nil
+}
+
+func (gf Field) NotNull() bool {
+	return gf.Column.NotNull
+}
+
+func (gf Field) SqlcSortOpts() *plugin.SqlcSortOpts {
+	return gf.Column.SqlcSortOpts
+}
+
 func TagsToString(tags map[string]string) string {
 	if len(tags) == 0 {
 		return ""
@@ -81,9 +93,11 @@ var camelPattern = regexp.MustCompile("[^A-Z][A-Z]+")
 
 func toSnakeCase(s string) string {
 	if !strings.ContainsRune(s, '_') {
-		s = camelPattern.ReplaceAllStringFunc(s, func(x string) string {
-			return x[:1] + "_" + x[1:]
-		})
+		s = camelPattern.ReplaceAllStringFunc(
+			s, func(x string) string {
+				return x[:1] + "_" + x[1:]
+			},
+		)
 	}
 	return strings.ToLower(s)
 }

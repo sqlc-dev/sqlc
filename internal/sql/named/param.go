@@ -37,6 +37,17 @@ func (n nullability) String() string {
 	}
 }
 
+const (
+	FuncSlice = "slice"
+	FuncSort  = "sort"
+)
+
+const (
+	OptOrderDirParam          = "orderDirParam"
+	OptDefaultOrderFieldParam = "defaultOrderFieldParam"
+	OptDefaultOrderDirParam   = "defaultOrderDirParam"
+)
+
 // Param represents a input argument to the query which can be specified using:
 // - positional parameters           $1
 // - named parameter operator        @param
@@ -44,7 +55,8 @@ func (n nullability) String() string {
 type Param struct {
 	name        string
 	nullability nullability
-	isSqlcSlice bool
+	sqlcFunc    string
+	opts        map[string]interface{}
 }
 
 // NewParam builds a new params with unspecified nullability
@@ -69,7 +81,17 @@ func NewUserNullableParam(name string) Param {
 
 // NewSqlcSlice is a sqlc.slice() parameter.
 func NewSqlcSlice(name string) Param {
-	return Param{name: name, nullability: nullUnspecified, isSqlcSlice: true}
+	return Param{name: name, nullability: nullUnspecified, sqlcFunc: FuncSlice}
+}
+
+// NewSqlcSort is a sqlc.sort() parameter.
+func NewSqlcSort(name string, opts map[string]interface{}) Param {
+	return Param{name: name, nullability: notNullable, sqlcFunc: FuncSort, opts: opts}
+}
+
+// NewSqlcSortOrder is a sqlc.sort() parameter for order.
+func NewSqlcSortOrder(name string, opts map[string]interface{}) Param {
+	return Param{name: name, nullability: notNullable, sqlcFunc: FuncSort, opts: opts}
 }
 
 // Name is the user defined name to use for this parameter
@@ -108,9 +130,32 @@ func (p Param) NotNull() bool {
 	return null
 }
 
-// IsSlice returns whether this param is a sqlc.slice() param.
+func (p Param) IsSqlcFunc(name string) bool {
+	return p.sqlcFunc != "" && p.sqlcFunc == name
+}
+
+// IsSqlcSlice returns whether this param is a sqlc.slice() param.
 func (p Param) IsSqlcSlice() bool {
-	return p.isSqlcSlice
+	return p.IsSqlcFunc(FuncSlice)
+}
+
+// IsSqlcSort returns whether this param is a sqlc.sort() param.
+func (p Param) IsSqlcSort() bool {
+	return p.IsSqlcFunc(FuncSort)
+}
+
+// GetOpts returns sqlc.sort() opts.
+func (p Param) GetOpts() map[string]interface{} {
+	return p.opts
+}
+
+// GetOpt returns sqlc.sort() opts.
+func (p Param) GetOpt(name string) (interface{}, bool) {
+	if p.opts == nil {
+		return nil, false
+	}
+	opt, ok := p.opts[name]
+	return opt, ok
 }
 
 // mergeParam creates a new param from 2 partially specified params
@@ -120,10 +165,24 @@ func mergeParam(a, b Param) Param {
 	if name == "" {
 		name = b.name
 	}
+	sqlcFunc := a.sqlcFunc
+	if sqlcFunc == "" {
+		sqlcFunc = b.sqlcFunc
+	}
+
+	opts := a.GetOpts()
+	if opts == nil {
+		opts = b.GetOpts()
+	} else if b.GetOpts() != nil {
+		for k, v := range b.GetOpts() {
+			opts[k] = v
+		}
+	}
 
 	return Param{
 		name:        name,
 		nullability: a.nullability | b.nullability,
-		isSqlcSlice: a.isSqlcSlice || b.isSqlcSlice,
+		sqlcFunc:    sqlcFunc,
+		opts:        opts,
 	}
 }

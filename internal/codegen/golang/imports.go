@@ -160,7 +160,10 @@ var pqtypeTypes = map[string]struct{}{
 	"pqtype.NullRawMessage": {},
 }
 
-func buildImports(options *opts.Options, queries []Query, uses func(string) bool) (map[string]struct{}, map[ImportSpec]struct{}) {
+func buildImports(options *opts.Options, queries []Query, uses func(string) bool) (
+	map[string]struct{},
+	map[ImportSpec]struct{},
+) {
 	pkg := make(map[ImportSpec]struct{})
 	std := make(map[string]struct{})
 
@@ -247,24 +250,26 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 }
 
 func (i *importer) interfaceImports() fileImports {
-	std, pkg := buildImports(i.Options, i.Queries, func(name string) bool {
-		for _, q := range i.Queries {
-			if q.hasRetType() {
-				if usesBatch([]Query{q}) {
-					continue
+	std, pkg := buildImports(
+		i.Options, i.Queries, func(name string) bool {
+			for _, q := range i.Queries {
+				if q.hasRetType() {
+					if usesBatch([]Query{q}) {
+						continue
+					}
+					if hasPrefixIgnoringSliceAndPointerPrefix(q.Ret.Type(), name) {
+						return true
+					}
 				}
-				if hasPrefixIgnoringSliceAndPointerPrefix(q.Ret.Type(), name) {
-					return true
+				for _, f := range q.Arg.Pairs() {
+					if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
+						return true
+					}
 				}
 			}
-			for _, f := range q.Arg.Pairs() {
-				if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
-					return true
-				}
-			}
-		}
-		return false
-	})
+			return false
+		},
+	)
 
 	std["context"] = struct{}{}
 
@@ -311,37 +316,39 @@ func (i *importer) queryImports(filename string) fileImports {
 		}
 	}
 
-	std, pkg := buildImports(i.Options, gq, func(name string) bool {
-		for _, q := range gq {
-			if q.hasRetType() {
-				if q.Ret.EmitStruct() {
-					for _, f := range q.Ret.Struct.Fields {
+	std, pkg := buildImports(
+		i.Options, gq, func(name string) bool {
+			for _, q := range gq {
+				if q.hasRetType() {
+					if q.Ret.EmitStruct() {
+						for _, f := range q.Ret.Struct.Fields {
+							if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
+								return true
+							}
+						}
+					}
+					if hasPrefixIgnoringSliceAndPointerPrefix(q.Ret.Type(), name) {
+						return true
+					}
+				}
+				// Check the fields of the argument struct if it's emitted
+				if q.Arg.EmitStruct() {
+					for _, f := range q.Arg.Struct.Fields {
 						if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
 							return true
 						}
 					}
 				}
-				if hasPrefixIgnoringSliceAndPointerPrefix(q.Ret.Type(), name) {
-					return true
-				}
-			}
-			// Check the fields of the argument struct if it's emitted
-			if q.Arg.EmitStruct() {
-				for _, f := range q.Arg.Struct.Fields {
+				// Check the argument pairs inside the method definition
+				for _, f := range q.Arg.Pairs() {
 					if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
 						return true
 					}
 				}
 			}
-			// Check the argument pairs inside the method definition
-			for _, f := range q.Arg.Pairs() {
-				if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
-					return true
-				}
-			}
-		}
-		return false
-	})
+			return false
+		},
+	)
 
 	sliceScan := func() bool {
 		for _, q := range gq {
@@ -402,6 +409,31 @@ func (i *importer) queryImports(filename string) fileImports {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 	}
 
+	// Search for sqlc.slice() calls
+	sqlcSortScan := func() bool {
+		for _, q := range gq {
+			if q.Arg.HasSqlcSorts() {
+				return true
+			}
+		}
+		return false
+	}
+	// Search for sqlc.slice() calls
+	sqlcSortNullScan := func() bool {
+		for _, q := range gq {
+			if q.Arg.HasSqlcNullSorts() {
+				return true
+			}
+		}
+		return false
+	}
+	if sqlcSortScan() && !sqlpkg.IsPGX() {
+		std["strings"] = struct{}{}
+	}
+	if sqlcSortNullScan() {
+		std["database/sql/driver"] = struct{}{}
+	}
+
 	if i.Options.WrapErrors {
 		std["fmt"] = struct{}{}
 	}
@@ -416,21 +448,23 @@ func (i *importer) copyfromImports() fileImports {
 			copyFromQueries = append(copyFromQueries, q)
 		}
 	}
-	std, pkg := buildImports(i.Options, copyFromQueries, func(name string) bool {
-		for _, q := range copyFromQueries {
-			if q.hasRetType() {
-				if strings.HasPrefix(q.Ret.Type(), name) {
-					return true
+	std, pkg := buildImports(
+		i.Options, copyFromQueries, func(name string) bool {
+			for _, q := range copyFromQueries {
+				if q.hasRetType() {
+					if strings.HasPrefix(q.Ret.Type(), name) {
+						return true
+					}
+				}
+				if !q.Arg.isEmpty() {
+					if strings.HasPrefix(q.Arg.Type(), name) {
+						return true
+					}
 				}
 			}
-			if !q.Arg.isEmpty() {
-				if strings.HasPrefix(q.Arg.Type(), name) {
-					return true
-				}
-			}
-		}
-		return false
-	})
+			return false
+		},
+	)
 
 	std["context"] = struct{}{}
 	if i.Options.SqlDriver == opts.SQLDriverGoSQLDriverMySQL {
@@ -451,35 +485,37 @@ func (i *importer) batchImports() fileImports {
 			batchQueries = append(batchQueries, q)
 		}
 	}
-	std, pkg := buildImports(i.Options, batchQueries, func(name string) bool {
-		for _, q := range batchQueries {
-			if q.hasRetType() {
-				if q.Ret.EmitStruct() {
-					for _, f := range q.Ret.Struct.Fields {
+	std, pkg := buildImports(
+		i.Options, batchQueries, func(name string) bool {
+			for _, q := range batchQueries {
+				if q.hasRetType() {
+					if q.Ret.EmitStruct() {
+						for _, f := range q.Ret.Struct.Fields {
+							if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
+								return true
+							}
+						}
+					}
+					if hasPrefixIgnoringSliceAndPointerPrefix(q.Ret.Type(), name) {
+						return true
+					}
+				}
+				if q.Arg.EmitStruct() {
+					for _, f := range q.Arg.Struct.Fields {
 						if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
 							return true
 						}
 					}
 				}
-				if hasPrefixIgnoringSliceAndPointerPrefix(q.Ret.Type(), name) {
-					return true
-				}
-			}
-			if q.Arg.EmitStruct() {
-				for _, f := range q.Arg.Struct.Fields {
+				for _, f := range q.Arg.Pairs() {
 					if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
 						return true
 					}
 				}
 			}
-			for _, f := range q.Arg.Pairs() {
-				if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
-					return true
-				}
-			}
-		}
-		return false
-	})
+			return false
+		},
+	)
 
 	std["context"] = struct{}{}
 	std["errors"] = struct{}{}
