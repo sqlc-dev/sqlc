@@ -342,6 +342,25 @@ func (i *importer) queryImports(filename string) fileImports {
 		}
 		return false
 	})
+	usesFirst := false
+	for _, q := range gq {
+		if q.Cmd == metadata.CmdFirst {
+			usesFirst = true
+			break
+		}
+	}
+	if usesFirst {
+		std["errors"] = struct{}{}
+		sqlpkg := parseDriver(i.Options.SqlPackage)
+		switch sqlpkg {
+		case opts.SQLDriverPGXV4:
+			pkg[ImportSpec{Path: "github.com/jackc/pgx/v4"}] = struct{}{}
+		case opts.SQLDriverPGXV5:
+			pkg[ImportSpec{Path: "github.com/jackc/pgx/v5"}] = struct{}{}
+		default:
+			std["database/sql"] = struct{}{}
+		}
+	}
 
 	sliceScan := func() bool {
 		for _, q := range gq {
