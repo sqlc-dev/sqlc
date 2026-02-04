@@ -21,36 +21,50 @@ func dataType(n *ast.TypeName) string {
 	}
 }
 
-func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, params *named.ParamSet, embeds rewrite.EmbedSet) ([]Parameter, error) {
+func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, scopedRVs []scopedRangeVar, args []paramRef, params *named.ParamSet, embeds rewrite.EmbedSet) ([]Parameter, error) {
 	c := comp.catalog
 
+	scopeMap := make(map[*string][]*ast.TableName)
+	outerAliasMap := map[string]*ast.TableName{}
 	aliasMap := map[string]*ast.TableName{}
+	tableNameMap := map[string]*ast.TableName{}
 	// TODO: Deprecate defaultTable
 	var defaultTable *ast.TableName
 	var tables []*ast.TableName
-
 	typeMap := map[string]map[string]map[string]*catalog.Column{}
-	indexTable := func(table catalog.Table) error {
-		tables = append(tables, table.Rel)
+
+	indexTableWithColumns := func(rel *ast.TableName, cols []*catalog.Column) error {
+		tables = append(tables, rel)
+		tableNameMap[rel.Name] = rel
 		if defaultTable == nil {
-			defaultTable = table.Rel
+			defaultTable = rel
 		}
-		schema := table.Rel.Schema
+		schema := rel.Schema
 		if schema == "" {
 			schema = c.DefaultSchema
 		}
 		if _, exists := typeMap[schema]; !exists {
 			typeMap[schema] = map[string]map[string]*catalog.Column{}
 		}
-		typeMap[schema][table.Rel.Name] = map[string]*catalog.Column{}
-		for _, c := range table.Columns {
-			cc := c
-			typeMap[schema][table.Rel.Name][c.Name] = cc
+		typeMap[schema][rel.Name] = map[string]*catalog.Column{}
+		for _, c := range cols {
+			typeMap[schema][rel.Name][c.Name] = c
 		}
 		return nil
 	}
 
-	for _, rv := range rvs {
+	indexTable := func(table catalog.Table) error {
+		return indexTableWithColumns(table.Rel, table.Columns)
+	}
+
+	indexCTE := func(cte *Table) error {
+		catalogCols := convertColumnsToCatalog(cte.Columns)
+		return indexTableWithColumns(cte.Rel, catalogCols)
+	}
+
+	for _, srv := range scopedRVs {
+		rv := srv.rv
+		scope := srv.cteName
 		if rv.Relname == nil {
 			continue
 		}
@@ -58,6 +72,12 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		if err != nil {
 			return nil, err
 		}
+
+		scopeMap[scope] = append(scopeMap[scope], fqn)
+		if scope == nil && rv.Alias != nil {
+			outerAliasMap[*rv.Alias.Aliasname] = fqn
+		}
+
 		if _, found := aliasMap[fqn.Name]; found {
 			continue
 		}
@@ -67,8 +87,15 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				continue
 			}
 			// If the table name doesn't exist, first check if it's a CTE
-			if _, qcerr := qc.GetTable(fqn); qcerr != nil {
+			cte, qcerr := qc.GetTable(fqn)
+			if qcerr != nil {
 				return nil, err
+			}
+			if err := indexCTE(cte); err != nil {
+				return nil, err
+			}
+			if rv.Alias != nil {
+				aliasMap[*rv.Alias.Aliasname] = fqn
 			}
 			continue
 		}
@@ -89,7 +116,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			continue
 		}
 
-		if alias, ok := aliasMap[embed.Table.Name]; ok {
+		if alias, ok := outerAliasMap[embed.Table.Name]; ok {
 			embed.Table = alias
 			continue
 		}
@@ -195,24 +222,17 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					panic("too many field items: " + strconv.Itoa(len(items)))
 				}
 
-				search := tables
+				search := scopeMap[ref.cteName]
 				if alias != "" {
 					if original, ok := aliasMap[alias]; ok {
 						search = []*ast.TableName{original}
+					} else if tableName, ok := tableNameMap[alias]; ok {
+						search = []*ast.TableName{tableName}
 					} else {
-						var located bool
-						for _, fqn := range tables {
-							if fqn.Name == alias {
-								located = true
-								search = []*ast.TableName{fqn}
-							}
-						}
-						if !located {
-							return nil, &sqlerr.Error{
-								Code:     "42703",
-								Message:  fmt.Sprintf("table alias %q does not exist", alias),
-								Location: node.Location,
-							}
+						return nil, &sqlerr.Error{
+							Code:     "42703",
+							Message:  fmt.Sprintf("table alias %q does not exist", alias),
+							Location: node.Location,
 						}
 					}
 				}
@@ -573,12 +593,8 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				if alias != "" {
 					if original, ok := aliasMap[alias]; ok {
 						search = []*ast.TableName{original}
-					} else {
-						for _, fqn := range tables {
-							if fqn.Name == alias {
-								search = []*ast.TableName{fqn}
-							}
-						}
+					} else if tableName, ok := tableNameMap[alias]; ok {
+						search = []*ast.TableName{tableName}
 					}
 				}
 
