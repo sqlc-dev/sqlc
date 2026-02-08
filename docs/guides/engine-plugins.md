@@ -43,7 +43,9 @@ version: "2"
 engines:
   - name: external-db
     process:
-      cmd: sqlc-engine-external-db
+      # Executable and optional arguments (e.g. --dont-open-wildcard-star).
+      # First token is the command; the rest are passed to the plugin before the RPC method name.
+      cmd: sqlc-engine-external-db --dont-open-wildcard-star
     env:
       - EXTERNAL_DB_DSN
 
@@ -61,7 +63,7 @@ sql:
 | Field | Description |
 |-------|-------------|
 | `name` | Engine name used in `sql[].engine` |
-| `process.cmd` | Command to run (PATH or absolute path) |
+| `process.cmd` | Command to run: executable path and optional arguments (e.g. `sqlc-engine-external-db --dont-open-wildcard-star`). First token is the executable; remaining tokens are passed as arguments before the RPC method. |
 | `env` | Environment variable names passed to the plugin |
 
 Each engine must define either `process` (with `cmd`) or `wasm` (with `url` and `sha256`). See [Configuration reference](../reference/config.md) for the full `engines` schema.
