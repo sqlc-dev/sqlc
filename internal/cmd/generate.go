@@ -438,6 +438,9 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outputPair,
 		if err != nil {
 			return "", nil, fmt.Errorf("invalid plugin options: %w", err)
 		}
+		if err := validateExternalPluginOptions(opts, sql.Plugin.Plugin); err != nil {
+			return "", nil, err
+		}
 		req.PluginOptions = opts
 
 	case sql.Gen.Go != nil:
@@ -472,4 +475,29 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql outputPair,
 	client := plugin.NewCodegenServiceClient(handler)
 	resp, err := client.Generate(ctx, req)
 	return out, resp, err
+}
+
+// driverOnlyOptions are options that apply only to built-in Go codegen, not to external plugins.
+var driverOnlyOptions = []string{"sql_package", "sql_driver"}
+
+// validateExternalPluginOptions returns an error if plugin options contain sql_package or sql_driver.
+// External codegen plugins define their own database driver; these options are not supported.
+func validateExternalPluginOptions(opts []byte, pluginName string) error {
+	if len(opts) == 0 {
+		return nil
+	}
+	var m map[string]interface{}
+	if err := json.Unmarshal(opts, &m); err != nil {
+		return nil
+	}
+	var invalid []string
+	for _, key := range driverOnlyOptions {
+		if _, ok := m[key]; ok {
+			invalid = append(invalid, key)
+		}
+	}
+	if len(invalid) == 0 {
+		return nil
+	}
+	return fmt.Errorf("plugin %q: options %q are not supported for external codegen plugins; the plugin defines its own database driver (these options only apply to built-in Go codegen)", pluginName, invalid)
 }
