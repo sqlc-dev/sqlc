@@ -41,14 +41,14 @@ No version handshake is required; the proto schema defines the contract.
 version: "2"
 
 engines:
-  - name: mydb
+  - name: external-db
     process:
-      cmd: sqlc-engine-mydb
+      cmd: sqlc-engine-external-db
     env:
-      - MYDB_DSN
+      - EXTERNAL_DB_DSN
 
 sql:
-  - engine: mydb
+  - engine: external-db
     schema: "schema.sql"
     queries: "queries.sql"
     codegen:
@@ -73,7 +73,7 @@ For an engine with `process.cmd`, sqlc resolves and runs the plugin as follows:
 1. **Command parsing** — `process.cmd` is split on whitespace. The first token is the executable; any further tokens are passed as arguments, and sqlc appends the RPC method name (`parse`) when invoking the plugin.
 
 2. **Executable lookup** — The first token is resolved the same way as in the shell:
-   - If it contains a path separator (e.g. `/usr/bin/sqlc-engine-mydb` or `./bin/sqlc-engine-mydb`), it is treated as a path. Absolute paths are used as-is; relative paths are taken relative to the **current working directory of the process running sqlc**.
+   - If it contains a path separator (e.g. `/usr/bin/sqlc-engine-external-db` or `./bin/sqlc-engine-external-db`), it is treated as a path. Absolute paths are used as-is; relative paths are taken relative to the **current working directory of the process running sqlc**.
    - If it has no path separator, the executable is looked up in the **PATH** of the process running sqlc. The plugin binary must be on PATH (e.g. after `go install` or adding its directory to PATH) or `process.cmd` must be an absolute path.
 
 3. **Working directory** — The plugin process is started with its working directory set to the **directory containing the sqlc config file**. That directory is used for resolving relative paths inside the plugin, not for resolving `process.cmd` itself.
@@ -91,7 +91,7 @@ import "github.com/sqlc-dev/sqlc/pkg/engine"
 
 func main() {
     engine.Run(engine.Handler{
-        PluginName:    "mydb",
+        PluginName:    "external-db",
         PluginVersion: "1.0.0",
         Parse:         handleParse,
     })
@@ -160,8 +160,8 @@ Support for sqlc placeholders (`sqlc.arg()`, `sqlc.narg()`, `sqlc.slice()`, `sql
 ### 3. Build and run
 
 ```bash
-go build -o sqlc-engine-mydb .
-# Ensure sqlc-engine-mydb is on PATH or use an absolute path in process.cmd
+go build -o sqlc-engine-external-db .
+# Ensure sqlc-engine-external-db is on PATH or use an absolute path in process.cmd
 ```
 
 ## Protocol
@@ -175,7 +175,7 @@ sqlc  →  stdin (protobuf)  →  plugin  →  stdout (protobuf)  →  sqlc
 Invocation:
 
 ```bash
-sqlc-engine-mydb parse   # stdin: ParseRequest, stdout: ParseResponse
+sqlc-engine-external-db parse   # stdin: ParseRequest, stdout: ParseResponse
 ```
 
 The definition lives in `protos/engine/engine.proto` (generated Go in `pkg/engine`). After editing the proto, run `make proto-engine-plugin` to regenerate the Go code.
@@ -197,7 +197,7 @@ For each `sql[]` block, `sqlc generate` branches on the configured engine: built
 │  3. Each statement → one codegen query (N helpers)               │
 └─────────────────────────────────────────────────────────────────┘
 
-    sqlc                          sqlc-engine-mydb
+    sqlc                          sqlc-engine-external-db
       │──── spawn, args: ["parse"] ──────────────────────────────► │
       │──── stdin: ParseRequest{sql=full query.sql, schema_sql|…}  ► │
       │◄─── stdout: ParseResponse{statements: [stmt1, stmt2, …]} ── │
