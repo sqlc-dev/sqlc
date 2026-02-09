@@ -17,6 +17,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/multierr"
+	"github.com/sqlc-dev/sqlc/internal/plugin"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
@@ -164,6 +165,7 @@ func runPluginQuerySet(ctx context.Context, rp resultProcessor, name, dir string
 	}
 
 	var queries []*compiler.Query
+	var pluginCatalog *plugin.Catalog
 	merr := multierr.New()
 	set := map[string]struct{}{}
 
@@ -178,6 +180,9 @@ func runPluginQuerySet(ctx context.Context, rp resultProcessor, name, dir string
 		if err != nil {
 			merr.Add(filename, queryContent, 0, err)
 			continue
+		}
+		if pluginCatalog == nil && resp.GetCatalog() != nil {
+			pluginCatalog = engineCatalogToPlugin(resp.GetCatalog())
 		}
 		baseName := filepath.Base(filename)
 		stmts := resp.GetStatements()
@@ -204,8 +209,9 @@ func runPluginQuerySet(ctx context.Context, rp resultProcessor, name, dir string
 	}
 
 	result := &compiler.Result{
-		Catalog: catalog.New(""),
-		Queries: queries,
+		Catalog:       catalog.New(""),
+		Queries:       queries,
+		PluginCatalog: pluginCatalog,
 	}
 	return rp.ProcessResult(ctx, combo, sql, result)
 }
@@ -229,6 +235,57 @@ func loadSchemaSQL(schemaPaths []string, readFile func(string) ([]byte, error)) 
 		}
 	}
 	return strings.Join(parts, "\n"), nil
+}
+
+// engineCatalogToPlugin converts engine.Catalog (from ParseResponse) to plugin.Catalog for codegen.
+func engineCatalogToPlugin(engineCat *pb.Catalog) *plugin.Catalog {
+	if engineCat == nil {
+		return nil
+	}
+	var schemas []*plugin.Schema
+	for _, es := range engineCat.GetSchemas() {
+		var tables []*plugin.Table
+		for _, et := range es.GetTables() {
+			rel := et.GetRel()
+			if rel == nil {
+				continue
+			}
+			var cols []*plugin.Column
+			for _, col := range et.GetColumns() {
+				cols = append(cols, &plugin.Column{
+					Name:      col.GetName(),
+					NotNull:   col.GetNotNull(),
+					IsArray:   col.GetIsArray(),
+					ArrayDims: col.GetArrayDims(),
+					Type:      engineIDToPlugin(col.GetType()),
+					Table:     engineIDToPlugin(rel),
+				})
+			}
+			tables = append(tables, &plugin.Table{
+				Rel:     engineIDToPlugin(rel),
+				Columns: cols,
+				Comment: et.GetComment(),
+			})
+		}
+		schemas = append(schemas, &plugin.Schema{
+			Name:    es.GetName(),
+			Tables:  tables,
+			Comment: es.GetComment(),
+		})
+	}
+	return &plugin.Catalog{
+		Comment:       engineCat.GetComment(),
+		DefaultSchema: engineCat.GetDefaultSchema(),
+		Name:          engineCat.GetName(),
+		Schemas:       schemas,
+	}
+}
+
+func engineIDToPlugin(e *pb.Identifier) *plugin.Identifier {
+	if e == nil {
+		return nil
+	}
+	return &plugin.Identifier{Catalog: e.GetCatalog(), Schema: e.GetSchema(), Name: e.GetName()}
 }
 
 // statementToCompilerQuery converts one engine.Statement from the plugin into a compiler.Query.

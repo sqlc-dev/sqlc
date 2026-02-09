@@ -123,6 +123,8 @@ Return `statements`: one `Statement` per query block. Each `Statement` has:
 - `parameters` — Parameters for this statement.
 - `columns` — Result columns (names, types, nullability, etc.) for this statement.
 
+You may also return **`catalog`** (optional). When present, sqlc passes it to the codegen plugin so codegen can emit model structs from the schema (tables/columns), not only per-query row types. Build an `engine.Catalog` from your schema (e.g. from `schema_sql` or DB metadata): one or more **CatalogSchema**, each with **CatalogTable** (rel = Identifier, columns = **CatalogColumn**). See `protos/engine/engine.proto` for the `Catalog`, `CatalogSchema`, `CatalogTable`, `CatalogColumn`, and `Identifier` messages.
+
 The engine package provides helpers (optional) to split `query.sql` and parse `"-- name: X :cmd"` lines in the same way as the built-in engines:
 
 - `engine.CommentSyntax` — Which comment styles to accept (`Dash`, `SlashStar`, `Hash`).
@@ -151,13 +153,21 @@ func handleParse(req *engine.ParseRequest) (*engine.ParseResponse, error) {
         st.Columns = extractColumns(b.SQL, schema)
         statements = append(statements, st)
     }
-    return &engine.ParseResponse{Statements: statements}, nil
+    resp := &engine.ParseResponse{Statements: statements}
+    if cat := buildCatalogFromSchema(schema); cat != nil {
+        resp.Catalog = cat
+    }
+    return resp, nil
 }
 ```
 
-Parameter and column types use the `Parameter` and `Column` messages in `engine.proto` (name, position, data_type, nullable, is_array, array_dims; for columns, table_name and schema_name are optional).
+Parameter and column types use the `Parameter` and `Column` messages in `engine.proto` (name, position, data_type, nullable, is_array, array_dims; for columns, table_name and schema_name are optional). If you return a **Catalog** (tables/columns from schema or DB), sqlc forwards it to the codegen plugin so generated code can include model types from the schema.
 
 Support for sqlc placeholders (`sqlc.arg()`, `sqlc.narg()`, `sqlc.slice()`, `sqlc.embed()`) is up to the plugin: it can parse and map them into `parameters` (and schema usage) as needed.
+
+#### Catalog (optional)
+
+If the plugin returns a non-empty **`catalog`** in `ParseResponse`, sqlc converts it to the codegen plugin’s Catalog and passes it in the GenerateRequest. Codegen plugins can then emit model structs from the schema (e.g. `type Author struct`) in addition to per-query row types. Build the catalog from `schema_sql` or from live DB metadata when using `connection_params`. The `engine.proto` defines `Catalog`, `CatalogSchema`, `CatalogTable`, `CatalogColumn`, and `Identifier` for this purpose.
 
 ### 3. Build and run
 
@@ -188,7 +198,7 @@ The protocol and Go SDK are in this repository: `protos/engine/engine.proto` and
 
 ## Architecture
 
-For each `sql[]` block, `sqlc generate` branches on the configured engine: built-in (postgresql, mysql, sqlite) use the compiler and catalog; any engine listed under `engines:` in sqlc.yaml uses the plugin path (no compiler). For the plugin path, sqlc calls Parse **once per query file**, sending the full file contents and schema (or connection params). The plugin returns **N statements** (one per query block); sqlc passes each statement to codegen as a separate query.
+For each `sql[]` block, `sqlc generate` branches on the configured engine: built-in (postgresql, mysql, sqlite) use the compiler and catalog; any engine listed under `engines:` in sqlc.yaml uses the plugin path (no compiler). For the plugin path, sqlc calls Parse **once per query file**, sending the full file contents and schema (or connection params). The plugin returns **N statements** (one per query block) and optionally a **catalog** (tables/columns from schema or DB). sqlc passes each statement to codegen as a separate query and, when present, passes the catalog so codegen can emit model types from the schema.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐

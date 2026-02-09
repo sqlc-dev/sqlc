@@ -64,10 +64,51 @@ message Statement {
   repeated Column columns = 5;
 }
 
-// ParseResponse contains the processed statements. The plugin receives the full query file
-// and schema (or connection params); it returns one Statement per query block.
+// ParseResponse contains the processed statements and optional catalog. The plugin receives
+// the full query file and schema (or connection params); it returns one Statement per query
+// block. Catalog is derived from schema_sql or connection_params and is passed to codegen.
 message ParseResponse {
   repeated Statement statements = 1;
+  Catalog catalog = 2;
+}
+
+// Identifier identifies a catalog/schema/name (used in Catalog types).
+message Identifier {
+  string catalog = 1;
+  string schema = 2;
+  string name = 3;
+}
+
+// Catalog mirrors plugin.Catalog so engine plugins can return schema without importing plugin.
+// The sqlc app converts it to plugin.Catalog when calling codegen.
+message Catalog {
+  string comment = 1;
+  string default_schema = 2;
+  string name = 3;
+  repeated CatalogSchema schemas = 4;
+}
+
+message CatalogSchema {
+  string comment = 1;
+  string name = 2;
+  repeated CatalogTable tables = 3;
+}
+
+message CatalogTable {
+  Identifier rel = 1;
+  repeated CatalogColumn columns = 2;
+  string comment = 3;
+}
+
+message CatalogColumn {
+  string name = 1;
+  bool not_null = 3;
+  bool is_array = 4;
+  string comment = 5;
+  int32 length = 6;
+  int32 array_dims = 17;
+  Identifier type = 12;
+  Identifier table = 10;
 }
 
 // Parameter represents a query parameter.
