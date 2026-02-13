@@ -31,9 +31,14 @@ Additional languages can be added via [plugins](https://docs.sqlc.dev/en/latest/
 
 ## Supported database engines
 
+Internal engines:
 - PostgreSQL
 - MySQL
 - SQLite
+- Clickhouse
+
+External plugin engines:
+- [YDB](https://github.com/ydb-platform/sqlc-ydb)
 
 Additional database engines can be added via [engine plugins](https://docs.sqlc.dev/en/latest/guides/engine-plugins.html).
 
