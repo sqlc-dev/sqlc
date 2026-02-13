@@ -35,7 +35,7 @@ Internal engines:
 - PostgreSQL
 - MySQL
 - SQLite
-- Clickhouse
+- ClickHouse
 
 External plugin engines:
 - [YDB](https://github.com/ydb-platform/sqlc-ydb)
