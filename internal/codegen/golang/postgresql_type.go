@@ -1,38 +1,13 @@
 package golang
 
 import (
-	"fmt"
 	"log"
-	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
 	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
 	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
-
-func parseIdentifierString(name string) (*plugin.Identifier, error) {
-	parts := strings.Split(name, ".")
-	switch len(parts) {
-	case 1:
-		return &plugin.Identifier{
-			Name: parts[0],
-		}, nil
-	case 2:
-		return &plugin.Identifier{
-			Schema: parts[0],
-			Name:   parts[1],
-		}, nil
-	case 3:
-		return &plugin.Identifier{
-			Catalog: parts[0],
-			Schema:  parts[1],
-			Name:    parts[2],
-		}, nil
-	default:
-		return nil, fmt.Errorf("invalid name: %s", name)
-	}
-}
 
 func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Column) string {
 	columnType := sdk.DataType(col.Type)
@@ -555,11 +530,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "interface{}"
 
 	default:
-		rel, err := parseIdentifierString(columnType)
-		if err != nil {
-			// TODO: Should this actually return an error here?
-			return "interface{}"
-		}
+		rel := col.Type
 		if rel.Schema == "" {
 			rel.Schema = req.Catalog.DefaultSchema
 		}
