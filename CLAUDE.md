@@ -6,7 +6,7 @@ This document provides essential information for working with the sqlc codebase,
 
 ### Prerequisites
 
-- **Go 1.25.0+** - Required for building and testing
+- **Go 1.26.0+** - Required for building and testing
 - **Docker & Docker Compose** - Required for integration tests with databases (local development)
 - **Git** - For version control
 
