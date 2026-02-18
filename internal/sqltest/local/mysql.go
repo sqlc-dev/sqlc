@@ -26,21 +26,21 @@ func MySQL(t *testing.T, migrations []string) string {
 
 	dburi := os.Getenv("MYSQL_SERVER_URI")
 	if dburi == "" {
-		if ierr := docker.Installed(); ierr == nil {
-			u, err := docker.StartMySQLServer(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-			dburi = u
-		} else if ierr := native.Supported(); ierr == nil {
-			// Fall back to native installation when Docker is not available
+		if ierr := native.Supported(); ierr == nil {
 			u, err := native.StartMySQLServer(ctx)
 			if err != nil {
 				t.Fatal(err)
 			}
 			dburi = u
+		} else if ierr := docker.Installed(); ierr == nil {
+			// Fall back to Docker when native installation is not available
+			u, err := docker.StartMySQLServer(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			dburi = u
 		} else {
-			t.Skip("MYSQL_SERVER_URI is empty and neither Docker nor native installation is available")
+			t.Skip("MYSQL_SERVER_URI is empty and neither native installation nor Docker is available")
 		}
 	}
 
