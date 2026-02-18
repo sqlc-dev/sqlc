@@ -168,17 +168,17 @@ func paramName(p *plugin.Parameter) string {
 }
 
 func argName(name string) string {
-	out := ""
+	var out strings.Builder
 	for i, p := range strings.Split(name, "_") {
 		if i == 0 {
-			out += strings.ToLower(p)
+			out.WriteString(strings.ToLower(p))
 		} else if p == "id" {
-			out += "ID"
+			out.WriteString("ID")
 		} else {
-			out += strings.Title(p)
+			out.WriteString(strings.Title(p))
 		}
 	}
-	return out
+	return out.String()
 }
 
 func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []Struct) ([]Query, error) {

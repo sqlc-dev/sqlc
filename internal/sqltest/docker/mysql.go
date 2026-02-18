@@ -19,7 +19,7 @@ func StartMySQLServer(c context.Context) (string, error) {
 	if mysqlHost != "" {
 		return mysqlHost, nil
 	}
-	value, err, _ := flight.Do("mysql", func() (interface{}, error) {
+	value, err, _ := flight.Do("mysql", func() (any, error) {
 		host, err := startMySQLServer(c)
 		if err != nil {
 			return "", err

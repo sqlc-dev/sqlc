@@ -19,7 +19,7 @@ func StartPostgreSQLServer(c context.Context) (string, error) {
 	if postgresHost != "" {
 		return postgresHost, nil
 	}
-	value, err, _ := flight.Do("postgresql", func() (interface{}, error) {
+	value, err, _ := flight.Do("postgresql", func() (any, error) {
 		host, err := startPostgreSQLServer(c)
 		if err != nil {
 			return "", err

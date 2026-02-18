@@ -20,7 +20,7 @@ func init() {
 	}
 }
 
-func Dump(n ...interface{}) {
+func Dump(n ...any) {
 	if Active {
 		spew.Dump(n)
 	}

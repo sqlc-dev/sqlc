@@ -101,7 +101,7 @@ func (g *SQLiteColumnGetter) GetColumnNames(ctx context.Context, query string) (
 	// Get column names from the prepared statement
 	count := stmt.ColumnCount()
 	columns := make([]string, count)
-	for i := 0; i < count; i++ {
+	for i := range count {
 		columns[i] = stmt.ColumnName(i)
 	}
 

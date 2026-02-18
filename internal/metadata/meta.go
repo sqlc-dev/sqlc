@@ -59,7 +59,7 @@ func validateQueryName(name string) error {
 }
 
 func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string, error) {
-	for _, line := range strings.Split(t, "\n") {
+	for line := range strings.SplitSeq(t, "\n") {
 		var prefix string
 		if strings.HasPrefix(line, "--") {
 			if !commentStyle.Dash {
