@@ -50,6 +50,12 @@ jobs:
       env:
         CGO_ENABLED: "0"
 
+    - name: install databases
+      run: go run ./cmd/sqlc-test-setup install
+
+    - name: start databases
+      run: go run ./cmd/sqlc-test-setup start
+
     - name: test ./...
       run: gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m ./...
       if: ${{ matrix.os }} != "windows-2022"
