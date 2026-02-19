@@ -152,6 +152,9 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 		if err := check(err); err != nil {
 			return nil, err
 		}
+		if err := check(validate.OnConflictClause(c.catalog, n, table)); err != nil {
+			return nil, err
+		}
 	}
 
 	if err := check(validate.FuncCall(c.catalog, c.combo, raw)); err != nil {

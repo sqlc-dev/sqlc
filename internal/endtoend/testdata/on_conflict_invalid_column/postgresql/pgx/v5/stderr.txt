@@ -1,0 +1,2 @@
+# package querytest
+query.sql:5:9: column "price_amount1" of relation "cart_items" does not exist
