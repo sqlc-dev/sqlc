@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os/exec"
-	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -20,7 +19,7 @@ func StartPostgreSQLServer(c context.Context) (string, error) {
 	if postgresHost != "" {
 		return postgresHost, nil
 	}
-	value, err, _ := flight.Do("postgresql", func() (interface{}, error) {
+	value, err, _ := flight.Do("postgresql", func() (any, error) {
 		host, err := startPostgreSQLServer(c)
 		if err != nil {
 			return "", err
@@ -48,31 +47,15 @@ func startPostgreSQLServer(c context.Context) (string, error) {
 
 	uri := "postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable"
 
-	var exists bool
-	{
-		cmd := exec.Command("docker", "container", "inspect", "sqlc_sqltest_docker_postgres")
-		// This means we've already started the container
-		exists = cmd.Run() == nil
-	}
-
-	if !exists {
-		cmd := exec.Command("docker", "run",
-			"--name", "sqlc_sqltest_docker_postgres",
-			"-e", "POSTGRES_PASSWORD=mysecretpassword",
-			"-e", "POSTGRES_USER=postgres",
-			"-p", "5432:5432",
-			"-d",
-			"postgres:16",
-			"-c", "max_connections=200",
-		)
-
-		output, err := cmd.CombinedOutput()
-		fmt.Println(string(output))
-
-		msg := `Conflict. The container name "/sqlc_sqltest_docker_postgres" is already in use by container`
-		if !strings.Contains(string(output), msg) && err != nil {
-			return "", err
-		}
+	if err := ensureContainer("sqlc_sqltest_docker_postgres",
+		"-e", "POSTGRES_PASSWORD=mysecretpassword",
+		"-e", "POSTGRES_USER=postgres",
+		"-p", "5432:5432",
+		"-d",
+		"postgres:16",
+		"-c", "max_connections=200",
+	); err != nil {
+		return "", err
 	}
 
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)

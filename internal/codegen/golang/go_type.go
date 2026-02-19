@@ -1,6 +1,7 @@
 package golang
 
 import (
+	"maps"
 	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
@@ -15,9 +16,7 @@ func addExtraGoStructTags(tags map[string]string, req *plugin.GenerateRequest, o
 			continue
 		}
 		if override.MatchesColumn(col) {
-			for k, v := range oride.GoType.StructTags {
-				tags[k] = v
-			}
+			maps.Copy(tags, oride.GoType.StructTags)
 			continue
 		}
 		if !override.Matches(col.Table, req.Catalog.DefaultSchema) {
@@ -33,9 +32,7 @@ func addExtraGoStructTags(tags map[string]string, req *plugin.GenerateRequest, o
 			continue
 		}
 		// Add the extra tags.
-		for k, v := range oride.GoType.StructTags {
-			tags[k] = v
-		}
+		maps.Copy(tags, oride.GoType.StructTags)
 	}
 }
 

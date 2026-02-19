@@ -47,7 +47,7 @@ func ExperimentFromString(val string) Experiment {
 		return e
 	}
 
-	for _, name := range strings.Split(val, ",") {
+	for name := range strings.SplitSeq(val, ",") {
 		name = strings.TrimSpace(name)
 		if name == "" {
 			continue

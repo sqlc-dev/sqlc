@@ -6,7 +6,7 @@ This document provides essential information for working with the sqlc codebase,
 
 ### Prerequisites
 
-- **Go 1.25.0+** - Required for building and testing
+- **Go 1.26.0+** - Required for building and testing
 - **Docker & Docker Compose** - Required for integration tests with databases (local development)
 - **Git** - For version control
 
@@ -14,9 +14,13 @@ This document provides essential information for working with the sqlc codebase,
 
 When running in the Claude Code remote environment (or any environment without Docker), you can install PostgreSQL and MySQL natively. The test framework automatically detects and uses native database installations.
 
+### Network Proxy (Pre-configured)
+
+The Claude Code remote environment routes outbound traffic through an HTTP proxy via the `HTTP_PROXY` and `HTTPS_PROXY` environment variables. **Go module operations (`go mod tidy`, `go mod download`, `go get`, etc.) work automatically** because Go's toolchain respects these variables. No extra configuration is needed for the Go module proxy (`proxy.golang.org`) or checksum database (`sum.golang.org`).
+
 ### Step 1: Configure apt Proxy (Required in Remote Environment)
 
-The Claude Code remote environment requires an HTTP proxy for apt. Configure it:
+The apt package manager needs its own proxy configuration since it does not read `HTTP_PROXY`:
 
 ```bash
 bash -c 'echo "Acquire::http::Proxy \"$http_proxy\";"' | sudo tee /etc/apt/apt.conf.d/99proxy
@@ -306,9 +310,13 @@ POSTGRESQL_SERVER_URI="postgres://postgres:mysecretpassword@localhost:5432/postg
 
 ## Common Issues & Solutions
 
-### Network Connectivity Issues
+### Network Connectivity / Go Module Proxy Issues
 
-If you see errors about `storage.googleapis.com`, the Go proxy may be unreachable. Tests may still pass for packages that don't require network dependencies.
+In the Claude Code remote environment, Go module fetching works automatically via the `HTTP_PROXY`/`HTTPS_PROXY` environment variables. If you see errors about `storage.googleapis.com` or `proxy.golang.org`:
+
+1. **Verify proxy vars are set:** `echo $HTTP_PROXY` (should be non-empty in the remote environment)
+2. **Test connectivity:** `go mod download 2>&1 | head` to check for errors
+3. **If proxy is not set** (e.g., local development without Docker), Go will try to reach `proxy.golang.org` directly, which requires internet access
 
 ### Test Timeouts
 

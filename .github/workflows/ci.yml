@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v6
     - uses: actions/setup-go@v6
       with:
-        go-version: '1.25.0'
+        go-version: '1.26.0'
     - run: go build ./...
       env:
         CGO_ENABLED: "0"
@@ -28,7 +28,7 @@ jobs:
     - uses: actions/checkout@v6
     - uses: actions/setup-go@v6
       with:
-        go-version: '1.25.0'
+        go-version: '1.26.0'
 
     - name: install gotestsum
       run: go install gotest.tools/gotestsum@latest

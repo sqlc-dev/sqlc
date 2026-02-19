@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"os/exec"
-	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -20,7 +19,7 @@ func StartMySQLServer(c context.Context) (string, error) {
 	if mysqlHost != "" {
 		return mysqlHost, nil
 	}
-	value, err, _ := flight.Do("mysql", func() (interface{}, error) {
+	value, err, _ := flight.Do("mysql", func() (any, error) {
 		host, err := startMySQLServer(c)
 		if err != nil {
 			return "", err
@@ -46,30 +45,14 @@ func startMySQLServer(c context.Context) (string, error) {
 		}
 	}
 
-	var exists bool
-	{
-		cmd := exec.Command("docker", "container", "inspect", "sqlc_sqltest_docker_mysql")
-		// This means we've already started the container
-		exists = cmd.Run() == nil
-	}
-
-	if !exists {
-		cmd := exec.Command("docker", "run",
-			"--name", "sqlc_sqltest_docker_mysql",
-			"-e", "MYSQL_ROOT_PASSWORD=mysecretpassword",
-			"-e", "MYSQL_DATABASE=dinotest",
-			"-p", "3306:3306",
-			"-d",
-			"mysql:9",
-		)
-
-		output, err := cmd.CombinedOutput()
-		fmt.Println(string(output))
-
-		msg := `Conflict. The container name "/sqlc_sqltest_docker_mysql" is already in use by container`
-		if !strings.Contains(string(output), msg) && err != nil {
-			return "", err
-		}
+	if err := ensureContainer("sqlc_sqltest_docker_mysql",
+		"-e", "MYSQL_ROOT_PASSWORD=mysecretpassword",
+		"-e", "MYSQL_DATABASE=dinotest",
+		"-p", "3306:3306",
+		"-d",
+		"mysql:9",
+	); err != nil {
+		return "", err
 	}
 
 	ctx, cancel := context.WithTimeout(c, 10*time.Second)

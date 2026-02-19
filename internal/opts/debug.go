@@ -39,7 +39,7 @@ func DebugFromString(val string) Debug {
 	if val == "" {
 		return d
 	}
-	for _, pair := range strings.Split(val, ",") {
+	for pair := range strings.SplitSeq(val, ",") {
 		pair = strings.TrimSpace(pair)
 		switch {
 		case pair == "dumpast=1":
