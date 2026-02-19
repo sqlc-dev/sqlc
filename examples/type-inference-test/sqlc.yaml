@@ -1,0 +1,13 @@
+version: "2"
+sql:
+  - engine: "mysql"
+    queries: "mysql/query.sql"
+    schema: "mysql/schema.sql"
+    gen:
+      go:
+        package: "mysql"
+        out: "mysql"
+        emit_json_tags: true
+        emit_prepared_queries: false
+        emit_interface: false
+        emit_exact_table_names: false
