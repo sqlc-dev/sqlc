@@ -10,136 +10,74 @@ This document provides essential information for working with the sqlc codebase,
 - **Docker & Docker Compose** - Required for integration tests with databases (local development)
 - **Git** - For version control
 
-## Claude Code Remote Environment Setup
+## Database Setup with sqlc-test-setup
 
-When running in the Claude Code remote environment (or any environment without Docker), you can install PostgreSQL and MySQL natively. The test framework automatically detects and uses native database installations.
+The `sqlc-test-setup` tool (`cmd/sqlc-test-setup/`) automates installing and starting PostgreSQL and MySQL for tests. Both commands are idempotent and safe to re-run.
 
-### Step 1: Configure apt Proxy (Required in Remote Environment)
-
-The Claude Code remote environment requires an HTTP proxy for apt. Configure it:
+### Install databases
 
 ```bash
-bash -c 'echo "Acquire::http::Proxy \"$http_proxy\";"' | sudo tee /etc/apt/apt.conf.d/99proxy
+go run ./cmd/sqlc-test-setup install
 ```
 
-### Step 2: Install PostgreSQL
+This will:
+- Configure the apt proxy (if `http_proxy` is set, e.g. in Claude Code remote environments)
+- Install PostgreSQL via apt
+- Download and install MySQL 9 from Oracle's deb bundle
+- Resolve all dependencies automatically
+- Skip anything already installed
+
+### Start databases
 
 ```bash
-sudo apt-get update
-sudo apt-get install -y postgresql
-sudo service postgresql start
+go run ./cmd/sqlc-test-setup start
 ```
 
-Configure PostgreSQL for password authentication:
+This will:
+- Start PostgreSQL and configure password auth (`postgres`/`postgres`)
+- Start MySQL via `mysqld_safe` and set root password (`mysecretpassword`)
+- Verify both connections
+- Skip steps that are already done (running services, existing config)
+
+Connection URIs after start:
+- PostgreSQL: `postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable`
+- MySQL: `root:mysecretpassword@tcp(127.0.0.1:3306)/mysql`
+
+### Run tests
 
 ```bash
-# Set password for postgres user
-sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
-
-# Enable password authentication for localhost
-echo 'host    all             all             127.0.0.1/32            md5' | sudo tee -a /etc/postgresql/16/main/pg_hba.conf
-sudo service postgresql reload
-```
-
-Test the connection:
-
-```bash
-PGPASSWORD=postgres psql -h 127.0.0.1 -U postgres -c "SELECT 1;"
-```
-
-### Step 3: Install MySQL 9
-
-MySQL 9 is required for full test compatibility (includes VECTOR type support). Download and install from Oracle:
-
-```bash
-# Download MySQL 9 bundle
-curl -LO https://dev.mysql.com/get/Downloads/MySQL-9.1/mysql-server_9.1.0-1ubuntu24.04_amd64.deb-bundle.tar
-
-# Extract packages
-mkdir -p /tmp/mysql9
-tar -xf mysql-server_9.1.0-1ubuntu24.04_amd64.deb-bundle.tar -C /tmp/mysql9
-
-# Install packages (in order)
-cd /tmp/mysql9
-sudo dpkg -i mysql-common_*.deb \
-    mysql-community-client-plugins_*.deb \
-    mysql-community-client-core_*.deb \
-    mysql-community-client_*.deb \
-    mysql-client_*.deb \
-    mysql-community-server-core_*.deb \
-    mysql-community-server_*.deb \
-    mysql-server_*.deb
-
-# Make init script executable
-sudo chmod +x /etc/init.d/mysql
-
-# Initialize data directory and start MySQL
-sudo mysqld --initialize-insecure --user=mysql
-sudo /etc/init.d/mysql start
-
-# Set root password
-mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'mysecretpassword'; FLUSH PRIVILEGES;"
-```
-
-Test the connection:
-
-```bash
-mysql -h 127.0.0.1 -u root -pmysecretpassword -e "SELECT VERSION();"
-```
-
-### Step 4: Run End-to-End Tests
-
-With both databases running, the test framework automatically detects them:
-
-```bash
-# Run all end-to-end tests
-go test --tags=examples -timeout 20m ./internal/endtoend/...
-
-# Run example tests
-go test --tags=examples -timeout 20m ./examples/...
-
-# Run the full test suite
+# Full test suite (requires databases running)
 go test --tags=examples -timeout 20m ./...
 ```
 
-The native database support (in `internal/sqltest/native/`) automatically:
-- Detects running PostgreSQL and MySQL instances
-- Starts services if installed but not running
-- Uses standard connection URIs:
-  - PostgreSQL: `postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable`
-  - MySQL: `root:mysecretpassword@tcp(127.0.0.1:3306)/mysql`
+## Running Tests
 
-### Running Tests
-
-#### Basic Unit Tests (No Database Required)
+### Basic Unit Tests (No Database Required)
 
 ```bash
-# Simplest approach - runs all unit tests
 go test ./...
-
-# Using make
-make test
 ```
 
-#### Full Test Suite with Integration Tests
+### Full Test Suite with Docker (Local Development)
 
 ```bash
-# Step 1: Start database containers
 docker compose up -d
-
-# Step 2: Run all tests including examples
 go test --tags=examples -timeout 20m ./...
-
-# Or use make for the full CI suite
-make test-ci
 ```
 
-#### Running Specific Tests
+### Full Test Suite without Docker (Remote / CI)
+
+```bash
+go run ./cmd/sqlc-test-setup install
+go run ./cmd/sqlc-test-setup start
+go test --tags=examples -timeout 20m ./...
+```
+
+### Running Specific Tests
 
 ```bash
 # Test a specific package
 go test ./internal/config
-go test ./internal/compiler
 
 # Run with verbose output
 go test -v ./internal/config
@@ -193,21 +131,6 @@ The `docker-compose.yml` provides test databases:
   - Password: `mysecretpassword`
   - Database: `dinotest`
 
-### Managing Databases
-
-```bash
-# Start databases
-make start
-# or
-docker compose up -d
-
-# Stop databases
-docker compose down
-
-# View logs
-docker compose logs -f
-```
-
 ## Makefile Targets
 
 ```bash
@@ -228,19 +151,6 @@ make start             # Start database containers
 - **Test Command:** `gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m ./...`
 - **Additional Checks:** `govulncheck` for vulnerability scanning
 
-### Running Tests Like CI Locally
-
-```bash
-# Install CI tools (optional)
-go install gotest.tools/gotestsum@latest
-
-# Run tests with same timeout as CI
-go test --tags=examples -timeout 20m ./...
-
-# Or use the CI make target
-make test-ci
-```
-
 ## Development Workflow
 
 ### Building Development Versions
@@ -255,37 +165,18 @@ go build -o ~/go/bin/sqlc-gen-json ./cmd/sqlc-gen-json
 
 ### Environment Variables for Tests
 
-You can customize database connections:
+You can override database connections via environment variables:
 
-**PostgreSQL:**
 ```bash
-PG_HOST=127.0.0.1
-PG_PORT=5432
-PG_USER=postgres
-PG_PASSWORD=mysecretpassword
-PG_DATABASE=dinotest
-```
-
-**MySQL:**
-```bash
-MYSQL_HOST=127.0.0.1
-MYSQL_PORT=3306
-MYSQL_USER=root
-MYSQL_ROOT_PASSWORD=mysecretpassword
-MYSQL_DATABASE=dinotest
-```
-
-**Example:**
-```bash
-POSTGRESQL_SERVER_URI="postgres://postgres:mysecretpassword@localhost:5432/postgres" \
-  go test -v ./...
+POSTGRESQL_SERVER_URI="postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+MYSQL_SERVER_URI="root:mysecretpassword@tcp(127.0.0.1:3306)/mysql?multiStatements=true&parseTime=true"
 ```
 
 ## Code Structure
 
 ### Key Directories
 
-- `/cmd/` - Main binaries (sqlc, sqlc-gen-json)
+- `/cmd/` - Main binaries (sqlc, sqlc-gen-json, sqlc-test-setup)
 - `/internal/cmd/` - Command implementations (vet, generate, etc.)
 - `/internal/engine/` - Database engine implementations
   - `/postgresql/` - PostgreSQL parser and converter
@@ -295,6 +186,7 @@ POSTGRESQL_SERVER_URI="postgres://postgres:mysecretpassword@localhost:5432/postg
 - `/internal/codegen/` - Code generation for different languages
 - `/internal/config/` - Configuration file parsing
 - `/internal/endtoend/` - End-to-end tests
+- `/internal/sqltest/` - Test database setup (Docker, native, local detection)
 - `/examples/` - Example projects for testing
 
 ### Important Files
@@ -302,13 +194,12 @@ POSTGRESQL_SERVER_URI="postgres://postgres:mysecretpassword@localhost:5432/postg
 - `/Makefile` - Build and test targets
 - `/docker-compose.yml` - Database services for testing
 - `/.github/workflows/ci.yml` - CI configuration
-- `/docs/guides/development.md` - Developer documentation
 
 ## Common Issues & Solutions
 
 ### Network Connectivity Issues
 
-If you see errors about `storage.googleapis.com`, the Go proxy may be unreachable. Tests may still pass for packages that don't require network dependencies.
+If you see errors about `storage.googleapis.com`, the Go proxy may be unreachable. Use `GOPROXY=direct go mod download` to fetch modules directly from source.
 
 ### Test Timeouts
 
@@ -326,19 +217,23 @@ go test -race ./...
 
 ### Database Connection Failures
 
-Ensure Docker containers are running:
+If using Docker:
 ```bash
 docker compose ps
 docker compose up -d
 ```
 
+If using sqlc-test-setup:
+```bash
+go run ./cmd/sqlc-test-setup start
+```
+
 ## Tips for Contributors
 
-1. **Run tests before committing:** `make test-ci`
+1. **Run tests before committing:** `go test --tags=examples -timeout 20m ./...`
 2. **Check for race conditions:** Use `-race` flag when testing concurrent code
 3. **Use specific package tests:** Faster iteration during development
-4. **Start databases early:** `docker compose up -d` before running integration tests
-5. **Read existing tests:** Good examples in `/internal/engine/postgresql/*_test.go`
+4. **Read existing tests:** Good examples in `/internal/engine/postgresql/*_test.go`
 
 ## Git Workflow
 
@@ -350,34 +245,18 @@ docker compose up -d
 ### Committing Changes
 
 ```bash
-# Stage changes
 git add <files>
-
-# Commit with descriptive message
-git commit -m "Brief description
-
-Detailed explanation of changes.
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>"
-
-# Push to remote
+git commit -m "Brief description of changes"
 git push -u origin <branch-name>
 ```
 
 ### Rebasing
 
 ```bash
-# Update main
 git checkout main
 git pull origin main
-
-# Rebase feature branch
 git checkout <feature-branch>
 git rebase main
-
-# Force push rebased branch
 git push --force-with-lease origin <feature-branch>
 ```
 
@@ -387,21 +266,3 @@ git push --force-with-lease origin <feature-branch>
 - **Development Guide:** `/docs/guides/development.md`
 - **CI Configuration:** `/.github/workflows/ci.yml`
 - **Docker Compose:** `/docker-compose.yml`
-
-## Recent Fixes & Improvements
-
-### Fixed Issues
-
-1. **Typo in create_function_stmt.go** - Fixed "Undertand" → "Understand"
-2. **Race condition in vet.go** - Fixed Client initialization using `sync.Once`
-3. **Nil pointer dereference in parse.go** - Fixed unsafe type assertion in primary key parsing
-
-These fixes demonstrate common patterns:
-- Using `sync.Once` for thread-safe lazy initialization
-- Using comma-ok idiom for safe type assertions: `if val, ok := x.(Type); ok { ... }`
-- Adding proper nil checks and defensive programming
-
----
-
-**Last Updated:** 2025-10-21
-**Maintainer:** Claude Code
