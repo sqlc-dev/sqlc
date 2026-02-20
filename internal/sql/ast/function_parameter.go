@@ -3,7 +3,6 @@ package ast
 type FunctionParameter struct {
 	Name    *string
 	ArgType *TypeName
-	Mode    FunctionParameterMode
 	Defexpr Node
 }
 
