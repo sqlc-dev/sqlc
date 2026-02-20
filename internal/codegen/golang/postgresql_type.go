@@ -42,11 +42,11 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 	switch columnType {
 	case "serial", "serial4", "pg_catalog.serial4":
-		if notNull {
-			return "int32"
-		}
 		if emitPointersForNull {
 			return "*int32"
+		}
+		if notNull {
+			return "int32"
 		}
 		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Int4"
@@ -54,11 +54,11 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "sql.NullInt32"
 
 	case "bigserial", "serial8", "pg_catalog.serial8":
-		if notNull {
-			return "int64"
-		}
 		if emitPointersForNull {
 			return "*int64"
+		}
+		if notNull {
+			return "int64"
 		}
 		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Int8"
@@ -66,11 +66,11 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "sql.NullInt64"
 
 	case "smallserial", "serial2", "pg_catalog.serial2":
-		if notNull {
-			return "int16"
-		}
 		if emitPointersForNull {
 			return "*int16"
+		}
+		if notNull {
+			return "int16"
 		}
 		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Int2"
@@ -78,11 +78,11 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "sql.NullInt16"
 
 	case "integer", "int", "int4", "pg_catalog.int4":
-		if notNull {
-			return "int32"
-		}
 		if emitPointersForNull {
 			return "*int32"
+		}
+		if notNull {
+			return "int32"
 		}
 		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Int4"
@@ -90,11 +90,11 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "sql.NullInt32"
 
 	case "bigint", "int8", "pg_catalog.int8":
-		if notNull {
-			return "int64"
-		}
 		if emitPointersForNull {
 			return "*int64"
+		}
+		if notNull {
+			return "int64"
 		}
 		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Int8"
@@ -102,11 +102,11 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "sql.NullInt64"
 
 	case "smallint", "int2", "pg_catalog.int2":
-		if notNull {
-			return "int16"
-		}
 		if emitPointersForNull {
 			return "*int16"
+		}
+		if notNull {
+			return "int16"
 		}
 		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Int2"
@@ -114,11 +114,11 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "sql.NullInt16"
 
 	case "float", "double precision", "float8", "pg_catalog.float8":
-		if notNull {
-			return "float64"
-		}
 		if emitPointersForNull {
 			return "*float64"
+		}
+		if notNull {
+			return "float64"
 		}
 		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Float8"
@@ -126,11 +126,11 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "sql.NullFloat64"
 
 	case "real", "float4", "pg_catalog.float4":
-		if notNull {
-			return "float32"
-		}
 		if emitPointersForNull {
 			return "*float32"
+		}
+		if notNull {
+			return "float32"
 		}
 		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Float4"
@@ -138,8 +138,8 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "sql.NullFloat64" // TODO: Change to sql.NullFloat32 after updating the go.mod file
 
 	case "numeric", "pg_catalog.numeric", "money":
-		if driver.IsPGX() {
-			return "pgtype.Numeric"
+		if emitPointersForNull {
+			return "*string"
 		}
 		// Since the Go standard library does not have a decimal type, lib/pq
 		// returns numerics as strings.
@@ -148,17 +148,17 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		if notNull {
 			return "string"
 		}
-		if emitPointersForNull {
-			return "*string"
+		if driver.IsPGX() {
+			return "pgtype.Numeric"
 		}
 		return "sql.NullString"
 
 	case "boolean", "bool", "pg_catalog.bool":
-		if notNull {
-			return "bool"
-		}
 		if emitPointersForNull {
 			return "*bool"
+		}
+		if notNull {
+			return "bool"
 		}
 		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Bool"
@@ -200,69 +200,69 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 	case "bytea", "blob", "pg_catalog.bytea":
 		return "[]byte"
 
-	case "date":
-		if driver == opts.SQLDriverPGXV5 {
-			return "pgtype.Date"
+	case "date":		
+		if emitPointersForNull {
+			return "*time.Time"
 		}
 		if notNull {
 			return "time.Time"
 		}
-		if emitPointersForNull {
-			return "*time.Time"
+		if driver == opts.SQLDriverPGXV5 {
+			return "pgtype.Date"
 		}
 		return "sql.NullTime"
 
 	case "pg_catalog.time":
-		if driver == opts.SQLDriverPGXV5 {
-			return "pgtype.Time"
+		if emitPointersForNull {
+			return "*time.Time"
 		}
 		if notNull {
 			return "time.Time"
 		}
-		if emitPointersForNull {
-			return "*time.Time"
+		if driver == opts.SQLDriverPGXV5 {
+			return "pgtype.Time"
 		}
 		return "sql.NullTime"
 
 	case "pg_catalog.timetz":
-		if notNull {
-			return "time.Time"
-		}
 		if emitPointersForNull {
 			return "*time.Time"
+		}
+		if notNull {
+			return "time.Time"
 		}
 		return "sql.NullTime"
 
 	case "pg_catalog.timestamp", "timestamp":
-		if driver == opts.SQLDriverPGXV5 {
-			return "pgtype.Timestamp"
+		if emitPointersForNull {
+			return "*time.Time"
 		}
 		if notNull {
 			return "time.Time"
 		}
-		if emitPointersForNull {
-			return "*time.Time"
+		if driver == opts.SQLDriverPGXV5 {
+			return "pgtype.Timestamp"
 		}
 		return "sql.NullTime"
 
 	case "pg_catalog.timestamptz", "timestamptz":
-		if driver == opts.SQLDriverPGXV5 {
-			return "pgtype.Timestamptz"
+		if emitPointersForNull {
+			return "*time.Time"
 		}
 		if notNull {
 			return "time.Time"
 		}
-		if emitPointersForNull {
-			return "*time.Time"
+		if driver == opts.SQLDriverPGXV5 {
+			return "pgtype.Timestamptz"
 		}
 		return "sql.NullTime"
 
 	case "text", "pg_catalog.varchar", "pg_catalog.bpchar", "string", "citext", "name":
-		if notNull {
-			return "string"
-		}
 		if emitPointersForNull {
 			return "*string"
+		}
+		if notNull {
+			return "string"
 		}
 		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Text"
@@ -270,14 +270,14 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		return "sql.NullString"
 
 	case "uuid":
-		if driver == opts.SQLDriverPGXV5 {
-			return "pgtype.UUID"
+		if emitPointersForNull {
+			return "*uuid.UUID"
 		}
 		if notNull {
 			return "uuid.UUID"
 		}
-		if emitPointersForNull {
-			return "*uuid.UUID"
+		if driver == opts.SQLDriverPGXV5 {
+			return "pgtype.UUID"
 		}
 		return "uuid.NullUUID"
 
@@ -324,6 +324,9 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		}
 
 	case "ltree", "lquery", "ltxtquery":
+		if emitPointersForNull {
+			return "*string"
+		}
 		// This module implements a data type ltree for representing labels
 		// of data stored in a hierarchical tree-like structure. Extensive
 		// facilities for searching through label trees are provided.
@@ -332,23 +335,20 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		if notNull {
 			return "string"
 		}
-		if emitPointersForNull {
-			return "*string"
-		}
 		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Text"
 		}
 		return "sql.NullString"
 
 	case "interval", "pg_catalog.interval":
-		if driver == opts.SQLDriverPGXV5 {
-			return "pgtype.Interval"
+		if emitPointersForNull {
+			return "*int64"
 		}
 		if notNull {
 			return "int64"
 		}
-		if emitPointersForNull {
-			return "*int64"
+		if driver == opts.SQLDriverPGXV5 {
+			return "pgtype.Interval"
 		}
 		return "sql.NullInt64"
 
