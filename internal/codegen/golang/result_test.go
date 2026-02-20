@@ -37,6 +37,10 @@ func TestPutOutColumns_ForZeroColumns(t *testing.T) {
 			want: true,
 		},
 		{
+			cmd:  metadata.CmdFirst,
+			want: true,
+		},
+		{
 			cmd:  metadata.CmdCopyFrom,
 			want: false,
 		},
