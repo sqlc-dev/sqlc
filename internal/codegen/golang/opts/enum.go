@@ -48,6 +48,10 @@ func (d SQLDriver) IsPGX() bool {
 	return d == SQLDriverPGXV4 || d == SQLDriverPGXV5
 }
 
+func (d SQLDriver) IsPGXV5() bool {
+	return d == SQLDriverPGXV5
+}
+
 func (d SQLDriver) IsGoSQLDriverMySQL() bool {
 	return d == SQLDriverGoSQLDriverMySQL
 }

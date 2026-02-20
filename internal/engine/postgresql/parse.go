@@ -392,9 +392,26 @@ func translate(node *nodes.Node) (ast.Node, error) {
 	case *nodes.Node_CompositeTypeStmt:
 		n := inner.CompositeTypeStmt
 		rel := parseRelationFromRangeVar(n.Typevar)
-		return &ast.CompositeTypeStmt{
-			TypeName: rel.TypeName(),
-		}, nil
+		stmt := &ast.CompositeTypeStmt{
+			TypeName:   rel.TypeName(),
+			ColDefList: &ast.List{},
+		}
+		for _, val := range n.GetColdeflist() {
+			switch item := val.Node.(type) {
+			case *nodes.Node_ColumnDef:
+				rel, err := parseRelationFromNodes(item.ColumnDef.TypeName.Names)
+				if err != nil {
+					return nil, err
+				}
+				stmt.ColDefList.Items = append(stmt.ColDefList.Items, &ast.ColumnDef{
+					Colname:    item.ColumnDef.GetColname(),
+					TypeName:   rel.TypeName(),
+					IsLocal:    true,
+					CollClause: convertCollateClause(item.ColumnDef.GetCollClause()),
+				})
+			}
+		}
+		return stmt, nil
 
 	case *nodes.Node_CreateStmt:
 		n := inner.CreateStmt

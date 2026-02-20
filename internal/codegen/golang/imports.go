@@ -58,15 +58,23 @@ func mergeImports(imps ...fileImports) [][]ImportSpec {
 }
 
 type importer struct {
-	Options *opts.Options
-	Queries []Query
-	Enums   []Enum
-	Structs []Struct
+	Options        *opts.Options
+	Queries        []Query
+	Enums          []Enum
+	CompositeTypes []CompositeType
+	Structs        []Struct
 }
 
 func (i *importer) usesType(typ string) bool {
 	for _, strct := range i.Structs {
 		for _, f := range strct.Fields {
+			if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, typ) {
+				return true
+			}
+		}
+	}
+	for _, ct := range i.CompositeTypes {
+		for _, f := range ct.Fields {
 			if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, typ) {
 				return true
 			}
@@ -132,6 +140,12 @@ func (i *importer) dbImports() fileImports {
 	case opts.SQLDriverPGXV5:
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v5/pgconn"})
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v5"})
+		if len(i.CompositeTypes) > 0 {
+			pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v5/pgtype"})
+			if !i.Options.EmitMethodsWithDbArgument {
+				pkg = append(pkg, ImportSpec{Path: "fmt"})
+			}
+		}
 	default:
 		std = append(std, ImportSpec{Path: "database/sql"})
 		if i.Options.EmitPreparedQueries {

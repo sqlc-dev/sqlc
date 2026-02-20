@@ -59,6 +59,40 @@ func pluginWASM(p config.Plugin) *plugin.Codegen_WASM {
 	return nil
 }
 
+func columnSlice(cols []*catalog.Column, table *catalog.Table) []*plugin.Column {
+	var columns []*plugin.Column
+	for _, c := range cols {
+		l := -1
+		if c.Length != nil {
+			l = *c.Length
+		}
+		var tableId *plugin.Identifier = nil
+		if table != nil {
+			tableId = &plugin.Identifier{
+				Catalog: table.Rel.Catalog,
+				Schema:  table.Rel.Schema,
+				Name:    table.Rel.Name,
+			}
+		}
+		columns = append(columns, &plugin.Column{
+			Name: c.Name,
+			Type: &plugin.Identifier{
+				Catalog: c.Type.Catalog,
+				Schema:  c.Type.Schema,
+				Name:    c.Type.Name,
+			},
+			Comment:   c.Comment,
+			NotNull:   c.IsNotNull,
+			Unsigned:  c.IsUnsigned,
+			IsArray:   c.IsArray,
+			ArrayDims: int32(c.ArrayDims),
+			Length:    int32(l),
+			Table:     tableId,
+		})
+	}
+	return columns
+}
+
 func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 	var schemas []*plugin.Schema
 	for _, s := range c.Schemas {
@@ -76,44 +110,19 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 				cts = append(cts, &plugin.CompositeType{
 					Name:    typ.Name,
 					Comment: typ.Comment,
+					Columns: columnSlice(typ.Columns, nil),
 				})
 			}
 		}
 		var tables []*plugin.Table
 		for _, t := range s.Tables {
-			var columns []*plugin.Column
-			for _, c := range t.Columns {
-				l := -1
-				if c.Length != nil {
-					l = *c.Length
-				}
-				columns = append(columns, &plugin.Column{
-					Name: c.Name,
-					Type: &plugin.Identifier{
-						Catalog: c.Type.Catalog,
-						Schema:  c.Type.Schema,
-						Name:    c.Type.Name,
-					},
-					Comment:   c.Comment,
-					NotNull:   c.IsNotNull,
-					Unsigned:  c.IsUnsigned,
-					IsArray:   c.IsArray,
-					ArrayDims: int32(c.ArrayDims),
-					Length:    int32(l),
-					Table: &plugin.Identifier{
-						Catalog: t.Rel.Catalog,
-						Schema:  t.Rel.Schema,
-						Name:    t.Rel.Name,
-					},
-				})
-			}
 			tables = append(tables, &plugin.Table{
 				Rel: &plugin.Identifier{
 					Catalog: t.Rel.Catalog,
 					Schema:  t.Rel.Schema,
 					Name:    t.Rel.Name,
 				},
-				Columns: columns,
+				Columns: columnSlice(t.Columns, t),
 				Comment: t.Comment,
 			})
 		}

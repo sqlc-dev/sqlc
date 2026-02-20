@@ -12,11 +12,19 @@ type DBTX interface {
 {{- end }}
 }
 
+type DB interface {
+	DBTX
+{{- if gt (len .CompositeTypes) 0 }}
+	LoadTypes(ctx context.Context, typeNames []string) ([]*pgtype.Type, error)
+	TypeMap() *pgtype.Map
+{{- end }}
+}
+
 {{ if .EmitMethodsWithDBArgument}}
 func New() *Queries {
 	return &Queries{}
 {{- else -}}
-func New(db DBTX) *Queries {
+func New(db DB) *Queries {
 	return &Queries{db: db}
 {{- end}}
 }
@@ -27,6 +35,30 @@ type Queries struct {
     {{end}}
 }
 
+{{if gt (len .CompositeTypes) 0}}
+{{if not .EmitMethodsWithDBArgument}}
+func (q *Queries) RegisterTypes(ctx context.Context) error {
+	db, ok := q.db.(DB)
+	if !ok {
+		return fmt.Errorf("cannot register types with a transaction object")
+	}
+{{else}}
+func (q *Queries) RegisterTypes(ctx context.Context, db DB) error {
+{{end}}
+	typeNames := []string{ 
+	{{- range .CompositeTypes}}
+		"{{.SQLName}}",
+		"_{{.SQLName}}",
+	{{- end}}
+	}
+	dataTypes, err := db.LoadTypes(ctx, typeNames)
+	if err != nil {
+		return err
+	}
+	db.TypeMap().RegisterTypes(dataTypes)
+	return nil
+}
+{{end}}
 {{if not .EmitMethodsWithDBArgument}}
 func (q *Queries) WithTx(tx pgx.Tx) *Queries {
 	return &Queries{
