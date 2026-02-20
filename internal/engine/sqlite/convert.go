@@ -752,13 +752,8 @@ func (c *cc) convertLiteral(n *parser.Expr_literalContext) ast.Node {
 		}
 
 		if literal.TRUE_() != nil || literal.FALSE_() != nil {
-			var i int64
-			if literal.TRUE_() != nil {
-				i = 1
-			}
-
 			return &ast.A_Const{
-				Val:      &ast.Integer{Ival: i},
+				Val:      &ast.Boolean{Boolval: literal.TRUE_() != nil},
 				Location: n.GetStart().GetStart(),
 			}
 		}
