@@ -21,6 +21,12 @@ func New(db DBTX) *Queries {
 	return &Queries{db: db}
 }
 
+type PreparedStmtInterceptor interface {
+	ExecContext(context.Context, *sql.Stmt, *sql.Tx, ...interface{}) (sql.Result, error)
+	QueryContext(context.Context, *sql.Stmt, *sql.Tx, ...interface{}) (*sql.Rows, error)
+	QueryRowContext(context.Context, *sql.Stmt, *sql.Tx, ...interface{}) *sql.Row
+}
+
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
@@ -114,6 +120,8 @@ func (q *Queries) Close() error {
 
 func (q *Queries) exec(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (sql.Result, error) {
 	switch {
+	case q.interceptor != nil:
+		return q.interceptor.ExecContext(ctx, stmt, q.tx, args...)
 	case stmt != nil && q.tx != nil:
 		return q.tx.StmtContext(ctx, stmt).ExecContext(ctx, args...)
 	case stmt != nil:
@@ -125,6 +133,8 @@ func (q *Queries) exec(ctx context.Context, stmt *sql.Stmt, query string, args .
 
 func (q *Queries) query(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (*sql.Rows, error) {
 	switch {
+	case q.interceptor != nil:
+		return q.interceptor.QueryContext(ctx, stmt, q.tx, args...)
 	case stmt != nil && q.tx != nil:
 		return q.tx.StmtContext(ctx, stmt).QueryContext(ctx, args...)
 	case stmt != nil:
@@ -136,6 +146,8 @@ func (q *Queries) query(ctx context.Context, stmt *sql.Stmt, query string, args 
 
 func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) *sql.Row {
 	switch {
+	case q.interceptor != nil:
+		return q.interceptor.QueryRowContext(ctx, stmt, q.tx, args...)
 	case stmt != nil && q.tx != nil:
 		return q.tx.StmtContext(ctx, stmt).QueryRowContext(ctx, args...)
 	case stmt != nil:
@@ -148,6 +160,7 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 type Queries struct {
 	db                   DBTX
 	tx                   *sql.Tx
+	interceptor          PreparedStmtInterceptor
 	createCityStmt       *sql.Stmt
 	createVenueStmt      *sql.Stmt
 	deleteVenueStmt      *sql.Stmt
@@ -164,6 +177,24 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
 		db:                   tx,
 		tx:                   tx,
+		createCityStmt:       q.createCityStmt,
+		createVenueStmt:      q.createVenueStmt,
+		deleteVenueStmt:      q.deleteVenueStmt,
+		getCityStmt:          q.getCityStmt,
+		getVenueStmt:         q.getVenueStmt,
+		listCitiesStmt:       q.listCitiesStmt,
+		listVenuesStmt:       q.listVenuesStmt,
+		updateCityNameStmt:   q.updateCityNameStmt,
+		updateVenueNameStmt:  q.updateVenueNameStmt,
+		venueCountByCityStmt: q.venueCountByCityStmt,
+	}
+}
+
+func (q *Queries) WithInterceptor(interceptor PreparedStmtInterceptor, tx *sql.Tx) *Queries {
+	return &Queries{
+		db:                   tx,
+		tx:                   tx,
+		interceptor:          interceptor,
 		createCityStmt:       q.createCityStmt,
 		createVenueStmt:      q.createVenueStmt,
 		deleteVenueStmt:      q.deleteVenueStmt,
