@@ -42,6 +42,7 @@ type v1PackageSettings struct {
 	EmitEnumValidMethod       bool              `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
 	EmitAllEnumValues         bool              `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
 	EmitSqlAsComment          bool              `json:"emit_sql_as_comment,omitempty" yaml:"emit_sql_as_comment"`
+	EmitQueryComments         bool              `json:"emit_query_comments,omitempty" yaml:"emit_query_comments"`
 	JSONTagsCaseStyle         string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
 	SQLPackage                string            `json:"sql_package" yaml:"sql_package"`
 	SQLDriver                 string            `json:"sql_driver" yaml:"sql_driver"`
@@ -152,6 +153,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					EmitEnumValidMethod:       pkg.EmitEnumValidMethod,
 					EmitAllEnumValues:         pkg.EmitAllEnumValues,
 					EmitSqlAsComment:          pkg.EmitSqlAsComment,
+					EmitQueryComments:         pkg.EmitQueryComments,
 					Package:                   pkg.Name,
 					Out:                       pkg.Path,
 					SqlPackage:                pkg.SQLPackage,
