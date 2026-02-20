@@ -69,7 +69,7 @@ func SetJSONCaseStyle(name string, style string, idUppercase bool) string {
 	case "camel":
 		return toJsonCamelCase(name, idUppercase)
 	case "pascal":
-		return toPascalCase(name)
+		return toJsonPascalCase(name, idUppercase)
 	case "snake":
 		return toSnakeCase(name)
 	default:
@@ -95,6 +95,9 @@ func toCamelCase(s string) string {
 func toPascalCase(s string) string {
 	return toCamelInitCase(s, true)
 }
+func toJsonPascalCase(s string, idUppercase bool) string {
+	return toJsonCamelInitCase(s, true, idUppercase)
+}
 
 func toCamelInitCase(name string, initUpper bool) string {
 	out := ""
@@ -113,6 +116,10 @@ func toCamelInitCase(name string, initUpper bool) string {
 }
 
 func toJsonCamelCase(name string, idUppercase bool) string {
+	return toJsonCamelInitCase(name, false, idUppercase)
+}
+
+func toJsonCamelInitCase(name string, initUpper bool, idUppercase bool) string {
 	out := ""
 	idStr := "Id"
 
@@ -121,7 +128,7 @@ func toJsonCamelCase(name string, idUppercase bool) string {
 	}
 
 	for i, p := range strings.Split(name, "_") {
-		if i == 0 {
+		if !initUpper && i == 0 {
 			out += p
 			continue
 		}
