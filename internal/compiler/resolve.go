@@ -21,7 +21,13 @@ func dataType(n *ast.TypeName) string {
 	}
 }
 
-func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, params *named.ParamSet, embeds rewrite.EmbedSet) ([]Parameter, error) {
+func (comp *Compiler) resolveCatalogRefs(
+	qc *QueryCatalog,
+	rvs []*ast.RangeVar,
+	args []paramRef,
+	params *named.ParamSet,
+	embeds rewrite.EmbedSet,
+) ([]Parameter, error) {
 	c := comp.catalog
 
 	aliasMap := map[string]*ast.TableName{}
@@ -102,14 +108,33 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 	addUnknownParam := func(ref paramRef) {
 		defaultP := named.NewInferredParam(ref.name, false)
 		p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
-		a = append(a, Parameter{
-			Number: ref.ref.Number,
-			Column: &Column{
-				Name:         p.Name(),
-				DataType:     "any",
-				IsNamedParam: isNamed,
+		column := &Column{
+			Name:         p.Name(),
+			DataType:     "any",
+			IsNamedParam: isNamed,
+		}
+		if p.IsSqlcSort() {
+			column.SqlcSortOpts = &SqlcSortOpts{}
+			column.DataType = "text"
+			column.NotNull = false
+			if _, ok := p.GetOpt(named.OptOrderDirParam); ok {
+				column.SqlcSortOpts.IsOrder = false
+				if d, ok := p.GetOpt(named.OptDefaultOrderFieldParam); ok {
+					column.SqlcSortOpts.DefaultField = d.(string)
+				}
+			} else {
+				column.SqlcSortOpts.IsOrder = true
+				if d, ok := p.GetOpt(named.OptDefaultOrderDirParam); ok {
+					column.SqlcSortOpts.DefaultOrder = d.(string)
+				}
+			}
+		}
+		a = append(
+			a, Parameter{
+				Number: ref.ref.Number,
+				Column: column,
 			},
-		})
+		)
 	}
 
 	for _, ref := range args {
@@ -118,41 +143,49 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		case *limitOffset:
 			defaultP := named.NewInferredParam("offset", true)
 			p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
-			a = append(a, Parameter{
-				Number: ref.ref.Number,
-				Column: &Column{
-					Name:         p.Name(),
-					DataType:     "integer",
-					NotNull:      p.NotNull(),
-					IsNamedParam: isNamed,
+			a = append(
+				a, Parameter{
+					Number: ref.ref.Number,
+					Column: &Column{
+						Name:         p.Name(),
+						DataType:     "integer",
+						NotNull:      p.NotNull(),
+						IsNamedParam: isNamed,
+					},
 				},
-			})
+			)
 
 		case *limitCount:
 			defaultP := named.NewInferredParam("limit", true)
 			p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
-			a = append(a, Parameter{
-				Number: ref.ref.Number,
-				Column: &Column{
-					Name:         p.Name(),
-					DataType:     "integer",
-					NotNull:      p.NotNull(),
-					IsNamedParam: isNamed,
+			a = append(
+				a, Parameter{
+					Number: ref.ref.Number,
+					Column: &Column{
+						Name:         p.Name(),
+						DataType:     "integer",
+						NotNull:      p.NotNull(),
+						IsNamedParam: isNamed,
+					},
 				},
-			})
+			)
 
 		case *ast.A_Expr:
 			// TODO: While this works for a wide range of simple expressions,
 			// more complicated expressions will cause this logic to fail.
-			list := astutils.Search(n.Lexpr, func(node ast.Node) bool {
-				_, ok := node.(*ast.ColumnRef)
-				return ok
-			})
-			if len(list.Items) == 0 {
-				list = astutils.Search(n.Rexpr, func(node ast.Node) bool {
+			list := astutils.Search(
+				n.Lexpr, func(node ast.Node) bool {
 					_, ok := node.(*ast.ColumnRef)
 					return ok
-				})
+				},
+			)
+			if len(list.Items) == 0 {
+				list = astutils.Search(
+					n.Rexpr, func(node ast.Node) bool {
+						_, ok := node.(*ast.ColumnRef)
+						return ok
+					},
+				)
 			}
 
 			if len(list.Items) == 0 {
@@ -164,16 +197,18 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 
 				defaultP := named.NewParam("")
 				p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
-				a = append(a, Parameter{
-					Number: ref.ref.Number,
-					Column: &Column{
-						Name:         p.Name(),
-						DataType:     dataType,
-						IsNamedParam: isNamed,
-						NotNull:      p.NotNull(),
-						IsSqlcSlice:  p.IsSqlcSlice(),
+				a = append(
+					a, Parameter{
+						Number: ref.ref.Number,
+						Column: &Column{
+							Name:         p.Name(),
+							DataType:     dataType,
+							IsNamedParam: isNamed,
+							NotNull:      p.NotNull(),
+							IsSqlcSlice:  p.IsSqlcSlice(),
+						},
 					},
-				})
+				)
 				continue
 			}
 
@@ -231,22 +266,24 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 
 						defaultP := named.NewInferredParam(key, c.IsNotNull)
 						p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
-						a = append(a, Parameter{
-							Number: ref.ref.Number,
-							Column: &Column{
-								Name:         p.Name(),
-								OriginalName: c.Name,
-								DataType:     dataType(&c.Type),
-								NotNull:      p.NotNull(),
-								Unsigned:     c.IsUnsigned,
-								IsArray:      c.IsArray,
-								ArrayDims:    c.ArrayDims,
-								Length:       c.Length,
-								Table:        table,
-								IsNamedParam: isNamed,
-								IsSqlcSlice:  p.IsSqlcSlice(),
+						a = append(
+							a, Parameter{
+								Number: ref.ref.Number,
+								Column: &Column{
+									Name:         p.Name(),
+									OriginalName: c.Name,
+									DataType:     dataType(&c.Type),
+									NotNull:      p.NotNull(),
+									Unsigned:     c.IsUnsigned,
+									IsArray:      c.IsArray,
+									ArrayDims:    c.ArrayDims,
+									Length:       c.Length,
+									Table:        table,
+									IsNamedParam: isNamed,
+									IsSqlcSlice:  p.IsSqlcSlice(),
+								},
 							},
-						})
+						)
 					}
 				}
 
@@ -298,20 +335,22 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 						}
 					}
 
-					a = append(a, Parameter{
-						Number: ref.ref.Number,
-						Column: &Column{
-							Name:         namePrefix + p.Name(),
-							DataType:     dataType(&c.Type),
-							NotNull:      p.NotNull(),
-							Unsigned:     c.IsUnsigned,
-							IsArray:      c.IsArray,
-							ArrayDims:    c.ArrayDims,
-							Table:        table,
-							IsNamedParam: isNamed,
-							IsSqlcSlice:  p.IsSqlcSlice(),
+					a = append(
+						a, Parameter{
+							Number: ref.ref.Number,
+							Column: &Column{
+								Name:         namePrefix + p.Name(),
+								DataType:     dataType(&c.Type),
+								NotNull:      p.NotNull(),
+								Unsigned:     c.IsUnsigned,
+								IsArray:      c.IsArray,
+								ArrayDims:    c.ArrayDims,
+								Table:        table,
+								IsNamedParam: isNamed,
+								IsSqlcSlice:  p.IsSqlcSlice(),
+							},
 						},
-					})
+					)
 				}
 			}
 
@@ -322,9 +361,11 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				// for an unknown Postgres function (e.g. defined in an extension)
 				var args []*catalog.Argument
 				for range n.Args.Items {
-					args = append(args, &catalog.Argument{
-						Type: &ast.TypeName{Name: "any"},
-					})
+					args = append(
+						args, &catalog.Argument{
+							Type: &ast.TypeName{Name: "any"},
+						},
+					)
 				}
 				fun = &catalog.Function{
 					Name:       n.Func.Name,
@@ -374,16 +415,18 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					defaultP := named.NewInferredParam(defaultName, false)
 					p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
 					added = true
-					a = append(a, Parameter{
-						Number: ref.ref.Number,
-						Column: &Column{
-							Name:         p.Name(),
-							DataType:     "any",
-							IsNamedParam: isNamed,
-							NotNull:      p.NotNull(),
-							IsSqlcSlice:  p.IsSqlcSlice(),
+					a = append(
+						a, Parameter{
+							Number: ref.ref.Number,
+							Column: &Column{
+								Name:         p.Name(),
+								DataType:     "any",
+								IsNamedParam: isNamed,
+								NotNull:      p.NotNull(),
+								IsSqlcSlice:  p.IsSqlcSlice(),
+							},
 						},
-					})
+					)
 					continue
 				}
 
@@ -416,16 +459,18 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				defaultP := named.NewInferredParam(paramName, true)
 				p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
 				added = true
-				a = append(a, Parameter{
-					Number: ref.ref.Number,
-					Column: &Column{
-						Name:         p.Name(),
-						DataType:     dataType(paramType),
-						NotNull:      p.NotNull(),
-						IsNamedParam: isNamed,
-						IsSqlcSlice:  p.IsSqlcSlice(),
+				a = append(
+					a, Parameter{
+						Number: ref.ref.Number,
+						Column: &Column{
+							Name:         p.Name(),
+							DataType:     dataType(paramType),
+							NotNull:      p.NotNull(),
+							IsNamedParam: isNamed,
+							IsSqlcSlice:  p.IsSqlcSlice(),
+						},
 					},
-				})
+				)
 			}
 
 			if fun.ReturnType == nil {
@@ -435,11 +480,13 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				continue
 			}
 
-			table, err := c.GetTable(&ast.TableName{
-				Catalog: fun.ReturnType.Catalog,
-				Schema:  fun.ReturnType.Schema,
-				Name:    fun.ReturnType.Name,
-			})
+			table, err := c.GetTable(
+				&ast.TableName{
+					Catalog: fun.ReturnType.Catalog,
+					Schema:  fun.ReturnType.Schema,
+					Name:    fun.ReturnType.Name,
+				},
+			)
 			if err != nil {
 				if !added {
 					addUnknownParam(ref)
@@ -483,22 +530,24 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			if c, ok := tableMap[key]; ok {
 				defaultP := named.NewInferredParam(key, c.IsNotNull)
 				p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
-				a = append(a, Parameter{
-					Number: ref.ref.Number,
-					Column: &Column{
-						Name:         p.Name(),
-						OriginalName: c.Name,
-						DataType:     dataType(&c.Type),
-						NotNull:      p.NotNull(),
-						Unsigned:     c.IsUnsigned,
-						IsArray:      c.IsArray,
-						ArrayDims:    c.ArrayDims,
-						Table:        &ast.TableName{Schema: schema, Name: rel},
-						Length:       c.Length,
-						IsNamedParam: isNamed,
-						IsSqlcSlice:  p.IsSqlcSlice(),
+				a = append(
+					a, Parameter{
+						Number: ref.ref.Number,
+						Column: &Column{
+							Name:         p.Name(),
+							OriginalName: c.Name,
+							DataType:     dataType(&c.Type),
+							NotNull:      p.NotNull(),
+							Unsigned:     c.IsUnsigned,
+							IsArray:      c.IsArray,
+							ArrayDims:    c.ArrayDims,
+							Table:        &ast.TableName{Schema: schema, Name: rel},
+							Length:       c.Length,
+							IsNamedParam: isNamed,
+							IsSqlcSlice:  p.IsSqlcSlice(),
+						},
 					},
-				})
+				)
 			} else {
 				return nil, &sqlerr.Error{
 					Code:     "42703",
@@ -517,10 +566,12 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 
 			col.Name = p.Name()
 			col.NotNull = p.NotNull()
-			a = append(a, Parameter{
-				Number: ref.ref.Number,
-				Column: col,
-			})
+			a = append(
+				a, Parameter{
+					Number: ref.ref.Number,
+					Column: col,
+				},
+			)
 
 		case *ast.ParamRef:
 			a = append(a, Parameter{Number: ref.ref.Number})
@@ -594,21 +645,23 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 						}
 						defaultP := named.NewInferredParam(key, c.IsNotNull)
 						p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
-						a = append(a, Parameter{
-							Number: number,
-							Column: &Column{
-								Name:         p.Name(),
-								OriginalName: c.Name,
-								DataType:     dataType(&c.Type),
-								NotNull:      c.IsNotNull,
-								Unsigned:     c.IsUnsigned,
-								IsArray:      c.IsArray,
-								ArrayDims:    c.ArrayDims,
-								Table:        table,
-								IsNamedParam: isNamed,
-								IsSqlcSlice:  p.IsSqlcSlice(),
+						a = append(
+							a, Parameter{
+								Number: number,
+								Column: &Column{
+									Name:         p.Name(),
+									OriginalName: c.Name,
+									DataType:     dataType(&c.Type),
+									NotNull:      c.IsNotNull,
+									Unsigned:     c.IsUnsigned,
+									IsArray:      c.IsArray,
+									ArrayDims:    c.ArrayDims,
+									Table:        table,
+									IsNamedParam: isNamed,
+									IsSqlcSlice:  p.IsSqlcSlice(),
+								},
 							},
-						})
+						)
 					}
 				}
 			}
