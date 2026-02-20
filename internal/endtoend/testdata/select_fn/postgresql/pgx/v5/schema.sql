@@ -1,0 +1,8 @@
+CREATE TYPE foo AS (foo TEXT, baz INTEGER);
+
+CREATE TABLE bar (foo TEXT, baz INTEGER);
+
+CREATE FUNCTION foo_fn()
+RETURNS SETOF foo LANGUAGE SQL STABLE AS $$
+SELECT foo, baz FROM bar;
+$$;

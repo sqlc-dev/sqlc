@@ -6,9 +6,21 @@ package querytest
 
 import (
 	"database/sql"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type FooPath struct {
 	PointOne sql.NullString
 	PointTwo sql.NullString
+}
+
+type FooPointType struct {
+	X pgtype.Int4
+	Y pgtype.Int4
+}
+
+type PointType struct {
+	X pgtype.Int4
+	Y pgtype.Int4
 }

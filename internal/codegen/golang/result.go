@@ -67,40 +67,11 @@ func buildStructs(req *plugin.GenerateRequest, options *opts.Options) []Struct {
 			continue
 		}
 		for _, table := range schema.Tables {
-			var tableName string
-			if schema.Name == req.Catalog.DefaultSchema {
-				tableName = table.Rel.Name
-			} else {
-				tableName = schema.Name + "_" + table.Rel.Name
-			}
-			structName := tableName
-			if !options.EmitExactTableNames {
-				structName = inflection.Singular(inflection.SingularParams{
-					Name:       structName,
-					Exclusions: options.InflectionExcludeTableNames,
-				})
-			}
-			s := Struct{
-				Table:   &plugin.Identifier{Schema: schema.Name, Name: table.Rel.Name},
-				Name:    StructName(structName, options),
-				Comment: table.Comment,
-			}
-			for _, column := range table.Columns {
-				tags := map[string]string{}
-				if options.EmitDbTags {
-					tags["db"] = column.Name
-				}
-				if options.EmitJsonTags {
-					tags["json"] = JSONTagName(column.Name, options)
-				}
-				addExtraGoStructTags(tags, req, options, column)
-				s.Fields = append(s.Fields, Field{
-					Name:    StructName(column.Name, options),
-					Type:    goType(req, options, column),
-					Tags:    tags,
-					Comment: column.Comment,
-				})
-			}
+			s := buildStruct(req, options, schema, table.Rel.Name, table.Comment, table.Columns)
+			structs = append(structs, s)
+		}
+		for _, ty := range schema.CompositeTypes {
+			s := buildStruct(req, options, schema, ty.Name, ty.Comment, ty.Columns)
 			structs = append(structs, s)
 		}
 	}
@@ -108,6 +79,51 @@ func buildStructs(req *plugin.GenerateRequest, options *opts.Options) []Struct {
 		sort.Slice(structs, func(i, j int) bool { return structs[i].Name < structs[j].Name })
 	}
 	return structs
+}
+
+func buildStruct(
+	req *plugin.GenerateRequest,
+	options *opts.Options,
+	schema *plugin.Schema,
+	rawName string,
+	comment string,
+	columns []*plugin.Column,
+) Struct {
+	var tableName string
+	if schema.Name == req.Catalog.DefaultSchema {
+		tableName = rawName
+	} else {
+		tableName = schema.Name + "_" + rawName
+	}
+	structName := tableName
+	if !options.EmitExactTableNames {
+		structName = inflection.Singular(inflection.SingularParams{
+			Name:       structName,
+			Exclusions: options.InflectionExcludeTableNames,
+		})
+	}
+	s := Struct{
+		Table:   &plugin.Identifier{Schema: schema.Name, Name: rawName},
+		Name:    StructName(structName, options),
+		Comment: comment,
+	}
+	for _, column := range columns {
+		tags := map[string]string{}
+		if options.EmitDbTags {
+			tags["db"] = column.Name
+		}
+		if options.EmitJsonTags {
+			tags["json"] = JSONTagName(column.Name, options)
+		}
+		addExtraGoStructTags(tags, req, options, column)
+		s.Fields = append(s.Fields, Field{
+			Name:    StructName(column.Name, options),
+			Type:    goType(req, options, column),
+			Tags:    tags,
+			Comment: column.Comment,
+		})
+	}
+	return s
 }
 
 type goColumn struct {
