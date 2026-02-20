@@ -19,6 +19,7 @@ type Querier interface {
 	DeleteBookNamedFunc(ctx context.Context, bookID []int32) *DeleteBookNamedFuncBatchResults
 	DeleteBookNamedSign(ctx context.Context, bookID []int32) *DeleteBookNamedSignBatchResults
 	GetAuthor(ctx context.Context, authorID int32) (Author, error)
+	GetAuthorWithFirstBook(ctx context.Context, authorID []int32) *GetAuthorWithFirstBookBatchResults
 	GetBiography(ctx context.Context, authorID []int32) *GetBiographyBatchResults
 	UpdateBook(ctx context.Context, arg []UpdateBookParams) *UpdateBookBatchResults
 }

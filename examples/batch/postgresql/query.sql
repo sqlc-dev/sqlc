@@ -54,3 +54,9 @@ WHERE book_id = $3;
 -- name: GetBiography :batchone
 SELECT biography FROM authors
 WHERE author_id = $1;
+
+-- name: GetAuthorWithFirstBook :batchone
+SELECT sqlc.embed (books), sqlc.embed (authors)
+FROM authors
+INNER JOIN books ON authors.author_id = books.author_id
+WHERE authors.author_id = $1;
