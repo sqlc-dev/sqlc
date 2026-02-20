@@ -67,7 +67,38 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				continue
 			}
 			// If the table name doesn't exist, first check if it's a CTE
-			if _, qcerr := qc.GetTable(fqn); qcerr != nil {
+			catTable, qcerr := qc.GetTable(fqn)
+			if qcerr != nil {
+				return nil, err
+			}
+
+			// If it's a CTE, add it to the alias map and add its columns to
+			// the type map. This is to allow us to resolve references to the
+			// CTE's columns in a query.
+			aliasMap[fqn.Name] = fqn
+			if rv.Alias != nil {
+				aliasMap[*rv.Alias.Aliasname] = fqn
+			}
+
+			catCols := make([]*catalog.Column, 0, len(catTable.Columns))
+			for _, col := range catTable.Columns {
+				catCols = append(catCols, &catalog.Column{
+					Name:       col.Name,
+					Type:       ast.TypeName{Name: col.DataType},
+					IsNotNull:  col.NotNull,
+					IsUnsigned: col.Unsigned,
+					IsArray:    col.IsArray,
+					ArrayDims:  col.ArrayDims,
+					Comment:    col.Comment,
+					Length:     col.Length,
+				})
+			}
+
+			err = indexTable(catalog.Table{
+				Rel:     catTable.Rel,
+				Columns: catCols,
+			})
+			if err != nil {
 				return nil, err
 			}
 			continue
