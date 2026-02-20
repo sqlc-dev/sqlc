@@ -28,7 +28,11 @@ type Queries struct {
 }
 
 {{if not .EmitMethodsWithDBArgument}}
+{{- if and .EmitInterface .UseInterfaceReturnTypes}}
+func (q *Queries) WithTx(tx pgx.Tx) Querier {
+{{- else -}}
 func (q *Queries) WithTx(tx pgx.Tx) *Queries {
+{{- end}}
 	return &Queries{
 		db: tx,
 	}

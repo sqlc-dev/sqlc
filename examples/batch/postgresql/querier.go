@@ -7,10 +7,12 @@ package batch
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type Querier interface {
+	WithTx(tx pgx.Tx) *Queries
 	BooksByYear(ctx context.Context, year []int32) *BooksByYearBatchResults
 	CreateAuthor(ctx context.Context, name string) (Author, error)
 	CreateBook(ctx context.Context, arg []CreateBookParams) *CreateBookBatchResults

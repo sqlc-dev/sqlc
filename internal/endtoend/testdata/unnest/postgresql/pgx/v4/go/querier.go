@@ -8,9 +8,11 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v4"
 )
 
 type Querier interface {
+	WithTx(tx pgx.Tx) *Queries
 	CreateMemories(ctx context.Context, vampireID []uuid.UUID) ([]Memory, error)
 	GetVampireIDs(ctx context.Context, vampireID []uuid.UUID) ([]uuid.UUID, error)
 }

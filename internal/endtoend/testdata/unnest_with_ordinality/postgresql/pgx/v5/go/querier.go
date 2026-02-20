@@ -6,9 +6,12 @@ package querytest
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type Querier interface {
+	WithTx(tx pgx.Tx) *Queries
 	GetValues(ctx context.Context) ([]GetValuesRow, error)
 }
 
