@@ -17,6 +17,19 @@ func (vf VisitorFunc) Visit(node ast.Node) Visitor {
 	return vf
 }
 
+type SingleQueryVisitorFunc func(ast.Node)
+
+func (vf SingleQueryVisitorFunc) Visit(node ast.Node) Visitor {
+	switch node.(type) {
+	case *ast.RangeSubselect, *ast.RangeTblEntry:
+		vf(node)
+		return nil
+	default:
+		vf(node)
+		return vf
+	}
+}
+
 func Walk(f Visitor, node ast.Node) {
 	if f = f.Visit(node); f == nil {
 		return

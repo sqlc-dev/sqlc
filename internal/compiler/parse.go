@@ -181,16 +181,22 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	}, nil
 }
 
-func rangeVars(root ast.Node) []*ast.RangeVar {
+func rawRangeTblRefs(root ast.Node) ([]*ast.RangeVar, []*ast.RangeSubselect, []*ast.RangeFunction) {
 	var vars []*ast.RangeVar
-	find := astutils.VisitorFunc(func(node ast.Node) {
+	var subs []*ast.RangeSubselect
+	var funs []*ast.RangeFunction
+	find := astutils.SingleQueryVisitorFunc(func(node ast.Node) {
 		switch n := node.(type) {
 		case *ast.RangeVar:
 			vars = append(vars, n)
+		case *ast.RangeSubselect:
+			subs = append(subs, n)
+		case *ast.RangeFunction:
+			funs = append(funs, n)
 		}
 	})
 	astutils.Walk(find, root)
-	return vars
+	return vars, subs, funs
 }
 
 func uniqueParamRefs(in []paramRef, dollar bool) []paramRef {
