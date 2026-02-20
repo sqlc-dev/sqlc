@@ -14,7 +14,7 @@ func addExtraGoStructTags(tags map[string]string, req *plugin.GenerateRequest, o
 		if oride.GoType.StructTags == nil {
 			continue
 		}
-		if override.MatchesColumn(col) {
+		if override.MatchesColumn(col, req.Settings.Engine) {
 			for k, v := range oride.GoType.StructTags {
 				tags[k] = v
 			}
@@ -76,7 +76,8 @@ func goInnerType(req *plugin.GenerateRequest, options *opts.Options, col *plugin
 		if oride.GoType.TypeName == "" {
 			continue
 		}
-		if override.MatchesColumn(col) {
+
+		if override.MatchesColumn(col, req.Settings.Engine) {
 			return oride.GoType.TypeName
 		}
 	}
