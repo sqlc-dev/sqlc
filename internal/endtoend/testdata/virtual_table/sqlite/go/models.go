@@ -24,3 +24,17 @@ type TblFt struct {
 	B string
 	C string
 }
+
+type Weather struct {
+	ID        int64
+	Latitude  float64
+	Longitude float64
+}
+
+type WeatherRtree struct {
+	ID      int64
+	MinLang float64
+	MaxLong float64
+	MinLat  float64
+	MaxLat  float64
+}
