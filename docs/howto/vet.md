@@ -77,7 +77,7 @@ rules:
   - name: no-delete
     message: "don't use delete statements"
     rule: |
-      query.sql.contains("DELETE")
+      query.sql.lowerAscii().contains("delete ")
   - name: only-one-param
     message: "too many parameters"
     rule: |
@@ -253,7 +253,7 @@ rules:
   - name: no-delete
     message: "don't use delete statements"
     rule: |
-      query.sql.contains("DELETE")
+      query.sql.lowerAscii().contains("delete ")
 ```
 
 ### Opting-out of lint rules
