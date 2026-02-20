@@ -8,12 +8,6 @@ func (n *AclMode) Pos() int {
 	return 0
 }
 
-type DistinctExpr OpExpr
-
-func (n *DistinctExpr) Pos() int {
-	return 0
-}
-
 type NullIfExpr OpExpr
 
 func (n *NullIfExpr) Pos() int {
