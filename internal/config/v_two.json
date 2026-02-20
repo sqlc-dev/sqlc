@@ -230,6 +230,14 @@
                                         }
                                     }
                                 },
+                                "rename_enum": {
+                                  "type": "object",
+                                  "patternProperties": {
+                                    ".*": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
                                 "sql_package": {
                                     "type": "string"
                                 },
