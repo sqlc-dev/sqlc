@@ -499,6 +499,10 @@ func translate(node *nodes.Node) (ast.Node, error) {
 		for _, item := range n.Parameters {
 			arg := item.Node.(*nodes.Node_FunctionParameter).FunctionParameter
 			rel, err := parseRelationFromNodes(arg.ArgType.Names)
+
+			relType := rel.TypeName()
+			relType.ArrayBounds = convertSlice(arg.ArgType.ArrayBounds)
+
 			if err != nil {
 				return nil, err
 			}
@@ -506,9 +510,10 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			if err != nil {
 				return nil, err
 			}
+
 			fp := &ast.FuncParam{
 				Name: &arg.Name,
-				Type: rel.TypeName(),
+				Type: relType,
 				Mode: mode,
 			}
 			if arg.Defexpr != nil {
