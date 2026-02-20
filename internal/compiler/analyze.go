@@ -181,6 +181,12 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 		return nil, err
 	}
 
+	if c.conf.Engine == config.EngineSQLite {
+		if err := check(validate.ValidateSQLiteQualifiedColumnRefs(raw.Stmt)); err != nil {
+			return nil, err
+		}
+	}
+
 	params, err := c.resolveCatalogRefs(qc, rvs, refs, namedParams, embeds)
 	if err := check(err); err != nil {
 		return nil, err
