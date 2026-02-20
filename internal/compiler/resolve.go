@@ -511,7 +511,10 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			if n.TypeName == nil {
 				return nil, fmt.Errorf("*ast.TypeCast has nil type name")
 			}
-			col := toColumn(n.TypeName)
+			col, err := toColumn(n.TypeName)
+			if err != nil {
+				return nil, err
+			}
 			defaultP := named.NewInferredParam(col.Name, col.NotNull)
 			p, _ := params.FetchMerge(ref.ref.Number, defaultP)
 
