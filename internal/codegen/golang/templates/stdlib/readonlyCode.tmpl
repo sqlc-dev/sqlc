@@ -1,0 +1,108 @@
+{{define "readQueriesFileStd"}}
+
+{{if and .EmitPreparedQueries .EmitReadOnlyPrepared}}
+func PrepareReadOnly(ctx context.Context, db DBTX) (*ReadQueries, error) {
+	q := ReadQueries{db: db}
+	var err error
+	{{- if eq (len .GoReadQueries) 0 }}
+	_ = err
+	{{- end }}
+	{{- range .GoReadQueries }}
+	if q.{{.FieldName}}, err = db.PrepareContext(ctx, {{.ConstantName}}); err != nil {
+		return nil, fmt.Errorf("error preparing query {{.MethodName}}: %w", err)
+	}
+	{{- end}}
+	return &q, nil
+}
+
+type ReadQueries struct {
+    {{- if not .EmitMethodsWithDBArgument}}
+	db DBTX
+    {{- end}}
+
+    {{- if .EmitPreparedQueries}}
+	{{- range .GoReadQueries}}
+	{{.FieldName}}  *sql.Stmt
+	{{- end}}
+	{{- end}}
+}
+
+func (q *ReadQueries) Close() error {
+	var err error
+	{{- range .GoReadQueries }}
+	if q.{{.FieldName}} != nil {
+		if cerr := q.{{.FieldName}}.Close(); cerr != nil {
+			err = fmt.Errorf("error closing {{.FieldName}}: %w", cerr)
+		}
+	}
+	{{- end}}
+	return err
+}
+
+func (q *ReadQueries) query(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (*sql.Rows, error) {
+	switch {
+	case stmt != nil:
+		return stmt.QueryContext(ctx, args...)
+	default:
+		return q.db.QueryContext(ctx, query, args...)
+	}
+}
+
+func (q *ReadQueries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (*sql.Row) {
+	switch {
+	case stmt != nil:
+		return stmt.QueryRowContext(ctx, args...)
+	default:
+		return q.db.QueryRowContext(ctx, query, args...)
+	}
+}
+
+{{range .GoReadQueries}}
+
+{{if eq .Cmd ":one"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *ReadQueries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
+    {{- template "queryCodeStdExec" . }}
+	{{- if or (ne .Arg.Pair .Ret.Pair) (ne .Arg.DefineType .Ret.DefineType) }}
+	var {{.Ret.Name}} {{.Ret.Type}}
+	{{- end}}
+	err := row.Scan({{.Ret.Scan}})
+	return {{.Ret.ReturnName}}, err
+}
+{{end}}
+
+{{if eq .Cmd ":many"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *ReadQueries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error) {
+    {{- template "queryCodeStdExec" . }}
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+    {{- if $.EmitEmptySlices}}
+    items := []{{.Ret.DefineType}}{}
+    {{else}}
+    var items []{{.Ret.DefineType}}
+    {{end -}}
+    for rows.Next() {
+        var {{.Ret.Name}} {{.Ret.Type}}
+        if err := rows.Scan({{.Ret.Scan}}); err != nil {
+            return nil, err
+        }
+        items = append(items, {{.Ret.ReturnName}})
+    }
+    if err := rows.Close(); err != nil {
+        return nil, err
+    }
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+    return items, nil
+}
+{{end}}
+
+{{end}}
+{{end}}
+{{end}}

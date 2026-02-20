@@ -101,6 +101,7 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 	if i.Options.OutputBatchFileName != "" {
 		batchFileName = i.Options.OutputBatchFileName
 	}
+	readQueriesFileName := "read.go"
 
 	switch filename {
 	case dbFileName:
@@ -113,6 +114,8 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 		return mergeImports(i.copyfromImports())
 	case batchFileName:
 		return mergeImports(i.batchImports())
+	case readQueriesFileName:
+		return mergeImports(i.dbImports())
 	default:
 		return mergeImports(i.queryImports(filename))
 	}
