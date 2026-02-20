@@ -267,10 +267,23 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 	coltype := make(map[string]ast.TypeName) // used to check for duplicate column names
 	seen := make(map[string]bool)            // used to check for duplicate column names
 	for _, inheritTable := range stmt.Inherits {
-		t, _, err := schema.getTable(inheritTable)
+
+		var inheritTableSchema *Schema
+		if inheritTable.Schema == "" {
+			inheritTableSchema = schema
+		} else {
+			inheritSchema, err := c.getSchema(inheritTable.Schema)
+			if err != nil {
+				return err
+			}
+			inheritTableSchema = inheritSchema
+		}
+
+		t, _, err := inheritTableSchema.getTable(inheritTable)
 		if err != nil {
 			return err
 		}
+
 		// check and ignore duplicate columns
 		for _, col := range t.Columns {
 			if notNull, ok := seen[col.Name]; ok {
