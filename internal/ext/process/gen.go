@@ -19,6 +19,7 @@ import (
 )
 
 type Runner struct {
+	GoPkg  string
 	Cmd    string
 	Format string
 	Env    []string
@@ -53,13 +54,25 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 		return fmt.Errorf("unknown plugin format: %s", r.Format)
 	}
 
-	// Check if the output plugin exists
-	path, err := exec.LookPath(r.Cmd)
-	if err != nil {
-		return fmt.Errorf("process: %s not found", r.Cmd)
+	var cmd *exec.Cmd
+	switch {
+	case r.Cmd != "":
+		// Check if the output plugin exists
+		path, err := exec.LookPath(r.Cmd)
+		if err != nil {
+			return fmt.Errorf("process: %s not found", r.Cmd)
+		}
+		cmd = exec.CommandContext(ctx, path, method)
+	case r.GoPkg != "":
+		// Check if the go binary exists
+		path, err := exec.LookPath("go")
+		if err != nil {
+			return fmt.Errorf("go binary required to run go package %s", r.GoPkg)
+		}
+		cmd = exec.CommandContext(ctx, path, "run", r.GoPkg, method)
+		r.Env = append(r.Env, []string{"GO111MODULE", "GOROOT", "GOPATH", "GOPROXY", "GOPRIVATE", "GONOPROXY", "GONOSUMDB", "GOMODCACHE", "GOFLAGS", "GOCACHE", "GOENV", "HOME"}...)
 	}
 
-	cmd := exec.CommandContext(ctx, path, method)
 	cmd.Stdin = bytes.NewReader(stdin)
 	cmd.Env = []string{
 		fmt.Sprintf("SQLC_VERSION=%s", info.Version),
