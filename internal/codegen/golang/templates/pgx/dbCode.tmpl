@@ -1,6 +1,7 @@
 {{define "dbCodeTemplatePgx"}}
 
 type DBTX interface {
+	Begin(ctx context.Context) (pgx.Tx, error)
 	Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
 	Query(context.Context, string, ...interface{}) (pgx.Rows, error)
 	QueryRow(context.Context, string, ...interface{}) pgx.Row
@@ -34,4 +35,22 @@ func (q *Queries) WithTx(tx pgx.Tx) *Queries {
 	}
 }
 {{end}}
+
+{{if not .EmitMethodsWithDBArgument}}
+func (q *Queries) BeginTX(ctx context.Context) (*generated.Queries, func(*error) error, error) {
+	tx, err := q.beginer.Begin(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+	return q.WithTx(tx), func(e *error) error {
+		if e != nil {
+			if err1 := tx.Rollback(ctx); err1 != nil {
+				log.Printf("rollback:%v", err1)
+			}
+		}
+		return tx.Commit(ctx)
+	}, nil
+}
+{{end}}
+
 {{end}}
