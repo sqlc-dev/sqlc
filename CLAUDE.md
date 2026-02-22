@@ -36,7 +36,6 @@ go run ./cmd/sqlc-test-setup start
 This will:
 - Start PostgreSQL and configure password auth (`postgres`/`postgres`)
 - Start MySQL via `mysqld_safe` and set root password (`mysecretpassword`)
-- Handle pre-installed MySQL (e.g. on GitHub Actions runners) by resetting the root password via `--skip-grant-tables`
 - Verify both connections
 - Skip steps that are already done (running services, existing config)
 
