@@ -11,11 +11,9 @@ services:
       MYSQL_ROOT_HOST: '%'
 
   postgresql:
-    image: "postgres:16"
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
     ports:
       - "5432:5432"
     restart: always
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_PASSWORD: mysecretpassword
-      POSTGRES_USER: postgres
