@@ -36,6 +36,7 @@ go run ./cmd/sqlc-test-setup start
 This will:
 - Start PostgreSQL and configure password auth (`postgres`/`postgres`)
 - Start MySQL via `mysqld_safe` and set root password (`mysecretpassword`)
+- Handle pre-installed MySQL (e.g. on GitHub Actions runners) by resetting the root password via `--skip-grant-tables`
 - Verify both connections
 - Skip steps that are already done (running services, existing config)
 
@@ -148,6 +149,7 @@ make start             # Start database containers
 
 - **File:** `.github/workflows/ci.yml`
 - **Go Version:** 1.25.0
+- **Database Setup:** Uses `sqlc-test-setup` (not Docker) to install and start PostgreSQL and MySQL directly on the runner
 - **Test Command:** `gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m ./...`
 - **Additional Checks:** `govulncheck` for vulnerability scanning
 
