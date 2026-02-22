@@ -67,7 +67,7 @@ func (c *cc) convertAlter_table_stmtContext(n *parser.Alter_table_stmtContext) a
 				Table: parseTableName(n),
 				Cmds:  &ast.List{},
 			}
-			name := def.Column_name().GetText()
+			name := identifier(def.Column_name().GetText())
 			stmt.Cmds.Items = append(stmt.Cmds.Items, &ast.AlterTableCmd{
 				Name:    &name,
 				Subtype: ast.AT_AddColumn,
@@ -88,7 +88,7 @@ func (c *cc) convertAlter_table_stmtContext(n *parser.Alter_table_stmtContext) a
 			Table: parseTableName(n),
 			Cmds:  &ast.List{},
 		}
-		name := n.Column_name(0).GetText()
+		name := identifier(n.Column_name(0).GetText())
 		stmt.Cmds.Items = append(stmt.Cmds.Items, &ast.AlterTableCmd{
 			Name:    &name,
 			Subtype: ast.AT_DropColumn,
