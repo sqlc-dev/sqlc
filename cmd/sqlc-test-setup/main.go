@@ -57,6 +57,26 @@ func commandExists(name string) bool {
 	return err == nil
 }
 
+// isMySQLVersionOK checks if the mysqld --version output indicates MySQL 9+.
+// Example version string: "/usr/sbin/mysqld  Ver 8.0.44-0ubuntu0.24.04.2 ..."
+func isMySQLVersionOK(versionOutput string) bool {
+	// Look for "Ver X.Y.Z" pattern
+	fields := strings.Fields(versionOutput)
+	for i, f := range fields {
+		if strings.EqualFold(f, "Ver") && i+1 < len(fields) {
+			ver := strings.Split(fields[i+1], ".")
+			if len(ver) > 0 {
+				major := strings.TrimLeft(ver[0], "0")
+				if major == "" {
+					return false
+				}
+				return major[0] >= '9'
+			}
+		}
+	}
+	return false
+}
+
 // ---- install ----
 
 func runInstall() error {
@@ -129,9 +149,26 @@ func installMySQL() error {
 	if commandExists("mysqld") {
 		out, err := runOutput("mysqld", "--version")
 		if err == nil {
-			log.Printf("mysql is already installed: %s", strings.TrimSpace(out))
-			log.Println("skipping mysql installation")
-			return nil
+			version := strings.TrimSpace(out)
+			log.Printf("mysql is already installed: %s", version)
+			if isMySQLVersionOK(version) {
+				log.Println("mysql version is 9+, skipping installation")
+				return nil
+			}
+			log.Println("mysql version is too old, upgrading to MySQL 9")
+			// Stop existing MySQL before upgrading
+			_ = exec.Command("sudo", "service", "mysql", "stop").Run()
+			_ = exec.Command("sudo", "pkill", "-f", "mysqld").Run()
+			time.Sleep(2 * time.Second)
+			// Remove old MySQL packages to avoid conflicts
+			log.Println("removing old mysql packages")
+			_ = run("sudo", "apt-get", "remove", "-y", "mysql-server", "mysql-client", "mysql-common",
+				"mysql-server-core-*", "mysql-client-core-*")
+			// Clear old data directory so MySQL 9 can initialize fresh
+			log.Println("clearing old mysql data directory")
+			_ = run("sudo", "rm", "-rf", "/var/lib/mysql")
+			_ = run("sudo", "mkdir", "-p", "/var/lib/mysql")
+			_ = run("sudo", "chown", "mysql:mysql", "/var/lib/mysql")
 		}
 	}
 
