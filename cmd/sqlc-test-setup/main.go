@@ -290,10 +290,20 @@ func startMySQL() error {
 	log.Println("stopping any existing mysql service")
 	_ = exec.Command("sudo", "service", "mysql", "stop").Run()
 	_ = exec.Command("sudo", "mysqladmin", "shutdown").Run()
+	// Give MySQL time to fully shut down
+	time.Sleep(2 * time.Second)
+
+	if err := ensureMySQLDirs(); err != nil {
+		return err
+	}
 
 	// Check if data directory already exists and has been initialized
+	needsPasswordReset := false
 	if mysqlInitialized() {
 		log.Println("mysql data directory already initialized, skipping initialization")
+		// Existing data dir may have an unknown root password (e.g. pre-installed
+		// MySQL on GitHub Actions). We'll need to use --skip-grant-tables to reset it.
+		needsPasswordReset = true
 	} else {
 		log.Println("initializing mysql data directory")
 		if err := run("sudo", "mysqld", "--initialize-insecure", "--user=mysql"); err != nil {
@@ -301,51 +311,74 @@ func startMySQL() error {
 		}
 	}
 
-	// Ensure the run directory exists for the socket/pid file
+	if needsPasswordReset {
+		// Start with --skip-grant-tables to reset the unknown root password.
+		if err := startMySQLDaemon("--skip-grant-tables"); err != nil {
+			return err
+		}
+
+		log.Println("resetting root password via --skip-grant-tables")
+		resetSQL := "FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED WITH caching_sha2_password BY 'mysecretpassword';"
+		if err := run("mysql", "-u", "root", "-e", resetSQL); err != nil {
+			return fmt.Errorf("resetting mysql root password: %w", err)
+		}
+
+		// Restart without --skip-grant-tables
+		log.Println("restarting mysql normally")
+		if err := run("sudo", "mysqladmin", "-u", "root", "-pmysecretpassword", "shutdown"); err != nil {
+			// If mysqladmin fails, try killing the process directly
+			_ = run("sudo", "pkill", "-f", "mysqld")
+		}
+		time.Sleep(2 * time.Second)
+
+		if err := startMySQLDaemon(); err != nil {
+			return err
+		}
+	} else {
+		// Fresh initialization — start normally and set password
+		if err := startMySQLDaemon(); err != nil {
+			return err
+		}
+
+		log.Println("setting mysql root password")
+		alterSQL := "ALTER USER 'root'@'localhost' IDENTIFIED WITH caching_sha2_password BY 'mysecretpassword'; FLUSH PRIVILEGES;"
+		if err := run("mysql", "-u", "root", "-e", alterSQL); err != nil {
+			return fmt.Errorf("setting mysql root password: %w", err)
+		}
+	}
+
+	return verifyMySQL()
+}
+
+// ensureMySQLDirs creates the directories MySQL needs at runtime.
+func ensureMySQLDirs() error {
 	if err := run("sudo", "mkdir", "-p", "/var/run/mysqld"); err != nil {
 		return fmt.Errorf("creating /var/run/mysqld: %w", err)
 	}
 	if err := run("sudo", "chown", "mysql:mysql", "/var/run/mysqld"); err != nil {
 		return fmt.Errorf("chowning /var/run/mysqld: %w", err)
 	}
+	return nil
+}
 
-	log.Println("starting mysql via mysqld_safe")
-	// mysqld_safe runs in the foreground, so we launch it in the background
-	cmd := exec.Command("sudo", "mysqld_safe", "--user=mysql")
+// startMySQLDaemon starts mysqld_safe in the background and waits for it to
+// accept connections. Extra args (e.g. "--skip-grant-tables") are appended.
+func startMySQLDaemon(extraArgs ...string) error {
+	args := append([]string{"mysqld_safe", "--user=mysql"}, extraArgs...)
+	log.Printf("starting mysql via mysqld_safe %v", extraArgs)
+	cmd := exec.Command("sudo", args...)
 	cmd.Stdout = os.Stderr
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("starting mysqld_safe: %w", err)
 	}
 
-	// Wait for MySQL to become ready
 	log.Println("waiting for mysql to accept connections")
 	if err := waitForMySQL(30 * time.Second); err != nil {
 		return fmt.Errorf("mysql did not start in time: %w", err)
 	}
 	log.Println("mysql is accepting connections")
-
-	// Set root password.
-	// The debconf-based install may configure auth_socket plugin which only
-	// works via Unix socket. We need caching_sha2_password for TCP access.
-	log.Println("configuring mysql root password for TCP access")
-	if err := run("mysql", "-h", "127.0.0.1", "-u", "root", "-pmysecretpassword", "-e", "SELECT 1;"); err == nil {
-		log.Println("mysql root password already set to expected value, skipping")
-	} else {
-		log.Println("setting mysql root password with caching_sha2_password plugin")
-		alterSQL := "ALTER USER 'root'@'localhost' IDENTIFIED WITH caching_sha2_password BY 'mysecretpassword'; FLUSH PRIVILEGES;"
-		// Try via socket without sudo (works when password is blank)
-		if err := run("mysql", "-u", "root", "-e", alterSQL); err != nil {
-			// Try via socket with sudo (needed when auth_socket plugin is
-			// active, since it requires the OS user to match the MySQL user)
-			log.Println("retrying with sudo (auth_socket requires OS root user)")
-			if err := run("sudo", "mysql", "-u", "root", "-e", alterSQL); err != nil {
-				return fmt.Errorf("setting mysql root password: %w", err)
-			}
-		}
-	}
-
-	return verifyMySQL()
+	return nil
 }
 
 // mysqlReady checks if MySQL is running and accepting connections with the expected password.
