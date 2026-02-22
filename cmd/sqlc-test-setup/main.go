@@ -333,10 +333,15 @@ func startMySQL() error {
 		log.Println("mysql root password already set to expected value, skipping")
 	} else {
 		log.Println("setting mysql root password with caching_sha2_password plugin")
-		// Try via socket (works when auth_socket is the plugin or password is blank)
-		if err := run("mysql", "-u", "root", "-e",
-			"ALTER USER 'root'@'localhost' IDENTIFIED WITH caching_sha2_password BY 'mysecretpassword'; FLUSH PRIVILEGES;"); err != nil {
-			return fmt.Errorf("setting mysql root password: %w", err)
+		alterSQL := "ALTER USER 'root'@'localhost' IDENTIFIED WITH caching_sha2_password BY 'mysecretpassword'; FLUSH PRIVILEGES;"
+		// Try via socket without sudo (works when password is blank)
+		if err := run("mysql", "-u", "root", "-e", alterSQL); err != nil {
+			// Try via socket with sudo (needed when auth_socket plugin is
+			// active, since it requires the OS user to match the MySQL user)
+			log.Println("retrying with sudo (auth_socket requires OS root user)")
+			if err := run("sudo", "mysql", "-u", "root", "-e", alterSQL); err != nil {
+				return fmt.Errorf("setting mysql root password: %w", err)
+			}
 		}
 	}
 
