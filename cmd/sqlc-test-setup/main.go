@@ -17,10 +17,7 @@ import (
 
 const (
 	// pgVersion is the PostgreSQL version to install.
-	pgVersion = "16.8.0"
-
-	// pgBaseDir is the sqlc-specific directory where PostgreSQL is installed.
-	pgBaseDir = "/opt/sqlc/postgresql"
+	pgVersion = "18.2.0"
 )
 
 // pgBinary contains the download information for a PostgreSQL binary release.
@@ -33,11 +30,11 @@ type pgBinary struct {
 var pgBinaries = map[string]pgBinary{
 	"linux/amd64": {
 		URL:    "https://github.com/theseus-rs/postgresql-binaries/releases/download/" + pgVersion + "/postgresql-" + pgVersion + "-x86_64-unknown-linux-gnu.tar.gz",
-		SHA256: "cb6a4c786f463d1af2ec036da7bca0eadc3484dc80ae3819a555f9b9c828ade4",
+		SHA256: "cc2674e1641aa2a62b478971a22c131a768eb783f313e6a3385888f58a604074",
 	},
 	"linux/arm64": {
 		URL:    "https://github.com/theseus-rs/postgresql-binaries/releases/download/" + pgVersion + "/postgresql-" + pgVersion + "-aarch64-unknown-linux-gnu.tar.gz",
-		SHA256: "bcd8060dd76bac17aeefb6814fe9cd3e132e09a089793243a4ac1f038af693cf",
+		SHA256: "8b415a11c7a5484e5fbf7a57fca71554d2d1d7acd34faf066606d2fee1261854",
 	},
 }
 
@@ -109,14 +106,24 @@ func isMySQLVersionOK(versionOutput string) bool {
 	return false
 }
 
+// pgBaseDir returns the sqlc-specific directory where PostgreSQL is installed,
+// using the user's cache directory (~/.cache/sqlc/postgresql on Linux).
+func pgBaseDir() string {
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		cacheDir = filepath.Join(os.Getenv("HOME"), ".cache")
+	}
+	return filepath.Join(cacheDir, "sqlc", "postgresql")
+}
+
 // pgBinDir returns the path to the PostgreSQL bin directory.
 func pgBinDir() string {
-	return filepath.Join(pgBaseDir, "bin")
+	return filepath.Join(pgBaseDir(), "bin")
 }
 
 // pgDataDir returns the path to the PostgreSQL data directory.
 func pgDataDir() string {
-	return filepath.Join(pgBaseDir, "data")
+	return filepath.Join(pgBaseDir(), "data")
 }
 
 // pgBin returns the full path to a PostgreSQL binary.
@@ -208,31 +215,18 @@ func installPostgreSQL() error {
 	}
 	log.Printf("SHA256 checksum verified: %s", actualHash)
 
-	// Create the base directory
-	if err := os.MkdirAll(pgBaseDir, 0o755); err != nil {
-		// Try with sudo if permission denied
-		if os.IsPermission(err) {
-			if err := run("sudo", "mkdir", "-p", pgBaseDir); err != nil {
-				return fmt.Errorf("creating %s: %w", pgBaseDir, err)
-			}
-			// Make it owned by current user so we don't need sudo later
-			user := os.Getenv("USER")
-			if user == "" {
-				user = "root"
-			}
-			if err := run("sudo", "chown", "-R", user+":"+user, pgBaseDir); err != nil {
-				return fmt.Errorf("chowning %s: %w", pgBaseDir, err)
-			}
-		} else {
-			return fmt.Errorf("creating %s: %w", pgBaseDir, err)
-		}
+	baseDir := pgBaseDir()
+
+	// Create the base directory in the user cache
+	if err := os.MkdirAll(baseDir, 0o755); err != nil {
+		return fmt.Errorf("creating %s: %w", baseDir, err)
 	}
 
 	// Extract the tarball - it contains a top-level directory like
-	// postgresql-16.8.0-x86_64-unknown-linux-gnu/ with bin/, lib/, share/ inside.
-	// We strip that top-level directory and extract directly into pgBaseDir.
-	log.Printf("extracting postgresql to %s", pgBaseDir)
-	if err := run("tar", "-xzf", tarball, "-C", pgBaseDir, "--strip-components=1"); err != nil {
+	// postgresql-18.2.0-x86_64-unknown-linux-gnu/ with bin/, lib/, share/ inside.
+	// We strip that top-level directory and extract directly into the base dir.
+	log.Printf("extracting postgresql to %s", baseDir)
+	if err := run("tar", "-xzf", tarball, "-C", baseDir, "--strip-components=1"); err != nil {
 		return fmt.Errorf("extracting postgresql: %w", err)
 	}
 
@@ -395,7 +389,7 @@ func startPostgreSQL() error {
 	log.Println("--- Starting PostgreSQL ---")
 
 	dataDir := pgDataDir()
-	logFile := filepath.Join(pgBaseDir, "postgresql.log")
+	logFile := filepath.Join(pgBaseDir(), "postgresql.log")
 
 	// Check if already running
 	if pgIsReady() {
