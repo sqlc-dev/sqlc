@@ -406,7 +406,6 @@ func startPostgreSQL() error {
 		if err := run(pgBin("initdb"),
 			"-D", dataDir,
 			"--username=postgres",
-			"--pwfile=/dev/null",
 			"--auth=trust",
 		); err != nil {
 			return fmt.Errorf("initdb: %w", err)
