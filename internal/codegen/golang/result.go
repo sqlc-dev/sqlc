@@ -83,6 +83,7 @@ func buildStructs(req *plugin.GenerateRequest, options *opts.Options) []Struct {
 			s := Struct{
 				Table:   &plugin.Identifier{Schema: schema.Name, Name: table.Rel.Name},
 				Name:    StructName(structName, options),
+				Package: options.OutputModelsPackage,
 				Comment: table.Comment,
 			}
 			for _, column := range table.Columns {
@@ -144,7 +145,7 @@ func newGoEmbed(embed *plugin.Identifier, structs []Struct, defaultSchema string
 		copy(fields, s.Fields)
 
 		return &goEmbed{
-			modelType: s.Name,
+			modelType: s.Type(),
 			modelName: s.Name,
 			fields:    fields,
 		}
