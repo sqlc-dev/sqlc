@@ -118,6 +118,86 @@ func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string
 	return "", "", nil
 }
 
+// QueryBlock is one named query block (from " name: X :cmd" to the next such line or EOF).
+type QueryBlock struct {
+	SQL  string
+	Name string
+	Cmd  string
+}
+
+// isBlockStartLine reports whether the line starts a named query block (e.g. "-- name: GetUser :one").
+func isBlockStartLine(line string, commentStyle CommentSyntax) bool {
+	line = strings.TrimSpace(line)
+	var rest string
+	switch {
+	case strings.HasPrefix(line, "--"):
+		if !commentStyle.Dash {
+			return false
+		}
+		rest = line[2:] // keep " name: X :cmd" with leading space to match ParseQueryNameAndType
+	case strings.HasPrefix(line, "#"):
+		if !commentStyle.Hash {
+			return false
+		}
+		rest = line[1:]
+	case strings.HasPrefix(line, "/*"):
+		if !commentStyle.SlashStar {
+			return false
+		}
+		rest = line[2:]
+		if strings.HasSuffix(rest, "*/") {
+			rest = rest[:len(rest)-2]
+		}
+		rest = strings.TrimSpace(rest)
+	default:
+		return false
+	}
+	if !strings.HasPrefix(rest, " name: ") {
+		return false
+	}
+	part := strings.Split(rest, " ")
+	if len(part) < 4 {
+		return false
+	}
+	queryType := strings.TrimSpace(part[3])
+	switch queryType {
+	case CmdOne, CmdMany, CmdExec, CmdExecResult, CmdExecRows, CmdExecLastId, CmdCopyFrom, CmdBatchExec, CmdBatchMany, CmdBatchOne:
+		return true
+	}
+	return false
+}
+
+// QueryBlocks splits content into named query blocks. Each block runs from a " name: X :cmd" line
+// to the next such line (or EOF). Returns one entry per block with non-empty name.
+func QueryBlocks(content string, commentStyle CommentSyntax) ([]QueryBlock, error) {
+	lines := strings.Split(content, "\n")
+	var starts []int
+	pos := 0
+	for _, line := range lines {
+		if isBlockStartLine(line, commentStyle) {
+			starts = append(starts, pos)
+		}
+		pos += len(line) + 1
+	}
+	var out []QueryBlock
+	for i := 0; i < len(starts); i++ {
+		end := len(content)
+		if i+1 < len(starts) {
+			end = starts[i+1]
+		}
+		blockSQL := content[starts[i]:end]
+		name, cmd, err := ParseQueryNameAndType(blockSQL, commentStyle)
+		if err != nil {
+			return nil, err
+		}
+		if name == "" {
+			continue
+		}
+		out = append(out, QueryBlock{SQL: blockSQL, Name: name, Cmd: cmd})
+	}
+	return out, nil
+}
+
 // ParseCommentFlags processes the comments provided with queries to determine the metadata params, flags and rules to skip.
 // All flags in query comments are prefixed with `@`, e.g. @param, @@sqlc-vet-disable.
 func ParseCommentFlags(comments []string) (map[string]string, map[string]bool, map[string]struct{}, error) {

@@ -63,8 +63,41 @@ type Config struct {
 	SQL       []SQL                `json:"sql" yaml:"sql"`
 	Overrides Overrides            `json:"overrides,omitempty" yaml:"overrides"`
 	Plugins   []Plugin             `json:"plugins" yaml:"plugins"`
+	Engines   []EnginePlugin       `json:"engines" yaml:"engines"`
 	Rules     []Rule               `json:"rules" yaml:"rules"`
 	Options   map[string]yaml.Node `json:"options" yaml:"options"`
+}
+
+// EnginePlugin defines a custom database engine plugin.
+// Engine plugins allow external SQL parsers and database backends to be used with sqlc.
+type EnginePlugin struct {
+	// Name is the unique name for this engine (used in sql[].engine field)
+	Name string `json:"name" yaml:"name"`
+
+	// Env is a list of environment variable names to pass to the plugin
+	Env []string `json:"env" yaml:"env"`
+
+	// Process defines an engine plugin that runs as an external process
+	Process *EnginePluginProcess `json:"process" yaml:"process"`
+
+	// WASM defines an engine plugin that runs as a WASM module
+	WASM *EnginePluginWASM `json:"wasm" yaml:"wasm"`
+}
+
+// EnginePluginProcess defines a process-based engine plugin.
+type EnginePluginProcess struct {
+	// Cmd is the command to run (must be in PATH or an absolute path)
+	Cmd string `json:"cmd" yaml:"cmd"`
+}
+
+// EnginePluginWASM defines a WASM-based engine plugin.
+type EnginePluginWASM struct {
+	// URL is the URL to download the WASM module from
+	// Supports file:// and https:// schemes
+	URL string `json:"url" yaml:"url"`
+
+	// SHA256 is the expected SHA256 checksum of the WASM module
+	SHA256 string `json:"sha256" yaml:"sha256"`
 }
 
 type Server struct {
@@ -125,8 +158,8 @@ type SQL struct {
 // AnalyzerDatabase represents the database analyzer setting.
 // It can be a boolean (true/false) or the string "only" for database-only mode.
 type AnalyzerDatabase struct {
-	value   *bool  // nil means not set, true/false for boolean values
-	isOnly  bool   // true when set to "only"
+	value  *bool // nil means not set, true/false for boolean values
+	isOnly bool  // true when set to "only"
 }
 
 // IsEnabled returns true if the database analyzer should be used.
@@ -228,6 +261,14 @@ var ErrPluginNoType = errors.New("plugin: field `process` or `wasm` required")
 var ErrPluginBothTypes = errors.New("plugin: `process` and `wasm` cannot both be defined")
 var ErrPluginProcessNoCmd = errors.New("plugin: missing process command")
 
+var ErrEnginePluginNoName = errors.New("engine plugin: missing name")
+var ErrEnginePluginBuiltin = errors.New("engine plugin: cannot override built-in engine")
+var ErrEnginePluginExists = errors.New("engine plugin: a plugin with that name already exists")
+var ErrEnginePluginNoType = errors.New("engine plugin: field `process` or `wasm` required")
+var ErrEnginePluginBothTypes = errors.New("engine plugin: `process` and `wasm` cannot both be defined")
+var ErrEnginePluginProcessNoCmd = errors.New("engine plugin: missing process command")
+var ErrEnginePluginWASMNoURL = errors.New("engine plugin: missing wasm url")
+
 var ErrInvalidDatabase = errors.New("database must be managed or have a non-empty URI")
 var ErrManagedDatabaseNoProject = errors.New(`managed databases require a cloud project
 
@@ -285,6 +326,9 @@ type CombinedSettings struct {
 
 	// TODO: Combine these into a more usable type
 	Codegen Codegen
+
+	// Dir is the directory containing the config file (for resolving relative paths)
+	Dir string
 }
 
 func Combine(conf Config, pkg SQL) CombinedSettings {

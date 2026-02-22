@@ -96,5 +96,6 @@ code ever again.
    howto/ci-cd.md
    guides/using-go-and-pgx.rst
    guides/plugins.md
+   guides/engine-plugins.md
    guides/development.md
    guides/privacy.md

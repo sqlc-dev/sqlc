@@ -8,28 +8,30 @@ import (
 	"path/filepath"
 	"runtime"
 	"runtime/trace"
+	"strings"
 
 	"golang.org/x/sync/errgroup"
 
 	"github.com/sqlc-dev/sqlc/internal/compiler"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/debug"
+	"github.com/sqlc-dev/sqlc/internal/multierr"
 	"github.com/sqlc-dev/sqlc/internal/opts"
 )
 
-type OutputPair struct {
+type outputPair struct {
 	Gen    config.SQLGen
 	Plugin *config.Codegen
 
 	config.SQL
 }
 
-type ResultProcessor interface {
-	Pairs(context.Context, *config.Config) []OutputPair
-	ProcessResult(context.Context, config.CombinedSettings, OutputPair, *compiler.Result) error
+type resultProcessor interface {
+	Pairs(context.Context, *config.Config) []outputPair
+	ProcessResult(context.Context, config.CombinedSettings, outputPair, *compiler.Result) error
 }
 
-func Process(ctx context.Context, rp ResultProcessor, dir, filename string, o *Options) error {
+func Process(ctx context.Context, rp resultProcessor, dir, filename string, o *Options) error {
 	e := o.Env
 	stderr := o.Stderr
 
@@ -49,11 +51,14 @@ func Process(ctx context.Context, rp ResultProcessor, dir, filename string, o *O
 		return err
 	}
 
-	return processQuerySets(ctx, rp, conf, dir, o)
+	inputs := &sourceFiles{Config: conf, ConfigPath: configPath, Dir: dir}
+	return processQuerySets(ctx, rp, inputs, o)
 }
 
-func processQuerySets(ctx context.Context, rp ResultProcessor, conf *config.Config, dir string, o *Options) error {
+func processQuerySets(ctx context.Context, rp resultProcessor, inputs *sourceFiles, o *Options) error {
 	stderr := o.Stderr
+	conf := inputs.Config
+	dir := inputs.Dir
 
 	errored := false
 
@@ -69,6 +74,9 @@ func processQuerySets(ctx context.Context, rp ResultProcessor, conf *config.Conf
 
 		grp.Go(func() error {
 			combo := config.Combine(*conf, sql.SQL)
+			if dir != "" {
+				combo.Dir = dir
+			}
 			if sql.Plugin != nil {
 				combo.Codegen = *sql.Plugin
 			}
@@ -104,16 +112,36 @@ func processQuerySets(ctx context.Context, rp ResultProcessor, conf *config.Conf
 			packageRegion := trace.StartRegion(gctx, "package")
 			trace.Logf(gctx, "", "name=%s dir=%s plugin=%s", name, dir, lang)
 
-			result, failed := parse(gctx, name, dir, sql.SQL, combo, parseOpts, errout)
-			if failed {
-				packageRegion.End()
-				errored = true
-				return nil
-			}
-			if err := rp.ProcessResult(gctx, combo, sql, result); err != nil {
-				fmt.Fprintf(errout, "# package %s\n", name)
-				fmt.Fprintf(errout, "error generating code: %s\n", err)
-				errored = true
+			if !config.IsBuiltinEngine(combo.Package.Engine) {
+				// Plugin engine: skip compiler and AST; call engine plugin with schema + query, then codegen.
+				if err := runPluginQuerySet(gctx, rp, name, dir, sql, combo, inputs, o); err != nil {
+					// Use the same format as the compiler path for unknown-engine errors (for backward compatibility).
+					if strings.HasPrefix(err.Error(), "unknown engine:") {
+						fmt.Fprintf(errout, "error creating compiler: %v\n", err)
+					} else {
+						fmt.Fprintf(errout, "# package %s\n", name)
+						if multi, ok := err.(*multierr.Error); ok {
+							for _, e := range multi.Errs() {
+								fmt.Fprintf(errout, "%s:%d:%d: %v\n", e.Filename, e.Line, e.Column, e.Err)
+							}
+						} else {
+							fmt.Fprintf(errout, "%v\n", err)
+						}
+					}
+					errored = true
+				}
+			} else {
+				result, failed := parse(gctx, name, dir, sql.SQL, combo, parseOpts, errout)
+				if failed {
+					packageRegion.End()
+					errored = true
+					return nil
+				}
+				if err := rp.ProcessResult(gctx, combo, sql, result); err != nil {
+					fmt.Fprintf(errout, "# package %s\n", name)
+					fmt.Fprintf(errout, "error generating code: %s\n", err)
+					errored = true
+				}
 			}
 			packageRegion.End()
 			return nil

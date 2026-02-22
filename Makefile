@@ -50,6 +50,12 @@ mysqlsh:
 proto:
 	buf generate
 
+proto-engine-plugin:
+	protoc -I. \
+		--go_out=. --go_opt=module=github.com/sqlc-dev/sqlc --go_opt=Mprotos/engine/engine.proto=github.com/sqlc-dev/sqlc/pkg/engine \
+		--go-grpc_out=. --go-grpc_opt=module=github.com/sqlc-dev/sqlc --go-grpc_opt=Mprotos/engine/engine.proto=github.com/sqlc-dev/sqlc/pkg/engine \
+		protos/engine/engine.proto
+
 remote-proto:
 	protoc \
 		--go_out=. --go_opt="Minternal/remote/gen.proto=github.com/sqlc-dev/sqlc/internal/remote" --go_opt=module=github.com/sqlc-dev/sqlc \
