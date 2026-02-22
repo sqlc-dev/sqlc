@@ -114,6 +114,21 @@ func startPostgresService() error {
 	return nil
 }
 
+// pgFastSettings are PostgreSQL settings that sacrifice durability for speed.
+// They are unsafe for production but ideal for test databases.
+var pgFastSettings = [][2]string{
+	{"fsync", "off"},
+	{"synchronous_commit", "off"},
+	{"full_page_writes", "off"},
+	{"max_connections", "200"},
+	{"wal_level", "minimal"},
+	{"max_wal_senders", "0"},
+	{"max_wal_size", "256MB"},
+	{"checkpoint_timeout", "30min"},
+	{"log_min_messages", "FATAL"},
+	{"log_statement", "none"},
+}
+
 func configurePostgres() error {
 	// Set password for postgres user using sudo -u postgres
 	cmd := exec.Command("sudo", "-u", "postgres", "psql", "-c", "ALTER USER postgres PASSWORD 'postgres';")
@@ -162,7 +177,84 @@ func configurePostgres() error {
 		}
 	}
 
+	// Apply speed-optimized settings for test workloads
+	if err := applyFastSettings(); err != nil {
+		slog.Warn("native/postgres", "fast-settings-error", err)
+	}
+
 	return nil
+}
+
+// applyFastSettings appends speed-optimized settings to postgresql.conf for
+// test workloads. Settings that sacrifice durability for speed (fsync=off, etc.)
+// are applied once and require a restart to take effect.
+func applyFastSettings() error {
+	output, err := exec.Command("sudo", "-u", "postgres", "psql", "-t", "-c", "SHOW config_file;").CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("could not find config_file: %w", err)
+	}
+
+	confFile := strings.TrimSpace(string(output))
+	if confFile == "" {
+		return fmt.Errorf("empty config_file path")
+	}
+
+	catOutput, err := exec.Command("sudo", "cat", confFile).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("could not read %s: %w", confFile, err)
+	}
+
+	// Check if we've already applied settings.
+	if strings.Contains(string(catOutput), "# sqlc test optimizations") {
+		slog.Debug("native/postgres", "fast-settings", "already applied")
+		return nil
+	}
+
+	slog.Info("native/postgres", "status", "applying fast settings to postgresql.conf")
+
+	var block strings.Builder
+	block.WriteString("\n# sqlc test optimizations\n")
+	for _, kv := range pgFastSettings {
+		fmt.Fprintf(&block, "%s = %s\n", kv[0], kv[1])
+	}
+
+	cmd := exec.Command("sudo", "bash", "-c",
+		fmt.Sprintf("echo '%s' | sudo tee -a %s", block.String(), confFile))
+	if out, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("appending settings to postgresql.conf: %w\n%s", err, out)
+	}
+
+	// Some settings (wal_level, max_connections) require a full restart.
+	slog.Info("native/postgres", "status", "restarting postgresql for fast settings")
+	if err := restartPostgres(); err != nil {
+		return fmt.Errorf("restart for fast settings: %w", err)
+	}
+
+	return nil
+}
+
+func restartPostgres() error {
+	// Try systemctl restart
+	cmd := exec.Command("sudo", "systemctl", "restart", "postgresql")
+	if err := cmd.Run(); err == nil {
+		return nil
+	}
+
+	// Try service restart
+	cmd = exec.Command("sudo", "service", "postgresql", "restart")
+	if err := cmd.Run(); err == nil {
+		return nil
+	}
+
+	// Try pg_ctlcluster restart
+	output, _ := exec.Command("ls", "/etc/postgresql/").CombinedOutput()
+	versions := strings.Fields(string(output))
+	if len(versions) > 0 {
+		cmd = exec.Command("sudo", "pg_ctlcluster", versions[0], "main", "restart")
+		return cmd.Run()
+	}
+
+	return fmt.Errorf("could not restart PostgreSQL")
 }
 
 func reloadPostgres() error {

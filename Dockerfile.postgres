@@ -1,0 +1,71 @@
+# Fast-startup PostgreSQL for sqlc testing
+#
+# This image pre-initializes the database at build time so that container
+# startup only needs to launch the postgres process — no initdb, no
+# entrypoint scripts, no first-run setup.
+#
+# Build:
+#   docker build -f Dockerfile.postgres -t sqlc-postgres .
+#
+# Run:
+#   docker run -d -p 5432:5432 sqlc-postgres
+#
+# For fastest I/O, mount the data directory on tmpfs:
+#   docker run -d -p 5432:5432 --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=256m sqlc-postgres
+#
+# Connection URI:
+#   postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable
+
+ARG PG_VERSION=18
+FROM postgres:${PG_VERSION}
+
+ENV POSTGRES_USER=postgres \
+    POSTGRES_PASSWORD=mysecretpassword \
+    POSTGRES_DB=postgres \
+    PGDATA=/var/lib/postgresql/data
+
+# Pre-initialize the database at build time and apply speed-optimized
+# configuration. This eliminates the ~1-2s initdb cost on every container start.
+RUN set -eux; \
+    mkdir -p "$PGDATA"; \
+    chown postgres:postgres "$PGDATA"; \
+    echo "$POSTGRES_PASSWORD" > /tmp/pwfile; \
+    gosu postgres initdb \
+        --username="$POSTGRES_USER" \
+        --pwfile=/tmp/pwfile \
+        -D "$PGDATA"; \
+    rm /tmp/pwfile; \
+    \
+    # --- Performance settings (unsafe for production, ideal for tests) --- \
+    { \
+        echo ""; \
+        echo "# === sqlc test optimizations ==="; \
+        echo "listen_addresses = '*'"; \
+        echo "fsync = off"; \
+        echo "synchronous_commit = off"; \
+        echo "full_page_writes = off"; \
+        echo "max_connections = 200"; \
+        echo "shared_buffers = 128MB"; \
+        echo "wal_level = minimal"; \
+        echo "max_wal_senders = 0"; \
+        echo "max_wal_size = 256MB"; \
+        echo "checkpoint_timeout = 30min"; \
+        echo "log_min_messages = FATAL"; \
+        echo "log_statement = none"; \
+    } >> "$PGDATA/postgresql.conf"; \
+    \
+    # --- Allow password auth from any host --- \
+    echo "host all all 0.0.0.0/0 scram-sha-256" >> "$PGDATA/pg_hba.conf"; \
+    echo "host all all ::/0 scram-sha-256" >> "$PGDATA/pg_hba.conf"
+
+EXPOSE 5432
+
+# SIGINT = "fast shutdown": disconnects clients and exits cleanly without
+# requiring crash recovery on the next start. Much faster than the default
+# SIGTERM ("smart shutdown") which waits for all clients to disconnect.
+STOPSIGNAL SIGINT
+
+USER postgres
+
+# Start postgres directly, bypassing docker-entrypoint.sh entirely.
+CMD ["postgres"]

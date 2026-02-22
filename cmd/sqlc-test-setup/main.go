@@ -266,6 +266,10 @@ func startPostgreSQL() error {
 		return fmt.Errorf("configuring pg_hba.conf: %w", err)
 	}
 
+	if err := applyFastSettings(); err != nil {
+		return fmt.Errorf("applying fast postgresql settings: %w", err)
+	}
+
 	log.Println("reloading postgresql configuration")
 	if err := run("sudo", "service", "postgresql", "reload"); err != nil {
 		return fmt.Errorf("reloading postgresql: %w", err)
@@ -311,6 +315,78 @@ func ensurePgHBAEntry(hbaPath string) error {
 	log.Printf("enabling md5 authentication in %s", hbaPath)
 	cmd := fmt.Sprintf("echo '%s' | sudo tee -a %s", hbaLine, hbaPath)
 	return run("bash", "-c", cmd)
+}
+
+// pgFastSettings are PostgreSQL settings that sacrifice durability for speed.
+// They are unsafe for production but ideal for test databases.
+var pgFastSettings = map[string]string{
+	"fsync":               "off",
+	"synchronous_commit":  "off",
+	"full_page_writes":    "off",
+	"max_connections":     "200",
+	"wal_level":           "minimal",
+	"max_wal_senders":     "0",
+	"max_wal_size":        "256MB",
+	"checkpoint_timeout":  "30min",
+	"log_min_messages":    "FATAL",
+	"log_statement":       "none",
+}
+
+// detectPgConfigPath returns the path to postgresql.conf by querying the running server.
+func detectPgConfigPath() (string, error) {
+	out, err := runOutput("bash", "-c", "sudo -u postgres psql -t -c 'SHOW config_file;'")
+	if err != nil {
+		return "", fmt.Errorf("querying config_file: %w (output: %s)", err, out)
+	}
+	path := strings.TrimSpace(out)
+	if path == "" {
+		return "", fmt.Errorf("postgresql.conf path is empty")
+	}
+	log.Printf("found postgresql.conf at %s", path)
+	return path, nil
+}
+
+// applyFastSettings detects postgresql.conf and appends speed-optimized settings
+// for test workloads. Settings that are already present are skipped. A restart
+// is needed for some settings (e.g. wal_level, max_connections) to take effect.
+func applyFastSettings() error {
+	confPath, err := detectPgConfigPath()
+	if err != nil {
+		return err
+	}
+
+	out, err := runOutput("sudo", "cat", confPath)
+	if err != nil {
+		return fmt.Errorf("reading postgresql.conf: %w", err)
+	}
+
+	// Check if we've already applied settings by looking for our marker comment.
+	if strings.Contains(out, "# sqlc test optimizations") {
+		log.Println("fast postgresql settings already applied, skipping")
+		return nil
+	}
+
+	log.Println("applying fast postgresql settings for test workloads")
+
+	var block strings.Builder
+	block.WriteString("\n# sqlc test optimizations\n")
+	for key, value := range pgFastSettings {
+		block.WriteString(fmt.Sprintf("%s = %s\n", key, value))
+	}
+
+	cmd := fmt.Sprintf("echo '%s' | sudo tee -a %s", block.String(), confPath)
+	if err := run("bash", "-c", cmd); err != nil {
+		return fmt.Errorf("appending settings to postgresql.conf: %w", err)
+	}
+
+	// Some settings (wal_level, max_connections, shared_buffers) require a
+	// full restart rather than just a reload.
+	log.Println("restarting postgresql for settings that require a restart")
+	if err := run("sudo", "service", "postgresql", "restart"); err != nil {
+		return fmt.Errorf("restarting postgresql: %w", err)
+	}
+
+	return nil
 }
 
 func startMySQL() error {

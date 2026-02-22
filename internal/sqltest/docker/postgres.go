@@ -1,10 +1,13 @@
 package docker
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"log/slog"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -12,6 +15,8 @@ import (
 )
 
 var postgresHost string
+
+const postgresImageName = "sqlc-postgres"
 
 func StartPostgreSQLServer(c context.Context) (string, error) {
 	if err := Installed(); err != nil {
@@ -38,11 +43,57 @@ func StartPostgreSQLServer(c context.Context) (string, error) {
 	return data, nil
 }
 
+// findRepoRoot walks up from the current directory to find the directory
+// containing go.mod, which is the repository root.
+func findRepoRoot() (string, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	for {
+		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
+			return dir, nil
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return "", fmt.Errorf("could not find repo root (go.mod)")
+		}
+		dir = parent
+	}
+}
+
+// buildPostgresImage builds the fast-startup PostgreSQL image from
+// Dockerfile.postgres. The Dockerfile requires no build context, so we
+// pipe it to `docker build -` to avoid sending the repo tree to the daemon.
+func buildPostgresImage() error {
+	root, err := findRepoRoot()
+	if err != nil {
+		return err
+	}
+	content, err := os.ReadFile(filepath.Join(root, "Dockerfile.postgres"))
+	if err != nil {
+		return fmt.Errorf("read Dockerfile.postgres: %w", err)
+	}
+	cmd := exec.Command("docker", "build", "-t", postgresImageName, "-")
+	cmd.Stdin = bytes.NewReader(content)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("docker build sqlc-postgres: %w\n%s", err, output)
+	}
+	return nil
+}
+
+// postgresImageExists checks whether the sqlc-postgres image is already built.
+func postgresImageExists() bool {
+	cmd := exec.Command("docker", "image", "inspect", postgresImageName)
+	return cmd.Run() == nil
+}
+
 func startPostgreSQLServer(c context.Context) (string, error) {
-	{
-		_, err := exec.Command("docker", "pull", "postgres:16").CombinedOutput()
-		if err != nil {
-			return "", fmt.Errorf("docker pull: postgres:16 %w", err)
+	// Build the fast-startup image if it doesn't already exist.
+	if !postgresImageExists() {
+		if err := buildPostgresImage(); err != nil {
+			return "", err
 		}
 	}
 
@@ -56,14 +107,13 @@ func startPostgreSQLServer(c context.Context) (string, error) {
 	}
 
 	if !exists {
+		// The sqlc-postgres image is pre-initialized and pre-configured,
+		// so no environment variables or extra flags are needed.
 		cmd := exec.Command("docker", "run",
 			"--name", "sqlc_sqltest_docker_postgres",
-			"-e", "POSTGRES_PASSWORD=mysecretpassword",
-			"-e", "POSTGRES_USER=postgres",
 			"-p", "5432:5432",
 			"-d",
-			"postgres:16",
-			"-c", "max_connections=200",
+			postgresImageName,
 		)
 
 		output, err := cmd.CombinedOutput()
@@ -88,7 +138,6 @@ func startPostgreSQLServer(c context.Context) (string, error) {
 			return "", fmt.Errorf("timeout reached: %w", ctx.Err())
 
 		case <-ticker.C:
-			// Run your function here
 			conn, err := pgx.Connect(ctx, uri)
 			if err != nil {
 				slog.Debug("sqltest", "connect", err)
