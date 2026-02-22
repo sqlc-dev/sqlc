@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"time"
 )
@@ -286,6 +285,12 @@ func startMySQL() error {
 		return verifyMySQL()
 	}
 
+	// Stop any existing MySQL service that might be running (e.g. pre-installed
+	// on GitHub Actions runners) to avoid port conflicts.
+	log.Println("stopping any existing mysql service")
+	_ = exec.Command("sudo", "service", "mysql", "stop").Run()
+	_ = exec.Command("sudo", "mysqladmin", "shutdown").Run()
+
 	// Check if data directory already exists and has been initialized
 	if mysqlInitialized() {
 		log.Println("mysql data directory already initialized, skipping initialization")
@@ -370,12 +375,14 @@ func verifyMySQL() error {
 }
 
 // mysqlInitialized checks if the MySQL data directory has been initialized.
+// We use sudo ls because /var/lib/mysql is typically only readable by the
+// mysql user, so filepath.Glob from a non-root process would silently fail.
 func mysqlInitialized() bool {
-	dataDir := "/var/lib/mysql"
-	entries, err := filepath.Glob(filepath.Join(dataDir, "*.pem"))
+	out, err := exec.Command("sudo", "ls", "/var/lib/mysql").CombinedOutput()
 	if err != nil {
 		return false
 	}
-	// MySQL creates TLS certificate files during initialization
-	return len(entries) > 0
+	// If the directory has any contents, consider it initialized.
+	// mysqld --initialize-insecure requires an empty directory.
+	return strings.TrimSpace(string(out)) != ""
 }
