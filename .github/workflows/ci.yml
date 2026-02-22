@@ -50,13 +50,20 @@ jobs:
       env:
         CGO_ENABLED: "0"
 
+    - name: install databases
+      run: go run ./cmd/sqlc-test-setup install
+
+    - name: start databases
+      run: go run ./cmd/sqlc-test-setup start
+
     - name: test ./...
-      run: gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m ./...
-      if: ${{ matrix.os }} != "windows-2022"
+      run: gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m -failfast ./...
       env:
         CI_SQLC_PROJECT_ID: ${{ secrets.CI_SQLC_PROJECT_ID }}
         CI_SQLC_AUTH_TOKEN: ${{ secrets.CI_SQLC_AUTH_TOKEN }}
         SQLC_AUTH_TOKEN: ${{ secrets.CI_SQLC_AUTH_TOKEN }}
+        POSTGRESQL_SERVER_URI: "postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable"
+        MYSQL_SERVER_URI: "root:mysecretpassword@tcp(127.0.0.1:3306)/mysql?multiStatements=true&parseTime=true"
         CGO_ENABLED: "0"
 
   vuln_check:
