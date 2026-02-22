@@ -174,6 +174,12 @@ func installAptProxy() error {
 func installPostgreSQL() error {
 	log.Println("--- Installing PostgreSQL ---")
 
+	// Install runtime dependencies needed by PostgreSQL extensions (e.g.
+	// uuid-ossp requires libossp-uuid16).
+	if err := installPgDeps(); err != nil {
+		return fmt.Errorf("installing postgresql dependencies: %w", err)
+	}
+
 	// Check if already installed in our directory
 	if _, err := os.Stat(pgBin("postgres")); err == nil {
 		out, err := runOutput(pgBin("postgres"), "--version")
@@ -236,6 +242,16 @@ func installPostgreSQL() error {
 		return fmt.Errorf("postgres --version failed after install: %w", err)
 	}
 	log.Printf("postgresql installed successfully: %s", strings.TrimSpace(out))
+	return nil
+}
+
+// installPgDeps installs shared libraries required by PostgreSQL extensions at
+// runtime (e.g. libossp-uuid16 for uuid-ossp).
+func installPgDeps() error {
+	log.Println("installing postgresql runtime dependencies")
+	if err := run("sudo", "apt-get", "install", "-y", "--no-install-recommends", "libossp-uuid16"); err != nil {
+		return fmt.Errorf("apt-get install libossp-uuid16: %w", err)
+	}
 	return nil
 }
 
