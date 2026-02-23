@@ -235,6 +235,7 @@ go run ./cmd/sqlc-test-setup start
 2. **Check for race conditions:** Use `-race` flag when testing concurrent code
 3. **Use specific package tests:** Faster iteration during development
 4. **Read existing tests:** Good examples in `/internal/engine/postgresql/*_test.go`
+5. **When changing `cmd/sqlc-test-setup/`:** You must re-run `go run ./cmd/sqlc-test-setup install && go run ./cmd/sqlc-test-setup start` and then run the full test suite (`go test --tags=examples -timeout 20m ./...`) to verify the databases install, start, and pass all tests end-to-end.
 
 ## Git Workflow
 
