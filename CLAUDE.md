@@ -6,7 +6,7 @@ This document provides essential information for working with the sqlc codebase,
 
 ### Prerequisites
 
-- **Go 1.25.0+** - Required for building and testing
+- **Go 1.26.0+** - Required for building and testing
 - **Docker & Docker Compose** - Required for integration tests with databases (local development)
 - **Git** - For version control
 
@@ -147,7 +147,7 @@ make start             # Start database containers
 ### GitHub Actions Workflow
 
 - **File:** `.github/workflows/ci.yml`
-- **Go Version:** 1.25.0
+- **Go Version:** 1.26.0
 - **Database Setup:** Uses `sqlc-test-setup` (not Docker) to install and start PostgreSQL and MySQL directly on the runner
 - **Test Command:** `gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m ./...`
 - **Additional Checks:** `govulncheck` for vulnerability scanning
