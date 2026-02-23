@@ -27,16 +27,14 @@ type pgBinary struct {
 }
 
 // pgBinaries maps "<GOOS>/<GOARCH>" to the corresponding binary download info.
-// We use musl builds so the binaries are statically linked and work on any
-// Linux distribution regardless of the system libc.
 var pgBinaries = map[string]pgBinary{
 	"linux/amd64": {
-		URL:    "https://github.com/theseus-rs/postgresql-binaries/releases/download/" + pgVersion + "/postgresql-" + pgVersion + "-x86_64-unknown-linux-musl.tar.gz",
-		SHA256: "36a50e34894e07e97af5e2dc40b0eda7146d984e86bf70b62fd21967d5dafc70",
+		URL:    "https://github.com/theseus-rs/postgresql-binaries/releases/download/" + pgVersion + "/postgresql-" + pgVersion + "-x86_64-unknown-linux-gnu.tar.gz",
+		SHA256: "cc2674e1641aa2a62b478971a22c131a768eb783f313e6a3385888f58a604074",
 	},
 	"linux/arm64": {
-		URL:    "https://github.com/theseus-rs/postgresql-binaries/releases/download/" + pgVersion + "/postgresql-" + pgVersion + "-aarch64-unknown-linux-musl.tar.gz",
-		SHA256: "330b5c552f6acb28e57ebc74ea50db46515022e68f13bd57e1224fe035d51ac7",
+		URL:    "https://github.com/theseus-rs/postgresql-binaries/releases/download/" + pgVersion + "/postgresql-" + pgVersion + "-aarch64-unknown-linux-gnu.tar.gz",
+		SHA256: "8b415a11c7a5484e5fbf7a57fca71554d2d1d7acd34faf066606d2fee1261854",
 	},
 }
 
@@ -176,6 +174,12 @@ func installAptProxy() error {
 func installPostgreSQL() error {
 	log.Println("--- Installing PostgreSQL ---")
 
+	// Install runtime dependencies needed by PostgreSQL extensions (e.g.
+	// uuid-ossp requires libossp-uuid16).
+	if err := installPgDeps(); err != nil {
+		return fmt.Errorf("installing postgresql dependencies: %w", err)
+	}
+
 	// Check if already installed in our directory
 	if _, err := os.Stat(pgBin("postgres")); err == nil {
 		out, err := runOutput(pgBin("postgres"), "--version")
@@ -238,6 +242,16 @@ func installPostgreSQL() error {
 		return fmt.Errorf("postgres --version failed after install: %w", err)
 	}
 	log.Printf("postgresql installed successfully: %s", strings.TrimSpace(out))
+	return nil
+}
+
+// installPgDeps installs shared libraries required by PostgreSQL extensions at
+// runtime (e.g. libossp-uuid16 for uuid-ossp).
+func installPgDeps() error {
+	log.Println("installing postgresql runtime dependencies")
+	if err := run("sudo", "apt-get", "install", "-y", "--no-install-recommends", "libossp-uuid16"); err != nil {
+		return fmt.Errorf("apt-get install libossp-uuid16: %w", err)
+	}
 	return nil
 }
 
