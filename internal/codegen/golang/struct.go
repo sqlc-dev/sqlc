@@ -31,7 +31,7 @@ func StructName(name string, options *opts.Options) string {
 		return rune('_')
 	}, name)
 
-	for _, p := range strings.Split(name, "_") {
+	for p := range strings.SplitSeq(name, "_") {
 		if _, found := options.InitialismsMap[p]; found {
 			out += strings.ToUpper(p)
 		} else {

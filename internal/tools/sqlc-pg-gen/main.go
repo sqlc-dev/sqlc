@@ -304,7 +304,7 @@ func run(ctx context.Context) error {
 		name := strings.Replace(extension, "-", "_", -1)
 
 		var funcName string
-		for _, part := range strings.Split(name, "_") {
+		for part := range strings.SplitSeq(name, "_") {
 			funcName += strings.Title(part)
 		}
 

@@ -1,7 +1,7 @@
 package ast
 
 type ParamExecData struct {
-	ExecPlan interface{}
+	ExecPlan any
 	Value    Datum
 	Isnull   bool
 }

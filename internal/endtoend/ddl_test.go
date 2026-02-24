@@ -12,7 +12,6 @@ import (
 
 func TestValidSchema(t *testing.T) {
 	for _, replay := range FindTests(t, "testdata", "base") {
-		replay := replay // https://golang.org/doc/faq#closures_and_goroutines
 
 		if replay.Exec != nil {
 			if replay.Exec.Meta.InvalidSchema {
@@ -32,7 +31,6 @@ func TestValidSchema(t *testing.T) {
 		}
 
 		for j, pkg := range conf.SQL {
-			j, pkg := j, pkg
 			switch pkg.Engine {
 			case config.EnginePostgreSQL:
 				// pass

@@ -221,8 +221,6 @@ func TestReplay(t *testing.T) {
 	}
 
 	for name, testctx := range contexts {
-		name := name
-		testctx := testctx
 
 		if !testctx.Enabled() {
 			continue
@@ -354,7 +352,6 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 	if !cmp.Equal(expected, actual, opts...) {
 		t.Errorf("%s contents differ", dir)
 		for name, contents := range expected {
-			name := name
 			if actual[name] == "" {
 				t.Errorf("%s is empty", name)
 				return
