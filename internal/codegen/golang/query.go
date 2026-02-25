@@ -12,6 +12,7 @@ import (
 type QueryValue struct {
 	Emit        bool
 	EmitPointer bool
+	ForcePointer bool
 	Name        string
 	DBName      string // The name of the field in the database. Only set if Struct==nil.
 	Struct      *Struct
@@ -32,7 +33,7 @@ func (v QueryValue) IsStruct() bool {
 }
 
 func (v QueryValue) IsPointer() bool {
-	return v.EmitPointer && v.Struct != nil
+	return v.ForcePointer || (v.EmitPointer && v.Struct != nil)
 }
 
 func (v QueryValue) isEmpty() bool {
@@ -270,7 +271,7 @@ type Query struct {
 }
 
 func (q Query) hasRetType() bool {
-	scanned := q.Cmd == metadata.CmdOne || q.Cmd == metadata.CmdMany ||
+	scanned := q.Cmd == metadata.CmdOne || q.Cmd == metadata.CmdFirst || q.Cmd == metadata.CmdMany ||
 		q.Cmd == metadata.CmdBatchMany || q.Cmd == metadata.CmdBatchOne
 	return scanned && !q.Ret.isEmpty()
 }
