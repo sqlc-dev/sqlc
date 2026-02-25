@@ -102,10 +102,12 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		}
 		var params []Parameter
 		for _, p := range result.Params {
-			params = append(params, Parameter{
-				Number: int(p.Number),
-				Column: convertColumn(p.Column),
-			})
+			params = append(
+				params, Parameter{
+					Number: int(p.Number),
+					Column: convertColumn(p.Column),
+				},
+			)
 		}
 
 		// Determine the insert table if applicable
@@ -136,10 +138,12 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 
 		// If the query uses star expansion, verify that it was edited. If not,
 		// return an error.
-		stars := astutils.Search(raw, func(node ast.Node) bool {
-			_, ok := node.(*ast.A_Star)
-			return ok
-		})
+		stars := astutils.Search(
+			raw, func(node ast.Node) bool {
+				_, ok := node.(*ast.A_Star)
+				return ok
+			},
+		)
 		hasStars := len(stars.Items) > 0
 		unchanged := inference.Query == rawSQL
 		if unchanged && hasStars {
@@ -183,12 +187,14 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 
 func rangeVars(root ast.Node) []*ast.RangeVar {
 	var vars []*ast.RangeVar
-	find := astutils.VisitorFunc(func(node ast.Node) {
-		switch n := node.(type) {
-		case *ast.RangeVar:
-			vars = append(vars, n)
-		}
-	})
+	find := astutils.VisitorFunc(
+		func(node ast.Node) {
+			switch n := node.(type) {
+			case *ast.RangeVar:
+				vars = append(vars, n)
+			}
+		},
+	)
 	astutils.Walk(find, root)
 	return vars
 }
