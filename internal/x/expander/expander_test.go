@@ -16,6 +16,8 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
+	"github.com/sqlc-dev/sqlc/internal/sqltest/docker"
+	"github.com/sqlc-dev/sqlc/internal/sqltest/native"
 )
 
 // PostgreSQLColumnGetter implements ColumnGetter for PostgreSQL using pgxpool.
@@ -109,13 +111,26 @@ func (g *SQLiteColumnGetter) GetColumnNames(ctx context.Context, query string) (
 }
 
 func TestExpandPostgreSQL(t *testing.T) {
-	// Skip if no database connection available
+	ctx := context.Background()
+
 	uri := os.Getenv("POSTGRESQL_SERVER_URI")
 	if uri == "" {
-		uri = "postgres://postgres:mysecretpassword@localhost:5432/postgres"
+		if err := docker.Installed(); err == nil {
+			u, err := docker.StartPostgreSQLServer(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			uri = u
+		} else if err := native.Supported(); err == nil {
+			u, err := native.StartPostgreSQLServer(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			uri = u
+		} else {
+			t.Skip("POSTGRESQL_SERVER_URI is empty and neither Docker nor native installation is available")
+		}
 	}
-
-	ctx := context.Background()
 
 	pool, err := pgxpool.New(ctx, uri)
 	if err != nil {
@@ -235,31 +250,26 @@ func TestExpandPostgreSQL(t *testing.T) {
 }
 
 func TestExpandMySQL(t *testing.T) {
-	// Get MySQL connection parameters
-	user := os.Getenv("MYSQL_USER")
-	if user == "" {
-		user = "root"
-	}
-	pass := os.Getenv("MYSQL_ROOT_PASSWORD")
-	if pass == "" {
-		pass = "mysecretpassword"
-	}
-	host := os.Getenv("MYSQL_HOST")
-	if host == "" {
-		host = "127.0.0.1"
-	}
-	port := os.Getenv("MYSQL_PORT")
-	if port == "" {
-		port = "3306"
-	}
-	dbname := os.Getenv("MYSQL_DATABASE")
-	if dbname == "" {
-		dbname = "dinotest"
-	}
-
-	source := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?multiStatements=true&parseTime=true", user, pass, host, port, dbname)
-
 	ctx := context.Background()
+
+	source := os.Getenv("MYSQL_SERVER_URI")
+	if source == "" {
+		if err := docker.Installed(); err == nil {
+			u, err := docker.StartMySQLServer(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			source = u
+		} else if err := native.Supported(); err == nil {
+			u, err := native.StartMySQLServer(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			source = u
+		} else {
+			t.Skip("MYSQL_SERVER_URI is empty and neither Docker nor native installation is available")
+		}
+	}
 
 	db, err := sql.Open("mysql", source)
 	if err != nil {
