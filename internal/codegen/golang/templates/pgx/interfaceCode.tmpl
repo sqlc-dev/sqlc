@@ -1,5 +1,10 @@
 {{define "interfaceCodePgx"}}
     type Querier interface {
+    {{- if .UseInterfaceReturnTypes}}
+        WithTx(tx pgx.Tx) Querier
+    {{- else -}}
+        WithTx(tx pgx.Tx) *Queries
+    {{- end}}
     {{- $dbtxParam := .EmitMethodsWithDBArgument -}}
     {{- range .GoQueries}}
         {{- if and (eq .Cmd ":one") ($dbtxParam) }}
