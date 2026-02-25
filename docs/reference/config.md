@@ -183,10 +183,16 @@ The `gen` mapping supports the following keys:
   - Customize the name of the db file. Defaults to `db.go`.
 - `output_models_file_name`:
   - Customize the name of the models file. Defaults to `models.go`.
+- `output_models_package`:
+  - Package name of the models file. Used when models file is in a different package. Defaults to value of `package` option.
+- `models_package_import_path`:
+  - Import path of the models package when models file is in a different package. Optional.
 - `output_querier_file_name`:
   - Customize the name of the querier file. Defaults to `querier.go`.
 - `output_copyfrom_file_name`:
   - Customize the name of the copyfrom file. Defaults to `copyfrom.go`.
+- `output_query_files_directory`:
+  - Directory where the generated query files will be placed. Defaults to the value of `out` option.
 - `output_files_suffix`:
   - If specified the suffix will be added to the name of the generated files.
 - `query_parameter_limit`:
