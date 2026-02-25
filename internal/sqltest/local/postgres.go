@@ -36,21 +36,21 @@ func postgreSQL(t *testing.T, migrations []string, rw bool) string {
 
 	dburi := os.Getenv("POSTGRESQL_SERVER_URI")
 	if dburi == "" {
-		if ierr := docker.Installed(); ierr == nil {
-			u, err := docker.StartPostgreSQLServer(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-			dburi = u
-		} else if ierr := native.Supported(); ierr == nil {
-			// Fall back to native installation when Docker is not available
+		if ierr := native.Supported(); ierr == nil {
 			u, err := native.StartPostgreSQLServer(ctx)
 			if err != nil {
 				t.Fatal(err)
 			}
 			dburi = u
+		} else if ierr := docker.Installed(); ierr == nil {
+			// Fall back to Docker when native installation is not available
+			u, err := docker.StartPostgreSQLServer(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			dburi = u
 		} else {
-			t.Skip("POSTGRESQL_SERVER_URI is empty and neither Docker nor native installation is available")
+			t.Skip("POSTGRESQL_SERVER_URI is empty and neither native installation nor Docker is available")
 		}
 	}
 
