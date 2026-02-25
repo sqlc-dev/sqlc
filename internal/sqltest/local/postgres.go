@@ -91,7 +91,7 @@ func postgreSQL(t *testing.T, migrations []string, rw bool) string {
 
 	key := uri.String()
 
-	_, err, _ = flight.Do(key, func() (interface{}, error) {
+	_, err, _ = flight.Do(key, func() (any, error) {
 		row := postgresPool.QueryRow(ctx,
 			fmt.Sprintf(`SELECT datname FROM pg_database WHERE datname = '%s'`, name))
 
