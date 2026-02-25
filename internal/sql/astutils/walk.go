@@ -665,11 +665,6 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Ctecolcollations)
 		}
 
-	case *ast.Const:
-		if n.Xpr != nil {
-			Walk(f, n.Xpr)
-		}
-
 	case *ast.Constraint:
 		if n.RawExpr != nil {
 			Walk(f, n.RawExpr)
