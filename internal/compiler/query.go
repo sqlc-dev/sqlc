@@ -51,6 +51,12 @@ type Query struct {
 	// Needed for CopyFrom
 	InsertIntoTable *ast.TableName
 
+	// Target table for UPDATE queries
+	UpdateTable *ast.TableName
+
+	// Target table for DELETE queries
+	DeleteFromTable *ast.TableName
+
 	// Needed for vet
 	RawStmt *ast.RawStmt
 }
