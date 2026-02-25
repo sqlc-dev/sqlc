@@ -17,6 +17,7 @@ import (
 
 type cc struct {
 	paramCount int
+	sql        string // Original SQL text for this statement
 }
 
 func todo(n pcast.Node) *ast.TODO {
@@ -672,6 +673,41 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
 	return stmt
 }
 
+// isBooleanLiteral checks if the ValueExpr represents a boolean literal (true/false)
+// by examining the original SQL text
+func (c *cc) isBooleanLiteral(n *driver.ValueExpr) bool {
+	if c.sql == "" {
+		return false
+	}
+
+	pos := n.OriginTextPosition()
+	if pos < 0 || pos >= len(c.sql) {
+		return false
+	}
+
+	// Extract the token from the SQL text
+	remaining := strings.ToLower(c.sql[pos:])
+
+	// Check if it starts with "true" or "false" and is followed by a non-identifier character
+	if strings.HasPrefix(remaining, "true") {
+		if len(remaining) == 4 || !isIdentifierChar(remaining[4]) {
+			return true
+		}
+	}
+	if strings.HasPrefix(remaining, "false") {
+		if len(remaining) == 5 || !isIdentifierChar(remaining[5]) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// isIdentifierChar returns true if the character can be part of an identifier
+func isIdentifierChar(c byte) bool {
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_'
+}
+
 func (c *cc) convertValueExpr(n *driver.ValueExpr) *ast.A_Const {
 	switch n.TexprNode.Type.GetType() {
 	case mysql.TypeBit:
@@ -691,6 +727,15 @@ func (c *cc) convertValueExpr(n *driver.ValueExpr) *ast.A_Const {
 		mysql.TypeYear,
 		mysql.TypeLong,
 		mysql.TypeLonglong:
+		// Check if this is a boolean literal (true/false)
+		if c.isBooleanLiteral(n) {
+			return &ast.A_Const{
+				Val: &ast.Boolean{
+					Boolval: n.Datum.GetInt64() != 0,
+				},
+				Location: n.OriginTextPosition(),
+			}
+		}
 		return &ast.A_Const{
 			Val: &ast.Integer{
 				Ival: n.Datum.GetInt64(),
