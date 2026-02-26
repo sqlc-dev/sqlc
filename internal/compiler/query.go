@@ -61,7 +61,21 @@ type Query struct {
 	RawStmt *ast.RawStmt
 }
 
+type ParameterContext int
+
+const (
+	ParameterContextUnspecified ParameterContext = iota
+	ParameterContextSet
+	ParameterContextValues
+	ParameterContextWhere
+	ParameterContextHaving
+	ParameterContextFunctionArg
+	ParameterContextLimit
+	ParameterContextOffset
+)
+
 type Parameter struct {
-	Number int
-	Column *Column
+	Number  int
+	Column  *Column
+	Context ParameterContext
 }

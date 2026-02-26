@@ -115,9 +115,21 @@ message Query {
   Identifier delete_from_table = 10 [json_name = "delete_from_table"];
 }
 
+enum ParameterContext {
+  PARAMETER_CONTEXT_UNSPECIFIED = 0;
+  PARAMETER_CONTEXT_SET = 1;
+  PARAMETER_CONTEXT_VALUES = 2;
+  PARAMETER_CONTEXT_WHERE = 3;
+  PARAMETER_CONTEXT_HAVING = 4;
+  PARAMETER_CONTEXT_FUNCTION_ARG = 5;
+  PARAMETER_CONTEXT_LIMIT = 6;
+  PARAMETER_CONTEXT_OFFSET = 7;
+}
+
 message Parameter {
   int32 number = 1 [json_name = "number"];
   Column column = 2 [json_name = "column"];
+  ParameterContext context = 3 [json_name = "context"];
 }
 
 message GenerateRequest {

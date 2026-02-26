@@ -236,8 +236,9 @@ func pluginQueryColumn(c *compiler.Column) *plugin.Column {
 
 func pluginQueryParam(p compiler.Parameter) *plugin.Parameter {
 	return &plugin.Parameter{
-		Number: int32(p.Number),
-		Column: pluginQueryColumn(p.Column),
+		Number:  int32(p.Number),
+		Column:  pluginQueryColumn(p.Column),
+		Context: plugin.ParameterContext(p.Context),
 	}
 }
 

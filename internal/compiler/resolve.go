@@ -126,6 +126,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					NotNull:      p.NotNull(),
 					IsNamedParam: isNamed,
 				},
+				Context: ParameterContextOffset,
 			})
 
 		case *limitCount:
@@ -139,6 +140,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					NotNull:      p.NotNull(),
 					IsNamedParam: isNamed,
 				},
+				Context: ParameterContextLimit,
 			})
 
 		case *ast.A_Expr:
@@ -173,6 +175,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 						NotNull:      p.NotNull(),
 						IsSqlcSlice:  p.IsSqlcSlice(),
 					},
+					Context: ParameterContextWhere,
 				})
 				continue
 			}
@@ -246,6 +249,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 								IsNamedParam: isNamed,
 								IsSqlcSlice:  p.IsSqlcSlice(),
 							},
+							Context: ParameterContextWhere,
 						})
 					}
 				}
@@ -311,6 +315,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 							IsNamedParam: isNamed,
 							IsSqlcSlice:  p.IsSqlcSlice(),
 						},
+						Context: ParameterContextWhere,
 					})
 				}
 			}
@@ -383,6 +388,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 							NotNull:      p.NotNull(),
 							IsSqlcSlice:  p.IsSqlcSlice(),
 						},
+						Context: ParameterContextFunctionArg,
 					})
 					continue
 				}
@@ -425,6 +431,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 						IsNamedParam: isNamed,
 						IsSqlcSlice:  p.IsSqlcSlice(),
 					},
+					Context: ParameterContextFunctionArg,
 				})
 			}
 
@@ -498,6 +505,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 						IsNamedParam: isNamed,
 						IsSqlcSlice:  p.IsSqlcSlice(),
 					},
+					Context: ParameterContextSet,
 				})
 			} else {
 				return nil, &sqlerr.Error{
@@ -608,6 +616,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 								IsNamedParam: isNamed,
 								IsSqlcSlice:  p.IsSqlcSlice(),
 							},
+							Context: ParameterContextWhere,
 						})
 					}
 				}
