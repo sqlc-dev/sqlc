@@ -65074,12 +65074,15 @@
             "original_name": "id",
             "unsigned": false,
             "array_dims": 0
-          }
+          },
+          "context": "PARAMETER_CONTEXT_WHERE"
         }
       ],
       "comments": [],
       "filename": "query.sql",
-      "insert_into_table": null
+      "insert_into_table": null,
+      "update_table": null,
+      "delete_from_table": null
     },
     {
       "text": "SELECT id, name, bio FROM authors\nORDER BY name",
@@ -65168,7 +65171,9 @@
       "params": [],
       "comments": [],
       "filename": "query.sql",
-      "insert_into_table": null
+      "insert_into_table": null,
+      "update_table": null,
+      "delete_from_table": null
     },
     {
       "text": "INSERT INTO authors (\n          name, bio\n) VALUES (\n  $1, $2\n)\nRETURNING id, name, bio",
@@ -65282,7 +65287,8 @@
             "original_name": "name",
             "unsigned": false,
             "array_dims": 0
-          }
+          },
+          "context": "PARAMETER_CONTEXT_SET"
         },
         {
           "number": 2,
@@ -65311,7 +65317,8 @@
             "original_name": "bio",
             "unsigned": false,
             "array_dims": 0
-          }
+          },
+          "context": "PARAMETER_CONTEXT_SET"
         }
       ],
       "comments": [],
@@ -65320,7 +65327,86 @@
         "catalog": "",
         "schema": "",
         "name": "authors"
-      }
+      },
+      "update_table": null,
+      "delete_from_table": null
+    },
+    {
+      "text": "UPDATE authors SET bio = $1\nWHERE id = $2",
+      "name": "UpdateAuthorBio",
+      "cmd": ":exec",
+      "columns": [],
+      "params": [
+        {
+          "number": 1,
+          "column": {
+            "name": "bio",
+            "not_null": false,
+            "is_array": false,
+            "comment": "",
+            "length": -1,
+            "is_named_param": false,
+            "is_func_call": false,
+            "scope": "",
+            "table": {
+              "catalog": "",
+              "schema": "public",
+              "name": "authors"
+            },
+            "table_alias": "",
+            "type": {
+              "catalog": "",
+              "schema": "",
+              "name": "text"
+            },
+            "is_sqlc_slice": false,
+            "embed_table": null,
+            "original_name": "bio",
+            "unsigned": false,
+            "array_dims": 0
+          },
+          "context": "PARAMETER_CONTEXT_SET"
+        },
+        {
+          "number": 2,
+          "column": {
+            "name": "id",
+            "not_null": true,
+            "is_array": false,
+            "comment": "",
+            "length": -1,
+            "is_named_param": false,
+            "is_func_call": false,
+            "scope": "",
+            "table": {
+              "catalog": "",
+              "schema": "",
+              "name": "authors"
+            },
+            "table_alias": "",
+            "type": {
+              "catalog": "",
+              "schema": "",
+              "name": "bigserial"
+            },
+            "is_sqlc_slice": false,
+            "embed_table": null,
+            "original_name": "id",
+            "unsigned": false,
+            "array_dims": 0
+          },
+          "context": "PARAMETER_CONTEXT_WHERE"
+        }
+      ],
+      "comments": [],
+      "filename": "query.sql",
+      "insert_into_table": null,
+      "update_table": {
+        "catalog": "",
+        "schema": "",
+        "name": "authors"
+      },
+      "delete_from_table": null
     },
     {
       "text": "DELETE FROM authors\nWHERE id = $1",
@@ -65355,12 +65441,19 @@
             "original_name": "id",
             "unsigned": false,
             "array_dims": 0
-          }
+          },
+          "context": "PARAMETER_CONTEXT_WHERE"
         }
       ],
       "comments": [],
       "filename": "query.sql",
-      "insert_into_table": null
+      "insert_into_table": null,
+      "update_table": null,
+      "delete_from_table": {
+        "catalog": "",
+        "schema": "",
+        "name": "authors"
+      }
     }
   ],
   "sqlc_version": "v1.30.0",

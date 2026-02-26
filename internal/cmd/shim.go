@@ -152,6 +152,22 @@ func pluginQueries(r *compiler.Result) []*plugin.Query {
 				Name:    q.InsertIntoTable.Name,
 			}
 		}
+		var ut *plugin.Identifier
+		if q.UpdateTable != nil {
+			ut = &plugin.Identifier{
+				Catalog: q.UpdateTable.Catalog,
+				Schema:  q.UpdateTable.Schema,
+				Name:    q.UpdateTable.Name,
+			}
+		}
+		var dft *plugin.Identifier
+		if q.DeleteFromTable != nil {
+			dft = &plugin.Identifier{
+				Catalog: q.DeleteFromTable.Catalog,
+				Schema:  q.DeleteFromTable.Schema,
+				Name:    q.DeleteFromTable.Name,
+			}
+		}
 		out = append(out, &plugin.Query{
 			Name:            q.Metadata.Name,
 			Cmd:             q.Metadata.Cmd,
@@ -161,6 +177,8 @@ func pluginQueries(r *compiler.Result) []*plugin.Query {
 			Params:          params,
 			Filename:        q.Metadata.Filename,
 			InsertIntoTable: iit,
+			UpdateTable:     ut,
+			DeleteFromTable: dft,
 		})
 	}
 	return out
@@ -218,8 +236,9 @@ func pluginQueryColumn(c *compiler.Column) *plugin.Column {
 
 func pluginQueryParam(p compiler.Parameter) *plugin.Parameter {
 	return &plugin.Parameter{
-		Number: int32(p.Number),
-		Column: pluginQueryColumn(p.Column),
+		Number:  int32(p.Number),
+		Column:  pluginQueryColumn(p.Column),
+		Context: plugin.ParameterContext(p.Context),
 	}
 }
 

@@ -65076,12 +65076,15 @@
             "original_name": "id",
             "unsigned": false,
             "array_dims": 0
-          }
+          },
+          "context": "PARAMETER_CONTEXT_WHERE"
         }
       ],
       "comments": [],
       "filename": "query.sql",
-      "insert_into_table": null
+      "insert_into_table": null,
+      "update_table": null,
+      "delete_from_table": null
     },
     {
       "text": "SELECT id, name, bio FROM authors\nORDER BY name",
@@ -65170,7 +65173,9 @@
       "params": [],
       "comments": [],
       "filename": "query.sql",
-      "insert_into_table": null
+      "insert_into_table": null,
+      "update_table": null,
+      "delete_from_table": null
     },
     {
       "text": "INSERT INTO authors (\n          name, bio\n) VALUES (\n  $1, $2\n)\nRETURNING id, name, bio",
@@ -65284,7 +65289,8 @@
             "original_name": "name",
             "unsigned": false,
             "array_dims": 0
-          }
+          },
+          "context": "PARAMETER_CONTEXT_SET"
         },
         {
           "number": 2,
@@ -65313,7 +65319,8 @@
             "original_name": "bio",
             "unsigned": false,
             "array_dims": 0
-          }
+          },
+          "context": "PARAMETER_CONTEXT_SET"
         }
       ],
       "comments": [],
@@ -65322,7 +65329,9 @@
         "catalog": "",
         "schema": "",
         "name": "authors"
-      }
+      },
+      "update_table": null,
+      "delete_from_table": null
     },
     {
       "text": "DELETE FROM authors\nWHERE id = $1",
@@ -65357,12 +65366,19 @@
             "original_name": "id",
             "unsigned": false,
             "array_dims": 0
-          }
+          },
+          "context": "PARAMETER_CONTEXT_WHERE"
         }
       ],
       "comments": [],
       "filename": "query.sql",
-      "insert_into_table": null
+      "insert_into_table": null,
+      "update_table": null,
+      "delete_from_table": {
+        "catalog": "",
+        "schema": "",
+        "name": "authors"
+      }
     }
   ],
   "sqlc_version": "v1.30.0",
