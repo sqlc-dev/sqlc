@@ -65076,7 +65076,8 @@
             "original_name": "id",
             "unsigned": false,
             "array_dims": 0
-          }
+          },
+          "context": "PARAMETER_CONTEXT_WHERE"
         }
       ],
       "comments": [],
@@ -65288,7 +65289,8 @@
             "original_name": "name",
             "unsigned": false,
             "array_dims": 0
-          }
+          },
+          "context": "PARAMETER_CONTEXT_SET"
         },
         {
           "number": 2,
@@ -65317,7 +65319,8 @@
             "original_name": "bio",
             "unsigned": false,
             "array_dims": 0
-          }
+          },
+          "context": "PARAMETER_CONTEXT_SET"
         }
       ],
       "comments": [],
@@ -65363,7 +65366,8 @@
             "original_name": "id",
             "unsigned": false,
             "array_dims": 0
-          }
+          },
+          "context": "PARAMETER_CONTEXT_WHERE"
         }
       ],
       "comments": [],
