@@ -1,0 +1,2 @@
+# package db
+query.sql:8:18: table alias "location" does not exist
