@@ -39,6 +39,7 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 			continue
 		}
 		contents := migrations.RemoveRollbackStatements(string(blob))
+		contents = removePsqlMetaCommands(contents)
 		c.schema = append(c.schema, contents)
 
 		// In database-only mode, we parse the schema to validate syntax
@@ -65,6 +66,156 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 		return merr
 	}
 	return nil
+}
+
+func removePsqlMetaCommands(contents string) string {
+	if contents == "" {
+		return contents
+	}
+	var out strings.Builder
+	out.Grow(len(contents))
+
+	lineStart := true
+	inSingle := false
+	inDollar := false
+	var dollarTag string
+	blockDepth := 0
+	n := len(contents)
+	for i := 0; ; {
+		if lineStart && !inSingle && blockDepth == 0 && !inDollar {
+			start := i
+			for i < n {
+				c := contents[i]
+				if c == ' ' || c == '\t' || c == '\r' {
+					i++
+					continue
+				}
+				break
+			}
+			if i < n && contents[i] == '\\' {
+				for i < n && contents[i] != '\n' {
+					i++
+				}
+				if i < n && contents[i] == '\n' {
+					out.WriteByte('\n')
+					i++
+				}
+				lineStart = true
+				continue
+			}
+			if start < i {
+				out.WriteString(contents[start:i])
+			}
+			if i >= n {
+				break
+			}
+		}
+		if i >= n {
+			break
+		}
+		c := contents[i]
+		if inSingle {
+			out.WriteByte(c)
+			if c == '\'' {
+				if i+1 < n && contents[i+1] == '\'' {
+					out.WriteByte(contents[i+1])
+					i += 2
+					lineStart = false
+					continue
+				}
+				inSingle = false
+			}
+			if c == '\n' {
+				lineStart = true
+			} else {
+				lineStart = false
+			}
+			i++
+			continue
+		}
+		if inDollar {
+			if strings.HasPrefix(contents[i:], dollarTag) {
+				out.WriteString(dollarTag)
+				i += len(dollarTag)
+				inDollar = false
+				lineStart = false
+				continue
+			}
+			out.WriteByte(c)
+			if c == '\n' {
+				lineStart = true
+			} else {
+				lineStart = false
+			}
+			i++
+			continue
+		}
+		if blockDepth > 0 {
+			if c == '/' && i+1 < n && contents[i+1] == '*' {
+				blockDepth++
+				out.WriteString("/*")
+				i += 2
+				lineStart = false
+				continue
+			}
+			if c == '*' && i+1 < n && contents[i+1] == '/' {
+				blockDepth--
+				out.WriteString("*/")
+				i += 2
+				lineStart = false
+				continue
+			}
+			out.WriteByte(c)
+			if c == '\n' {
+				lineStart = true
+			} else {
+				lineStart = false
+			}
+			i++
+			continue
+		}
+		switch c {
+		case '\'':
+			inSingle = true
+			out.WriteByte(c)
+			lineStart = false
+			i++
+			continue
+		case '$':
+			tagEnd := i + 1
+			for tagEnd < n && isDollarTagChar(contents[tagEnd]) {
+				tagEnd++
+			}
+			if tagEnd < n && contents[tagEnd] == '$' {
+				dollarTag = contents[i : tagEnd+1]
+				inDollar = true
+				out.WriteString(dollarTag)
+				i = tagEnd + 1
+				lineStart = false
+				continue
+			}
+		case '/':
+			if i+1 < n && contents[i+1] == '*' {
+				blockDepth = 1
+				out.WriteString("/*")
+				i += 2
+				lineStart = false
+				continue
+			}
+		}
+		out.WriteByte(c)
+		if c == '\n' {
+			lineStart = true
+		} else {
+			lineStart = false
+		}
+		i++
+	}
+	return out.String()
+}
+
+func isDollarTagChar(b byte) bool {
+	return b == '_' || (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z') || (b >= '0' && b <= '9')
 }
 
 func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
