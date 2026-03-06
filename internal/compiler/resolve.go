@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"strconv"
+	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
@@ -155,7 +156,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			}
 			if funcCallSide != nil {
 				fun, ferr := c.ResolveFuncCall(funcCallSide)
-				if ferr == nil && fun.ReturnType != nil && fun.ReturnType.Name != "any" {
+				if ferr == nil && fun.ReturnType != nil && !strings.HasPrefix(fun.ReturnType.Name, "any") && fun.ReturnType.Name != "record" {
 					defaultP := named.NewInferredParam(ref.name, true)
 					p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
 					a = append(a, Parameter{
