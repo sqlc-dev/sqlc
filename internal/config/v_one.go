@@ -11,12 +11,13 @@ import (
 )
 
 type V1GenerateSettings struct {
-	Version   string              `json:"version" yaml:"version"`
-	Cloud     Cloud               `json:"cloud" yaml:"cloud"`
-	Packages  []v1PackageSettings `json:"packages" yaml:"packages"`
-	Overrides []golang.Override   `json:"overrides,omitempty" yaml:"overrides,omitempty"`
-	Rename    map[string]string   `json:"rename,omitempty" yaml:"rename,omitempty"`
-	Rules     []Rule              `json:"rules" yaml:"rules"`
+	Version    string              `json:"version" yaml:"version"`
+	Cloud      Cloud               `json:"cloud" yaml:"cloud"`
+	Packages   []v1PackageSettings `json:"packages" yaml:"packages"`
+	Overrides  []golang.Override   `json:"overrides,omitempty" yaml:"overrides,omitempty"`
+	Rename     map[string]string   `json:"rename,omitempty" yaml:"rename,omitempty"`
+	RenameEnum map[string]string   `json:"rename_enum,omitempty" yaml:"rename_enum,omitempty"`
+	Rules      []Rule              `json:"rules" yaml:"rules"`
 }
 
 type v1PackageSettings struct {
@@ -175,10 +176,11 @@ func (c *V1GenerateSettings) Translate() Config {
 		})
 	}
 
-	if len(c.Overrides) > 0 || len(c.Rename) > 0 {
+	if len(c.Overrides) > 0 || len(c.Rename) > 0 || len(c.RenameEnum) > 0 {
 		conf.Overrides.Go = &golang.GlobalOptions{
-			Overrides: c.Overrides,
-			Rename:    c.Rename,
+			Overrides:  c.Overrides,
+			Rename:     c.Rename,
+			RenameEnum: c.RenameEnum,
 		}
 	}
 
