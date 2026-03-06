@@ -13,7 +13,7 @@ const example = `-- name: Example :many
 select 1 where not ?1
 `
 
-func (q *Queries) Example(ctx context.Context, argname bool) ([]int64, error) {
+func (q *Queries) Example(ctx context.Context, argname interface{}) ([]int64, error) {
 	rows, err := q.db.QueryContext(ctx, example, argname)
 	if err != nil {
 		return nil, err
