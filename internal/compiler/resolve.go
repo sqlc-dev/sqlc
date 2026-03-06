@@ -157,7 +157,22 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			if funcCallSide != nil {
 				fun, ferr := c.ResolveFuncCall(funcCallSide)
 				if ferr == nil && fun.ReturnType != nil && !strings.HasPrefix(fun.ReturnType.Name, "any") && fun.ReturnType.Name != "record" {
-					defaultP := named.NewInferredParam(ref.name, true)
+					paramName := ref.name
+					if paramName == "" {
+						fcList := astutils.Search(funcCallSide, func(node ast.Node) bool {
+							_, ok := node.(*ast.ColumnRef)
+							return ok
+						})
+						if len(fcList.Items) > 0 {
+							if cr, ok := fcList.Items[0].(*ast.ColumnRef); ok {
+								items := stringSlice(cr.Fields)
+								if len(items) > 0 {
+									paramName = items[len(items)-1]
+								}
+							}
+						}
+					}
+					defaultP := named.NewInferredParam(paramName, true)
 					p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
 					a = append(a, Parameter{
 						Number: ref.ref.Number,
