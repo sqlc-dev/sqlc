@@ -26,11 +26,21 @@ func hasConcreteParamType(col *Column) bool {
 	return col != nil && col.DataType != "" && col.DataType != "any"
 }
 
-func paramTypeString(col *Column) string {
-    if !hasConcreteParamType(col) {
-        return "any"
-    }
-    return col.DataType + strings.Repeat("[]", col.ArrayDims)
+func (comp *Compiler) paramTypeString(col *Column) string {
+	if !hasConcreteParamType(col) {
+		return "any"
+	}
+
+	arraySuffix := strings.Repeat("[]", col.ArrayDims)
+	if col.Type != nil && col.Type.Name != "" {
+		return comp.parser.TypeName(col.Type.Schema, col.Type.Name) + arraySuffix
+	}
+
+	if rel, err := ParseRelationString(col.DataType); err == nil && rel.Catalog == "" {
+		return comp.parser.TypeName(rel.Schema, rel.Name) + arraySuffix
+	}
+
+	return col.DataType + arraySuffix
 }
 
 func compatibleParamTypes(a, b *Column) bool {
@@ -81,10 +91,15 @@ func mergeResolvedParam(existing, incoming Parameter) Parameter {
 	return base
 }
 
-func incompatibleParamRefError(ref paramRef, existing, incoming Parameter) error {
+func (comp *Compiler) incompatibleParamRefError(ref paramRef, existing, incoming Parameter) error {
 	return &sqlerr.Error{
 		Code:     "42P08",
-		Message:  fmt.Sprintf("parameter $%d has incompatible types: %s, %s", ref.ref.Number, paramTypeString(existing.Column), paramTypeString(incoming.Column)),
+		Message:  fmt.Sprintf(
+			"parameter $%d has incompatible types: %s, %s",
+			ref.ref.Number,
+			comp.paramTypeString(existing.Column),
+			comp.paramTypeString(incoming.Column),
+		),
 		Location: ref.ref.Location,
 	}
 }
@@ -171,7 +186,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 	addParam := func(ref paramRef, p Parameter) error {
 		if idx, ok := seen[p.Number]; ok {
 			if !compatibleParamTypes(a[idx].Column, p.Column) {
-				return incompatibleParamRefError(ref, a[idx], p)
+				return comp.incompatibleParamRefError(ref, a[idx], p)
 			}
 			a[idx] = mergeResolvedParam(a[idx], p)
 			return nil
@@ -381,9 +396,10 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
 					var namePrefix string
 					if !isNamed {
-						if ref.ref == n.Left {
+						switch ref.ref {
+						case n.Left:
 							namePrefix = "from_"
-						} else if ref.ref == n.Right {
+						case n.Right:
 							namePrefix = "to_"
 						}
 					}
