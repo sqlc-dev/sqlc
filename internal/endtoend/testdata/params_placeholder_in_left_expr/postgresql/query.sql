@@ -2,4 +2,4 @@
 SELECT * FROM users WHERE $1 = id;
 
 -- name: FindByIDAndName :many
-SELECT * FROM users WHERE $1 = id AND $1 = name;
+SELECT * FROM users WHERE $1 = id AND $2 = name;

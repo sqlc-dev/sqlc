@@ -1,0 +1,2 @@
+# package querytest
+query.sql:5:10: parameter $1 has incompatible types: text, integer

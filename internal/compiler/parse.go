@@ -193,28 +193,29 @@ func rangeVars(root ast.Node) []*ast.RangeVar {
 	return vars
 }
 
-func uniqueParamRefs(in []paramRef, dollar bool) []paramRef {
-	m := make(map[int]bool, len(in))
-	o := make([]paramRef, 0, len(in))
+func numberParamRefs(in []paramRef, dollar bool) []paramRef {
+	if dollar {
+		return in
+	}
+
+	used := make(map[int]bool, len(in))
 	for _, v := range in {
-		if !m[v.ref.Number] {
-			m[v.ref.Number] = true
-			if v.ref.Number != 0 {
-				o = append(o, v)
-			}
+		if v.ref.Number != 0 {
+			used[v.ref.Number] = true
 		}
 	}
-	if !dollar {
-		start := 1
-		for _, v := range in {
-			if v.ref.Number == 0 {
-				for m[start] {
-					start++
-				}
-				v.ref.Number = start
-				o = append(o, v)
-			}
+
+	start := 1
+	for i := range in {
+		if in[i].ref.Number != 0 {
+			continue
 		}
+		for used[start] {
+			start++
+		}
+		in[i].ref.Number = start
+		used[start] = true
 	}
-	return o
+
+	return in
 }
