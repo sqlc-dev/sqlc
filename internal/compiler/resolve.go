@@ -786,11 +786,6 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				continue
 			}
 
-			number := 0
-			if pr, ok := n.List[0].(*ast.ParamRef); ok {
-				number = pr.Number
-			}
-
 			location := 0
 			var key, alias string
 			var items []string
@@ -850,7 +845,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 						defaultP := named.NewInferredParam(key, c.IsNotNull)
 						p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
 						if err := addParam(ref, Parameter{
-							Number: number,
+							Number: ref.ref.Number,
 							Column: &Column{
 								Name:         p.Name(),
 								OriginalName: c.Name,
