@@ -344,6 +344,58 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		})
 	}
 
+	addColumnParam := func(ref paramRef, key string, location int) error {
+		var schema, rel string
+		// TODO: Deprecate defaultTable
+		if defaultTable != nil {
+			schema = defaultTable.Schema
+			rel = defaultTable.Name
+		}
+		if ref.rv != nil {
+			fqn, err := ParseTableName(ref.rv)
+			if err != nil {
+				return err
+			}
+			schema = fqn.Schema
+			rel = fqn.Name
+		}
+		if schema == "" {
+			schema = c.DefaultSchema
+		}
+
+		tableMap, ok := typeMap[schema][rel]
+		if !ok {
+			return sqlerr.RelationNotFound(rel)
+		}
+
+		if c, ok := tableMap[key]; ok {
+			defaultP := named.NewInferredParam(key, c.IsNotNull)
+			p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
+			return addParam(ref, Parameter{
+				Number: ref.ref.Number,
+				Column: &Column{
+					Name:         p.Name(),
+					OriginalName: c.Name,
+					DataType:     dataType(&c.Type),
+					NotNull:      p.NotNull(),
+					Unsigned:     c.IsUnsigned,
+					IsArray:      c.IsArray,
+					ArrayDims:    c.ArrayDims,
+					Table:        &ast.TableName{Schema: schema, Name: rel},
+					Length:       c.Length,
+					IsNamedParam: isNamed,
+					IsSqlcSlice:  p.IsSqlcSlice(),
+				},
+			})
+		}
+
+		return &sqlerr.Error{
+			Code:     "42703",
+			Message:  fmt.Sprintf("column %q does not exist", key),
+			Location: location,
+		}
+	}
+
 	for _, ref := range args {
 		switch n := ref.parent.(type) {
 
@@ -434,7 +486,13 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				}
 
 				search := tables
-				if alias != "" {
+				if alias == "" && ref.rv != nil {
+					fqn, err := ParseTableName(ref.rv)
+					if err != nil {
+						return nil, err
+					}
+					search = []*ast.TableName{fqn}
+				} else if alias != "" {
 					if original, ok := aliasMap[alias]; ok {
 						search = []*ast.TableName{original}
 					} else {
@@ -704,58 +762,13 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			if n.Name == nil {
 				return nil, fmt.Errorf("*ast.ResTarget has nil name")
 			}
-			key := *n.Name
-
-			var schema, rel string
-			// TODO: Deprecate defaultTable
-			if defaultTable != nil {
-				schema = defaultTable.Schema
-				rel = defaultTable.Name
-			}
-			if ref.rv != nil {
-				fqn, err := ParseTableName(ref.rv)
-				if err != nil {
-					return nil, err
-				}
-				schema = fqn.Schema
-				rel = fqn.Name
-			}
-			if schema == "" {
-				schema = c.DefaultSchema
+			if err := addColumnParam(ref, *n.Name, n.Location); err != nil {
+				return nil, err
 			}
 
-			tableMap, ok := typeMap[schema][rel]
-			if !ok {
-				return nil, sqlerr.RelationNotFound(rel)
-			}
-
-			if c, ok := tableMap[key]; ok {
-				defaultP := named.NewInferredParam(key, c.IsNotNull)
-				p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
-				if err := addParam(ref, Parameter{
-					Number: ref.ref.Number,
-					Column: &Column{
-						Name:         p.Name(),
-						OriginalName: c.Name,
-						DataType:     dataType(&c.Type),
-						NotNull:      p.NotNull(),
-						Unsigned:     c.IsUnsigned,
-						IsArray:      c.IsArray,
-						ArrayDims:    c.ArrayDims,
-						Table:        &ast.TableName{Schema: schema, Name: rel},
-						Length:       c.Length,
-						IsNamedParam: isNamed,
-						IsSqlcSlice:  p.IsSqlcSlice(),
-					},
-				}); err != nil {
-					return nil, err
-				}
-			} else {
-				return nil, &sqlerr.Error{
-					Code:     "42703",
-					Message:  fmt.Sprintf("column %q does not exist", key),
-					Location: n.Location,
-				}
+		case *ast.String:
+			if err := addColumnParam(ref, n.Str, n.Pos()); err != nil {
+				return nil, err
 			}
 
 		case *ast.TypeCast:

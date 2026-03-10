@@ -144,6 +144,11 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 		p.parent = node
 
 	case *ast.SelectStmt:
+		if n.FromClause != nil && len(n.FromClause.Items) > 0 {
+			if rv, ok := n.FromClause.Items[0].(*ast.RangeVar); ok {
+				p.rangeVar = rv
+			}
+		}
 		if n.LimitCount != nil {
 			p.limitCount = n.LimitCount
 		}
