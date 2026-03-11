@@ -1,5 +1,9 @@
 package compiler
 
+import (
+	"strings"
+)
+
 // selector is an interface used by a compiler for generating expressions for
 // output columns in a `SELECT ...` or `RETURNING ...` statement.
 //
@@ -39,7 +43,7 @@ func (s *sqliteSelector) ColumnExpr(name string, column *Column) string {
 	// outside of the database itself. For jsonb columns in SQLite, wrap values
 	// in `json(col)` to coerce the internal binary format to JSON parsable by
 	// the user-space application.
-	if column.DataType == "jsonb" {
+	if strings.ToLower(column.DataType) == "jsonb" {
 		return "json(" + name + ")"
 	}
 	return name
