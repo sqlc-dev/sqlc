@@ -7,8 +7,6 @@ package querytest
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const insertSelect = `-- name: InsertSelect :exec
@@ -19,8 +17,8 @@ WHERE name = $2
 `
 
 type InsertSelectParams struct {
-	ID   pgtype.Int8
-	Name pgtype.Text
+	ID   int64
+	Name string
 }
 
 func (q *Queries) InsertSelect(ctx context.Context, arg InsertSelectParams) error {
