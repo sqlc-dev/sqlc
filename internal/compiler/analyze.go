@@ -104,6 +104,7 @@ func combineAnalysis(prev *analysis, a *analyzer.Analysis) *analysis {
 			// (not "any"), since the catalog-based inference may have better info
 			if params[i].Column.DataType != "any" {
 				prev.Parameters[i].Column.DataType = params[i].Column.DataType
+				prev.Parameters[i].Column.NotNull = params[i].Column.NotNull
 				prev.Parameters[i].Column.IsArray = params[i].Column.IsArray
 				prev.Parameters[i].Column.ArrayDims = params[i].Column.ArrayDims
 			}
