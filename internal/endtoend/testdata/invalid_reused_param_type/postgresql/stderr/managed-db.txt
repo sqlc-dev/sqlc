@@ -1,0 +1,2 @@
+# package querytest
+query.sql:5:10: inconsistent types deduced for parameter $1

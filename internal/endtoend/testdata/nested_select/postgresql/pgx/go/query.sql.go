@@ -7,8 +7,6 @@ package querytest
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const nestedSelect = `-- name: NestedSelect :one
@@ -26,7 +24,7 @@ INNER JOIN test t USING (id, update_time)
 
 type NestedSelectParams struct {
 	IDs       []int64
-	StartTime pgtype.Int8
+	StartTime int64
 }
 
 type NestedSelectRow struct {
