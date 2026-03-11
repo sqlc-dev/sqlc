@@ -346,7 +346,6 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 
 	addColumnParam := func(ref paramRef, key string, location int) error {
 		var schema, rel string
-		// TODO: Deprecate defaultTable
 		if defaultTable != nil {
 			schema = defaultTable.Schema
 			rel = defaultTable.Name
