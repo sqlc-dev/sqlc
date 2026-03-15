@@ -165,6 +165,8 @@ The `gen` mapping supports the following keys:
 - `emit_all_enum_values`:
   - If true, emit a function per enum type
     that returns all valid enum values.
+- `emit_query_batch`:
+  - If true, generate a `QueryBatch` type with `Queue*` methods that batch multiple different queries into a single round-trip. Uses pgx v5's `QueuedQuery` callback API. Only supported with `sql_package: pgx/v5`. Defaults to `false`.
 - `emit_sql_as_comment`:
   - If true, emits the SQL statement as a code-block comment above the generated function, appending to any existing comments. Defaults to `false`.
 - `build_tags`:
@@ -179,6 +181,8 @@ The `gen` mapping supports the following keys:
   - If `true`, sqlc won't generate table and enum structs that aren't used in queries for a given package. Defaults to `false`.
 - `output_batch_file_name`:
   - Customize the name of the batch file. Defaults to `batch.go`.
+- `output_query_batch_file_name`:
+  - Customize the name of the query batch file. Defaults to `query_batch.sql.go`.
 - `output_db_file_name`:
   - Customize the name of the db file. Defaults to `db.go`.
 - `output_models_file_name`:
@@ -448,6 +452,8 @@ Each mapping in the `packages` collection has the following keys:
 - `emit_all_enum_values`:
   - If true, emit a function per enum type
     that returns all valid enum values.
+- `emit_query_batch`:
+  - If true, generate a `QueryBatch` type with `Queue*` methods that batch multiple different queries into a single round-trip. Uses pgx v5's `QueuedQuery` callback API. Only supported with `sql_package: pgx/v5`. Defaults to `false`.
 - `build_tags`:
   - If set, add a `//go:build <build_tags>` directive at the beginning of each generated Go file.
 - `json_tags_case_style`:
@@ -456,6 +462,8 @@ Each mapping in the `packages` collection has the following keys:
   - If `true`, sqlc won't generate table and enum structs that aren't used in queries for a given package. Defaults to `false`.
 - `output_batch_file_name`:
   - Customize the name of the batch file. Defaults to `batch.go`.
+- `output_query_batch_file_name`:
+  - Customize the name of the query batch file. Defaults to `query_batch.sql.go`.
 - `output_db_file_name`:
   - Customize the name of the db file. Defaults to `db.go`.
 - `output_models_file_name`:
