@@ -101,6 +101,10 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 	if i.Options.OutputBatchFileName != "" {
 		batchFileName = i.Options.OutputBatchFileName
 	}
+	queryBatchFileName := "query_batch.sql.go"
+	if i.Options.OutputQueryBatchFileName != "" {
+		queryBatchFileName = i.Options.OutputQueryBatchFileName
+	}
 
 	switch filename {
 	case dbFileName:
@@ -113,6 +117,8 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 		return mergeImports(i.copyfromImports())
 	case batchFileName:
 		return mergeImports(i.batchImports())
+	case queryBatchFileName:
+		return mergeImports(i.queryBatchImports())
 	default:
 		return mergeImports(i.queryImports(filename))
 	}
@@ -504,6 +510,65 @@ func hasPrefixIgnoringSliceAndPointerPrefix(s, prefix string) bool {
 	trimmedS := trimSliceAndPointerPrefix(s)
 	trimmedPrefix := trimSliceAndPointerPrefix(prefix)
 	return strings.HasPrefix(trimmedS, trimmedPrefix)
+}
+
+func (i *importer) queryBatchImports() fileImports {
+	// Filter to only non-batch, non-copyfrom queries
+	regularQueries := make([]Query, 0, len(i.Queries))
+	for _, q := range i.Queries {
+		if q.Cmd != metadata.CmdCopyFrom && !usesBatch([]Query{q}) {
+			regularQueries = append(regularQueries, q)
+		}
+	}
+	std, pkg := buildImports(i.Options, regularQueries, queryBatchUsesType(regularQueries))
+
+	for _, q := range regularQueries {
+		switch q.Cmd {
+		case metadata.CmdOne:
+			// :one queries use errors.Is for pgx.ErrNoRows check
+			std["errors"] = struct{}{}
+		case metadata.CmdExecRows, metadata.CmdExecResult:
+			// Exec queries need pgconn.CommandTag to handle results.
+			// metadata.CmdExecLastId is unsupported in Postgres.
+			pkg[ImportSpec{Path: "github.com/jackc/pgx/v5/pgconn"}] = struct{}{}
+		}
+	}
+
+	// context is always needed for ExecuteBatch
+	std["context"] = struct{}{}
+	// pgx/v5 is always needed for pgx.Batch and pgx.Rows
+	pkg[ImportSpec{Path: "github.com/jackc/pgx/v5"}] = struct{}{}
+	return sortedImports(std, pkg)
+}
+
+// queryBatchUsesType returns a predicate that checks whether a type name is
+// directly referenced in the generated query batch file. This skips struct
+// field types because struct definitions live in query.sql.go, not
+// query_batch.sql.go. The batch file only references structs by name.
+func queryBatchUsesType(queries []Query) func(string) bool {
+	return func(name string) bool {
+		for _, q := range queries {
+			if q.hasRetType() {
+				// Only check non-struct return types. Struct definitions
+				// live in the query file, not the batch file.
+				if !q.Ret.EmitStruct() {
+					if hasPrefixIgnoringSliceAndPointerPrefix(q.Ret.Type(), name) {
+						return true
+					}
+				}
+			}
+			// Only check non-struct arg types. Struct args appear as
+			// the struct name in the function signature, not field types.
+			if !q.Arg.EmitStruct() {
+				for _, f := range q.Arg.Pairs() {
+					if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
+						return true
+					}
+				}
+			}
+		}
+		return false
+	}
 }
 
 func replaceConflictedArg(imports [][]ImportSpec, queries []Query) []Query {

@@ -1,0 +1,103 @@
+{{define "queryBatchCodePgx"}}
+
+// QueryBatch allows queuing multiple queries to be executed in a single
+// round-trip using pgx v5's QueuedQuery callback pattern. Each Queue* method
+// calls pgx.Batch.Queue and registers a result callback (QueryRow, Query, or
+// Exec) that is invoked when ExecuteBatch processes the batch results.
+// For :exec queries, no callback is needed - errors propagate via ExecuteBatch.
+//
+// The Batch field is exported to allow interoperability: callers can mix
+// generated Queue* calls with custom pgx batch operations on the same
+// underlying pgx.Batch.
+type QueryBatch struct {
+	Batch *pgx.Batch
+}
+
+// NewQueryBatch creates a new QueryBatch.
+func NewQueryBatch() *QueryBatch {
+	return &QueryBatch{
+		Batch: &pgx.Batch{},
+	}
+}
+
+// ExecuteBatch sends all queued queries and closes the batch.
+func (q *Queries) ExecuteBatch(ctx context.Context, {{if $.EmitMethodsWithDBArgument}}db DBTX, {{end}}batch *QueryBatch) error {
+	return {{if $.EmitMethodsWithDBArgument}}db{{else}}q.db{{end}}.SendBatch(ctx, batch.Batch).Close()
+}
+
+{{range .GoQueries}}
+{{if and (ne .Cmd ":copyfrom") (ne (hasPrefix .Cmd ":batch") true)}}
+{{if eq .Cmd ":one"}}
+// Queue{{.MethodName}} queues {{.MethodName}} for batch execution.
+// The callback fn is called when ExecuteBatch is called. The second parameter
+// is false if the row was not found (no error is returned in this case).
+func (b *QueryBatch) Queue{{.MethodName}}({{.Arg.Pair}}{{if .Arg.Pair}}, {{end}}fn func({{.Ret.DefineType}}, bool) error) {
+	b.Batch.Queue({{.ConstantName}}, {{.Arg.Params}}).QueryRow(func(row pgx.Row) error {
+		var {{.Ret.Name}} {{.Ret.Type}}
+		err := row.Scan({{.Ret.Scan}})
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return fn({{.Ret.ReturnName}}, false)
+			}
+			return err
+		}
+		return fn({{.Ret.ReturnName}}, true)
+	})
+}
+{{end}}
+
+{{if eq .Cmd ":many"}}
+// Queue{{.MethodName}} queues {{.MethodName}} for batch execution.
+// The callback fn is called with the results when ExecuteBatch is called.
+func (b *QueryBatch) Queue{{.MethodName}}({{.Arg.Pair}}{{if .Arg.Pair}}, {{end}}fn func([]{{.Ret.DefineType}}) error) {
+	b.Batch.Queue({{.ConstantName}}, {{.Arg.Params}}).Query(func(rows pgx.Rows) error {
+		defer rows.Close()
+		{{- if $.EmitEmptySlices}}
+		items := []{{.Ret.DefineType}}{}
+		{{else}}
+		var items []{{.Ret.DefineType}}
+		{{end -}}
+		for rows.Next() {
+			var {{.Ret.Name}} {{.Ret.Type}}
+			if err := rows.Scan({{.Ret.Scan}}); err != nil {
+				return err
+			}
+			items = append(items, {{.Ret.ReturnName}})
+		}
+		if err := rows.Err(); err != nil {
+			return err
+		}
+		return fn(items)
+	})
+}
+{{end}}
+
+{{if eq .Cmd ":exec"}}
+// Queue{{.MethodName}} queues {{.MethodName}} for batch execution.
+func (b *QueryBatch) Queue{{.MethodName}}({{.Arg.Pair}}) {
+	b.Batch.Queue({{.ConstantName}}, {{.Arg.Params}})
+}
+{{end}}
+
+{{if eq .Cmd ":execrows"}}
+// Queue{{.MethodName}} queues {{.MethodName}} for batch execution.
+// The callback fn is called with the number of rows affected when ExecuteBatch is called.
+func (b *QueryBatch) Queue{{.MethodName}}({{.Arg.Pair}}{{if .Arg.Pair}}, {{end}}fn func(int64) error) {
+	b.Batch.Queue({{.ConstantName}}, {{.Arg.Params}}).Exec(func(ct pgconn.CommandTag) error {
+		return fn(ct.RowsAffected())
+	})
+}
+{{end}}
+
+{{if eq .Cmd ":execresult"}}
+// Queue{{.MethodName}} queues {{.MethodName}} for batch execution.
+// The callback fn is called with the command tag when ExecuteBatch is called.
+func (b *QueryBatch) Queue{{.MethodName}}({{.Arg.Pair}}{{if .Arg.Pair}}, {{end}}fn func(pgconn.CommandTag) error) {
+	b.Batch.Queue({{.ConstantName}}, {{.Arg.Params}}).Exec(func(ct pgconn.CommandTag) error {
+		return fn(ct)
+	})
+}
+{{end}}
+{{end}}
+{{end}}
+{{end}}
