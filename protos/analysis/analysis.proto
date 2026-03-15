@@ -26,6 +26,7 @@ message Column {
 	Identifier type = 15;
 	Identifier embed_table = 16;
 	bool is_sqlc_slice = 17;
+	bool is_nullable_embed = 18;
 }
 
 message Parameter {

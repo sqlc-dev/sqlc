@@ -35,7 +35,8 @@ type Column struct {
 	Table      *ast.TableName
 	TableAlias string
 	Type       *ast.TypeName
-	EmbedTable *ast.TableName
+	EmbedTable    *ast.TableName
+	NullableEmbed bool
 
 	IsSqlcSlice bool // is this sqlc.slice()
 

@@ -27,7 +27,9 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 	{{- if or (ne .Arg.Pair .Ret.Pair) (ne .Arg.DefineType .Ret.DefineType) }}
 	var {{.Ret.Name}} {{.Ret.Type}}
 	{{- end}}
+	{{- .Ret.NullableEmbedDecls}}
 	err := row.Scan({{.Ret.Scan}})
+	{{- .Ret.NullableEmbedAssigns}}
 	{{- if $.WrapErrors}}
 	if err != nil {
 		err = fmt.Errorf("query {{.MethodName}}: %w", err)
@@ -53,9 +55,11 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
     {{end -}}
     for rows.Next() {
         var {{.Ret.Name}} {{.Ret.Type}}
+        {{- .Ret.NullableEmbedDecls}}
         if err := rows.Scan({{.Ret.Scan}}); err != nil {
             return nil, {{if $.WrapErrors}}fmt.Errorf("query {{.MethodName}}: %w", err){{else}}err{{end}}
         }
+        {{- .Ret.NullableEmbedAssigns}}
         items = append(items, {{.Ret.ReturnName}})
     }
     if err := rows.Close(); err != nil {

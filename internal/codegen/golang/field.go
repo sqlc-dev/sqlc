@@ -10,6 +10,16 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
+// NullableEmbedFieldInfo stores metadata for scanning nullable embed fields
+type NullableEmbedFieldInfo struct {
+	TempVarName  string // ex: "nembedPostID"
+	ScanType     string // ex: "sql.NullInt32" for stdlib, "*int32" for pgx
+	ValidExpr    string // ex: "nembedPostID.Valid" or "nembedPostID != nil"
+	AssignExpr   string // ex: "nembedPostID.Int32" or "*nembedPostID"
+	StructField  string // ex: "ID"
+	OriginalType string // original type in the model struct (ex: "int32")
+}
+
 type Field struct {
 	Name    string // CamelCased name for Go
 	DBName  string // Name as used in the DB
@@ -19,6 +29,10 @@ type Field struct {
 	Column  *plugin.Column
 	// EmbedFields contains the embedded fields that require scanning.
 	EmbedFields []Field
+	// IsNullableEmbed indicates this field is a nullable embed (*Struct)
+	IsNullableEmbed bool
+	// NullableEmbedInfo stores scan metadata for each embedded field
+	NullableEmbedInfo []NullableEmbedFieldInfo
 }
 
 func (gf Field) Tag() string {

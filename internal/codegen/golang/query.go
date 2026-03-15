@@ -201,6 +201,14 @@ func (v QueryValue) Scan() string {
 	} else {
 		for _, f := range v.Struct.Fields {
 
+			// nullable embed: scan into temporary variables
+			if f.IsNullableEmbed && len(f.NullableEmbedInfo) > 0 {
+				for _, info := range f.NullableEmbedInfo {
+					out = append(out, "&"+info.TempVarName)
+				}
+				continue
+			}
+
 			// append any embedded fields
 			if len(f.EmbedFields) > 0 {
 				for _, embed := range f.EmbedFields {
@@ -225,6 +233,77 @@ func (v QueryValue) Scan() string {
 	}
 	out = append(out, "")
 	return "\n" + strings.Join(out, ",\n")
+}
+
+// HasNullableEmbeds returns true if the query value has nullable embed fields
+func (v QueryValue) HasNullableEmbeds() bool {
+	if v.Struct == nil {
+		return false
+	}
+	for _, f := range v.Struct.Fields {
+		if f.IsNullableEmbed {
+			return true
+		}
+	}
+	return false
+}
+
+// NullableEmbedDecls generates declarations for nullable embed temporary variables
+func (v QueryValue) NullableEmbedDecls() string {
+	if v.Struct == nil {
+		return ""
+	}
+	var lines []string
+	for _, f := range v.Struct.Fields {
+		if !f.IsNullableEmbed {
+			continue
+		}
+		for _, info := range f.NullableEmbedInfo {
+			lines = append(lines, fmt.Sprintf("var %s %s", info.TempVarName, info.ScanType))
+		}
+	}
+	if len(lines) == 0 {
+		return ""
+	}
+	return "\n" + strings.Join(lines, "\n")
+}
+
+// NullableEmbedAssigns generates post-scan code to construct nullable embed structs
+func (v QueryValue) NullableEmbedAssigns() string {
+	if v.Struct == nil {
+		return ""
+	}
+	var blocks []string
+	for _, f := range v.Struct.Fields {
+		if !f.IsNullableEmbed || len(f.NullableEmbedInfo) == 0 {
+			continue
+		}
+
+		// Build the validity check: any field non-nil means the row exists
+		var validChecks []string
+		for _, info := range f.NullableEmbedInfo {
+			validChecks = append(validChecks, info.ValidExpr)
+		}
+
+		// Build the struct assignment
+		modelType := strings.TrimPrefix(f.Type, "*")
+		var assignments []string
+		for _, info := range f.NullableEmbedInfo {
+			assignments = append(assignments, fmt.Sprintf("%s: %s,", info.StructField, info.AssignExpr))
+		}
+
+		block := fmt.Sprintf("if %s {\n%s.%s = &%s{\n%s\n}\n}",
+			strings.Join(validChecks, " || "),
+			v.Name, f.Name,
+			modelType,
+			strings.Join(assignments, "\n"),
+		)
+		blocks = append(blocks, block)
+	}
+	if len(blocks) == 0 {
+		return ""
+	}
+	return "\n" + strings.Join(blocks, "\n")
 }
 
 // Deprecated: This method does not respect the Emit field set on the
