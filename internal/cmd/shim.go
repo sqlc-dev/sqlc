@@ -213,6 +213,8 @@ func pluginQueryColumn(c *compiler.Column) *plugin.Column {
 		}
 	}
 
+	out.IsNullableEmbed = c.NullableEmbed
+
 	return out
 }
 

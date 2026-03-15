@@ -120,11 +120,12 @@ type goEmbed struct {
 	modelType string
 	modelName string
 	fields    []Field
+	nullable  bool
 }
 
 // look through all the structs and attempt to find a matching one to embed
 // We need the name of the struct and its field names.
-func newGoEmbed(embed *plugin.Identifier, structs []Struct, defaultSchema string) *goEmbed {
+func newGoEmbed(embed *plugin.Identifier, structs []Struct, defaultSchema string, nullable bool) *goEmbed {
 	if embed == nil {
 		return nil
 	}
@@ -147,6 +148,7 @@ func newGoEmbed(embed *plugin.Identifier, structs []Struct, defaultSchema string
 			modelType: s.Name,
 			modelName: s.Name,
 			fields:    fields,
+			nullable:  nullable,
 		}
 	}
 
@@ -304,7 +306,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []
 					columns = append(columns, goColumn{
 						id:     i,
 						Column: c,
-						embed:  newGoEmbed(c.EmbedTable, structs, req.Catalog.DefaultSchema),
+						embed:  newGoEmbed(c.EmbedTable, structs, req.Catalog.DefaultSchema, c.IsNullableEmbed),
 					})
 				}
 				var err error
@@ -396,6 +398,11 @@ func columnsToStruct(req *plugin.GenerateRequest, options *opts.Options, name st
 		}
 		if c.embed == nil {
 			f.Type = goType(req, options, c.Column)
+		} else if c.embed.nullable {
+			f.Type = "*" + c.embed.modelType
+			f.EmbedFields = c.embed.fields
+			f.IsNullableEmbed = true
+			f.NullableEmbedInfo = computeNullableEmbedInfo(c.embed)
 		} else {
 			f.Type = c.embed.modelType
 			f.EmbedFields = c.embed.fields
@@ -433,6 +440,40 @@ func columnsToStruct(req *plugin.GenerateRequest, options *opts.Options, name st
 	}
 
 	return &gs, nil
+}
+
+// computeNullableEmbedInfo computes scan metadata for nullable embed fields.
+// For each field in the embed, we scan into a pointer-typed temporary variable,
+// then check if any temp var is non-nil to construct the struct.
+func computeNullableEmbedInfo(embed *goEmbed) []NullableEmbedFieldInfo {
+	var infos []NullableEmbedFieldInfo
+	for _, f := range embed.fields {
+		varName := "nembed" + embed.modelName + f.Name
+		originalType := f.Type
+		var scanType, validExpr, assignExpr string
+
+		if strings.HasPrefix(originalType, "*") {
+			// Already a pointer type (e.g., pgx nullable), scan directly
+			scanType = originalType
+			validExpr = varName + " != nil"
+			assignExpr = varName
+		} else {
+			// Wrap in pointer for nullable scan
+			scanType = "*" + originalType
+			validExpr = varName + " != nil"
+			assignExpr = "*" + varName
+		}
+
+		infos = append(infos, NullableEmbedFieldInfo{
+			TempVarName:  varName,
+			ScanType:     scanType,
+			ValidExpr:    validExpr,
+			AssignExpr:   assignExpr,
+			StructField:  f.Name,
+			OriginalType: originalType,
+		})
+	}
+	return infos
 }
 
 func checkIncompatibleFieldTypes(fields []Field) error {
