@@ -132,6 +132,10 @@ func (i *importer) dbImports() fileImports {
 	case opts.SQLDriverPGXV5:
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v5/pgconn"})
 		pkg = append(pkg, ImportSpec{Path: "github.com/jackc/pgx/v5"})
+
+	case opts.SQLDriverYugaBytePGXV5:
+		pkg = append(pkg, ImportSpec{Path: "github.com/yugabyte/pgx/v5/pgconn"})
+		pkg = append(pkg, ImportSpec{Path: "github.com/yugabyte/pgx/v5"})
 	default:
 		std = append(std, ImportSpec{Path: "database/sql"})
 		if i.Options.EmitPreparedQueries {
@@ -176,6 +180,8 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 				pkg[ImportSpec{Path: "github.com/jackc/pgconn"}] = struct{}{}
 			case opts.SQLDriverPGXV5:
 				pkg[ImportSpec{Path: "github.com/jackc/pgx/v5/pgconn"}] = struct{}{}
+			case opts.SQLDriverYugaBytePGXV5:
+				pkg[ImportSpec{Path: "github.com/yugabyte/pgx/v5/pgconn"}] = struct{}{}
 			default:
 				std["database/sql"] = struct{}{}
 			}
@@ -191,6 +197,8 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 	if uses("pgtype.") {
 		if sqlpkg == opts.SQLDriverPGXV5 {
 			pkg[ImportSpec{Path: "github.com/jackc/pgx/v5/pgtype"}] = struct{}{}
+		} else if sqlpkg == opts.SQLDriverYugaBytePGXV5 {
+			pkg[ImportSpec{Path: "github.com/yugabyte/pgx/v5/pgtype"}] = struct{}{}
 		} else {
 			pkg[ImportSpec{Path: "github.com/jackc/pgtype"}] = struct{}{}
 		}
@@ -489,6 +497,8 @@ func (i *importer) batchImports() fileImports {
 		pkg[ImportSpec{Path: "github.com/jackc/pgx/v4"}] = struct{}{}
 	case opts.SQLDriverPGXV5:
 		pkg[ImportSpec{Path: "github.com/jackc/pgx/v5"}] = struct{}{}
+	case opts.SQLDriverYugaBytePGXV5:
+		pkg[ImportSpec{Path: "github.com/yugabyte/pgx/v5"}] = struct{}{}
 	}
 
 	return sortedImports(std, pkg)

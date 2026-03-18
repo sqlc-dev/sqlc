@@ -5,15 +5,17 @@ import "fmt"
 type SQLDriver string
 
 const (
-	SQLPackagePGXV4    string = "pgx/v4"
-	SQLPackagePGXV5    string = "pgx/v5"
-	SQLPackageStandard string = "database/sql"
+	SQLPackagePGXV4         string = "pgx/v4"
+	SQLPackagePGXV5         string = "pgx/v5"
+	SQLPackageStandard      string = "database/sql"
+	SQLPackageYugaBytePGXV5 string = "yb/pgx/v5"
 )
 
 var validPackages = map[string]struct{}{
-	string(SQLPackagePGXV4):    {},
-	string(SQLPackagePGXV5):    {},
-	string(SQLPackageStandard): {},
+	string(SQLPackagePGXV4):         {},
+	string(SQLPackagePGXV5):         {},
+	string(SQLPackageYugaBytePGXV5): {},
+	string(SQLPackageStandard):      {},
 }
 
 func validatePackage(sqlPackage string) error {
@@ -28,6 +30,7 @@ const (
 	SQLDriverPGXV5                      = "github.com/jackc/pgx/v5"
 	SQLDriverLibPQ                      = "github.com/lib/pq"
 	SQLDriverGoSQLDriverMySQL           = "github.com/go-sql-driver/mysql"
+	SQLDriverYugaBytePGXV5              = "github.com/yugabyte/pgx/v5"
 )
 
 var validDrivers = map[string]struct{}{
@@ -35,6 +38,7 @@ var validDrivers = map[string]struct{}{
 	string(SQLDriverPGXV5):            {},
 	string(SQLDriverLibPQ):            {},
 	string(SQLDriverGoSQLDriverMySQL): {},
+	string(SQLDriverYugaBytePGXV5):    {},
 }
 
 func validateDriver(sqlDriver string) error {
@@ -45,7 +49,7 @@ func validateDriver(sqlDriver string) error {
 }
 
 func (d SQLDriver) IsPGX() bool {
-	return d == SQLDriverPGXV4 || d == SQLDriverPGXV5
+	return d == SQLDriverPGXV4 || d == SQLDriverPGXV5 || d == SQLDriverYugaBytePGXV5
 }
 
 func (d SQLDriver) IsGoSQLDriverMySQL() bool {
@@ -58,6 +62,8 @@ func (d SQLDriver) Package() string {
 		return SQLPackagePGXV4
 	case SQLDriverPGXV5:
 		return SQLPackagePGXV5
+	case SQLDriverYugaBytePGXV5:
+		return SQLPackageYugaBytePGXV5
 	default:
 		return SQLPackageStandard
 	}
