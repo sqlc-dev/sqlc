@@ -178,6 +178,8 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		Columns:         anlys.Columns,
 		SQL:             trimmed,
 		InsertIntoTable: anlys.Table,
+		IsReplace:       anlys.IsReplace,
+		IgnoreErr:       anlys.IgnoreErr,
 	}, nil
 }
 
