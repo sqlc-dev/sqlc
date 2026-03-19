@@ -17,7 +17,6 @@ func parseDriver(sqlPackage string) opts.SQLDriver {
 
 // custom packages based on pgx/v5 (e.g., YugabyteDB smart drivers) should return
 // only the original driver when determining columnType, refer to the postgresType func.
-
 func parseDriverPGType(sqlPackage string) opts.SQLDriver {
 	switch sqlPackage {
 	case opts.SQLPackagePGXV4:

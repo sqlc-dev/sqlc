@@ -125,8 +125,8 @@ type SQL struct {
 // AnalyzerDatabase represents the database analyzer setting.
 // It can be a boolean (true/false) or the string "only" for database-only mode.
 type AnalyzerDatabase struct {
-	value   *bool  // nil means not set, true/false for boolean values
-	isOnly  bool   // true when set to "only"
+	value  *bool // nil means not set, true/false for boolean values
+	isOnly bool  // true when set to "only"
 }
 
 // IsEnabled returns true if the database analyzer should be used.

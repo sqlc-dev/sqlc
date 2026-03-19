@@ -57,8 +57,8 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 // https://clickhouse.com/docs/en/sql-reference/syntax#comments
 func (p *Parser) CommentSyntax() source.CommentSyntax {
 	return source.CommentSyntax{
-		Dash:      true,  // -- comment
-		SlashStar: true,  // /* comment */
-		Hash:      true,  // # comment (ClickHouse supports this)
+		Dash:      true, // -- comment
+		SlashStar: true, // /* comment */
+		Hash:      true, // # comment (ClickHouse supports this)
 	}
 }

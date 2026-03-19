@@ -826,7 +826,7 @@ func (c *cc) convertUnaryExpr(n *parser.Expr_unaryContext) ast.Node {
 		if opCtx.MINUS() != nil {
 			// Negative number: -expr
 			return &ast.A_Expr{
-				Name: &ast.List{Items: []ast.Node{&ast.String{Str: "-"}}},
+				Name:  &ast.List{Items: []ast.Node{&ast.String{Str: "-"}}},
 				Rexpr: expr,
 			}
 		}
@@ -837,7 +837,7 @@ func (c *cc) convertUnaryExpr(n *parser.Expr_unaryContext) ast.Node {
 		if opCtx.TILDE() != nil {
 			// Bitwise NOT: ~expr
 			return &ast.A_Expr{
-				Name: &ast.List{Items: []ast.Node{&ast.String{Str: "~"}}},
+				Name:  &ast.List{Items: []ast.Node{&ast.String{Str: "~"}}},
 				Rexpr: expr,
 			}
 		}

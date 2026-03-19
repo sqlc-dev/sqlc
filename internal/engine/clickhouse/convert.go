@@ -485,8 +485,8 @@ func (c *cc) convertFunctionCall(n *chast.FunctionCall) *ast.FuncCall {
 		Funcname: &ast.List{
 			Items: []ast.Node{&ast.String{Str: n.Name}},
 		},
-		Location:     n.Pos().Offset,
-		AggDistinct:  n.Distinct,
+		Location:    n.Pos().Offset,
+		AggDistinct: n.Distinct,
 	}
 
 	// Convert arguments
