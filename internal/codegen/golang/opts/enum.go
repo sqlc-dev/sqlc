@@ -8,7 +8,7 @@ const (
 	SQLPackagePGXV4         string = "pgx/v4"
 	SQLPackagePGXV5         string = "pgx/v5"
 	SQLPackageStandard      string = "database/sql"
-	SQLPackageYugaBytePGXV5 string = "yb/pgx/v5"
+	SQLPackageYugaBytePGXV5 string = "yugabyte/pgx/v5"
 )
 
 var validPackages = map[string]struct{}{
