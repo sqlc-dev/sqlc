@@ -14,6 +14,10 @@ INSERT INTO authors (
 )
 RETURNING *;
 
+-- name: UpdateAuthorBio :exec
+UPDATE authors SET bio = $1
+WHERE id = $2;
+
 -- name: DeleteAuthor :exec
 DELETE FROM authors
 WHERE id = $1;

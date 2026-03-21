@@ -108,10 +108,23 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 			})
 		}
 
-		// Determine the insert table if applicable
+		// Determine the target table if applicable
 		var table *ast.TableName
-		if insert, ok := expandedRaw.Stmt.(*ast.InsertStmt); ok {
-			table, _ = ParseTableName(insert.Relation)
+		switch n := expandedRaw.Stmt.(type) {
+		case *ast.InsertStmt:
+			table, _ = ParseTableName(n.Relation)
+		case *ast.UpdateStmt:
+			if n.Relations != nil && len(n.Relations.Items) > 0 {
+				if rv, ok := n.Relations.Items[0].(*ast.RangeVar); ok {
+					table, _ = ParseTableName(rv)
+				}
+			}
+		case *ast.DeleteStmt:
+			if n.Relations != nil && len(n.Relations.Items) > 0 {
+				if rv, ok := n.Relations.Items[0].(*ast.RangeVar); ok {
+					table, _ = ParseTableName(rv)
+				}
+			}
 		}
 
 		anlys = &analysis{
@@ -171,14 +184,22 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 
 	md.Comments = comments
 
-	return &Query{
-		RawStmt:         raw,
-		Metadata:        md,
-		Params:          anlys.Parameters,
-		Columns:         anlys.Columns,
-		SQL:             trimmed,
-		InsertIntoTable: anlys.Table,
-	}, nil
+	q := &Query{
+		RawStmt:  raw,
+		Metadata: md,
+		Params:   anlys.Parameters,
+		Columns:  anlys.Columns,
+		SQL:      trimmed,
+	}
+	switch raw.Stmt.(type) {
+	case *ast.InsertStmt:
+		q.InsertIntoTable = anlys.Table
+	case *ast.UpdateStmt:
+		q.UpdateTable = anlys.Table
+	case *ast.DeleteStmt:
+		q.DeleteFromTable = anlys.Table
+	}
+	return q, nil
 }
 
 func rangeVars(root ast.Node) []*ast.RangeVar {

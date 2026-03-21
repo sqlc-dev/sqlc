@@ -152,6 +152,18 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 		if err := check(err); err != nil {
 			return nil, err
 		}
+	case *ast.UpdateStmt:
+		if n.Relations != nil && len(n.Relations.Items) > 0 {
+			if rv, ok := n.Relations.Items[0].(*ast.RangeVar); ok {
+				table, _ = ParseTableName(rv)
+			}
+		}
+	case *ast.DeleteStmt:
+		if n.Relations != nil && len(n.Relations.Items) > 0 {
+			if rv, ok := n.Relations.Items[0].(*ast.RangeVar); ok {
+				table, _ = ParseTableName(rv)
+			}
+		}
 	}
 
 	if err := check(validate.FuncCall(c.catalog, c.combo, raw)); err != nil {
