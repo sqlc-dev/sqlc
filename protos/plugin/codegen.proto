@@ -111,6 +111,8 @@ message Query {
   repeated string comments = 6 [json_name = "comments"];
   string filename = 7 [json_name = "filename"];
   Identifier insert_into_table = 8 [json_name = "insert_into_table"];
+  bool is_replace = 9 [json_name = "is_replace"];
+  bool ignore_err = 10 [json_name = "ignore_err"];
 }
 
 message Parameter {
