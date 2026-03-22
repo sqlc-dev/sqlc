@@ -50,6 +50,8 @@ type Query struct {
 
 	// Needed for CopyFrom
 	InsertIntoTable *ast.TableName
+	IsReplace       bool
+	IgnoreErr       bool
 
 	// Needed for vet
 	RawStmt *ast.RawStmt

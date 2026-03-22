@@ -12,6 +12,8 @@ type InsertStmt struct {
 	WithClause           *WithClause
 	Override             OverridingKind
 	DefaultValues        bool // SQLite-specific: INSERT INTO ... DEFAULT VALUES
+	IsReplace            bool // MySQL-specific
+	IgnoreErr            bool // MySQL-specific
 }
 
 func (n *InsertStmt) Pos() int {

@@ -14,6 +14,8 @@ import (
 
 type analysis struct {
 	Table      *ast.TableName
+	IsReplace  bool
+	IgnoreErr  bool
 	Columns    []*Column
 	Parameters []Parameter
 	Named      *named.ParamSet
@@ -142,6 +144,8 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 	raw, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw, numbers, dollar)
 
 	var table *ast.TableName
+	var isReplace bool
+	var ignoreErr bool
 	switch n := raw.Stmt.(type) {
 	case *ast.InsertStmt:
 		if err := check(validate.InsertStmt(n)); err != nil {
@@ -152,6 +156,8 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 		if err := check(err); err != nil {
 			return nil, err
 		}
+		isReplace = n.IsReplace
+		ignoreErr = n.IgnoreErr
 	}
 
 	if err := check(validate.FuncCall(c.catalog, c.combo, raw)); err != nil {
@@ -207,6 +213,8 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 
 	return &analysis{
 		Table:      table,
+		IsReplace:  isReplace,
+		IgnoreErr:  ignoreErr,
 		Columns:    cols,
 		Parameters: params,
 		Query:      expanded,

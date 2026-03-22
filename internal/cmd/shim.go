@@ -161,6 +161,8 @@ func pluginQueries(r *compiler.Result) []*plugin.Query {
 			Params:          params,
 			Filename:        q.Metadata.Filename,
 			InsertIntoTable: iit,
+			IsReplace:       q.IsReplace,
+			IgnoreErr:       q.IgnoreErr,
 		})
 	}
 	return out

@@ -816,6 +816,8 @@ type Query struct {
 	Comments        []string     `protobuf:"bytes,6,rep,name=comments,proto3" json:"comments,omitempty"`
 	Filename        string       `protobuf:"bytes,7,opt,name=filename,proto3" json:"filename,omitempty"`
 	InsertIntoTable *Identifier  `protobuf:"bytes,8,opt,name=insert_into_table,proto3" json:"insert_into_table,omitempty"`
+	IsReplace       bool         `protobuf:"varint,9,opt,name=is_replace,json=isReplace,proto3" json:"is_replace,omitempty"`
+	IgnoreErr       bool         `protobuf:"varint,10,opt,name=ignore_err,json=ignoreErr,proto3" json:"ignore_err,omitempty"`
 }
 
 func (x *Query) Reset() {
@@ -904,6 +906,20 @@ func (x *Query) GetInsertIntoTable() *Identifier {
 		return x.InsertIntoTable
 	}
 	return nil
+}
+
+func (x *Query) GetIsReplace() bool {
+	if x != nil {
+		return x.IsReplace
+	}
+	return false
+}
+
+func (x *Query) GetIgnoreErr() bool {
+	if x != nil {
+		return x.IgnoreErr
+	}
+	return false
 }
 
 type Parameter struct {
