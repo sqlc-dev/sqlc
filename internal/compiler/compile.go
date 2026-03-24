@@ -39,6 +39,11 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 			continue
 		}
 		contents := migrations.RemoveRollbackStatements(string(blob))
+		contents, err = migrations.TransformStatements(filepath.Dir(filename), contents)
+		if err != nil {
+			merr.Add(filename, contents, 0, err)
+			continue
+		}
 		c.schema = append(c.schema, contents)
 
 		// In database-only mode, we parse the schema to validate syntax
