@@ -14,7 +14,7 @@ sql:
   queries: "postgresql/query.sql"
   engine: "postgresql"
   gen:
-    go: 
+    go:
       package: "authors"
       out: "postgresql"
   database:
@@ -122,7 +122,7 @@ The `analyzer` mapping supports the following keys:
 
 - `database`:
   -  If false, do not use the configured database for query analysis. Defaults to `true`.
-  
+
 ### gen
 
 The `gen` mapping supports the following keys:
@@ -159,6 +159,8 @@ The `gen` mapping supports the following keys:
   - If true, generated methods will accept a DBTX argument instead of storing a DBTX on the `*Queries` struct. Defaults to `false`.
 - `emit_pointers_for_null_types`:
   - If true, generated types for nullable columns are emitted as pointers (ie. `*string`) instead of `database/sql` null types (ie. `NullString`). Currently only supported for PostgreSQL if `sql_package` is `pgx/v4` or `pgx/v5`, and for SQLite. Defaults to `false`.
+- `emit_nullable_for_null_arrays`:
+  - If true, generated types for nullable columns with array types are emitted as list of nullable instead of a list of non-nullable. For example, `bool[]` SQL type is emitted as `[]sql.NullBool` instead of `[]bool` when the flag is set. Defaults to `false`.
 - `emit_enum_valid_method`:
   - If true, generate a Valid method on enum types,
     indicating whether a string is a valid enum value.
@@ -255,18 +257,18 @@ Each mapping in the `plugins` collection has the following keys:
     - The URL to fetch the WASM file. Supports the `https://` or `file://` schemes.
   - `sha256`
     - The SHA256 checksum for the downloaded file.
-   
+
 ```yaml
 version: "2"
 plugins:
 - name: "py"
-  wasm: 
+  wasm:
     url: "https://github.com/sqlc-dev/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm"
     sha256: "428476c7408fd4c032da4ec74e8a7344f4fa75e0f98a5a3302f238283b9b95f2"
 - name: "js"
   env:
   - PATH
-  process: 
+  process:
     cmd: "sqlc-gen-json"
 ```
 
@@ -283,7 +285,7 @@ Each mapping in the `rules` collection has the following keys:
 
 See the [vet](../howto/vet.md) documentation for a list of built-in rules and
 help writing custom rules.
-   
+
 ```yaml
 version: "2"
 sql:
@@ -317,7 +319,7 @@ rules:
     rule: |
       query.cmd == "exec"
 ```
-  
+
 ### Global overrides
 
 Sometimes, the same configuration must be done across various specifications of
