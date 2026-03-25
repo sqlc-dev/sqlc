@@ -48,8 +48,11 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 		if conf.Plugins[i].Process != nil && conf.Plugins[i].WASM != nil {
 			return conf, ErrPluginBothTypes
 		}
-		if conf.Plugins[i].Process != nil {
-			if conf.Plugins[i].Process.Cmd == "" {
+		if r := conf.Plugins[i].Process; r != nil {
+			switch {
+			case r.Cmd != "" && r.GoPkg != "":
+				return conf, ErrPluginProcessTooManyCmd
+			case r.Cmd == "" && r.GoPkg == "":
 				return conf, ErrPluginProcessNoCmd
 			}
 		}
