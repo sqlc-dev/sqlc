@@ -13,10 +13,10 @@ import (
 )
 
 // QueryBatch allows queuing multiple queries to be executed in a single
-// round-trip using pgx v5's QueuedQuery callback pattern. Each Queue* method
-// calls pgx.Batch.Queue and registers a result callback (QueryRow, Query, or
-// Exec) that is invoked when ExecuteBatch processes the batch results.
-// For :exec queries, no callback is needed - errors propagate via ExecuteBatch.
+// round-trip using pgx v5's batch API. Each Queue* method calls
+// pgx.Batch.Queue and registers a result handler that writes to the provided
+// destination pointer(s) when ExecuteBatch processes the batch results.
+// For :exec queries, no destination is needed - errors propagate via ExecuteBatch.
 //
 // The Batch field is exported to allow interoperability: callers can mix
 // generated Queue* calls with custom pgx batch operations on the same
@@ -38,56 +38,58 @@ func (q *Queries) ExecuteBatch(ctx context.Context, batch *QueryBatch) error {
 }
 
 // QueueCreateAccount queues CreateAccount for batch execution.
-// The callback fn is called when ExecuteBatch is called. The second parameter
-// is false if the row was not found (no error is returned in this case).
-func (b *QueryBatch) QueueCreateAccount(arg CreateAccountParams, fn func(Account, bool) error) {
+// The result is written to dest when ExecuteBatch is called.
+// If no row is found, *ok is set to false (no error is returned in this case).
+func (b *QueryBatch) QueueCreateAccount(arg CreateAccountParams, dest *Account, ok *bool) {
 	b.Batch.Queue(createAccount, arg.Name, arg.Balance).QueryRow(func(row pgx.Row) error {
 		var i Account
 		err := row.Scan(&i.ID, &i.Name, &i.Balance)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
-				return fn(i, false)
+				*ok = false
+				return nil
 			}
 			return err
 		}
-		return fn(i, true)
+		*dest = i
+		*ok = true
+		return nil
 	})
 }
 
 // QueueGetAccount queues GetAccount for batch execution.
-// The callback fn is called when ExecuteBatch is called. The second parameter
-// is false if the row was not found (no error is returned in this case).
-func (b *QueryBatch) QueueGetAccount(id int32, fn func(Account, bool) error) {
+// The result is written to dest when ExecuteBatch is called.
+// If no row is found, *ok is set to false (no error is returned in this case).
+func (b *QueryBatch) QueueGetAccount(id int32, dest *Account, ok *bool) {
 	b.Batch.Queue(getAccount, id).QueryRow(func(row pgx.Row) error {
 		var i Account
 		err := row.Scan(&i.ID, &i.Name, &i.Balance)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
-				return fn(i, false)
+				*ok = false
+				return nil
 			}
 			return err
 		}
-		return fn(i, true)
+		*dest = i
+		*ok = true
+		return nil
 	})
 }
 
 // QueueListAccounts queues ListAccounts for batch execution.
-// The callback fn is called with the results when ExecuteBatch is called.
-func (b *QueryBatch) QueueListAccounts(fn func([]Account) error) {
+// The results are appended to *dest when ExecuteBatch is called.
+func (b *QueryBatch) QueueListAccounts(dest *[]Account) {
 	b.Batch.Queue(listAccounts).Query(func(rows pgx.Rows) error {
 		defer rows.Close()
-		var items []Account
 		for rows.Next() {
 			var i Account
 			if err := rows.Scan(&i.ID, &i.Name, &i.Balance); err != nil {
 				return err
 			}
-			items = append(items, i)
+			*dest = append(*dest, i)
 		}
-		if err := rows.Err(); err != nil {
-			return err
-		}
-		return fn(items)
+		return rows.Err()
 	})
 }
 

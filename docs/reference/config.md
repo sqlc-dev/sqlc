@@ -166,7 +166,7 @@ The `gen` mapping supports the following keys:
   - If true, emit a function per enum type
     that returns all valid enum values.
 - `emit_query_batch`:
-  - If true, generate a `QueryBatch` type with `Queue*` methods that batch multiple different queries into a single round-trip. Uses pgx v5's `QueuedQuery` callback API. Only supported with `sql_package: pgx/v5`. Defaults to `false`.
+  - If true, generate a `QueryBatch` type with `Queue*` methods that batch multiple different queries into a single round-trip. Each `Queue*` method accepts destination pointers where results are written when `ExecuteBatch` is called. Only supported with `sql_package: pgx/v5`. Defaults to `false`.
 - `emit_sql_as_comment`:
   - If true, emits the SQL statement as a code-block comment above the generated function, appending to any existing comments. Defaults to `false`.
 - `build_tags`:
@@ -453,7 +453,7 @@ Each mapping in the `packages` collection has the following keys:
   - If true, emit a function per enum type
     that returns all valid enum values.
 - `emit_query_batch`:
-  - If true, generate a `QueryBatch` type with `Queue*` methods that batch multiple different queries into a single round-trip. Uses pgx v5's `QueuedQuery` callback API. Only supported with `sql_package: pgx/v5`. Defaults to `false`.
+  - If true, generate a `QueryBatch` type with `Queue*` methods that batch multiple different queries into a single round-trip. Each `Queue*` method accepts destination pointers where results are written when `ExecuteBatch` is called. Only supported with `sql_package: pgx/v5`. Defaults to `false`.
 - `build_tags`:
   - If set, add a `//go:build <build_tags>` directive at the beginning of each generated Go file.
 - `json_tags_case_style`:

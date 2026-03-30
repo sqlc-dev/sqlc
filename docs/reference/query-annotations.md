@@ -230,11 +230,11 @@ The `:batchexec`, `:batchmany`, and `:batchone` annotations above batch the
 queries** into a single round-trip, use the `emit_query_batch` configuration
 option instead.
 
-When `emit_query_batch` is enabled, sqlc generates a `QueryBatch` type that
-uses pgx v5's `QueuedQuery` callback API. Each regular query (`:one`, `:many`,
-`:exec`, `:execrows`, `:execresult`) gets a `Queue*` method on `QueryBatch`.
-All queued queries are sent in a single round-trip when `ExecuteBatch` is
-called.
+When `emit_query_batch` is enabled, sqlc generates a `QueryBatch` type with
+`Queue*` methods for each regular query (`:one`, `:many`, `:exec`, `:execrows`,
+`:execresult`). Each `Queue*` method accepts destination pointers where results
+are written when `ExecuteBatch` is called. All queued queries are sent in a
+single round-trip.
 
 __NOTE: This option only works with PostgreSQL using the `pgx/v5` driver and outputting Go code.__
 
@@ -268,23 +268,18 @@ UPDATE users SET name = $1 WHERE id = $2;
 // Generated QueryBatch API:
 batch := db.NewQueryBatch()
 
-batch.QueueGetUser(userID, func(user db.User, found bool) error {
-    if !found {
-        return nil // no row matched
-    }
-    fmt.Println(user.Name)
-    return nil
-})
+var user db.User
+var found bool
+batch.QueueGetUser(userID, &user, &found)
 
-batch.QueueListUsers(func(users []db.User) error {
-    fmt.Println("found", len(users), "users")
-    return nil
-})
+var users []db.User
+batch.QueueListUsers(&users)
 
 batch.QueueUpdateUser(db.UpdateUserParams{Name: "Alice", ID: 1})
 
 // Send all queries in one round-trip:
 err := queries.ExecuteBatch(ctx, batch)
+// user, found, and users are now populated
 ```
 
 The `QueryBatch.Batch` field is exported so you can mix generated `Queue*`

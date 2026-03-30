@@ -14,10 +14,10 @@ import (
 )
 
 // QueryBatch allows queuing multiple queries to be executed in a single
-// round-trip using pgx v5's QueuedQuery callback pattern. Each Queue* method
-// calls pgx.Batch.Queue and registers a result callback (QueryRow, Query, or
-// Exec) that is invoked when ExecuteBatch processes the batch results.
-// For :exec queries, no callback is needed - errors propagate via ExecuteBatch.
+// round-trip using pgx v5's batch API. Each Queue* method calls
+// pgx.Batch.Queue and registers a result handler that writes to the provided
+// destination pointer(s) when ExecuteBatch processes the batch results.
+// For :exec queries, no destination is needed - errors propagate via ExecuteBatch.
 //
 // The Batch field is exported to allow interoperability: callers can mix
 // generated Queue* calls with custom pgx batch operations on the same
@@ -39,17 +39,18 @@ func (q *Queries) ExecuteBatch(ctx context.Context, batch *QueryBatch) error {
 }
 
 // QueueArchiveUser queues ArchiveUser for batch execution.
-// The callback fn is called with the command tag when ExecuteBatch is called.
-func (b *QueryBatch) QueueArchiveUser(id int32, fn func(pgconn.CommandTag) error) {
+// The command tag is written to dest when ExecuteBatch is called.
+func (b *QueryBatch) QueueArchiveUser(id int32, dest *pgconn.CommandTag) {
 	b.Batch.Queue(archiveUser, id).Exec(func(ct pgconn.CommandTag) error {
-		return fn(ct)
+		*dest = ct
+		return nil
 	})
 }
 
 // QueueCreateUser queues CreateUser for batch execution.
-// The callback fn is called when ExecuteBatch is called. The second parameter
-// is false if the row was not found (no error is returned in this case).
-func (b *QueryBatch) QueueCreateUser(arg CreateUserParams, fn func(MyschemaUser, bool) error) {
+// The result is written to dest when ExecuteBatch is called.
+// If no row is found, *ok is set to false (no error is returned in this case).
+func (b *QueryBatch) QueueCreateUser(arg CreateUserParams, dest *MyschemaUser, ok *bool) {
 	b.Batch.Queue(createUser, arg.Name, arg.Email).QueryRow(func(row pgx.Row) error {
 		var i MyschemaUser
 		err := row.Scan(
@@ -60,26 +61,30 @@ func (b *QueryBatch) QueueCreateUser(arg CreateUserParams, fn func(MyschemaUser,
 		)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
-				return fn(i, false)
+				*ok = false
+				return nil
 			}
 			return err
 		}
-		return fn(i, true)
+		*dest = i
+		*ok = true
+		return nil
 	})
 }
 
 // QueueDeleteUser queues DeleteUser for batch execution.
-// The callback fn is called with the number of rows affected when ExecuteBatch is called.
-func (b *QueryBatch) QueueDeleteUser(id int32, fn func(int64) error) {
+// The number of rows affected is written to dest when ExecuteBatch is called.
+func (b *QueryBatch) QueueDeleteUser(id int32, dest *int64) {
 	b.Batch.Queue(deleteUser, id).Exec(func(ct pgconn.CommandTag) error {
-		return fn(ct.RowsAffected())
+		*dest = ct.RowsAffected()
+		return nil
 	})
 }
 
 // QueueGetUser queues GetUser for batch execution.
-// The callback fn is called when ExecuteBatch is called. The second parameter
-// is false if the row was not found (no error is returned in this case).
-func (b *QueryBatch) QueueGetUser(id int32, fn func(MyschemaUser, bool) error) {
+// The result is written to dest when ExecuteBatch is called.
+// If no row is found, *ok is set to false (no error is returned in this case).
+func (b *QueryBatch) QueueGetUser(id int32, dest *MyschemaUser, ok *bool) {
 	b.Batch.Queue(getUser, id).QueryRow(func(row pgx.Row) error {
 		var i MyschemaUser
 		err := row.Scan(
@@ -90,20 +95,22 @@ func (b *QueryBatch) QueueGetUser(id int32, fn func(MyschemaUser, bool) error) {
 		)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
-				return fn(i, false)
+				*ok = false
+				return nil
 			}
 			return err
 		}
-		return fn(i, true)
+		*dest = i
+		*ok = true
+		return nil
 	})
 }
 
 // QueueListUsers queues ListUsers for batch execution.
-// The callback fn is called with the results when ExecuteBatch is called.
-func (b *QueryBatch) QueueListUsers(fn func([]MyschemaUser) error) {
+// The results are appended to *dest when ExecuteBatch is called.
+func (b *QueryBatch) QueueListUsers(dest *[]MyschemaUser) {
 	b.Batch.Queue(listUsers).Query(func(rows pgx.Rows) error {
 		defer rows.Close()
-		var items []MyschemaUser
 		for rows.Next() {
 			var i MyschemaUser
 			if err := rows.Scan(
@@ -114,12 +121,9 @@ func (b *QueryBatch) QueueListUsers(fn func([]MyschemaUser) error) {
 			); err != nil {
 				return err
 			}
-			items = append(items, i)
+			*dest = append(*dest, i)
 		}
-		if err := rows.Err(); err != nil {
-			return err
-		}
-		return fn(items)
+		return rows.Err()
 	})
 }
 
