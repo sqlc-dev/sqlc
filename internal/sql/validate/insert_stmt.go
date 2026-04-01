@@ -8,7 +8,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
-func InsertStmt(stmt *ast.InsertStmt, fqn *ast.TableName, c *catalog.Catalog) error {
+func InsertStmt(c *catalog.Catalog, fqn *ast.TableName, stmt *ast.InsertStmt) error {
 	sel, ok := stmt.SelectStmt.(*ast.SelectStmt)
 	if !ok {
 		return nil
@@ -38,7 +38,7 @@ func InsertStmt(stmt *ast.InsertStmt, fqn *ast.TableName, c *catalog.Catalog) er
 			Message: "INSERT has more expressions than target columns",
 		}
 	}
-	return onConflictClause(stmt, fqn, c)
+	return onConflictClause(c, fqn, stmt)
 }
 
 // onConflictClause validates an ON CONFLICT DO UPDATE clause against the target
@@ -46,7 +46,7 @@ func InsertStmt(stmt *ast.InsertStmt, fqn *ast.TableName, c *catalog.Catalog) er
 //   - ON CONFLICT (col, ...) conflict target columns exist
 //   - DO UPDATE SET col = ... assignment target columns exist
 //   - EXCLUDED.col references exist
-func onConflictClause(n *ast.InsertStmt, fqn *ast.TableName, c *catalog.Catalog) error {
+func onConflictClause(c *catalog.Catalog, fqn *ast.TableName, n *ast.InsertStmt) error {
 	if n.OnConflictClause == nil || n.OnConflictClause.Action != ast.OnConflictActionUpdate {
 		return nil
 	}

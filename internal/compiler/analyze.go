@@ -142,10 +142,14 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 	raw, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw, numbers, dollar)
 
 	var table *ast.TableName
-	if n, ok := raw.Stmt.(*ast.InsertStmt); ok {
+	switch n := raw.Stmt.(type) {
+	case *ast.InsertStmt:
 		var err error
 		table, err = ParseTableName(n.Relation)
 		if err := check(err); err != nil {
+			return nil, err
+		}
+		if err := check(validate.InsertStmt(c.catalog, table, n)); err != nil {
 			return nil, err
 		}
 	}
@@ -180,11 +184,6 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 	params, err := c.resolveCatalogRefs(qc, rvs, refs, namedParams, embeds)
 	if err := check(err); err != nil {
 		return nil, err
-	}
-	if n, ok := raw.Stmt.(*ast.InsertStmt); ok {
-		if err := check(validate.InsertStmt(n, table, c.catalog)); err != nil {
-			return nil, err
-		}
 	}
 	cols, err := c.outputColumns(qc, raw.Stmt)
 	if err := check(err); err != nil {
