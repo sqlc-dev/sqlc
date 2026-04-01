@@ -9,6 +9,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
 	"github.com/sqlc-dev/sqlc/internal/sql/rewrite"
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 	"github.com/sqlc-dev/sqlc/internal/sql/validate"
 )
 
@@ -152,6 +153,9 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 		if err := check(err); err != nil {
 			return nil, err
 		}
+		if err := check(c.validateOnConflictColumns(n)); err != nil {
+			return nil, err
+		}
 	}
 
 	if err := check(validate.FuncCall(c.catalog, c.combo, raw)); err != nil {
@@ -212,4 +216,84 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 		Query:      expanded,
 		Named:      namedParams,
 	}, rerr
+}
+
+// validateOnConflictColumns checks column names in an ON CONFLICT DO UPDATE
+// clause against the target table:
+//   - ON CONFLICT (col, ...) conflict target columns
+//   - DO UPDATE SET col = ... assignment target columns
+//   - EXCLUDED.col references in assignment values
+func (c *Compiler) validateOnConflictColumns(n *ast.InsertStmt) error {
+	if n.OnConflictClause == nil || n.OnConflictClause.Action != ast.OnConflictActionUpdate {
+		return nil
+	}
+	fqn, err := ParseTableName(n.Relation)
+	if err != nil {
+		return err
+	}
+	table, err := c.catalog.GetTable(fqn)
+	if err != nil {
+		return err
+	}
+	colSet := make(map[string]struct{}, len(table.Columns))
+	for _, col := range table.Columns {
+		colSet[col.Name] = struct{}{}
+	}
+
+	// Validate ON CONFLICT (col, ...) conflict target columns.
+	if n.OnConflictClause.Infer != nil {
+		for _, item := range n.OnConflictClause.Infer.IndexElems.Items {
+			elem, ok := item.(*ast.IndexElem)
+			if !ok || elem.Name == nil {
+				continue
+			}
+			if _, exists := colSet[*elem.Name]; !exists {
+				e := sqlerr.ColumnNotFound(table.Rel.Name, *elem.Name)
+				e.Location = n.OnConflictClause.Infer.Location
+				return e
+			}
+		}
+	}
+
+	// Validate DO UPDATE SET col = ... and EXCLUDED.col references.
+	for _, item := range n.OnConflictClause.TargetList.Items {
+		target, ok := item.(*ast.ResTarget)
+		if !ok || target.Name == nil {
+			continue
+		}
+		// Validate the assignment target column.
+		if _, exists := colSet[*target.Name]; !exists {
+			e := sqlerr.ColumnNotFound(table.Rel.Name, *target.Name)
+			e.Location = target.Location
+			return e
+		}
+		// Validate EXCLUDED.col references in the assigned value.
+		if ref, ok := target.Val.(*ast.ColumnRef); ok {
+			if col, ok := excludedColumn(ref); ok {
+				if _, exists := colSet[col]; !exists {
+					e := sqlerr.ColumnNotFound(table.Rel.Name, col)
+					e.Location = ref.Location
+					return e
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// excludedColumn returns the column name if the ColumnRef is an EXCLUDED.col
+// reference, and ok=true. Returns "", false otherwise.
+func excludedColumn(ref *ast.ColumnRef) (string, bool) {
+	if ref.Fields == nil || len(ref.Fields.Items) != 2 {
+		return "", false
+	}
+	first, ok := ref.Fields.Items[0].(*ast.String)
+	if !ok || first.Str != "excluded" {
+		return "", false
+	}
+	second, ok := ref.Fields.Items[1].(*ast.String)
+	if !ok {
+		return "", false
+	}
+	return second.Str, true
 }
