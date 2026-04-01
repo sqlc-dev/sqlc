@@ -1,10 +1,12 @@
 package compiler
 
 import (
+	"fmt"
 	"sort"
 
 	analyzer "github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
@@ -143,6 +145,7 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 	raw, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw, numbers, dollar)
 
 	var table *ast.TableName
+	var insertStmt *ast.InsertStmt
 	switch n := raw.Stmt.(type) {
 	case *ast.InsertStmt:
 		if err := check(validate.InsertStmt(n)); err != nil {
@@ -156,6 +159,7 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 		if err := check(c.validateOnConflictColumns(n)); err != nil {
 			return nil, err
 		}
+		insertStmt = n
 	}
 
 	if err := check(validate.FuncCall(c.catalog, c.combo, raw)); err != nil {
@@ -188,6 +192,11 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 	params, err := c.resolveCatalogRefs(qc, rvs, refs, namedParams, embeds)
 	if err := check(err); err != nil {
 		return nil, err
+	}
+	if c.conf.Engine == config.EnginePostgreSQL {
+		if err := check(c.validateOnConflictTypes(insertStmt, params)); err != nil {
+			return nil, err
+		}
 	}
 	cols, err := c.outputColumns(qc, raw.Stmt)
 	if err := check(err); err != nil {
@@ -274,6 +283,79 @@ func (c *Compiler) validateOnConflictColumns(n *ast.InsertStmt) error {
 					e := sqlerr.ColumnNotFound(table.Rel.Name, col)
 					e.Location = ref.Location
 					return e
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// validateOnConflictTypes checks that $N params used in DO UPDATE SET assignments
+// are type-compatible with the target column, based on the type already resolved
+// for that param from the INSERT columns.
+func (c *Compiler) validateOnConflictTypes(n *ast.InsertStmt, params []Parameter) error {
+	if n == nil || n.OnConflictClause == nil || n.OnConflictClause.Action != ast.OnConflictActionUpdate {
+		return nil
+	}
+	fqn, err := ParseTableName(n.Relation)
+	if err != nil {
+		return err
+	}
+	table, err := c.catalog.GetTable(fqn)
+	if err != nil {
+		return err
+	}
+
+	// Build param number → resolved DataType string from already-resolved params.
+	// Skips params with "any" type (unresolved).
+	paramDataTypes := make(map[int]string, len(params))
+	for i := range params {
+		if params[i].Column != nil && params[i].Column.DataType != "any" {
+			paramDataTypes[params[i].Number] = params[i].Column.DataType
+		}
+	}
+
+	// Build column name → DataType string using the same dataType() function
+	// used by resolveCatalogRefs, so formats are comparable.
+	colDataTypes := make(map[string]string, len(table.Columns))
+	for _, col := range table.Columns {
+		colDataTypes[col.Name] = dataType(&col.Type)
+	}
+
+	for _, item := range n.OnConflictClause.TargetList.Items {
+		target, ok := item.(*ast.ResTarget)
+		if !ok || target.Name == nil {
+			continue
+		}
+		colDT, ok := colDataTypes[*target.Name]
+		if !ok {
+			continue
+		}
+		switch val := target.Val.(type) {
+		case *ast.ParamRef:
+			paramDT, ok := paramDataTypes[val.Number]
+			if !ok {
+				continue
+			}
+			if postgresql.TypeFamily(paramDT) != postgresql.TypeFamily(colDT) {
+				return &sqlerr.Error{
+					Message:  fmt.Sprintf("parameter $%d has type %q but column %q has type %q", val.Number, paramDT, *target.Name, colDT),
+					Location: val.Location,
+				}
+			}
+		case *ast.ColumnRef:
+			excludedCol, ok := excludedColumn(val)
+			if !ok {
+				continue
+			}
+			excludedDT, ok := colDataTypes[excludedCol]
+			if !ok {
+				continue
+			}
+			if postgresql.TypeFamily(excludedDT) != postgresql.TypeFamily(colDT) {
+				return &sqlerr.Error{
+					Message:  fmt.Sprintf("EXCLUDED.%s has type %q but column %q has type %q", excludedCol, excludedDT, *target.Name, colDT),
+					Location: val.Location,
 				}
 			}
 		}

@@ -2,3 +2,5 @@
 query.sql:4:15: column "name_typo" of relation "servers" does not exist
 query.sql:8:13: column "code_typo" of relation "servers" does not exist
 query.sql:14:22: column "name_typo" of relation "servers" does not exist
+query.sql:19:23: parameter $2 has type "text" but column "count" has type "pg_catalog.int4"
+query.sql:24:23: EXCLUDED.code has type "pg_catalog.varchar" but column "count" has type "pg_catalog.int4"
