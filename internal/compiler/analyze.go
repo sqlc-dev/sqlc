@@ -145,7 +145,6 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 	raw, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw, numbers, dollar)
 
 	var table *ast.TableName
-	var insertStmt *ast.InsertStmt
 	switch n := raw.Stmt.(type) {
 	case *ast.InsertStmt:
 		if err := check(validate.InsertStmt(n)); err != nil {
@@ -156,10 +155,6 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 		if err := check(err); err != nil {
 			return nil, err
 		}
-		if err := check(c.validateOnConflictColumns(n)); err != nil {
-			return nil, err
-		}
-		insertStmt = n
 	}
 
 	if err := check(validate.FuncCall(c.catalog, c.combo, raw)); err != nil {
@@ -193,8 +188,8 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 	if err := check(err); err != nil {
 		return nil, err
 	}
-	if c.conf.Engine == config.EnginePostgreSQL {
-		if err := check(c.validateOnConflictTypes(insertStmt, params)); err != nil {
+	if n, ok := raw.Stmt.(*ast.InsertStmt); ok {
+		if err := check(c.validateOnConflictClause(n, params)); err != nil {
 			return nil, err
 		}
 	}
@@ -227,12 +222,13 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 	}, rerr
 }
 
-// validateOnConflictColumns checks column names in an ON CONFLICT DO UPDATE
-// clause against the target table:
-//   - ON CONFLICT (col, ...) conflict target columns
-//   - DO UPDATE SET col = ... assignment target columns
-//   - EXCLUDED.col references in assignment values
-func (c *Compiler) validateOnConflictColumns(n *ast.InsertStmt) error {
+// validateOnConflictClause validates an ON CONFLICT DO UPDATE clause against
+// the target table. It checks:
+//   - ON CONFLICT (col, ...) conflict target columns exist
+//   - DO UPDATE SET col = ... assignment target columns exist
+//   - EXCLUDED.col references exist
+//   - For PostgreSQL: $N param and EXCLUDED.col type compatibility with SET target
+func (c *Compiler) validateOnConflictClause(n *ast.InsertStmt, params []Parameter) error {
 	if n.OnConflictClause == nil || n.OnConflictClause.Action != ast.OnConflictActionUpdate {
 		return nil
 	}
@@ -244,9 +240,11 @@ func (c *Compiler) validateOnConflictColumns(n *ast.InsertStmt) error {
 	if err != nil {
 		return err
 	}
-	colSet := make(map[string]struct{}, len(table.Columns))
+
+	// Build column name → DataType from catalog for existence and type checks.
+	colDataTypes := make(map[string]string, len(table.Columns))
 	for _, col := range table.Columns {
-		colSet[col.Name] = struct{}{}
+		colDataTypes[col.Name] = dataType(&col.Type)
 	}
 
 	// Validate ON CONFLICT (col, ...) conflict target columns.
@@ -256,7 +254,7 @@ func (c *Compiler) validateOnConflictColumns(n *ast.InsertStmt) error {
 			if !ok || elem.Name == nil {
 				continue
 			}
-			if _, exists := colSet[*elem.Name]; !exists {
+			if _, exists := colDataTypes[*elem.Name]; !exists {
 				e := sqlerr.ColumnNotFound(table.Rel.Name, *elem.Name)
 				e.Location = n.OnConflictClause.Infer.Location
 				return e
@@ -264,62 +262,50 @@ func (c *Compiler) validateOnConflictColumns(n *ast.InsertStmt) error {
 		}
 	}
 
-	// Validate DO UPDATE SET col = ... and EXCLUDED.col references.
+	// Validate DO UPDATE SET col = ... assignment target columns and EXCLUDED.col references.
 	for _, item := range n.OnConflictClause.TargetList.Items {
 		target, ok := item.(*ast.ResTarget)
 		if !ok || target.Name == nil {
 			continue
 		}
-		// Validate the assignment target column.
-		if _, exists := colSet[*target.Name]; !exists {
+		if _, exists := colDataTypes[*target.Name]; !exists {
 			e := sqlerr.ColumnNotFound(table.Rel.Name, *target.Name)
 			e.Location = target.Location
 			return e
 		}
-		// Validate EXCLUDED.col references in the assigned value.
 		if ref, ok := target.Val.(*ast.ColumnRef); ok {
-			if col, ok := excludedColumn(ref); ok {
-				if _, exists := colSet[col]; !exists {
-					e := sqlerr.ColumnNotFound(table.Rel.Name, col)
+			if excludedCol, ok := excludedColumn(ref); ok {
+				if _, exists := colDataTypes[excludedCol]; !exists {
+					e := sqlerr.ColumnNotFound(table.Rel.Name, excludedCol)
 					e.Location = ref.Location
 					return e
 				}
 			}
 		}
 	}
+
+	// Type compatibility checks (PostgreSQL only).
+	// To remove type checking: delete this block and validateOnConflictSetTypes.
+	if c.conf.Engine == config.EnginePostgreSQL {
+		if err := c.validateOnConflictSetTypes(n, params, colDataTypes); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
-// validateOnConflictTypes checks that $N params used in DO UPDATE SET assignments
-// are type-compatible with the target column, based on the type already resolved
-// for that param from the INSERT columns.
-func (c *Compiler) validateOnConflictTypes(n *ast.InsertStmt, params []Parameter) error {
-	if n == nil || n.OnConflictClause == nil || n.OnConflictClause.Action != ast.OnConflictActionUpdate {
-		return nil
-	}
-	fqn, err := ParseTableName(n.Relation)
-	if err != nil {
-		return err
-	}
-	table, err := c.catalog.GetTable(fqn)
-	if err != nil {
-		return err
-	}
-
-	// Build param number → resolved DataType string from already-resolved params.
+// validateOnConflictSetTypes checks that values in DO UPDATE SET assignments
+// are type-compatible with their target columns (PostgreSQL only).
+// It handles $N params (typed from INSERT VALUES) and EXCLUDED.col references.
+func (c *Compiler) validateOnConflictSetTypes(n *ast.InsertStmt, params []Parameter, colDataTypes map[string]string) error {
+	// Build param number → resolved DataType from already-resolved params.
 	// Skips params with "any" type (unresolved).
 	paramDataTypes := make(map[int]string, len(params))
 	for i := range params {
 		if params[i].Column != nil && params[i].Column.DataType != "any" {
 			paramDataTypes[params[i].Number] = params[i].Column.DataType
 		}
-	}
-
-	// Build column name → DataType string using the same dataType() function
-	// used by resolveCatalogRefs, so formats are comparable.
-	colDataTypes := make(map[string]string, len(table.Columns))
-	for _, col := range table.Columns {
-		colDataTypes[col.Name] = dataType(&col.Type)
 	}
 
 	for _, item := range n.OnConflictClause.TargetList.Items {
