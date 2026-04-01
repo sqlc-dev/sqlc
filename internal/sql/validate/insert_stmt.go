@@ -8,6 +8,8 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
+const excludedTable = "EXCLUDED"
+
 func InsertStmt(c *catalog.Catalog, fqn *ast.TableName, stmt *ast.InsertStmt) error {
 	sel, ok := stmt.SelectStmt.(*ast.SelectStmt)
 	if !ok {
@@ -38,6 +40,7 @@ func InsertStmt(c *catalog.Catalog, fqn *ast.TableName, stmt *ast.InsertStmt) er
 			Message: "INSERT has more expressions than target columns",
 		}
 	}
+
 	return onConflictClause(c, fqn, stmt)
 }
 
@@ -47,7 +50,7 @@ func InsertStmt(c *catalog.Catalog, fqn *ast.TableName, stmt *ast.InsertStmt) er
 //   - DO UPDATE SET col = ... assignment target columns exist
 //   - EXCLUDED.col references exist
 func onConflictClause(c *catalog.Catalog, fqn *ast.TableName, n *ast.InsertStmt) error {
-	if n.OnConflictClause == nil || n.OnConflictClause.Action != ast.OnConflictActionUpdate {
+	if fqn == nil || n.OnConflictClause == nil || n.OnConflictClause.Action != ast.OnConflictActionUpdate {
 		return nil
 	}
 
@@ -62,13 +65,22 @@ func onConflictClause(c *catalog.Catalog, fqn *ast.TableName, n *ast.InsertStmt)
 		colNames[col.Name] = struct{}{}
 	}
 
+	// DO UPDATE requires a conflict target: ON CONFLICT (col) or ON CONFLICT ON CONSTRAINT name.
+	if n.OnConflictClause.Infer == nil {
+		return &sqlerr.Error{
+			Code:    "42601",
+			Message: "ON CONFLICT DO UPDATE requires inference specification or constraint name",
+		}
+	}
+
 	// Validate ON CONFLICT (col, ...) conflict target columns.
-	if n.OnConflictClause.Infer != nil && n.OnConflictClause.Infer.IndexElems != nil {
+	if n.OnConflictClause.Infer.IndexElems != nil {
 		for _, item := range n.OnConflictClause.Infer.IndexElems.Items {
 			elem, ok := item.(*ast.IndexElem)
 			if !ok || elem.Name == nil {
 				continue
 			}
+
 			if _, exists := colNames[*elem.Name]; !exists {
 				e := sqlerr.ColumnNotFound(table.Rel.Name, *elem.Name)
 				e.Location = n.OnConflictClause.Infer.Location
@@ -81,26 +93,30 @@ func onConflictClause(c *catalog.Catalog, fqn *ast.TableName, n *ast.InsertStmt)
 	if n.OnConflictClause.TargetList == nil {
 		return nil
 	}
+
 	for _, item := range n.OnConflictClause.TargetList.Items {
 		target, ok := item.(*ast.ResTarget)
 		if !ok || target.Name == nil {
 			continue
 		}
+
 		if _, exists := colNames[*target.Name]; !exists {
 			e := sqlerr.ColumnNotFound(table.Rel.Name, *target.Name)
 			e.Location = target.Location
 			return e
 		}
+
 		if ref, ok := target.Val.(*ast.ColumnRef); ok {
 			if excludedCol, ok := excludedColumnRef(ref); ok {
 				if _, exists := colNames[excludedCol]; !exists {
-					e := sqlerr.ColumnNotFound(table.Rel.Name, excludedCol)
+					e := sqlerr.ColumnNotFound(excludedTable, excludedCol)
 					e.Location = ref.Location
 					return e
 				}
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -110,13 +126,16 @@ func excludedColumnRef(ref *ast.ColumnRef) (string, bool) {
 	if ref.Fields == nil || len(ref.Fields.Items) != 2 {
 		return "", false
 	}
+
 	first, ok := ref.Fields.Items[0].(*ast.String)
-	if !ok || !strings.EqualFold(first.Str, "excluded") {
+	if !ok || !strings.EqualFold(first.Str, excludedTable) {
 		return "", false
 	}
+
 	second, ok := ref.Fields.Items[1].(*ast.String)
 	if !ok {
 		return "", false
 	}
+
 	return second.Str, true
 }

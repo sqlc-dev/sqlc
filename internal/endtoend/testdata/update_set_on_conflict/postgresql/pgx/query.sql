@@ -13,3 +13,11 @@ INSERT INTO servers(code, name) VALUES ($1, $2)
 ON CONFLICT (code)
 DO UPDATE SET name = EXCLUDED.name_typo;
 
+-- name: UpsertServerMissingConflictTarget :exec
+INSERT INTO servers(code, name) VALUES ($1, $2)
+ON CONFLICT DO UPDATE SET name = EXCLUDED.name;
+
+-- name: UpsertServerOnConstraintExcludedTypo :exec
+INSERT INTO servers(code, name) VALUES ($1, $2)
+ON CONFLICT ON CONSTRAINT servers_pkey DO UPDATE SET name = EXCLUDED.name_typo;
+
