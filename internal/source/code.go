@@ -115,6 +115,11 @@ func StripComments(sql string) (string, []string, error) {
 			continue
 		}
 		if strings.HasPrefix(t, "/*") && strings.HasSuffix(t, "*/") {
+			if strings.HasPrefix(t, "/*+") {
+				// Optimizer hints (/*+ ... */) must be preserved in the SQL string
+				lines = append(lines, t)
+				continue
+			}
 			t = strings.TrimPrefix(t, "/*")
 			t = strings.TrimSuffix(t, "*/")
 			comments = append(comments, t)
