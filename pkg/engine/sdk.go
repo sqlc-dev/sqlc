@@ -70,7 +70,7 @@ func Run(h Handler) {
 
 func run(h Handler, args []string, stdin io.Reader, stdout, stderr io.Writer) error {
 	if len(args) < 2 {
-		return fmt.Errorf("usage: %s <method>", args[0])
+		return fmt.Errorf("usage: %s <%s|parse>", args[0], EngineService_Parse_FullMethodName)
 	}
 
 	method := args[1]
@@ -81,8 +81,12 @@ func run(h Handler, args []string, stdin io.Reader, stdout, stderr io.Writer) er
 
 	var output proto.Message
 
-	switch method {
-	case "parse":
+	switch {
+	// Full gRPC method name (same argv tail as codegen plugins use for CodegenService/Generate).
+	case method == EngineService_Parse_FullMethodName:
+		fallthrough
+	// Legacy shorthand for manual invocation and older sqlc versions.
+	case method == "parse":
 		var req ParseRequest
 		if err := proto.Unmarshal(input, &req); err != nil {
 			return fmt.Errorf("parsing request: %w", err)
@@ -93,7 +97,7 @@ func run(h Handler, args []string, stdin io.Reader, stdout, stderr io.Writer) er
 		output, err = h.Parse(&req)
 
 	default:
-		return fmt.Errorf("unknown method: %s", method)
+		return fmt.Errorf("unknown method: %q (expected %q or legacy \"parse\")", method, EngineService_Parse_FullMethodName)
 	}
 
 	if err != nil {

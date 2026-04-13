@@ -63,7 +63,7 @@ sql:
 | Field | Description |
 |-------|-------------|
 | `name` | Engine name used in `sql[].engine` |
-| `process.cmd` | Command to run: executable path and optional arguments (e.g. `sqlc-engine-external-db --dont-open-wildcard-star`). First token is the executable; remaining tokens are passed as arguments before the RPC method. |
+| `process.cmd` | Command to run: executable path and optional arguments (e.g. `sqlc-engine-external-db --dont-open-wildcard-star`). First token is the executable; remaining tokens are passed as arguments **before** the full RPC method name `/engine.EngineService/Parse`. |
 | `env` | Environment variable names passed to the plugin |
 
 Each engine must define either `process` (with `cmd`) or `wasm` (with `url` and `sha256`). See [Configuration reference](../reference/config.md) for the full `engines` schema.
@@ -72,7 +72,7 @@ Each engine must define either `process` (with `cmd`) or `wasm` (with `url` and 
 
 For an engine with `process.cmd`, sqlc resolves and runs the plugin as follows:
 
-1. **Command parsing** — `process.cmd` is split on whitespace. The first token is the executable; any further tokens are passed as arguments, and sqlc appends the RPC method name (`parse`) when invoking the plugin.
+1. **Command parsing** — `process.cmd` is split on whitespace. The first token is the executable; any further tokens are passed as arguments, and sqlc appends the **gRPC full method name** for Parse — the same pattern as for [codegen plugins](plugins.md): `/engine.EngineService/Parse` (the generated client passes this string as the last argv token to the child process).
 
 2. **Executable lookup** — The first token is resolved the same way as in the shell:
    - If it contains a path separator (e.g. `/usr/bin/sqlc-engine-external-db` or `./bin/sqlc-engine-external-db`), it is treated as a path. Absolute paths are used as-is; relative paths are taken relative to the **current working directory of the process running sqlc**.
@@ -178,19 +178,22 @@ go build -o sqlc-engine-external-db .
 
 ## Protocol
 
-Process plugins use Protocol Buffers on stdin/stdout:
+Process plugins use Protocol Buffers on stdin/stdout — **no TCP gRPC**, but the same **unary RPC shape** as codegen plugins: sqlc uses the generated `EngineServiceClient` with `process.Runner` implementing `grpc.ClientConnInterface`, so the child receives the **full gRPC method path** as the last command-line argument (like `/plugin.CodegenService/Generate` for codegen).
 
 ```
 sqlc  →  stdin (protobuf)  →  plugin  →  stdout (protobuf)  →  sqlc
 ```
 
-Invocation:
+Invocation (method name is one argv token, often quoted in shell examples):
 
 ```bash
-sqlc-engine-external-db parse   # stdin: ParseRequest, stdout: ParseResponse
+sqlc-engine-external-db --flag /engine.EngineService/Parse
+# stdin: ParseRequest, stdout: ParseResponse
 ```
 
-The definition lives in `protos/engine/engine.proto` (generated Go in `pkg/engine`). After editing the proto, run `make proto-engine-plugin` to regenerate the Go code.
+The Go SDK `engine.Run` dispatches **Parse** when `os.Args[1]` is `/engine.EngineService/Parse` or the legacy shorthand `parse` (for older tooling).
+
+The definition lives in `protos/engine/engine.proto` (messages **and** `service EngineService`; generated Go in `pkg/engine`, including `engine_grpc.pb.go` for the client stub). After editing the proto, run `make proto-engine-plugin` to regenerate the Go code.
 
 ## Example
 
@@ -210,7 +213,7 @@ For each `sql[]` block, `sqlc generate` branches on the configured engine: built
 └─────────────────────────────────────────────────────────────────┘
 
     sqlc                          sqlc-engine-external-db
-      │──── spawn, args: ["parse"] ──────────────────────────────► │
+      │──── spawn, argv ends with /engine.EngineService/Parse ─────► │
       │──── stdin: ParseRequest{sql=full query.sql, schema_sql|…}  ► │
       │◄─── stdout: ParseResponse{statements: [stmt1, stmt2, …]} ── │
 ```

@@ -232,12 +232,11 @@ func TestPluginPipeline_FullPipeline(t *testing.T) {
 }
 
 // TestPluginPipeline_WithoutOverride_UsesPluginPackage proves that when PluginParseFunc
-// is not set, the pipeline calls the engine process runner (newEngineProcessRunner + parseRequest).
+// is not set, the pipeline calls process.Runner + NewEngineServiceClient(...).Parse (real subprocess).
 // It runs generate with a plugin engine and nil PluginParseFunc; we expect failure
 // (e.g. from running "echo" as the engine binary), but the error must NOT be
 // "unknown engine" — so we know we went past config lookup and into the plugin path.
-// If you add panic("azaza") at the start of newEngineProcessRunner or parseRequest,
-// this test will panic, confirming that the plugin package is actually invoked.
+// If you add panic at the start of that path, this test will panic, confirming the runner is invoked.
 func TestPluginPipeline_WithoutOverride_UsesPluginPackage(t *testing.T) {
 	ctx := context.Background()
 	conf, err := config.ParseConfig(strings.NewReader(testPluginPipelineConfig))
