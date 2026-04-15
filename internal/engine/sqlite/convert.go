@@ -648,6 +648,7 @@ func (c *cc) convertOrderby_stmtContext(n parser.IOrder_by_stmtContext) *ast.Lis
 			continue
 		}
 
+		// Sort direction: ASC, DESC, or default
 		sortByDir := ast.SortByDirDefault
 		if adNode := term.Asc_desc(); adNode != nil {
 			if adNode.ASC_() != nil {
@@ -657,6 +658,7 @@ func (c *cc) convertOrderby_stmtContext(n parser.IOrder_by_stmtContext) *ast.Lis
 			}
 		}
 
+		// Nulls ordering: NULLS FIRST, NULLS LAST, or default
 		sortByNulls := ast.SortByNullsDefault
 		if term.NULLS_() != nil {
 			if term.FIRST_() != nil {
@@ -864,7 +866,7 @@ func (c *cc) convertUnaryExpr(n *parser.Expr_unaryContext) ast.Node {
 		if opCtx.MINUS() != nil {
 			// Negative number: -expr
 			return &ast.A_Expr{
-				Name: &ast.List{Items: []ast.Node{&ast.String{Str: "-"}}},
+				Name:  &ast.List{Items: []ast.Node{&ast.String{Str: "-"}}},
 				Rexpr: expr,
 			}
 		}
@@ -875,7 +877,7 @@ func (c *cc) convertUnaryExpr(n *parser.Expr_unaryContext) ast.Node {
 		if opCtx.TILDE() != nil {
 			// Bitwise NOT: ~expr
 			return &ast.A_Expr{
-				Name: &ast.List{Items: []ast.Node{&ast.String{Str: "~"}}},
+				Name:  &ast.List{Items: []ast.Node{&ast.String{Str: "~"}}},
 				Rexpr: expr,
 			}
 		}
@@ -1373,4 +1375,3 @@ func (c *cc) convert(node node) ast.Node {
 		return todo("convert(case=default)", n)
 	}
 }
-
