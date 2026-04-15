@@ -139,3 +139,35 @@ func (q *Queries) ListAuthorsNameSort(ctx context.Context, minID int64) ([]Autho
 	}
 	return items, nil
 }
+
+const listAuthorsNamedParamsOnly = `-- name: ListAuthorsNamedParamsOnly :many
+SELECT id, name, bio FROM authors
+ORDER BY
+    CASE
+        WHEN ?1 = 'name' THEN name
+        WHEN ?1 = 'bio' THEN bio
+    END ASC
+`
+
+func (q *Queries) ListAuthorsNamedParamsOnly(ctx context.Context, sort interface{}) ([]Author, error) {
+	rows, err := q.db.QueryContext(ctx, listAuthorsNamedParamsOnly, sort)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Author
+	for rows.Next() {
+		var i Author
+		if err := rows.Scan(&i.ID, &i.Name, &i.Bio); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

@@ -22,3 +22,11 @@ ORDER   BY id % ?;
 SELECT  * FROM authors
 WHERE   id > sqlc.arg(min_id)
 ORDER   BY name ASC;
+
+-- name: ListAuthorsNamedParamsOnly :many
+SELECT * FROM authors
+ORDER BY
+    CASE
+        WHEN @sort = 'name' THEN name
+        WHEN @sort = 'bio' THEN bio
+    END ASC;
