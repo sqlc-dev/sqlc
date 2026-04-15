@@ -30,13 +30,21 @@ sql:
 
 ## Tables
 
-The output structs associated with tables can also be renamed. By default, the struct name will be the singular version of the table name. For example, the `authors` table will generate an `Author` struct.
+The output structs associated with tables can also be renamed. By default, 
+the struct name will be the singular version of the table name. For example, 
+the `authors` table will generate an `Author` struct and the `book_publishers`
+table will generate a `BookPublisher` struct.
 
 ```sql
 CREATE TABLE authors (
   id   BIGSERIAL PRIMARY KEY,
   name text      NOT NULL,
   bio  text
+);
+
+CREATE TABLE book_publishers (
+  id   BIGSERIAL PRIMARY KEY,
+  name text      NOT NULL
 );
 ```
 
@@ -52,9 +60,17 @@ type Author struct {
 	Name string
 	Bio  sql.NullString
 }
+
+type Publisher struct {
+	ID   int64
+	Name string
+}
 ```
 
-To rename this struct, you must use the generated struct name. In this example, that would be `author`. Use the `rename` map to change the name of this struct to `Writer` (note the uppercase `W`).
+To rename these structs, you must use the generated struct name. In this 
+example, that would be `author` and `book_publisher`. Use the `rename` map to 
+change the name of these struct to `Writer` and `BookPublisher` (note the 
+camel-casing and the underscore for multi-worded tables).
 
 ```yaml
 version: '1'
@@ -65,6 +81,7 @@ packages:
   queries: query.sql
 rename:
   author: Writer
+  book_publisher: Publisher
 ```
 
 ```yaml
@@ -77,6 +94,7 @@ overrides:
   go:
     rename:
       author: Writer
+      book_publisher: Publisher
 ```
 
 ```go
@@ -90,6 +108,11 @@ type Writer struct {
 	ID   int64
 	Name string
 	Bio  sql.NullString
+}
+
+type Publisher struct {
+	ID   int64
+	Name string
 }
 ```
 

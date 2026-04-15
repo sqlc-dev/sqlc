@@ -383,7 +383,7 @@ func filterUnusedStructs(enums []Enum, structs []Struct, queries []Query) ([]Enu
 			keepTypes[query.Ret.Type()] = struct{}{}
 			if query.Ret.IsStruct() {
 				for _, field := range query.Ret.Struct.Fields {
-					keepTypes[field.Type] = struct{}{}
+					keepTypes[strings.TrimPrefix(field.Type, "[]")] = struct{}{}
 					for _, embedField := range field.EmbedFields {
 						keepTypes[embedField.Type] = struct{}{}
 					}

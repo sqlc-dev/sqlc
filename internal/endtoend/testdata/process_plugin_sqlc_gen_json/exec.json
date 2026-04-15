@@ -1,3 +1,4 @@
 {
-  "contexts": ["base"]
+  "contexts": ["base"],
+  "process": "sqlc-gen-json"
 }

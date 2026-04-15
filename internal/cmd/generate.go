@@ -295,7 +295,7 @@ func remoteGenerate(ctx context.Context, configPath string, conf *config.Config,
 
 func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
 	defer trace.StartRegion(ctx, "parse").End()
-	c, err := compiler.NewCompiler(sql, combo)
+	c, err := compiler.NewCompiler(sql, combo, parserOpts)
 	defer func() {
 		if c != nil {
 			c.Close(ctx)

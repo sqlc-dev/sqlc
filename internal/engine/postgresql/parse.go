@@ -494,6 +494,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			ReturnType: rt,
 			Replace:    n.Replace,
 			Params:     &ast.List{},
+			Options:    convertSlice(n.Options),
 		}
 		for _, item := range n.Parameters {
 			arg := item.Node.(*nodes.Node_FunctionParameter).FunctionParameter

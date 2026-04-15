@@ -5,9 +5,20 @@ CREATE TABLE authors (
   id         SERIAL PRIMARY KEY,
   bio        text   NOT NULL
 );
+```
 
+The parameter syntax varies by database engine:
+
+**PostgreSQL:**
+```sql
 -- name: DeleteAuthor :exec
 DELETE FROM authors WHERE id = $1;
+```
+
+**MySQL and SQLite:**
+```sql
+-- name: DeleteAuthor :exec
+DELETE FROM authors WHERE id = ?;
 ```
 
 ```go

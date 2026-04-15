@@ -15,6 +15,16 @@
         {
           "go_struct_tag": "also:\"tagged\"",
           "column": "*.also_tagged"
+        },
+        {
+          "db_type": "text",
+          "go_struct_tag": "utype:\"notnull_text\""
+        },
+        {
+          "db_type": "text",
+          "go_type": "string",
+          "nullable": true,
+          "go_struct_tag": "utype:\"nullable_text\""
         }
       ]
     }

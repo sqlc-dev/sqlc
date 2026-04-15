@@ -64,7 +64,11 @@ func mysqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.C
 		}
 		return "sql.NullInt32"
 
-	case "bigint":
+	case "bigint", "bigint unsigned", "bigint signed":
+		// "bigint unsigned" and "bigint signed" are MySQL CAST types
+		// Note: We use int64 for CAST AS UNSIGNED to match original behavior,
+		// even though uint64 would be more semantically correct.
+		// The Unsigned flag on columns (from table schema) still uses uint64.
 		if notNull {
 			if unsigned {
 				return "uint64"

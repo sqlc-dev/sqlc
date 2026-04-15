@@ -6,6 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	_ "github.com/ncruces/go-sqlite3/driver"
+	_ "github.com/ncruces/go-sqlite3/embed"
+
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 )
 
@@ -26,7 +29,7 @@ func CreateSQLiteDatabase(t *testing.T, path string, migrations []string) (*sql.
 	t.Helper()
 
 	t.Logf("open %s\n", path)
-	sdb, err := sql.Open("sqlite", path)
+	sdb, err := sql.Open("sqlite3", path)
 	if err != nil {
 		t.Fatal(err)
 	}

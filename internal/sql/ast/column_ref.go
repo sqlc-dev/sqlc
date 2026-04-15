@@ -1,6 +1,10 @@
 package ast
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/sqlc-dev/sqlc/internal/sql/format"
+)
 
 type ColumnRef struct {
 	Name string
@@ -14,7 +18,7 @@ func (n *ColumnRef) Pos() int {
 	return n.Location
 }
 
-func (n *ColumnRef) Format(buf *TrackedBuffer) {
+func (n *ColumnRef) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
@@ -24,11 +28,7 @@ func (n *ColumnRef) Format(buf *TrackedBuffer) {
 		for _, item := range n.Fields.Items {
 			switch nn := item.(type) {
 			case *String:
-				if nn.Str == "user" {
-					items = append(items, `"user"`)
-				} else {
-					items = append(items, nn.Str)
-				}
+				items = append(items, d.QuoteIdent(nn.Str))
 			case *A_Star:
 				items = append(items, "*")
 			}

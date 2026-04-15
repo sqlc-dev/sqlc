@@ -11,8 +11,10 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	pganalyze "github.com/sqlc-dev/sqlc/internal/engine/postgresql/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
+	sqliteanalyze "github.com/sqlc-dev/sqlc/internal/engine/sqlite/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
+	"github.com/sqlc-dev/sqlc/internal/x/expander"
 )
 
 type Compiler struct {
@@ -23,11 +25,18 @@ type Compiler struct {
 	result   *Result
 	analyzer analyzer.Analyzer
 	client   dbmanager.Client
+	selector selector
 
 	schema []string
+
+	// databaseOnlyMode indicates that the compiler should use database-only analysis
+	// and skip building the internal catalog from schema files (analyzer.database: only)
+	databaseOnlyMode bool
+	// expander is used to expand SELECT * and RETURNING * in database-only mode
+	expander *expander.Expander
 }
 
-func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, error) {
+func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts.Parser) (*Compiler, error) {
 	c := &Compiler{conf: conf, combo: combo}
 
 	if conf.Database != nil && conf.Database.Managed {
@@ -35,18 +44,66 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings) (*Compiler, err
 		c.client = client
 	}
 
+	// Check for database-only mode (analyzer.database: only)
+	// This feature requires the analyzerv2 experiment to be enabled
+	databaseOnlyMode := conf.Analyzer.Database.IsOnly() && parserOpts.Experiment.AnalyzerV2
+
 	switch conf.Engine {
 	case config.EngineSQLite:
-		c.parser = sqlite.NewParser()
+		parser := sqlite.NewParser()
+		c.parser = parser
 		c.catalog = sqlite.NewCatalog()
+		c.selector = newSQLiteSelector()
+
+		if databaseOnlyMode {
+			// Database-only mode requires a database connection
+			if conf.Database == nil {
+				return nil, fmt.Errorf("analyzer.database: only requires database configuration")
+			}
+			if conf.Database.URI == "" && !conf.Database.Managed {
+				return nil, fmt.Errorf("analyzer.database: only requires database.uri or database.managed")
+			}
+			c.databaseOnlyMode = true
+			// Create the SQLite analyzer (implements Analyzer interface)
+			sqliteAnalyzer := sqliteanalyze.New(*conf.Database)
+			c.analyzer = analyzer.Cached(sqliteAnalyzer, combo.Global, *conf.Database)
+			// Create the expander using the analyzer as the column getter
+			c.expander = expander.New(c.analyzer, parser, parser)
+		} else if conf.Database != nil {
+			if conf.Analyzer.Database.IsEnabled() {
+				c.analyzer = analyzer.Cached(
+					sqliteanalyze.New(*conf.Database),
+					combo.Global,
+					*conf.Database,
+				)
+			}
+		}
 	case config.EngineMySQL:
 		c.parser = dolphin.NewParser()
 		c.catalog = dolphin.NewCatalog()
+		c.selector = newDefaultSelector()
 	case config.EnginePostgreSQL:
-		c.parser = postgresql.NewParser()
+		parser := postgresql.NewParser()
+		c.parser = parser
 		c.catalog = postgresql.NewCatalog()
-		if conf.Database != nil {
-			if conf.Analyzer.Database == nil || *conf.Analyzer.Database {
+		c.selector = newDefaultSelector()
+
+		if databaseOnlyMode {
+			// Database-only mode requires a database connection
+			if conf.Database == nil {
+				return nil, fmt.Errorf("analyzer.database: only requires database configuration")
+			}
+			if conf.Database.URI == "" && !conf.Database.Managed {
+				return nil, fmt.Errorf("analyzer.database: only requires database.uri or database.managed")
+			}
+			c.databaseOnlyMode = true
+			// Create the PostgreSQL analyzer (implements Analyzer interface)
+			pgAnalyzer := pganalyze.New(c.client, *conf.Database)
+			c.analyzer = analyzer.Cached(pgAnalyzer, combo.Global, *conf.Database)
+			// Create the expander using the analyzer as the column getter
+			c.expander = expander.New(c.analyzer, parser, parser)
+		} else if conf.Database != nil {
+			if conf.Analyzer.Database.IsEnabled() {
 				c.analyzer = analyzer.Cached(
 					pganalyze.New(c.client, *conf.Database),
 					combo.Global,

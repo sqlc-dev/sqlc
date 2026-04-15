@@ -1,6 +1,10 @@
 package ast
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/sqlc-dev/sqlc/internal/sql/format"
+)
 
 type Boolean struct {
 	Boolval bool
@@ -10,7 +14,7 @@ func (n *Boolean) Pos() int {
 	return 0
 }
 
-func (n *Boolean) Format(buf *TrackedBuffer) {
+func (n *Boolean) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}

@@ -1,0 +1,1 @@
+INSERT INTO posts (title) VALUES ('Test')

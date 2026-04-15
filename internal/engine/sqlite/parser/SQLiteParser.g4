@@ -359,9 +359,9 @@ insert_stmt:
                 COMMA OPEN_PAR expr ( COMMA expr)* CLOSE_PAR
             )*
             | select_stmt
+            | DEFAULT_ VALUES_
         ) upsert_clause? returning_clause?
     )
-    | DEFAULT_ VALUES_
 ;
 
 upsert_clause:

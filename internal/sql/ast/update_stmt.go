@@ -1,6 +1,10 @@
 package ast
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/sqlc-dev/sqlc/internal/sql/format"
+)
 
 type UpdateStmt struct {
 	Relations     *List
@@ -16,18 +20,18 @@ func (n *UpdateStmt) Pos() int {
 	return 0
 }
 
-func (n *UpdateStmt) Format(buf *TrackedBuffer) {
+func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
 	if n.WithClause != nil {
-		buf.astFormat(n.WithClause)
+		buf.astFormat(n.WithClause, d)
 		buf.WriteString(" ")
 	}
 
 	buf.WriteString("UPDATE ")
 	if items(n.Relations) {
-		buf.astFormat(n.Relations)
+		buf.astFormat(n.Relations, d)
 	}
 
 	if items(n.TargetList) {
@@ -69,7 +73,7 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer) {
 			buf.WriteString("(")
 			buf.WriteString(strings.Join(names, ","))
 			buf.WriteString(") = (")
-			buf.join(vals, ",")
+			buf.join(vals, d, ",")
 			buf.WriteString(")")
 		} else {
 			for i, item := range n.TargetList.Items {
@@ -79,12 +83,18 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer) {
 				switch nn := item.(type) {
 				case *ResTarget:
 					if nn.Name != nil {
-						buf.WriteString(*nn.Name)
+						buf.WriteString(d.QuoteIdent(*nn.Name))
+					}
+					// Handle array subscript indirection (e.g., names[$1])
+					if items(nn.Indirection) {
+						for _, ind := range nn.Indirection.Items {
+							buf.astFormat(ind, d)
+						}
 					}
 					buf.WriteString(" = ")
-					buf.astFormat(nn.Val)
+					buf.astFormat(nn.Val, d)
 				default:
-					buf.astFormat(item)
+					buf.astFormat(item, d)
 				}
 			}
 		}
@@ -92,21 +102,21 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer) {
 
 	if items(n.FromClause) {
 		buf.WriteString(" FROM ")
-		buf.astFormat(n.FromClause)
+		buf.astFormat(n.FromClause, d)
 	}
 
 	if set(n.WhereClause) {
 		buf.WriteString(" WHERE ")
-		buf.astFormat(n.WhereClause)
+		buf.astFormat(n.WhereClause, d)
 	}
 
 	if set(n.LimitCount) {
 		buf.WriteString(" LIMIT ")
-		buf.astFormat(n.LimitCount)
+		buf.astFormat(n.LimitCount, d)
 	}
 
 	if items(n.ReturningList) {
 		buf.WriteString(" RETURNING ")
-		buf.astFormat(n.ReturningList)
+		buf.astFormat(n.ReturningList, d)
 	}
 }

@@ -1077,6 +1077,12 @@ func Walk(f Visitor, node ast.Node) {
 		if n.WithClause != nil {
 			Walk(f, n.WithClause)
 		}
+		if n.Targets != nil {
+			Walk(f, n.Targets)
+		}
+		if n.FromClause != nil {
+			Walk(f, n.FromClause)
+		}
 
 	case *ast.DiscardStmt:
 		// pass
@@ -1312,6 +1318,9 @@ func Walk(f Visitor, node ast.Node) {
 		if n.OnConflictClause != nil {
 			Walk(f, n.OnConflictClause)
 		}
+		if n.OnDuplicateKeyUpdate != nil {
+			Walk(f, n.OnDuplicateKeyUpdate)
+		}
 		if n.ReturningList != nil {
 			Walk(f, n.ReturningList)
 		}
@@ -1334,6 +1343,11 @@ func Walk(f Visitor, node ast.Node) {
 		}
 		if n.ViewQuery != nil {
 			Walk(f, n.ViewQuery)
+		}
+
+	case *ast.IntervalExpr:
+		if n.Value != nil {
+			Walk(f, n.Value)
 		}
 
 	case *ast.JoinExpr:
@@ -1445,6 +1459,11 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.ExclRelTlist)
 		}
 
+	case *ast.OnDuplicateKeyUpdate:
+		if n.TargetList != nil {
+			Walk(f, n.TargetList)
+		}
+
 	case *ast.OpExpr:
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
@@ -1469,6 +1488,14 @@ func Walk(f Visitor, node ast.Node) {
 
 	case *ast.ParamRef:
 		// pass
+
+	case *ast.ParenExpr:
+		if n.Expr != nil {
+			Walk(f, n.Expr)
+		}
+
+	case *ast.VariableExpr:
+		// Leaf node - no children to traverse
 
 	case *ast.PartitionBoundSpec:
 		if n.Listdatums != nil {

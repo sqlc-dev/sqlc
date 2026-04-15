@@ -110,7 +110,21 @@ func (c *CachedAnalyzer) Close(ctx context.Context) error {
 	return c.a.Close(ctx)
 }
 
+func (c *CachedAnalyzer) EnsureConn(ctx context.Context, migrations []string) error {
+	return c.a.EnsureConn(ctx, migrations)
+}
+
+func (c *CachedAnalyzer) GetColumnNames(ctx context.Context, query string) ([]string, error) {
+	return c.a.GetColumnNames(ctx, query)
+}
+
 type Analyzer interface {
 	Analyze(context.Context, ast.Node, string, []string, *named.ParamSet) (*analysis.Analysis, error)
 	Close(context.Context) error
+	// EnsureConn initializes the database connection with the given migrations.
+	// This is required for database-only mode where we need to connect before analyzing queries.
+	EnsureConn(ctx context.Context, migrations []string) error
+	// GetColumnNames returns the column names for a query by preparing it against the database.
+	// This is used for star expansion in database-only mode.
+	GetColumnNames(ctx context.Context, query string) ([]string, error)
 }

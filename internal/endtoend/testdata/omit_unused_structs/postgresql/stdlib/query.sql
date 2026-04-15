@@ -15,3 +15,6 @@ SELECT value, another FROM query_return_struct_enum_table WHERE id = $1;
 
 -- name: query_sqlc_embed_table :one
 SELECT sqlc.embed(query_sqlc_embed_table) FROM query_sqlc_embed_table WHERE id = $1;
+
+-- name: query_enum_array_table :many
+SELECT * FROM array_enum_table;

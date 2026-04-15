@@ -58,4 +58,12 @@ CREATE TYPE query_sqlc_embed_enum AS ENUM (
 CREATE TABLE query_sqlc_embed_table (
     id      INTEGER PRIMARY KEY,
     value   query_sqlc_embed_enum
-)
+);
+
+CREATE TYPE array_enum AS ENUM (
+    'o', 'p'
+);
+CREATE TABLE array_enum_table (
+    id      INTEGER PRIMARY KEY,
+    value   array_enum[]
+);

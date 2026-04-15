@@ -17,6 +17,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/shfmt"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
@@ -319,4 +320,228 @@ func (a *Analyzer) Close(_ context.Context) error {
 		a.pool.Close()
 	}
 	return nil
+}
+
+// SQL queries for schema introspection
+const introspectTablesQuery = `
+SELECT
+    n.nspname AS schema_name,
+    c.relname AS table_name,
+    a.attname AS column_name,
+    pg_catalog.format_type(a.atttypid, a.atttypmod) AS data_type,
+    a.attnotnull AS not_null,
+    a.attndims AS array_dims,
+    COALESCE(
+        (SELECT true FROM pg_index i
+         WHERE i.indrelid = c.oid
+         AND i.indisprimary
+         AND a.attnum = ANY(i.indkey)),
+        false
+    ) AS is_primary_key
+FROM
+    pg_catalog.pg_class c
+JOIN
+    pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+JOIN
+    pg_catalog.pg_attribute a ON a.attrelid = c.oid
+WHERE
+    c.relkind IN ('r', 'v', 'p')  -- tables, views, partitioned tables
+    AND a.attnum > 0  -- skip system columns
+    AND NOT a.attisdropped
+    AND n.nspname = ANY($1)
+ORDER BY
+    n.nspname, c.relname, a.attnum
+`
+
+const introspectEnumsQuery = `
+SELECT
+    n.nspname AS schema_name,
+    t.typname AS type_name,
+    e.enumlabel AS enum_value
+FROM
+    pg_catalog.pg_type t
+JOIN
+    pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+JOIN
+    pg_catalog.pg_enum e ON e.enumtypid = t.oid
+WHERE
+    t.typtype = 'e'
+    AND n.nspname = ANY($1)
+ORDER BY
+    n.nspname, t.typname, e.enumsortorder
+`
+
+type introspectedColumn struct {
+	SchemaName   string `db:"schema_name"`
+	TableName    string `db:"table_name"`
+	ColumnName   string `db:"column_name"`
+	DataType     string `db:"data_type"`
+	NotNull      bool   `db:"not_null"`
+	ArrayDims    int    `db:"array_dims"`
+	IsPrimaryKey bool   `db:"is_primary_key"`
+}
+
+type introspectedEnum struct {
+	SchemaName string `db:"schema_name"`
+	TypeName   string `db:"type_name"`
+	EnumValue  string `db:"enum_value"`
+}
+
+// IntrospectSchema queries the database to build a catalog containing
+// tables, columns, and enum types for the specified schemas.
+func (a *Analyzer) IntrospectSchema(ctx context.Context, schemas []string) (*catalog.Catalog, error) {
+	if a.pool == nil {
+		return nil, fmt.Errorf("database connection not initialized")
+	}
+
+	c, err := a.pool.Acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer c.Release()
+
+	// Query tables and columns
+	rows, err := c.Query(ctx, introspectTablesQuery, schemas)
+	if err != nil {
+		return nil, fmt.Errorf("introspect tables: %w", err)
+	}
+	columns, err := pgx.CollectRows(rows, pgx.RowToStructByName[introspectedColumn])
+	if err != nil {
+		return nil, fmt.Errorf("collect table rows: %w", err)
+	}
+
+	// Query enums
+	enumRows, err := c.Query(ctx, introspectEnumsQuery, schemas)
+	if err != nil {
+		return nil, fmt.Errorf("introspect enums: %w", err)
+	}
+	enums, err := pgx.CollectRows(enumRows, pgx.RowToStructByName[introspectedEnum])
+	if err != nil {
+		return nil, fmt.Errorf("collect enum rows: %w", err)
+	}
+
+	// Build catalog
+	cat := &catalog.Catalog{
+		DefaultSchema: "public",
+		SearchPath:    schemas,
+	}
+
+	// Create schema map for quick lookup
+	schemaMap := make(map[string]*catalog.Schema)
+	for _, schemaName := range schemas {
+		schema := &catalog.Schema{Name: schemaName}
+		cat.Schemas = append(cat.Schemas, schema)
+		schemaMap[schemaName] = schema
+	}
+
+	// Group columns by table
+	tableMap := make(map[string]*catalog.Table)
+	for _, col := range columns {
+		key := col.SchemaName + "." + col.TableName
+		tbl, exists := tableMap[key]
+		if !exists {
+			tbl = &catalog.Table{
+				Rel: &ast.TableName{
+					Schema: col.SchemaName,
+					Name:   col.TableName,
+				},
+			}
+			tableMap[key] = tbl
+			if schema, ok := schemaMap[col.SchemaName]; ok {
+				schema.Tables = append(schema.Tables, tbl)
+			}
+		}
+
+		dt, isArray, dims := parseType(col.DataType)
+		tbl.Columns = append(tbl.Columns, &catalog.Column{
+			Name:      col.ColumnName,
+			Type:      ast.TypeName{Name: dt},
+			IsNotNull: col.NotNull,
+			IsArray:   isArray || col.ArrayDims > 0,
+			ArrayDims: max(dims, col.ArrayDims),
+		})
+	}
+
+	// Group enum values by type
+	enumMap := make(map[string]*catalog.Enum)
+	for _, e := range enums {
+		key := e.SchemaName + "." + e.TypeName
+		enum, exists := enumMap[key]
+		if !exists {
+			enum = &catalog.Enum{
+				Name: e.TypeName,
+			}
+			enumMap[key] = enum
+			if schema, ok := schemaMap[e.SchemaName]; ok {
+				schema.Types = append(schema.Types, enum)
+			}
+		}
+		enum.Vals = append(enum.Vals, e.EnumValue)
+	}
+
+	return cat, nil
+}
+
+// EnsureConn initializes the database connection pool if not already done.
+// This is useful for database-only mode where we need to connect before analyzing queries.
+func (a *Analyzer) EnsureConn(ctx context.Context, migrations []string) error {
+	if a.pool != nil {
+		return nil
+	}
+
+	var uri string
+	if a.db.Managed {
+		if a.client == nil {
+			return fmt.Errorf("client is nil")
+		}
+		edb, err := a.client.CreateDatabase(ctx, &dbmanager.CreateDatabaseRequest{
+			Engine:     "postgresql",
+			Migrations: migrations,
+		})
+		if err != nil {
+			return err
+		}
+		uri = edb.Uri
+	} else if a.dbg.OnlyManagedDatabases {
+		return fmt.Errorf("database: connections disabled via SQLCDEBUG=databases=managed")
+	} else {
+		uri = a.replacer.Replace(a.db.URI)
+	}
+
+	conf, err := pgxpool.ParseConfig(uri)
+	if err != nil {
+		return err
+	}
+	pool, err := pgxpool.NewWithConfig(ctx, conf)
+	if err != nil {
+		return err
+	}
+	a.pool = pool
+	return nil
+}
+
+// GetColumnNames implements the expander.ColumnGetter interface.
+// It prepares a query and returns the column names from the result set description.
+func (a *Analyzer) GetColumnNames(ctx context.Context, query string) ([]string, error) {
+	if a.pool == nil {
+		return nil, fmt.Errorf("database connection not initialized")
+	}
+
+	conn, err := a.pool.Acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
+
+	desc, err := conn.Conn().Prepare(ctx, "", query)
+	if err != nil {
+		return nil, err
+	}
+
+	columns := make([]string, len(desc.Fields))
+	for i, field := range desc.Fields {
+		columns[i] = field.Name
+	}
+
+	return columns, nil
 }

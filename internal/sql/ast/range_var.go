@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 type RangeVar struct {
 	Catalogname    *string
 	Schemaname     *string
@@ -14,26 +16,19 @@ func (n *RangeVar) Pos() int {
 	return n.Location
 }
 
-func (n *RangeVar) Format(buf *TrackedBuffer) {
+func (n *RangeVar) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
-	if n.Schemaname != nil {
-		buf.WriteString(*n.Schemaname)
+	if n.Schemaname != nil && *n.Schemaname != "" {
+		buf.WriteString(d.QuoteIdent(*n.Schemaname))
 		buf.WriteString(".")
 	}
 	if n.Relname != nil {
-		// TODO: What names need to be quoted
-		if *n.Relname == "user" {
-			buf.WriteString(`"`)
-			buf.WriteString(*n.Relname)
-			buf.WriteString(`"`)
-		} else {
-			buf.WriteString(*n.Relname)
-		}
+		buf.WriteString(d.QuoteIdent(*n.Relname))
 	}
 	if n.Alias != nil {
-		buf.WriteString(" ")
-		buf.astFormat(n.Alias)
+		buf.WriteString(" AS ")
+		buf.astFormat(n.Alias, d)
 	}
 }

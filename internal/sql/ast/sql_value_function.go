@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 type SQLValueFunction struct {
 	Xpr      Node
 	Op       SQLValueFunctionOp
@@ -12,7 +14,7 @@ func (n *SQLValueFunction) Pos() int {
 	return n.Location
 }
 
-func (n *SQLValueFunction) Format(buf *TrackedBuffer) {
+func (n *SQLValueFunction) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}

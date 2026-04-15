@@ -11,6 +11,16 @@
         {
           "column": "foo.id",
           "go_struct_tag": "x:\"y\""
+        },
+        {
+          "db_type": "text",
+          "go_struct_tag": "utype:\"notnull_text\""
+        },
+        {
+          "db_type": "text",
+          "go_type": "string",
+          "nullable": true,
+          "go_struct_tag": "utype:\"nullable_text\""
         }
       ]
     }

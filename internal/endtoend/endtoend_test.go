@@ -17,7 +17,8 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/cmd"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/opts"
-	"github.com/sqlc-dev/sqlc/internal/sqltest/local"
+	"github.com/sqlc-dev/sqlc/internal/sqltest/docker"
+	"github.com/sqlc-dev/sqlc/internal/sqltest/native"
 )
 
 func lineEndings() cmp.Option {
@@ -112,6 +113,64 @@ func TestReplay(t *testing.T) {
 	// t.Parallel()
 	ctx := context.Background()
 
+	var mysqlURI, postgresURI string
+
+	// First, check environment variables
+	if uri := os.Getenv("POSTGRESQL_SERVER_URI"); uri != "" {
+		postgresURI = uri
+	}
+	if uri := os.Getenv("MYSQL_SERVER_URI"); uri != "" {
+		mysqlURI = uri
+	}
+
+	// Try Docker for any missing databases
+	if postgresURI == "" || mysqlURI == "" {
+		if err := docker.Installed(); err == nil {
+			if postgresURI == "" {
+				host, err := docker.StartPostgreSQLServer(ctx)
+				if err != nil {
+					t.Logf("docker postgresql startup failed: %s", err)
+				} else {
+					postgresURI = host
+				}
+			}
+			if mysqlURI == "" {
+				host, err := docker.StartMySQLServer(ctx)
+				if err != nil {
+					t.Logf("docker mysql startup failed: %s", err)
+				} else {
+					mysqlURI = host
+				}
+			}
+		}
+	}
+
+	// Try native installation for any missing databases (Linux only)
+	if postgresURI == "" || mysqlURI == "" {
+		if err := native.Supported(); err == nil {
+			if postgresURI == "" {
+				host, err := native.StartPostgreSQLServer(ctx)
+				if err != nil {
+					t.Logf("native postgresql startup failed: %s", err)
+				} else {
+					postgresURI = host
+				}
+			}
+			if mysqlURI == "" {
+				host, err := native.StartMySQLServer(ctx)
+				if err != nil {
+					t.Logf("native mysql startup failed: %s", err)
+				} else {
+					mysqlURI = host
+				}
+			}
+		}
+	}
+
+	// Log which databases are available
+	t.Logf("PostgreSQL available: %v (URI: %s)", postgresURI != "", postgresURI)
+	t.Logf("MySQL available: %v (URI: %s)", mysqlURI != "", mysqlURI)
+
 	contexts := map[string]textContext{
 		"base": {
 			Mutate:  func(t *testing.T, path string) func(*config.Config) { return func(c *config.Config) {} },
@@ -120,19 +179,20 @@ func TestReplay(t *testing.T) {
 		"managed-db": {
 			Mutate: func(t *testing.T, path string) func(*config.Config) {
 				return func(c *config.Config) {
+					// Add all servers - tests will fail if database isn't available
 					c.Servers = []config.Server{
 						{
 							Name:   "postgres",
 							Engine: config.EnginePostgreSQL,
-							URI:    local.PostgreSQLServer(),
+							URI:    postgresURI,
 						},
-
 						{
 							Name:   "mysql",
 							Engine: config.EngineMySQL,
-							URI:    local.MySQLServer(),
+							URI:    mysqlURI,
 						},
 					}
+
 					for i := range c.SQL {
 						switch c.SQL[i].Engine {
 						case config.EnginePostgreSQL:
@@ -143,6 +203,10 @@ func TestReplay(t *testing.T) {
 							c.SQL[i].Database = &config.Database{
 								Managed: true,
 							}
+						case config.EngineSQLite:
+							c.SQL[i].Database = &config.Database{
+								Managed: true,
+							}
 						default:
 							// pass
 						}
@@ -150,13 +214,8 @@ func TestReplay(t *testing.T) {
 				}
 			},
 			Enabled: func() bool {
-				if len(os.Getenv("POSTGRESQL_SERVER_URI")) == 0 {
-					return false
-				}
-				if len(os.Getenv("MYSQL_SERVER_URI")) == 0 {
-					return false
-				}
-				return true
+				// Enabled if at least one database URI is available
+				return postgresURI != "" || mysqlURI != ""
 			},
 		},
 	}
@@ -204,8 +263,9 @@ func TestReplay(t *testing.T) {
 
 				opts := cmd.Options{
 					Env: cmd.Env{
-						Debug:    opts.DebugFromString(args.Env["SQLCDEBUG"]),
-						NoRemote: true,
+						Debug:      opts.DebugFromString(args.Env["SQLCDEBUG"]),
+						Experiment: opts.ExperimentFromString(args.Env["SQLCEXPERIMENT"]),
+						NoRemote:   true,
 					},
 					Stderr:       &stderr,
 					MutateConfig: testctx.Mutate(t, path),

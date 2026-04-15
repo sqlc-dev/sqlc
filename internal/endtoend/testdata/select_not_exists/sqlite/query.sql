@@ -1,5 +1,5 @@
 -- name: BarNotExists :one
-SELECT 
+SELECT
     NOT EXISTS (
         SELECT
             1

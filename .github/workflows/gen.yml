@@ -17,8 +17,8 @@ jobs:
         # needed because the postgres container does not provide a healthcheck
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-go@v5
+    - uses: actions/checkout@v6
+    - uses: actions/setup-go@v6
       with:
         go-version-file: go.mod
         check-latest: true
@@ -32,7 +32,7 @@ jobs:
         PG_PASSWORD: postgres
         PG_PORT: ${{ job.services.postgres.ports['5432'] }}
     - name: Save results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: sqlc-pg-gen-results
         path: gen

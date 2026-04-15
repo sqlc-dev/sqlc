@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/sqlc-dev/sqlc/internal/codegen/sdk"
 	"github.com/sqlc-dev/sqlc/internal/pattern"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
@@ -74,6 +75,12 @@ func (o *Override) Matches(n *plugin.Identifier, defaultSchema string) bool {
 		return false
 	}
 	return true
+}
+
+func (o *Override) MatchesColumn(col *plugin.Column) bool {
+	columnType := sdk.DataType(col.Type)
+	notNull := col.NotNull || col.IsArray
+	return o.DBType != "" && o.DBType == columnType && o.Nullable != notNull && o.Unsigned == col.Unsigned
 }
 
 func (o *Override) parse(req *plugin.GenerateRequest) (err error) {

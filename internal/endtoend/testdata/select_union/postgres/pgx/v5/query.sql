@@ -23,3 +23,8 @@ SELECT * FROM foo;
 SELECT * FROM foo
 UNION
 SELECT * FROM bar;
+
+-- name: SelectUnionAliased :many
+(SELECT * FROM foo)
+UNION
+SELECT * FROM foo;

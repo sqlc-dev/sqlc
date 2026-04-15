@@ -1,0 +1,19 @@
+name: build
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-14, windows-2022]
+    name: build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-go@v6
+      with:
+        go-version: '1.26.0'
+    - name: install ./...
+      run: go build ./...
+      env:
+        CGO_ENABLED: "0"

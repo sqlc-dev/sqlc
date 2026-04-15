@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 type AclMode uint32
 
 func (n *AclMode) Pos() int {
@@ -16,6 +18,15 @@ type NullIfExpr OpExpr
 
 func (n *NullIfExpr) Pos() int {
 	return 0
+}
+
+func (n *NullIfExpr) Format(buf *TrackedBuffer, d format.Dialect) {
+	if n == nil {
+		return
+	}
+	buf.WriteString("NULLIF(")
+	buf.join(n.Args, d, ", ")
+	buf.WriteString(")")
 }
 
 type Selectivity float64

@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 type BetweenExpr struct {
 	// Expr is the value expression to be compared.
 	Expr Node
@@ -14,4 +16,19 @@ type BetweenExpr struct {
 
 func (n *BetweenExpr) Pos() int {
 	return n.Location
+}
+
+func (n *BetweenExpr) Format(buf *TrackedBuffer, d format.Dialect) {
+	if n == nil {
+		return
+	}
+	buf.astFormat(n.Expr, d)
+	if n.Not {
+		buf.WriteString(" NOT BETWEEN ")
+	} else {
+		buf.WriteString(" BETWEEN ")
+	}
+	buf.astFormat(n.Left, d)
+	buf.WriteString(" AND ")
+	buf.astFormat(n.Right, d)
 }

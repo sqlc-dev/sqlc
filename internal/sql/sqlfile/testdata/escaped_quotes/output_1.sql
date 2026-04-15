@@ -1,0 +1,1 @@
+INSERT INTO users (name) VALUES ('It''s a test');

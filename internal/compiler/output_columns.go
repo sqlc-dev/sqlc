@@ -482,7 +482,14 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 	list := &ast.List{}
 	switch n := node.(type) {
 	case *ast.DeleteStmt:
-		list = n.Relations
+		if n.Relations != nil {
+			list = n.Relations
+		} else if n.FromClause != nil {
+			// Multi-table DELETE: walk FromClause to find tables
+			var tv tableVisitor
+			astutils.Walk(&tv, n.FromClause)
+			list = &tv.list
+		}
 	case *ast.InsertStmt:
 		list = &ast.List{
 			Items: []ast.Node{n.Relation},
@@ -596,9 +603,15 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 			if err != nil {
 				return nil, err
 			}
+
+			var tableName string
+			if n.Alias != nil {
+				tableName = *n.Alias.Aliasname
+			}
+
 			tables = append(tables, &Table{
 				Rel: &ast.TableName{
-					Name: *n.Alias.Aliasname,
+					Name: tableName,
 				},
 				Columns: cols,
 			})

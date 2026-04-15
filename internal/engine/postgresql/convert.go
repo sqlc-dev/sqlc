@@ -1965,6 +1965,22 @@ func convertNullTest(n *pg.NullTest) *ast.NullTest {
 	}
 }
 
+func convertNullIfExpr(n *pg.NullIfExpr) *ast.NullIfExpr {
+	if n == nil {
+		return nil
+	}
+	return &ast.NullIfExpr{
+		Xpr:          convertNode(n.Xpr),
+		Opno:         ast.Oid(n.Opno),
+		Opresulttype: ast.Oid(n.Opresulttype),
+		Opretset:     n.Opretset,
+		Opcollid:     ast.Oid(n.Opcollid),
+		Inputcollid:  ast.Oid(n.Inputcollid),
+		Args:         convertSlice(n.Args),
+		Location:     int(n.Location),
+	}
+}
+
 func convertObjectWithArgs(n *pg.ObjectWithArgs) *ast.ObjectWithArgs {
 	if n == nil {
 		return nil
@@ -3419,6 +3435,9 @@ func convertNode(node *pg.Node) ast.Node {
 
 	case *pg.Node_NullTest:
 		return convertNullTest(n.NullTest)
+
+	case *pg.Node_NullIfExpr:
+		return convertNullIfExpr(n.NullIfExpr)
 
 	case *pg.Node_ObjectWithArgs:
 		return convertObjectWithArgs(n.ObjectWithArgs)

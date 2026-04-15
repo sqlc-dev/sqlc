@@ -106,9 +106,6 @@ SELECT sqlite_compileoption_get(1);
 -- name: GetSQLiteCompileOptionUsed :one
 SELECT sqlite_compileoption_used(1);
 
--- name: GetSQLiteOffset :one
-SELECT sqlite_offset(1);
-
 -- name: GetSQLiteSourceID :one
 SELECT sqlite_source_id();
 

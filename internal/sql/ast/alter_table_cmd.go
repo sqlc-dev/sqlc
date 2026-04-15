@@ -1,5 +1,7 @@
 package ast
 
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
+
 const (
 	AT_AddColumn AlterTableType = iota
 	AT_AlterColumnType
@@ -40,7 +42,7 @@ func (n *AlterTableCmd) Pos() int {
 	return 0
 }
 
-func (n *AlterTableCmd) Format(buf *TrackedBuffer) {
+func (n *AlterTableCmd) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
@@ -51,5 +53,5 @@ func (n *AlterTableCmd) Format(buf *TrackedBuffer) {
 		buf.WriteString(" DROP COLUMN ")
 	}
 
-	buf.astFormat(n.Def)
+	buf.astFormat(n.Def, d)
 }
