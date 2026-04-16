@@ -11,7 +11,7 @@ require (
 	github.com/google/cel-go v0.27.0
 	github.com/google/go-cmp v0.7.0
 	github.com/jackc/pgx/v4 v4.18.3
-	github.com/jackc/pgx/v5 v5.8.0
+	github.com/jackc/pgx/v5 v5.9.0
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lib/pq v1.12.0
 	github.com/ncruces/go-sqlite3 v0.32.0
