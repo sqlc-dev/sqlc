@@ -1,5 +1,9 @@
 name: buf
-on: pull_request
+on:
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '.readthedocs.yaml'
 jobs:
   build:
     runs-on: ubuntu-latest
