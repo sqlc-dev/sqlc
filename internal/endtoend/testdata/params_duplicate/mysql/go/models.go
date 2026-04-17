@@ -12,4 +12,5 @@ type User struct {
 	ID        int32
 	FirstName sql.NullString
 	LastName  sql.NullString
+	Age       sql.NullInt32
 }
