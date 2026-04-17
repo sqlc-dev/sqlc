@@ -169,11 +169,18 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 		}
 		errors = append(errors, errs...)
 	}
-	refs = uniqueParamRefs(refs, dollar)
+	refs = numberParamRefs(refs, dollar)
 	if c.conf.Engine == config.EngineMySQL || !dollar {
-		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Location < refs[j].ref.Location })
+		sort.SliceStable(refs, func(i, j int) bool {
+			return refs[i].ref.Location < refs[j].ref.Location
+		})
 	} else {
-		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
+		sort.SliceStable(refs, func(i, j int) bool {
+			if refs[i].ref.Number == refs[j].ref.Number {
+				return refs[i].ref.Location < refs[j].ref.Location
+			}
+			return refs[i].ref.Number < refs[j].ref.Number
+		})
 	}
 	raw, embeds := rewrite.Embeds(raw)
 	qc, err := c.buildQueryCatalog(c.catalog, raw.Stmt, embeds)

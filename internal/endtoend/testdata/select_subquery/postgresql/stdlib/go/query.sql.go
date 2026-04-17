@@ -19,8 +19,8 @@ FROM FOO WHERE a = $2
 `
 
 type SubqueryParams struct {
-	Column1 sql.NullString
-	Column2 sql.NullInt32
+	Alias sql.NullString
+	A     int32
 }
 
 type SubqueryRow struct {
@@ -30,7 +30,7 @@ type SubqueryRow struct {
 }
 
 func (q *Queries) Subquery(ctx context.Context, arg SubqueryParams) ([]SubqueryRow, error) {
-	rows, err := q.db.QueryContext(ctx, subquery, arg.Column1, arg.Column2)
+	rows, err := q.db.QueryContext(ctx, subquery, arg.Alias, arg.A)
 	if err != nil {
 		return nil, err
 	}

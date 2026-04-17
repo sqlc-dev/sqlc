@@ -7,8 +7,6 @@ package querytest
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const getPlanItems = `-- name: GetPlanItems :many
@@ -27,7 +25,7 @@ LATERAL (
 
 type GetPlanItemsParams struct {
 	Ids        []int64
-	After      pgtype.Int4
+	After      int32
 	LimitCount int64
 }
 

@@ -111,6 +111,16 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 		}
 
 	case *ast.UpdateStmt:
+		var targetRV *ast.RangeVar
+		for _, relation := range n.Relations.Items {
+			rv, ok := relation.(*ast.RangeVar)
+			if !ok {
+				continue
+			}
+			targetRV = rv
+			break
+		}
+
 		for _, item := range n.TargetList.Items {
 			target, ok := item.(*ast.ResTarget)
 			if !ok {
@@ -120,13 +130,7 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 			if !ok {
 				continue
 			}
-			for _, relation := range n.Relations.Items {
-				rv, ok := relation.(*ast.RangeVar)
-				if !ok {
-					continue
-				}
-				*p.refs = append(*p.refs, paramRef{parent: target, ref: ref, rv: rv})
-			}
+			*p.refs = append(*p.refs, paramRef{parent: target, ref: ref, rv: targetRV})
 			p.seen[ref.Location] = struct{}{}
 		}
 		if n.LimitCount != nil {
@@ -140,6 +144,11 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 		p.parent = node
 
 	case *ast.SelectStmt:
+		if n.FromClause != nil && len(n.FromClause.Items) > 0 {
+			if rv, ok := n.FromClause.Items[0].(*ast.RangeVar); ok {
+				p.rangeVar = rv
+			}
+		}
 		if n.LimitCount != nil {
 			p.limitCount = n.LimitCount
 		}

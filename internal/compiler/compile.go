@@ -24,6 +24,7 @@ type Parser interface {
 	Parse(io.Reader) ([]ast.Statement, error)
 	CommentSyntax() source.CommentSyntax
 	IsReservedKeyword(string) bool
+	TypeName(ns, name string) string
 }
 
 func (c *Compiler) parseCatalog(schemas []string) error {
