@@ -45,6 +45,8 @@ type Options struct {
 	OmitUnusedStructs           bool              `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
 	BuildTags                   string            `json:"build_tags,omitempty" yaml:"build_tags"`
 	Initialisms                 *[]string         `json:"initialisms,omitempty" yaml:"initialisms"`
+	EmitQueryBatch              bool              `json:"emit_query_batch,omitempty" yaml:"emit_query_batch"`
+	OutputQueryBatchFileName    string            `json:"output_query_batch_file_name,omitempty" yaml:"output_query_batch_file_name"`
 
 	InitialismsMap map[string]struct{} `json:"-" yaml:"-"`
 }

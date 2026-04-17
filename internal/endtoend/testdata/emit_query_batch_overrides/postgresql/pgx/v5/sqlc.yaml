@@ -1,0 +1,16 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "schema.sql"
+    queries: "query.sql"
+    gen:
+      go:
+        package: "querytest"
+        out: "go"
+        sql_package: "pgx/v5"
+        emit_query_batch: true
+        overrides:
+          - db_type: "pg_catalog.numeric"
+            go_type:
+              import: "github.com/sqlc-dev/sqlc-testdata/pkg"
+              type: "CustomType"

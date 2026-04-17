@@ -223,6 +223,69 @@ func (b *CreateBookBatchResults) Close() error {
 }
 ```
 
+## `emit_query_batch` (batching different queries)
+
+The `:batchexec`, `:batchmany`, and `:batchone` annotations above batch the
+**same query** with different parameters. If you need to batch **different
+queries** into a single round-trip, use the `emit_query_batch` configuration
+option instead.
+
+When `emit_query_batch` is enabled, sqlc generates a `QueryBatch` type with
+`Queue*` methods for each regular query (`:one`, `:many`, `:exec`, `:execrows`,
+`:execresult`). Each `Queue*` method accepts destination pointers where results
+are written when `ExecuteBatch` is called. All queued queries are sent in a
+single round-trip.
+
+__NOTE: This option only works with PostgreSQL using the `pgx/v5` driver and outputting Go code.__
+
+```yaml
+# sqlc.yaml
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "schema.sql"
+    queries: "query.sql"
+    gen:
+      go:
+        package: "db"
+        out: "db"
+        sql_package: "pgx/v5"
+        emit_query_batch: true
+```
+
+```sql
+-- name: GetUser :one
+SELECT * FROM users WHERE id = $1;
+
+-- name: ListUsers :many
+SELECT * FROM users ORDER BY id;
+
+-- name: UpdateUser :exec
+UPDATE users SET name = $1 WHERE id = $2;
+```
+
+```go
+// Generated QueryBatch API:
+batch := db.NewQueryBatch()
+
+var user db.User
+var found bool
+batch.QueueGetUser(userID, &user, &found)
+
+var users []db.User
+batch.QueueListUsers(&users)
+
+batch.QueueUpdateUser(db.UpdateUserParams{Name: "Alice", ID: 1})
+
+// Send all queries in one round-trip:
+err := queries.ExecuteBatch(ctx, batch)
+// user, found, and users are now populated
+```
+
+The `QueryBatch.Batch` field is exported so you can mix generated `Queue*`
+calls with custom pgx batch operations on the same `pgx.Batch`. This feature
+can be used alongside `:batch*` annotations in the same package.
+
 ## `:copyfrom`
 
 __NOTE: This command is driver and package specific, see [how to insert](../howto/insert.md#using-copyfrom)
