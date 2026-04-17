@@ -268,8 +268,26 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []
 			c := query.Columns[0]
 			name := columnName(c, 0)
 			name = strings.Replace(name, "$", "_", -1)
+			retName := escape(name)
+			// For :one queries the scan destination lives in the same scope as
+			// the query parameters, so reusing a parameter's name would cause
+			// Scan to overwrite the input and leak it back to the caller on
+			// sql.ErrNoRows (see sqlc-dev/sqlc#4354). Rename the return
+			// variable when it would collide.
+			if query.Cmd == metadata.CmdOne {
+				argNames := map[string]struct{}{}
+				for _, p := range gq.Arg.Pairs() {
+					argNames[p.Name] = struct{}{}
+				}
+				for {
+					if _, conflict := argNames[retName]; !conflict {
+						break
+					}
+					retName += "_2"
+				}
+			}
 			gq.Ret = QueryValue{
-				Name:      escape(name),
+				Name:      retName,
 				DBName:    name,
 				Typ:       goType(req, options, c),
 				SQLDriver: sqlpkg,
