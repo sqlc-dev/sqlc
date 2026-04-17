@@ -144,12 +144,12 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 	var table *ast.TableName
 	switch n := raw.Stmt.(type) {
 	case *ast.InsertStmt:
-		if err := check(validate.InsertStmt(n)); err != nil {
-			return nil, err
-		}
 		var err error
 		table, err = ParseTableName(n.Relation)
 		if err := check(err); err != nil {
+			return nil, err
+		}
+		if err := check(validate.InsertStmt(c.catalog, table, n)); err != nil {
 			return nil, err
 		}
 	}
