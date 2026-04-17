@@ -2,6 +2,7 @@ package validate
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
@@ -29,14 +30,27 @@ func (v *sqlcFuncVisitor) Visit(node ast.Node) astutils.Visitor {
 	// Custom validation for sqlc.arg, sqlc.narg and sqlc.slice
 	// TODO: Replace this once type-checking is implemented
 	if fn.Schema == "sqlc" {
-		if !(fn.Name == "arg" || fn.Name == "narg" || fn.Name == "slice" || fn.Name == "embed") {
+		if !(fn.Name == "arg" || fn.Name == "narg" || fn.Name == "slice" || fn.Name == "embed" || fn.Name == "sort") {
 			v.err = sqlerr.FunctionNotFound("sqlc." + fn.Name)
 			return nil
 		}
 
-		if len(call.Args.Items) != 1 {
+		minArgs := 1
+		maxArgs := 1
+		if fn.Name == "sort" {
+			maxArgs = 4
+		}
+		if len(call.Args.Items) > maxArgs || len(call.Args.Items) < minArgs {
+			expectedNumArgs := strconv.Itoa(minArgs)
+			if maxArgs != minArgs {
+				expectedNumArgs += "-" + strconv.Itoa(maxArgs)
+			}
+			expectedNumArgs += " parameter"
+			if maxArgs != minArgs {
+				expectedNumArgs += "s"
+			}
 			v.err = &sqlerr.Error{
-				Message:  fmt.Sprintf("expected 1 parameter to sqlc.%s; got %d", fn.Name, len(call.Args.Items)),
+				Message:  fmt.Sprintf("expected %s to sqlc.%s; got %d", expectedNumArgs, fn.Name, len(call.Args.Items)),
 				Location: call.Pos(),
 			}
 			return nil
