@@ -10,6 +10,39 @@ import (
 	"database/sql"
 )
 
+const selectUserByAgeCast = `-- name: SelectUserByAgeCast :many
+SELECT first_name FROM users
+WHERE age > CAST(? AS SIGNED)
+   OR age < CAST(? AS SIGNED)
+`
+
+type SelectUserByAgeCastParams struct {
+	Threshold int64
+}
+
+func (q *Queries) SelectUserByAgeCast(ctx context.Context, arg SelectUserByAgeCastParams) ([]sql.NullString, error) {
+	rows, err := q.db.QueryContext(ctx, selectUserByAgeCast, arg.Threshold, arg.Threshold)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []sql.NullString
+	for rows.Next() {
+		var first_name sql.NullString
+		if err := rows.Scan(&first_name); err != nil {
+			return nil, err
+		}
+		items = append(items, first_name)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const selectUserByID = `-- name: SelectUserByID :many
 SELECT first_name from
 users where (? = id OR ? = 0)
