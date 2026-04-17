@@ -30,6 +30,8 @@ func TestSelector(t *testing.T) {
 		selectorExpectColumnExpr(t, selector, "my_column", "my_column", &Column{DataType: "integer"})
 		selectorExpectColumnExpr(t, selector, "my_column", "my_column", &Column{DataType: "json"})
 		selectorExpectColumnExpr(t, selector, "json(my_column)", "my_column", &Column{DataType: "jsonb"})
+		selectorExpectColumnExpr(t, selector, "json(my_column)", "my_column", &Column{DataType: "JSONB"})
+		selectorExpectColumnExpr(t, selector, "json(my_column)", "my_column", &Column{DataType: "JsonB"})
 		selectorExpectColumnExpr(t, selector, "my_column", "my_column", &Column{DataType: "text"})
 	})
 }
