@@ -2,7 +2,7 @@ Babel==2.18.0
 Jinja2==3.1.6
 MarkupSafe==3.0.3
 Pygments==2.20.0
-Sphinx==7.4.7
+Sphinx==8.2.3
 certifi==2026.2.25
 chardet==7.4.3
 commonmark==0.9.1
