@@ -15,13 +15,21 @@ INSERT INTO foo (
     a,
     b,
     c,
-    d
+    d,
+    e,
+    f,
+    g,
+    h
 ) VALUES (
     ?1,
     ?2,
     ?3,
-    ?4
-) RETURNING a, json(b), c, json(d)
+    ?4,
+    ?5,
+    ?6,
+    ?7,
+    ?8
+) RETURNING a, json(b), c, json(d), e, json(f), g, json(h)
 `
 
 type InsertFooParams struct {
@@ -29,6 +37,10 @@ type InsertFooParams struct {
 	B json.RawMessage
 	C json.RawMessage
 	D json.RawMessage
+	E json.RawMessage
+	F json.RawMessage
+	G json.RawMessage
+	H json.RawMessage
 }
 
 func (q *Queries) InsertFoo(ctx context.Context, arg InsertFooParams) error {
@@ -37,12 +49,16 @@ func (q *Queries) InsertFoo(ctx context.Context, arg InsertFooParams) error {
 		arg.B,
 		arg.C,
 		arg.D,
+		arg.E,
+		arg.F,
+		arg.G,
+		arg.H,
 	)
 	return err
 }
 
 const selectFoo = `-- name: SelectFoo :exec
-SELECT a, json(b), c, json(d) FROM foo
+SELECT a, json(b), c, json(d), e, json(f), g, json(h) FROM foo
 `
 
 func (q *Queries) SelectFoo(ctx context.Context) error {
