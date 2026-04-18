@@ -438,6 +438,7 @@ WHERE id = ? LIMIT 1
 
 func (q *Queries) SelectById(ctx context.Context, id int64) (int64, error) {
 	row := q.db.QueryRowContext(ctx, selectById, id)
-	err := row.Scan(&id)
-	return id, err
+	var id_2 int64
+	err := row.Scan(&id_2)
+	return id_2, err
 }

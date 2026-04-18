@@ -503,6 +503,11 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 			return "pgtype.XID"
 		}
 
+	case "xid8":
+		if driver == opts.SQLDriverPGXV5 {
+			return "pgtype.Uint64"
+		}
+
 	case "box":
 		if driver.IsPGX() {
 			return "pgtype.Box"

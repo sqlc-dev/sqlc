@@ -13,4 +13,8 @@ type Foo struct {
 	B json.RawMessage
 	C json.RawMessage
 	D json.RawMessage
+	E json.RawMessage
+	F json.RawMessage
+	G json.RawMessage
+	H json.RawMessage
 }

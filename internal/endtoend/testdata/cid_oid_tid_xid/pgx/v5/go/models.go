@@ -9,12 +9,14 @@ import (
 )
 
 type TestTable struct {
-	VCidNull pgtype.Uint32
-	VOidNull pgtype.Uint32
-	VTidNull pgtype.TID
-	VXidNull pgtype.Uint32
-	VCid     pgtype.Uint32
-	VOid     pgtype.Uint32
-	VTid     pgtype.TID
-	VXid     pgtype.Uint32
+	VCidNull  pgtype.Uint32
+	VOidNull  pgtype.Uint32
+	VTidNull  pgtype.TID
+	VXidNull  pgtype.Uint32
+	VXid8Null pgtype.Uint64
+	VCid      pgtype.Uint32
+	VOid      pgtype.Uint32
+	VTid      pgtype.TID
+	VXid      pgtype.Uint32
+	VXid8     pgtype.Uint64
 }

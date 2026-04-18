@@ -8,9 +8,6 @@ import (
 	"database/sql"
 )
 
-type User struct {
-	ID        int32
-	FirstName sql.NullString
-	LastName  sql.NullString
-	Age       sql.NullInt32
+type Foo struct {
+	Bar sql.NullString
 }
