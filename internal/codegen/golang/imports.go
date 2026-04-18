@@ -276,7 +276,9 @@ func (i *importer) modelImports() fileImports {
 
 	if len(i.Enums) > 0 {
 		std["fmt"] = struct{}{}
-		std["database/sql/driver"] = struct{}{}
+		if !i.Options.EmitPointersForNullTypes {
+			std["database/sql/driver"] = struct{}{}
+		}
 	}
 
 	return sortedImports(std, pkg)

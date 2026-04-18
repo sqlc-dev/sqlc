@@ -13,6 +13,7 @@ func mysqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.C
 	columnType := sdk.DataType(col.Type)
 	notNull := col.NotNull || col.IsArray
 	unsigned := col.Unsigned
+	emitPointersForNull := options.EmitPointersForNullTypes
 
 	switch columnType {
 
@@ -127,10 +128,16 @@ func mysqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.C
 						}
 						return StructName(schema.Name+"_"+enum.Name, options)
 					} else {
+						var enumTypeName string
 						if schema.Name == req.Catalog.DefaultSchema {
-							return "Null" + StructName(enum.Name, options)
+							enumTypeName = StructName(enum.Name, options)
+						} else {
+							enumTypeName = StructName(schema.Name+"_"+enum.Name, options)
 						}
-						return "Null" + StructName(schema.Name+"_"+enum.Name, options)
+						if emitPointersForNull {
+							return "*" + enumTypeName
+						}
+						return "Null" + enumTypeName
 					}
 				}
 			}

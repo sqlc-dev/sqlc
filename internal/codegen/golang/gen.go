@@ -42,6 +42,7 @@ type tmplCtx struct {
 	OmitSqlcVersion           bool
 	BuildTags                 string
 	WrapErrors                bool
+	EmitPointersForNullTypes  bool
 }
 
 func (t *tmplCtx) OutputQuery(sourceName string) bool {
@@ -140,7 +141,9 @@ func validate(options *opts.Options, enums []Enum, structs []Struct, queries []Q
 	enumNames := make(map[string]struct{})
 	for _, enum := range enums {
 		enumNames[enum.Name] = struct{}{}
-		enumNames["Null"+enum.Name] = struct{}{}
+		if !options.EmitPointersForNullTypes {
+			enumNames["Null"+enum.Name] = struct{}{}
+		}
 	}
 	structNames := make(map[string]struct{})
 	for _, struckt := range structs {
@@ -192,6 +195,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		BuildTags:                 options.BuildTags,
 		OmitSqlcVersion:           options.OmitSqlcVersion,
 		WrapErrors:                options.WrapErrors,
+		EmitPointersForNullTypes:  options.EmitPointersForNullTypes,
 	}
 
 	if tctx.UsesCopyFrom && !tctx.SQLDriver.IsPGX() && options.SqlDriver != opts.SQLDriverGoSQLDriverMySQL {
@@ -396,7 +400,8 @@ func filterUnusedStructs(enums []Enum, structs []Struct, queries []Query) ([]Enu
 	for _, enum := range enums {
 		_, keep := keepTypes[enum.Name]
 		_, keepNull := keepTypes["Null"+enum.Name]
-		if keep || keepNull {
+		_, keepPointer := keepTypes["*"+enum.Name]
+		if keep || keepNull || keepPointer {
 			keepEnums = append(keepEnums, enum)
 		}
 	}

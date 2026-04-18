@@ -108,6 +108,7 @@ func (e *{{.Name}}) Scan(src interface{}) error {
 	return nil
 }
 
+{{ if not $.EmitPointersForNullTypes }}
 type Null{{.Name}} struct {
 	{{.Name}} {{.Name}} {{if .NameTag}}{{$.Q}}{{.NameTag}}{{$.Q}}{{end}}
   Valid  bool {{if .ValidTag}}{{$.Q}}{{.ValidTag}}{{$.Q}}{{end}} // Valid is true if {{.Name}} is not NULL
@@ -130,6 +131,8 @@ func (ns Null{{.Name}}) Value() (driver.Value, error) {
 	}
 	return string(ns.{{.Name}}), nil
 }
+
+{{ end }}
 
 
 {{ if $.EmitEnumValidMethod }}
