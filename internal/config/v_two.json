@@ -137,6 +137,9 @@
                                     "emit_pointers_for_null_types": {
                                         "type": "boolean"
                                     },
+                                    "emit_pointers_for_null_enum_types": {
+                                        "type": "boolean"
+                                    },
                                     "emit_enum_valid_method": {
                                         "type": "boolean"
                                     },
