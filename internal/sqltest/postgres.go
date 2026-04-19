@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	migrate "github.com/sqlc-dev/sqlc/internal/migrations"
+	"github.com/sqlc-dev/sqlc/internal/schemautil"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 
 	_ "github.com/lib/pq"
@@ -99,20 +99,15 @@ func CreatePostgreSQLDatabase(t *testing.T, name string, schema bool, migrations
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, f := range files {
-		blob, err := os.ReadFile(f)
-		if err != nil {
-			t.Fatal(err)
-		}
-		ddl, warnings, err := migrate.PreprocessSchemaForApply(string(blob), "postgresql")
-		if err != nil {
-			t.Fatal(err)
-		}
-		for _, warning := range warnings {
-			t.Log(warning)
-		}
-		if _, err := sdb.Exec(ddl); err != nil {
-			t.Fatalf("%s: %s", filepath.Base(f), err)
+	ddl, err := schemautil.LoadSchemasForApply(migrations, "postgresql", func(warning string) {
+		t.Log(warning)
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i, stmt := range ddl {
+		if _, err := sdb.Exec(stmt); err != nil {
+			t.Fatalf("%s: %s", filepath.Base(files[i]), err)
 		}
 	}
 
