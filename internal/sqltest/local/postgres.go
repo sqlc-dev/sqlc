@@ -12,9 +12,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"golang.org/x/sync/singleflight"
 
-	migrate "github.com/sqlc-dev/sqlc/internal/migrations"
 	"github.com/sqlc-dev/sqlc/internal/pgx/poolcache"
-	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
+	"github.com/sqlc-dev/sqlc/internal/schemautil"
 	"github.com/sqlc-dev/sqlc/internal/sqltest/docker"
 	"github.com/sqlc-dev/sqlc/internal/sqltest/native"
 )
@@ -60,26 +59,15 @@ func postgreSQL(t *testing.T, migrations []string, rw bool) string {
 	}
 
 	var seed []string
-	files, err := sqlpath.Glob(migrations)
+	h := fnv.New64()
+	seed, err = schemautil.LoadSchemasForApply(migrations, "postgresql", func(warning string) {
+		t.Log(warning)
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	h := fnv.New64()
-	for _, f := range files {
-		blob, err := os.ReadFile(f)
-		if err != nil {
-			t.Fatal(err)
-		}
-		ddl, warnings, err := migrate.PreprocessSchemaForApply(string(blob), "postgresql")
-		if err != nil {
-			t.Fatal(err)
-		}
+	for _, ddl := range seed {
 		h.Write([]byte(ddl))
-		for _, warning := range warnings {
-			t.Log(warning)
-		}
-		seed = append(seed, ddl)
 	}
 
 	var name string
@@ -122,6 +110,11 @@ func postgreSQL(t *testing.T, migrations []string, rw bool) string {
 		for _, q := range seed {
 			if len(strings.TrimSpace(q)) == 0 {
 				continue
+			}
+			if strings.Contains(q, "\nCREATE SCHEMA public;\n") || strings.HasPrefix(q, "CREATE SCHEMA public;\n") {
+				if _, err := conn.Exec(ctx, `DROP SCHEMA IF EXISTS public CASCADE`); err != nil {
+					return nil, fmt.Errorf("drop public schema: %s", err)
+				}
 			}
 			if _, err := conn.Exec(ctx, q); err != nil {
 				return nil, fmt.Errorf("%s: %s", q, err)
