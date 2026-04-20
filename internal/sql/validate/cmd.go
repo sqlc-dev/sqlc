@@ -71,7 +71,7 @@ func Cmd(n ast.Node, name, cmd string) error {
 			return err
 		}
 	}
-	if !(cmd == metadata.CmdMany || cmd == metadata.CmdOne || cmd == metadata.CmdBatchMany || cmd == metadata.CmdBatchOne) {
+	if !(cmd == metadata.CmdMany || cmd == metadata.CmdOne || cmd == metadata.CmdFirst || cmd == metadata.CmdBatchMany || cmd == metadata.CmdBatchOne) {
 		return nil
 	}
 	var list *ast.List

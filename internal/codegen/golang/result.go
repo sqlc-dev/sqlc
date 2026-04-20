@@ -340,6 +340,9 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []
 				EmitPointer: options.EmitResultStructPointers,
 			}
 		}
+		if query.Cmd == metadata.CmdFirst {
+			gq.Ret.ForcePointer = true
+		}
 
 		qs = append(qs, gq)
 	}
@@ -352,6 +355,7 @@ var cmdReturnsData = map[string]struct{}{
 	metadata.CmdBatchOne:  {},
 	metadata.CmdMany:      {},
 	metadata.CmdOne:       {},
+	metadata.CmdFirst:     {},
 }
 
 func putOutColumns(query *plugin.Query) bool {

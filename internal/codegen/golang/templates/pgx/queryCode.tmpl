@@ -44,6 +44,31 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.De
 	{{- end}}
 	return {{.Ret.ReturnName}}, err
 }
+{{else if eq .Cmd ":first"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+{{- if $.EmitMethodsWithDBArgument -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
+	row := db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
+{{- else -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error) {
+	row := q.db.QueryRow(ctx, {{.ConstantName}}, {{.Arg.Params}})
+{{- end}}
+	{{- if or (ne .Arg.Pair .Ret.Pair) (ne .Arg.DefineType .Ret.DefineType) }}
+	var {{.Ret.Name}} {{.Ret.Type}}
+	{{- end}}
+	err := row.Scan({{.Ret.Scan}})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		{{- if $.WrapErrors}}
+		err = fmt.Errorf("query {{.MethodName}}: %w", err)
+		{{- end}}
+		return nil, err
+	}
+	return {{.Ret.ReturnName}}, nil
+}
 {{end}}
 
 {{if eq .Cmd ":many"}}
