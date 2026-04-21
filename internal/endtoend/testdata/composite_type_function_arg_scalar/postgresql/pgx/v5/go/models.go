@@ -8,17 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type FooPath struct {
-	PointOne PointType
-	PointTwo FooPointType
-}
-
-type FooPointType struct {
-	X pgtype.Int4
-	Y pgtype.Int4
-}
-
-type PointType struct {
+type PointInput struct {
 	X pgtype.Int4
 	Y pgtype.Int4
 }

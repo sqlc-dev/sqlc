@@ -120,6 +120,7 @@ func Generate(ctx context.Context, req *plugin.GenerateRequest) (*plugin.Generat
 
 	enums := buildEnums(req, options)
 	structs := buildStructs(req, options)
+	structs = append(structs, buildCompositeTypeStructs(req, options)...)
 	queries, err := buildQueries(req, options, structs)
 	if err != nil {
 		return nil, err

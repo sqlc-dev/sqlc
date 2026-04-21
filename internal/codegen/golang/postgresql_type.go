@@ -587,13 +587,19 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 			for _, ct := range schema.CompositeTypes {
 				if rel.Name == ct.Name && rel.Schema == schema.Name {
-					if notNull {
-						return "string"
+					// If the composite has no known column list (e.g. was
+					// declared via a plugin that didn't surface columns), fall
+					// back to the legacy string encoding.
+					if len(ct.Columns) == 0 {
+						if notNull {
+							return "string"
+						}
+						if emitPointersForNull {
+							return "*string"
+						}
+						return "sql.NullString"
 					}
-					if emitPointersForNull {
-						return "*string"
-					}
-					return "sql.NullString"
+					return compositeTypeStructName(schema.Name, ct.Name, req.Catalog.DefaultSchema, options)
 				}
 			}
 		}

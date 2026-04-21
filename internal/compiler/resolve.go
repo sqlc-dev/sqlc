@@ -487,6 +487,10 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				defaultP := named.NewInferredParam(paramName, true)
 				p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
 				added = true
+				arrayDims := 0
+				if paramType.ArrayBounds != nil {
+					arrayDims = len(paramType.ArrayBounds.Items)
+				}
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: &Column{
@@ -495,6 +499,8 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 						NotNull:      p.NotNull(),
 						IsNamedParam: isNamed,
 						IsSqlcSlice:  p.IsSqlcSlice(),
+						IsArray:      arrayDims > 0,
+						ArrayDims:    arrayDims,
 					},
 				})
 			}
