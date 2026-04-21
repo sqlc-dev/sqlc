@@ -12,7 +12,7 @@ require (
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/google/cel-go v0.28.0
 	github.com/google/go-cmp v0.7.0
-	github.com/jackc/pgx/v5 v5.9.1
+	github.com/jackc/pgx/v5 v5.9.2
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lib/pq v1.12.3
 	github.com/ncruces/go-sqlite3 v0.33.3
