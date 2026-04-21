@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/ncruces/go-sqlite3"
+	_ "github.com/ncruces/go-sqlite3/embed"
 
 	core "github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/config"
