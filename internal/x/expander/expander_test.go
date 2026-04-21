@@ -3,12 +3,10 @@ package expander
 import (
 	"context"
 	"database/sql"
-	"database/sql/driver"
-	"fmt"
 	"os"
 	"testing"
 
-	"github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/ncruces/go-sqlite3"
 
@@ -44,46 +42,28 @@ func (g *PostgreSQLColumnGetter) GetColumnNames(ctx context.Context, query strin
 	return columns, nil
 }
 
-// MySQLColumnGetter implements ColumnGetter for MySQL using the forked driver's StmtMetadata.
+// MySQLColumnGetter implements ColumnGetter for MySQL. Column names are read
+// from the result set metadata returned by executing the query; the test
+// tables are empty, so no real rows are transferred.
+//
+// An earlier implementation pulled column metadata straight out of a prepared
+// statement via a forked mysql driver exposing StmtMetadata. That fork
+// required a `replace` directive in go.mod, which broke `go install
+// github.com/sqlc-dev/sqlc/cmd/sqlc@latest` (see
+// https://github.com/sqlc-dev/sqlc/issues/4397). Reading columns from sql.Rows
+// works with the upstream driver and keeps the test covering the same
+// behavior.
 type MySQLColumnGetter struct {
 	db *sql.DB
 }
 
 func (g *MySQLColumnGetter) GetColumnNames(ctx context.Context, query string) ([]string, error) {
-	conn, err := g.db.Conn(ctx)
+	rows, err := g.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
-
-	var columns []string
-	err = conn.Raw(func(driverConn any) error {
-		preparer, ok := driverConn.(driver.ConnPrepareContext)
-		if !ok {
-			return fmt.Errorf("driver connection does not support PrepareContext")
-		}
-
-		stmt, err := preparer.PrepareContext(ctx, query)
-		if err != nil {
-			return err
-		}
-		defer stmt.Close()
-
-		meta, ok := stmt.(mysql.StmtMetadata)
-		if !ok {
-			return fmt.Errorf("prepared statement does not implement StmtMetadata")
-		}
-
-		for _, col := range meta.ColumnMetadata() {
-			columns = append(columns, col.Name)
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return columns, nil
+	defer rows.Close()
+	return rows.Columns()
 }
 
 // SQLiteColumnGetter implements ColumnGetter for SQLite using the native ncruces/go-sqlite3 API.

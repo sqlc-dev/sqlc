@@ -22,6 +22,22 @@ jobs:
         CGO_ENABLED: "0"
         GOOS: ${{ matrix.goos }}
         GOARCH: ${{ matrix.goarch }}
+  # Runs the TestGoModHasNoReplaceDirectives test (and nothing else) as its own
+  # job so a regression of https://github.com/sqlc-dev/sqlc/issues/4397 is easy
+  # to spot in the GitHub UI. The full 'test' job below runs the same check as
+  # part of 'go test ./...', but it takes much longer to finish and a failure
+  # there is less obvious at a glance.
+  go_install:
+    name: verify 'go install ...@latest' compatibility
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-go@v6
+      with:
+        go-version: '1.26.2'
+    - name: check go.mod has no replace directives
+      run: go test -run TestGoModHasNoReplaceDirectives -v .
+
   test:
     runs-on: ubuntu-24.04
     steps:
