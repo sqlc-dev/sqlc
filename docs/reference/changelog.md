@@ -1,6 +1,19 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+(v1-31-1)=
+## [1.31.1](https://github.com/sqlc-dev/sqlc/releases/tag/v1.31.1)
+Released 2026-04-22
+
+### Bug Fixes
+
+- Remove go.mod replace directive that breaks `go install ...@latest` (#4401)
+- Downgrade github.com/ncruces/go-sqlite3 to v0.32.0 (#4400)
+
+### Build
+
+- (deps) Bump github.com/jackc/pgx/v5 (#4398)
+
 (v1-31-0)=
 ## [1.31.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.31.0)
 Released 2026-04-19
