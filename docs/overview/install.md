@@ -42,10 +42,10 @@ docker run --rm -v "%cd%:/src" -w /src sqlc/sqlc generate
 
 ## Downloads
 
-Get pre-built binaries for *v1.31.0*:
+Get pre-built binaries for *v1.31.1*:
 
-- [Linux](https://downloads.sqlc.dev/sqlc_1.31.0_linux_amd64.tar.gz)
-- [macOS](https://downloads.sqlc.dev/sqlc_1.31.0_darwin_amd64.zip)
-- [Windows](https://downloads.sqlc.dev/sqlc_1.31.0_windows_amd64.zip)
+- [Linux](https://downloads.sqlc.dev/sqlc_1.31.1_linux_amd64.tar.gz)
+- [macOS](https://downloads.sqlc.dev/sqlc_1.31.1_darwin_amd64.zip)
+- [Windows](https://downloads.sqlc.dev/sqlc_1.31.1_windows_amd64.zip)
 
 See [downloads.sqlc.dev](https://downloads.sqlc.dev/) for older versions.
