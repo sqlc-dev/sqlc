@@ -1,0 +1,2 @@
+# package querytest
+query.sql:2:41: column "is_deleted" does not exist

@@ -1,0 +1,2 @@
+# package querytest
+query.sql:3:36: column reference "is_deleted" not found

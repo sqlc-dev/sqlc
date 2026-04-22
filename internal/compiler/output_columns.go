@@ -67,6 +67,10 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 		targets = n.TargetList
 		isUnion := len(targets.Items) == 0 && n.Larg != nil
 
+		if err := c.findColumnsInClause(qc, n.WhereClause, [][]*Table{tables}); err != nil {
+			return nil, err
+		}
+
 		if n.GroupClause != nil {
 			for _, item := range n.GroupClause.Items {
 				if err := findColumnForNode(item, tables, targets); err != nil {
@@ -720,6 +724,108 @@ func findColumnForNode(item ast.Node, tables []*Table, targetList *ast.List) err
 		return nil
 	}
 	return findColumnForRef(ref, tables, targetList)
+}
+
+func (c *Compiler) findColumnsInClause(qc *QueryCatalog, node ast.Node, scopes [][]*Table) error {
+	if node == nil {
+		return nil
+	}
+
+	validator := &columnRefClauseValidator{
+		compiler: c,
+		qc:       qc,
+		scopes:   scopes,
+	}
+	astutils.Walk(validator, node)
+	return validator.err
+}
+
+type columnRefClauseValidator struct {
+	compiler *Compiler
+	qc       *QueryCatalog
+	scopes   [][]*Table
+	err      error
+}
+
+func (v *columnRefClauseValidator) Visit(node ast.Node) astutils.Visitor {
+	if node == nil || v.err != nil {
+		return nil
+	}
+
+	if selectStmt, ok := node.(*ast.SelectStmt); ok {
+		tables, err := v.compiler.sourceTables(v.qc, selectStmt)
+		if err != nil {
+			v.err = err
+			return nil
+		}
+		scopes := append([][]*Table{tables}, v.scopes...)
+		if err := v.compiler.findColumnsInClause(v.qc, selectStmt.WhereClause, scopes); err != nil {
+			v.err = err
+		}
+		return nil
+	}
+
+	if ref, ok := node.(*ast.ColumnRef); ok {
+		if err := findColumnForRefInScopes(ref, v.scopes); err != nil {
+			v.err = err
+			return nil
+		}
+	}
+
+	return v
+}
+
+func findColumnForRefInScopes(ref *ast.ColumnRef, scopes [][]*Table) error {
+	parts := stringSlice(ref.Fields)
+	var schema, alias, name string
+	switch len(parts) {
+	case 1:
+		name = parts[0]
+	case 2:
+		alias = parts[0]
+		name = parts[1]
+	case 3:
+		schema = parts[0]
+		alias = parts[1]
+		name = parts[2]
+	default:
+		return fmt.Errorf("unknown number of fields: %d", len(parts))
+	}
+
+	for _, tables := range scopes {
+		var found int
+		for _, t := range tables {
+			if schema != "" && t.Rel.Schema != schema {
+				continue
+			}
+			if alias != "" && t.Rel.Name != alias {
+				continue
+			}
+			for _, c := range t.Columns {
+				if c.Name == name {
+					found++
+					break
+				}
+			}
+		}
+		if found == 0 {
+			continue
+		}
+		if found > 1 {
+			return &sqlerr.Error{
+				Code:     "42703",
+				Message:  fmt.Sprintf("column reference %q is ambiguous", name),
+				Location: ref.Location,
+			}
+		}
+		return nil
+	}
+
+	return &sqlerr.Error{
+		Code:     "42703",
+		Message:  fmt.Sprintf("column reference %q not found", name),
+		Location: ref.Location,
+	}
 }
 
 func findColumnForRef(ref *ast.ColumnRef, tables []*Table, targetList *ast.List) error {
