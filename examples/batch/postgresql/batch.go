@@ -304,6 +304,71 @@ func (b *DeleteBookNamedSignBatchResults) Close() error {
 	return b.br.Close()
 }
 
+const getAuthorWithFirstBook = `-- name: GetAuthorWithFirstBook :batchone
+SELECT books.book_id, books.author_id, books.isbn, books.book_type, books.title, books.year, books.available, books.tags, authors.author_id, authors.name, authors.biography
+FROM authors
+INNER JOIN books ON authors.author_id = books.author_id
+WHERE authors.author_id = $1
+`
+
+type GetAuthorWithFirstBookBatchResults struct {
+	br     pgx.BatchResults
+	tot    int
+	closed bool
+}
+
+type GetAuthorWithFirstBookRow struct {
+	Book   Book   `json:"book"`
+	Author Author `json:"author"`
+}
+
+func (q *Queries) GetAuthorWithFirstBook(ctx context.Context, authorID []int32) *GetAuthorWithFirstBookBatchResults {
+	batch := &pgx.Batch{}
+	for _, a := range authorID {
+		vals := []interface{}{
+			a,
+		}
+		batch.Queue(getAuthorWithFirstBook, vals...)
+	}
+	br := q.db.SendBatch(ctx, batch)
+	return &GetAuthorWithFirstBookBatchResults{br, len(authorID), false}
+}
+
+func (b *GetAuthorWithFirstBookBatchResults) QueryRow(f func(int, GetAuthorWithFirstBookRow, error)) {
+	defer b.br.Close()
+	for t := 0; t < b.tot; t++ {
+		var i GetAuthorWithFirstBookRow
+		if b.closed {
+			if f != nil {
+				f(t, i, ErrBatchAlreadyClosed)
+			}
+			continue
+		}
+		row := b.br.QueryRow()
+		err := row.Scan(
+			&i.Book.BookID,
+			&i.Book.AuthorID,
+			&i.Book.Isbn,
+			&i.Book.BookType,
+			&i.Book.Title,
+			&i.Book.Year,
+			&i.Book.Available,
+			&i.Book.Tags,
+			&i.Author.AuthorID,
+			&i.Author.Name,
+			&i.Author.Biography,
+		)
+		if f != nil {
+			f(t, i, err)
+		}
+	}
+}
+
+func (b *GetAuthorWithFirstBookBatchResults) Close() error {
+	b.closed = true
+	return b.br.Close()
+}
+
 const getBiography = `-- name: GetBiography :batchone
 SELECT biography FROM authors
 WHERE author_id = $1
