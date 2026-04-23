@@ -127,15 +127,16 @@ func (c *Compiler) inferMySQLTypeCast(node *ast.TypeCast, tables []*Table) Type 
 		return unknownType()
 	}
 
-	base := toColumn(node.TypeName)
-	if base == nil {
+	// MySQL populates TypeName.Name directly; toColumn reads TypeName.Names (Postgres-style).
+	kind := mapMySQLKind(node.TypeName.Name)
+	if kind == KindUnknown {
 		return unknownType()
 	}
 
 	arg := c.inferMySQLExpr(node.Arg, tables)
 
 	t := Type{
-		Kind:  mapMySQLKind(base.DataType),
+		Kind:  kind,
 		Valid: true,
 	}
 
