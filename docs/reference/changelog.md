@@ -1,6 +1,73 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+(v1-31-1)=
+## [1.31.1](https://github.com/sqlc-dev/sqlc/releases/tag/v1.31.1)
+Released 2026-04-22
+
+### Bug Fixes
+
+- Remove go.mod replace directive that breaks `go install ...@latest` (#4401)
+- Downgrade github.com/ncruces/go-sqlite3 to v0.32.0 (#4400)
+
+### Build
+
+- (deps) Bump github.com/jackc/pgx/v5 (#4398)
+
+(v1-31-0)=
+## [1.31.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.31.0)
+Released 2026-04-19
+
+### Bug Fixes
+
+- Strip psql meta-commands from schema files (#4390)
+- Emit pointers for nullable enum columns when `emit_pointers_for_null_types` is set (#4388)
+- Map xid8 to pgtype.Uint64 for pgx/v5 (#4387)
+- Rename `:one` return variable when it conflicts with a parameter (#4383)
+- Coerce SQLite JSONB output regardless of type casing (#4385)
+- Dedupe `sqlc.arg` parameters wrapped in a type cast for MySQL (#4384)
+- Preserve MySQL optimizer hints in generated query text (#4382)
+- Catch invalid `ON CONFLICT DO UPDATE` column references (#4366)
+- Replace manual loop with `copy()` builtin (#4166)
+- (native) Make MySQL connection check immediate on first attempt (#4254)
+
+### Documentation
+
+- Add link to community python plugin (#4157)
+- Add Claude Code remote environment setup instructions (#4246)
+- Add sqlc-gen-sqlx to community language support (#4371)
+- Add GitHub Topic to the plugins page (#4258)
+
+### Features
+
+- (sqlfile) Add `sqlfile.Split` (#4146)
+- (sqlite) Add database analyzer using ncruces/go-sqlite3 (#4199)
+- (ast) Implement comprehensive SQL AST formatting (#4205)
+- (mysql) Improve AST formatting and add DELETE JOIN support (#4206)
+- (sqlite) Add SQLite support to format tests (#4207)
+- (expander) Add star expander for `SELECT *` and `RETURNING *` (PostgreSQL, MySQL, SQLite) (#4203)
+- Add `SQLCEXPERIMENT` environment variable for experimental features (#4228)
+- Add native database support for e2e tests without Docker (#4236)
+- (postgresql) Add analyzerv2 experiment for database-only analysis (#4237)
+- Graduate parsecmd experiment (#4253)
+- Add parse subcommand with AST JSON output (#4240)
+- Add ClickHouse support to `sqlc parse` (#4267)
+- Add `sqlc-test-setup` command for database test environment setup (#4304)
+
+### Refactor
+
+- (ast) Rename Formatter interface to Dialect (#4208)
+
+### Build
+
+- Upgrade Go toolchain to 1.26.2 (#4378)
+- Upgrade Go version to 1.26.0 (#4312)
+- Remove github.com/jackc/pgx/v4 dependency (#4379)
+- Upgrade github.com/pingcap/tidb/pkg/parser (#4389)
+- Install PostgreSQL from theseus-rs/postgresql-binaries instead of apt (#4310)
+- Skip CI/RTD builds when the change is irrelevant (#4381)
+- (deps) 35 dependabot bumps (collapsed from individual entries)
+
 (v1-30-0)=
 ## [1.30.0](https://github.com/sqlc-dev/sqlc/releases/tag/v1.30.0)
 Released 2025-09-01

@@ -10,6 +10,14 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.11"
+  jobs:
+    post_checkout:
+      # Cancel PR builds that don't touch the docs.
+      # https://docs.readthedocs.io/en/stable/build-customization.html#cancel-build-based-on-a-condition
+      - |
+        if [ "$READTHEDOCS_VERSION_TYPE" = "external" ] && git diff --quiet origin/main -- docs/ .readthedocs.yaml; then
+          exit 183
+        fi
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
