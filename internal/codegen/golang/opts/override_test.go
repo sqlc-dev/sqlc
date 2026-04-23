@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
 func TestTypeOverrides(t *testing.T) {
@@ -114,4 +115,89 @@ func FuzzOverride(f *testing.F) {
 		}
 		o.parse(nil)
 	})
+}
+
+func TestOverride_MatchesColumn(t *testing.T) {
+	t.Parallel()
+	type testCase struct {
+		specName string
+		override Override
+		Column   *plugin.Column
+		engine   string
+		expected bool
+	}
+
+	testCases := []*testCase{
+		{
+			specName: "matches with pg_catalog in schema and name",
+			override: Override{
+				DBType:   "json",
+				Nullable: false,
+			},
+			Column: &plugin.Column{
+				Name: "data",
+				Type: &plugin.Identifier{
+					Schema: "pg_catalog",
+					Name:   "json",
+				},
+				NotNull: true,
+				IsArray: false,
+			},
+			engine:   "postgresql",
+			expected: true,
+		},
+		{
+			specName: "matches only with name",
+			override: Override{
+				DBType:   "json",
+				Nullable: false,
+			},
+			Column: &plugin.Column{
+				Name: "data",
+				Type: &plugin.Identifier{
+					Name: "json",
+				},
+				NotNull: true,
+				IsArray: false,
+			},
+			engine:   "postgresql",
+			expected: true,
+		},
+		{
+			specName: "matches with pg_catalog in name",
+			override: Override{
+				DBType:   "json",
+				Nullable: false,
+			},
+			Column: &plugin.Column{
+				Name: "data",
+				Type: &plugin.Identifier{
+					Name: "pg_catalog.json",
+				},
+				NotNull: true,
+				IsArray: false,
+			},
+			engine:   "postgresql",
+			expected: true,
+		},
+	}
+
+	for _, test := range testCases {
+		tt := *test
+		t.Run(tt.specName, func(t *testing.T) {
+			result := tt.override.MatchesColumn(tt.Column, tt.engine)
+			if result != tt.expected {
+				t.Errorf("mismatch; got %v; want %v", result, tt.expected)
+			}
+			if tt.engine == "postgresql" && tt.expected == true {
+				tt.override.DBType = "pg_catalog." + tt.override.DBType
+				result = tt.override.MatchesColumn(test.Column, tt.engine)
+				if !result {
+					t.Errorf("mismatch; got %v; want %v", result, tt.expected)
+				}
+			}
+
+		})
+
+	}
 }
