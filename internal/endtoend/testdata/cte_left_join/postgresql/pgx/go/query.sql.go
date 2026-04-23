@@ -7,8 +7,6 @@ package querytest
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const badQuery = `-- name: BadQuery :exec
@@ -28,7 +26,7 @@ FROM
 WHERE c1.name = $1
 `
 
-func (q *Queries) BadQuery(ctx context.Context, dollar_1 pgtype.Text) error {
-	_, err := q.db.Exec(ctx, badQuery, dollar_1)
+func (q *Queries) BadQuery(ctx context.Context, name string) error {
+	_, err := q.db.Exec(ctx, badQuery, name)
 	return err
 }
