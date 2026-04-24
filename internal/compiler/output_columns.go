@@ -3,6 +3,7 @@ package compiler
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
@@ -269,7 +270,8 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 				// TODO: This code is copied in func expand()
 				for _, t := range tables {
 					scope := astutils.Join(n.Fields, ".")
-					if scope != "" && scope != t.Rel.Name {
+					isOldNew := strings.EqualFold(scope, "old") || strings.EqualFold(scope, "new")
+					if scope != "" && !isOldNew && scope != t.Rel.Name {
 						continue
 					}
 					for _, c := range t.Columns {
@@ -669,7 +671,8 @@ func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) 
 		if schema != "" && t.Rel.Schema != schema {
 			continue
 		}
-		if alias != "" && t.Rel.Name != alias {
+		isOldNew := strings.EqualFold(alias, "old") || strings.EqualFold(alias, "new")
+		if alias != "" && !isOldNew && t.Rel.Name != alias {
 			continue
 		}
 		for _, c := range t.Columns {
