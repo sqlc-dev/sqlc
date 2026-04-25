@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"strconv"
+	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
@@ -142,6 +143,51 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			})
 
 		case *ast.A_Expr:
+			// If one side of the comparison is a direct FuncCall, use the
+			// function's return type for the parameter. This prevents the
+			// ColumnRef search below from descending into the function's
+			// arguments and incorrectly using a nested column's type
+			// (e.g. DATEDIFF(date_from, NOW()) >= ? should yield int, not date).
+			var funcCallSide *ast.FuncCall
+			if fc, ok := n.Lexpr.(*ast.FuncCall); ok {
+				funcCallSide = fc
+			} else if fc, ok := n.Rexpr.(*ast.FuncCall); ok {
+				funcCallSide = fc
+			}
+			if funcCallSide != nil {
+				fun, ferr := c.ResolveFuncCall(funcCallSide)
+				if ferr == nil && fun.ReturnType != nil && !strings.HasPrefix(fun.ReturnType.Name, "any") && fun.ReturnType.Name != "record" {
+					paramName := ref.name
+					if paramName == "" {
+						fcList := astutils.Search(funcCallSide, func(node ast.Node) bool {
+							_, ok := node.(*ast.ColumnRef)
+							return ok
+						})
+						if len(fcList.Items) > 0 {
+							if cr, ok := fcList.Items[0].(*ast.ColumnRef); ok {
+								items := stringSlice(cr.Fields)
+								if len(items) > 0 {
+									paramName = items[len(items)-1]
+								}
+							}
+						}
+					}
+					defaultP := named.NewInferredParam(paramName, true)
+					p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
+					a = append(a, Parameter{
+						Number: ref.ref.Number,
+						Column: &Column{
+							Name:         p.Name(),
+							DataType:     dataType(fun.ReturnType),
+							NotNull:      p.NotNull(),
+							IsNamedParam: isNamed,
+							IsSqlcSlice:  p.IsSqlcSlice(),
+						},
+					})
+					continue
+				}
+			}
+
 			// TODO: While this works for a wide range of simple expressions,
 			// more complicated expressions will cause this logic to fail.
 			list := astutils.Search(n.Lexpr, func(node ast.Node) bool {
