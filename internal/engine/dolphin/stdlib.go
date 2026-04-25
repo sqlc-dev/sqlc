@@ -415,10 +415,10 @@ func defaultSchema(name string) *catalog.Schema {
 			Name: "CONCAT",
 			Args: []*catalog.Argument{
 				{
-					Type: &ast.TypeName{Name: "any"},
+					Type: &ast.TypeName{Name: "text"},
 				},
 				{
-					Type: &ast.TypeName{Name: "any"},
+					Type: &ast.TypeName{Name: "text"},
 					Mode: ast.FuncParamVariadic,
 				},
 			},
