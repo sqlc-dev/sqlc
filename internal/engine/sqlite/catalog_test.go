@@ -83,6 +83,38 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 		{
+			// Regression test for #4307: mixed-case column name in ALTER TABLE ADD COLUMN
+			`
+			CREATE TABLE foo (id INTEGER NOT NULL, xYz INTEGER NOT NULL DEFAULT 0);
+			ALTER TABLE foo ADD COLUMN barBaz TEXT NOT NULL DEFAULT '';
+			`,
+			&catalog.Schema{
+				Name: "main",
+				Tables: []*catalog.Table{
+					{
+						Rel: &ast.TableName{Name: "foo"},
+						Columns: []*catalog.Column{
+							{
+								Name:      "id",
+								Type:      ast.TypeName{Name: "INTEGER"},
+								IsNotNull: true,
+							},
+							{
+								Name:      "xyz",
+								Type:      ast.TypeName{Name: "INTEGER"},
+								IsNotNull: true,
+							},
+							{
+								Name:      "barbaz",
+								Type:      ast.TypeName{Name: "TEXT"},
+								IsNotNull: true,
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			`
 			CREATE TABLE foo (bar text);
 			ALTER TABLE foo RENAME COLUMN bar TO baz;
