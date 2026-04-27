@@ -7,8 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pingcap/tidb/pkg/parser"
-	_ "github.com/pingcap/tidb/pkg/parser/test_driver"
+	"github.com/sqlc-dev/marino/parser"
 
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
