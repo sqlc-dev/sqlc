@@ -3,14 +3,14 @@ Jinja2==3.1.6
 MarkupSafe==3.0.3
 Pygments==2.20.0
 Sphinx==8.2.3
-certifi==2026.2.25
+certifi==2026.4.22
 chardet==7.4.3
 commonmark==0.9.1
 docutils==0.20.1
-idna==3.12
+idna==3.13
 imagesize==2.0.0
 myst-parser==5.0.0 
-packaging==26.1
+packaging==26.2
 pyparsing==3.3.2
 pytz==2026.1.post1
 requests==2.33.1
