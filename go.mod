@@ -21,7 +21,7 @@ require (
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
 	github.com/sqlc-dev/doubleclick v1.0.0
-	github.com/sqlc-dev/marino v0.0.0-20260427013134-845ca69d5d36
+	github.com/sqlc-dev/marino v0.1.0
 	github.com/tetratelabs/wazero v1.11.0
 	github.com/wasilibs/go-pgquery v0.0.0-20250409022910-10ac41983c07
 	github.com/xeipuuv/gojsonschema v1.2.0
