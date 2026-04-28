@@ -12,18 +12,8 @@ type Options struct {
 	// TODO: Move these to a command-specific struct
 	Tags    []string
 	Against string
-
-	// Testing only
-	MutateConfig func(*config.Config)
 }
 
 func (o *Options) ReadConfig(dir, filename string) (string, *config.Config, error) {
-	path, conf, err := readConfig(o.Stderr, dir, filename)
-	if err != nil {
-		return path, conf, err
-	}
-	if o.MutateConfig != nil {
-		o.MutateConfig(conf)
-	}
-	return path, conf, nil
+	return readConfig(o.Stderr, dir, filename)
 }
