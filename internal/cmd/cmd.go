@@ -37,8 +37,6 @@ func init() {
 func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
 	rootCmd := &cobra.Command{Use: "sqlc", SilenceUsage: true}
 	rootCmd.PersistentFlags().StringP("file", "f", "", "specify an alternate config file (default: sqlc.yaml)")
-	rootCmd.PersistentFlags().Bool("no-remote", false, "disable remote execution (default: false)")
-	rootCmd.PersistentFlags().Bool("remote", false, "enable remote execution (default: false)")
 
 	rootCmd.AddCommand(checkCmd)
 	rootCmd.AddCommand(createDBCmd)
@@ -141,20 +139,14 @@ type Env struct {
 	DryRun     bool
 	Debug      opts.Debug
 	Experiment opts.Experiment
-	Remote     bool
-	NoRemote   bool
 }
 
 func ParseEnv(c *cobra.Command) Env {
 	dr := c.Flag("dry-run")
-	r := c.Flag("remote")
-	nr := c.Flag("no-remote")
 	return Env{
 		DryRun:     dr != nil && dr.Changed,
 		Debug:      opts.DebugFromEnv(),
 		Experiment: opts.ExperimentFromEnv(),
-		Remote:     r != nil && r.Value.String() == "true",
-		NoRemote:   nr != nil && nr.Value.String() == "true",
 	}
 }
 
