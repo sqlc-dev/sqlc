@@ -14,6 +14,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
+	"github.com/sqlc-dev/sqlc/internal/api"
 	"github.com/sqlc-dev/sqlc/internal/cmd"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/opts"
@@ -58,15 +59,14 @@ func TestExamples(t *testing.T) {
 			t.Parallel()
 			path := filepath.Join(examples, tc)
 			var stderr bytes.Buffer
-			opts := &cmd.Options{
-				Env:    cmd.Env{},
+			res := api.Generate(ctx, api.GenerateOptions{
+				Dir:    path,
 				Stderr: &stderr,
-			}
-			output, err := cmd.Generate(ctx, path, "", opts)
-			if err != nil {
+			})
+			if len(res.Errors) > 0 {
 				t.Fatalf("sqlc generate failed: %s", stderr.String())
 			}
-			cmpDirectory(t, path, output)
+			cmpDirectory(t, path, res.Files)
 		})
 	}
 }
@@ -90,11 +90,10 @@ func BenchmarkExamples(b *testing.B) {
 			path := filepath.Join(examples, tc)
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
-				opts := &cmd.Options{
-					Env:    cmd.Env{},
+				api.Generate(ctx, api.GenerateOptions{
+					Dir:    path,
 					Stderr: &stderr,
-				}
-				cmd.Generate(ctx, path, "", opts)
+				})
 			}
 		})
 	}
@@ -261,9 +260,10 @@ func TestReplay(t *testing.T) {
 					}
 				}
 
-				opts := cmd.Options{
+				dbg := opts.DebugFromString(args.Env["SQLCDEBUG"])
+				cmdOpts := cmd.Options{
 					Env: cmd.Env{
-						Debug:      opts.DebugFromString(args.Env["SQLCDEBUG"]),
+						Debug:      dbg,
 						Experiment: opts.ExperimentFromString(args.Env["SQLCEXPERIMENT"]),
 					},
 					Stderr:       &stderr,
@@ -272,14 +272,23 @@ func TestReplay(t *testing.T) {
 
 				switch args.Command {
 				case "diff":
-					err = cmd.Diff(ctx, path, "", &opts)
+					err = cmd.Diff(ctx, path, "", &cmdOpts)
 				case "generate":
-					output, err = cmd.Generate(ctx, path, "", &opts)
+					res := api.Generate(ctx, api.GenerateOptions{
+						Dir:                   path,
+						Stderr:                &stderr,
+						DisableProcessPlugins: !dbg.ProcessPlugins,
+						MutateConfig:          testctx.Mutate(t, path),
+					})
+					output = res.Files
+					if len(res.Errors) > 0 {
+						err = res.Errors[0]
+					}
 					if err == nil {
 						cmpDirectory(t, path, output)
 					}
 				case "vet":
-					err = cmd.Vet(ctx, path, "", &opts)
+					err = cmd.Vet(ctx, path, "", &cmdOpts)
 				default:
 					t.Fatalf("unknown command")
 				}
@@ -387,11 +396,10 @@ func BenchmarkReplay(b *testing.B) {
 			path, _ := filepath.Abs(tc)
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
-				opts := &cmd.Options{
-					Env:    cmd.Env{},
+				api.Generate(ctx, api.GenerateOptions{
+					Dir:    path,
 					Stderr: &stderr,
-				}
-				cmd.Generate(ctx, path, "", opts)
+				})
 			}
 		})
 	}

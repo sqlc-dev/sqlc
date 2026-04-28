@@ -2,30 +2,19 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"runtime/trace"
-	"strings"
-	"sync"
 
-	"google.golang.org/grpc"
-
-	"github.com/sqlc-dev/sqlc/internal/codegen/golang"
-	genjson "github.com/sqlc-dev/sqlc/internal/codegen/json"
+	"github.com/sqlc-dev/sqlc/internal/api"
 	"github.com/sqlc-dev/sqlc/internal/compiler"
 	"github.com/sqlc-dev/sqlc/internal/config"
-	"github.com/sqlc-dev/sqlc/internal/config/convert"
 	"github.com/sqlc-dev/sqlc/internal/debug"
-	"github.com/sqlc-dev/sqlc/internal/ext"
-	"github.com/sqlc-dev/sqlc/internal/ext/process"
-	"github.com/sqlc-dev/sqlc/internal/ext/wasm"
 	"github.com/sqlc-dev/sqlc/internal/multierr"
 	"github.com/sqlc-dev/sqlc/internal/opts"
-	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
 const errMessageNoVersion = `The configuration file must have a version number.
@@ -49,15 +38,6 @@ func printFileErr(stderr io.Writer, dir string, fileErr *multierr.FileError) {
 		filename = fileErr.Filename
 	}
 	fmt.Fprintf(stderr, "%s:%d:%d: %s\n", filename, fileErr.Line, fileErr.Column, fileErr.Err)
-}
-
-func findPlugin(conf config.Config, name string) (*config.Plugin, error) {
-	for _, plug := range conf.Plugins {
-		if plug.Name == name {
-			return &plug, nil
-		}
-	}
-	return nil, fmt.Errorf("plugin not found")
 }
 
 func readConfig(stderr io.Writer, dir, filename string) (string, *config.Config, error) {
@@ -127,98 +107,21 @@ func readConfig(stderr io.Writer, dir, filename string) (string, *config.Config,
 	return configPath, &conf, nil
 }
 
+// Generate is a thin wrapper around api.Generate that translates between the
+// CLI's Options struct and api.GenerateOptions. New callers should prefer
+// api.Generate directly.
 func Generate(ctx context.Context, dir, filename string, o *Options) (map[string]string, error) {
-	e := o.Env
-	stderr := o.Stderr
-
-	configPath, conf, err := o.ReadConfig(dir, filename)
-	if err != nil {
-		return nil, err
+	res := api.Generate(ctx, api.GenerateOptions{
+		Dir:                   dir,
+		File:                  filename,
+		Stderr:                o.Stderr,
+		DisableProcessPlugins: !o.Env.Debug.ProcessPlugins,
+		MutateConfig:          o.MutateConfig,
+	})
+	if len(res.Errors) > 0 {
+		return res.Files, res.Errors[0]
 	}
-
-	base := filepath.Base(configPath)
-	if err := config.Validate(conf); err != nil {
-		fmt.Fprintf(stderr, "error validating %s: %s\n", base, err)
-		return nil, err
-	}
-
-	if err := e.Validate(conf); err != nil {
-		fmt.Fprintf(stderr, "error validating %s: %s\n", base, err)
-		return nil, err
-	}
-
-	g := &generator{
-		dir:    dir,
-		output: map[string]string{},
-	}
-
-	if err := processQuerySets(ctx, g, conf, dir, o); err != nil {
-		return nil, err
-	}
-
-	return g.output, nil
-}
-
-type generator struct {
-	m      sync.Mutex
-	dir    string
-	output map[string]string
-}
-
-func (g *generator) Pairs(ctx context.Context, conf *config.Config) []OutputPair {
-	var pairs []OutputPair
-	for _, sql := range conf.SQL {
-		if sql.Gen.Go != nil {
-			pairs = append(pairs, OutputPair{
-				SQL: sql,
-				Gen: config.SQLGen{Go: sql.Gen.Go},
-			})
-		}
-		if sql.Gen.JSON != nil {
-			pairs = append(pairs, OutputPair{
-				SQL: sql,
-				Gen: config.SQLGen{JSON: sql.Gen.JSON},
-			})
-		}
-		for i := range sql.Codegen {
-			pairs = append(pairs, OutputPair{
-				SQL:    sql,
-				Plugin: &sql.Codegen[i],
-			})
-		}
-	}
-	return pairs
-}
-
-func (g *generator) ProcessResult(ctx context.Context, combo config.CombinedSettings, sql OutputPair, result *compiler.Result) error {
-	out, resp, err := codegen(ctx, combo, sql, result)
-	if err != nil {
-		return err
-	}
-	files := map[string]string{}
-	for _, file := range resp.Files {
-		files[file.Name] = string(file.Contents)
-	}
-	g.m.Lock()
-
-	// out is specified by the user, not a plugin
-	absout := filepath.Join(g.dir, out)
-
-	for n, source := range files {
-		filename := filepath.Join(g.dir, out, n)
-		// filepath.Join calls filepath.Clean which should remove all "..", but
-		// double check to make sure
-		if strings.Contains(filename, "..") {
-			return fmt.Errorf("invalid file output path: %s", filename)
-		}
-		// The output file must be contained inside the output directory
-		if !strings.HasPrefix(filename, absout) {
-			return fmt.Errorf("invalid file output path: %s", filename)
-		}
-		g.output[filename] = source
-	}
-	g.m.Unlock()
-	return nil
+	return res.Files, nil
 }
 
 func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
@@ -259,83 +162,4 @@ func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.C
 		return nil, true
 	}
 	return c.Result(), false
-}
-
-func codegen(ctx context.Context, combo config.CombinedSettings, sql OutputPair, result *compiler.Result) (string, *plugin.GenerateResponse, error) {
-	defer trace.StartRegion(ctx, "codegen").End()
-	req := codeGenRequest(result, combo)
-	var handler grpc.ClientConnInterface
-	var out string
-	switch {
-	case sql.Plugin != nil:
-		out = sql.Plugin.Out
-		plug, err := findPlugin(combo.Global, sql.Plugin.Plugin)
-		if err != nil {
-			return "", nil, fmt.Errorf("plugin not found: %s", err)
-		}
-
-		switch {
-		case plug.Process != nil:
-			handler = &process.Runner{
-				Cmd:    plug.Process.Cmd,
-				Env:    plug.Env,
-				Format: plug.Process.Format,
-			}
-		case plug.WASM != nil:
-			handler = &wasm.Runner{
-				URL:    plug.WASM.URL,
-				SHA256: plug.WASM.SHA256,
-				Env:    plug.Env,
-			}
-		default:
-			return "", nil, fmt.Errorf("unsupported plugin type")
-		}
-
-		opts, err := convert.YAMLtoJSON(sql.Plugin.Options)
-		if err != nil {
-			return "", nil, fmt.Errorf("invalid plugin options: %w", err)
-		}
-		req.PluginOptions = opts
-
-		global, found := combo.Global.Options[plug.Name]
-		if found {
-			opts, err := convert.YAMLtoJSON(global)
-			if err != nil {
-				return "", nil, fmt.Errorf("invalid global options: %w", err)
-			}
-			req.GlobalOptions = opts
-		}
-
-	case sql.Gen.Go != nil:
-		out = combo.Go.Out
-		handler = ext.HandleFunc(golang.Generate)
-		opts, err := json.Marshal(sql.Gen.Go)
-		if err != nil {
-			return "", nil, fmt.Errorf("opts marshal failed: %w", err)
-		}
-		req.PluginOptions = opts
-
-		if combo.Global.Overrides.Go != nil {
-			opts, err := json.Marshal(combo.Global.Overrides.Go)
-			if err != nil {
-				return "", nil, fmt.Errorf("opts marshal failed: %w", err)
-			}
-			req.GlobalOptions = opts
-		}
-
-	case sql.Gen.JSON != nil:
-		out = combo.JSON.Out
-		handler = ext.HandleFunc(genjson.Generate)
-		opts, err := json.Marshal(sql.Gen.JSON)
-		if err != nil {
-			return "", nil, fmt.Errorf("opts marshal failed: %w", err)
-		}
-		req.PluginOptions = opts
-
-	default:
-		return "", nil, fmt.Errorf("missing language backend")
-	}
-	client := plugin.NewCodegenServiceClient(handler)
-	resp, err := client.Generate(ctx, req)
-	return out, resp, err
 }
