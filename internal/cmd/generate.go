@@ -13,7 +13,6 @@ import (
 	"sync"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/status"
 
 	"github.com/sqlc-dev/sqlc/internal/codegen/golang"
 	genjson "github.com/sqlc-dev/sqlc/internal/codegen/json"
@@ -24,12 +23,9 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/ext"
 	"github.com/sqlc-dev/sqlc/internal/ext/process"
 	"github.com/sqlc-dev/sqlc/internal/ext/wasm"
-	"github.com/sqlc-dev/sqlc/internal/info"
 	"github.com/sqlc-dev/sqlc/internal/multierr"
 	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
-	"github.com/sqlc-dev/sqlc/internal/remote"
-	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 )
 
 const errMessageNoVersion = `The configuration file must have a version number.
@@ -162,69 +158,16 @@ func Generate(ctx context.Context, dir, filename string, o *Options) (map[string
 		return nil, err
 	}
 
-	if conf.Cloud.Project != "" && e.Remote && !e.NoRemote {
-		return remoteGenerate(ctx, configPath, conf, dir, stderr)
-	}
-
-	inputs := &sourceFiles{Config: conf, ConfigPath: configPath, Dir: dir}
-	inputs.FileContents, err = loadFileContentsFromFS(conf, dir)
-	if err != nil {
-		return nil, err
-	}
-	return generate(ctx, inputs, o)
-}
-
-// generate performs codegen using in-memory inputs. It is used by Generate (with contents
-// loaded from disk) and by tests (with pre-filled Config and FileContents, no temp files).
-func generate(ctx context.Context, inputs *sourceFiles, o *Options) (map[string]string, error) {
 	g := &generator{
 		dir:    inputs.Dir,
 		output: map[string]string{},
 	}
-	if o != nil && o.CodegenHandlerOverride != nil {
-		g.codegenHandlerOverride = o.CodegenHandlerOverride
-	}
-	if err := processQuerySets(ctx, g, inputs, o); err != nil {
+
+  if err := processQuerySets(ctx, g, inputs, o); err != nil {
 		return nil, err
 	}
-	return g.output, nil
-}
 
-// loadFileContentsFromFS reads all schema and query files referenced in conf into a map
-// path -> content, using dir to resolve paths.
-func loadFileContentsFromFS(conf *config.Config, dir string) (map[string][]byte, error) {
-	out := make(map[string][]byte)
-	for _, pkg := range conf.SQL {
-		for _, rel := range pkg.Schema {
-			path := filepath.Join(dir, rel)
-			files, err := sqlpath.Glob([]string{path})
-			if err != nil {
-				return nil, err
-			}
-			for _, f := range files {
-				b, err := os.ReadFile(f)
-				if err != nil {
-					return nil, err
-				}
-				out[f] = b
-			}
-		}
-		for _, rel := range pkg.Queries {
-			path := filepath.Join(dir, rel)
-			files, err := sqlpath.Glob([]string{path})
-			if err != nil {
-				return nil, err
-			}
-			for _, f := range files {
-				b, err := os.ReadFile(f)
-				if err != nil {
-					return nil, err
-				}
-				out[f] = b
-			}
-		}
-	}
-	return out, nil
+	return g.output, nil
 }
 
 type generator struct {
@@ -288,69 +231,6 @@ func (g *generator) ProcessResult(ctx context.Context, combo config.CombinedSett
 	}
 	g.m.Unlock()
 	return nil
-}
-
-func remoteGenerate(ctx context.Context, configPath string, conf *config.Config, dir string, stderr io.Writer) (map[string]string, error) {
-	rpcClient, err := remote.NewClient(conf.Cloud)
-	if err != nil {
-		fmt.Fprintf(stderr, "error creating rpc client: %s\n", err)
-		return nil, err
-	}
-
-	configBytes, err := os.ReadFile(configPath)
-	if err != nil {
-		fmt.Fprintf(stderr, "error reading config file %s: %s\n", configPath, err)
-		return nil, err
-	}
-
-	rpcReq := remote.GenerateRequest{
-		Version: info.Version,
-		Inputs:  []*remote.File{{Path: filepath.Base(configPath), Bytes: configBytes}},
-	}
-
-	for _, pkg := range conf.SQL {
-		for _, paths := range []config.Paths{pkg.Schema, pkg.Queries} {
-			for i, relFilePath := range paths {
-				paths[i] = filepath.Join(dir, relFilePath)
-			}
-			files, err := sqlpath.Glob(paths)
-			if err != nil {
-				fmt.Fprintf(stderr, "error globbing paths: %s\n", err)
-				return nil, err
-			}
-			for _, filePath := range files {
-				fileBytes, err := os.ReadFile(filePath)
-				if err != nil {
-					fmt.Fprintf(stderr, "error reading file %s: %s\n", filePath, err)
-					return nil, err
-				}
-				fileRelPath, _ := filepath.Rel(dir, filePath)
-				rpcReq.Inputs = append(rpcReq.Inputs, &remote.File{Path: fileRelPath, Bytes: fileBytes})
-			}
-		}
-	}
-
-	rpcResp, err := rpcClient.Generate(ctx, &rpcReq)
-	if err != nil {
-		rpcStatus, ok := status.FromError(err)
-		if !ok {
-			return nil, err
-		}
-		fmt.Fprintf(stderr, "rpc error: %s", rpcStatus.Message())
-		return nil, rpcStatus.Err()
-	}
-
-	if rpcResp.ExitCode != 0 {
-		fmt.Fprintf(stderr, "%s", rpcResp.Stderr)
-		return nil, errors.New("remote execution returned with non-zero exit code")
-	}
-
-	output := map[string]string{}
-	for _, file := range rpcResp.Outputs {
-		output[filepath.Join(dir, file.Path)] = string(file.Bytes)
-	}
-
-	return output, nil
 }
 
 func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {

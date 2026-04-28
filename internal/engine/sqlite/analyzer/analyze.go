@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"github.com/ncruces/go-sqlite3"
-	_ "github.com/ncruces/go-sqlite3/embed"
 
 	core "github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/config"
@@ -90,17 +89,20 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 	for i := 0; i < colCount; i++ {
 		name := stmt.ColumnName(i)
 		declType := stmt.ColumnDeclType(i)
+		dbName := stmt.ColumnDatabaseName(i)
 		tableName := stmt.ColumnTableName(i)
 		originName := stmt.ColumnOriginName(i)
-		dbName := stmt.ColumnDatabaseName(i)
-
-		// Normalize the data type
-		dataType := normalizeType(declType)
 
 		// Determine if column is NOT NULL
-		// SQLite doesn't provide this info directly from prepared statements,
-		// so we default to nullable (false)
-		notNull := false
+		var notNull bool
+		var dataType string
+		if originName != "" {
+			declType, _, notNull, _, _, _ = a.conn.TableColumnMetadata(
+				dbName, tableName, originName)
+		}
+
+		// Normalize the data type
+		dataType = normalizeType(declType)
 
 		col := &core.Column{
 			Name:         name,
