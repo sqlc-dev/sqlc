@@ -106,6 +106,25 @@ func readConfig(stderr io.Writer, dir, filename string) (string, *config.Config,
 	return configPath, &conf, nil
 }
 
+// processPluginNames returns the names of every process-based plugin declared
+// in the sqlc configuration at dir/filename. The CLI passes the result to
+// api.GenerateOptions.InsecureProcessPluginNames so commands run by the user
+// (who wrote the config) can invoke any plugin they declared, while library
+// callers are still required to opt in explicitly.
+func processPluginNames(stderr io.Writer, dir, filename string) ([]string, error) {
+	_, conf, err := readConfig(stderr, dir, filename)
+	if err != nil {
+		return nil, err
+	}
+	var names []string
+	for _, p := range conf.Plugins {
+		if p.Process != nil {
+			names = append(names, p.Name)
+		}
+	}
+	return names, nil
+}
+
 func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
 	defer trace.StartRegion(ctx, "parse").End()
 	c, err := compiler.NewCompiler(sql, combo, parserOpts)

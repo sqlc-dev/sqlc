@@ -182,6 +182,21 @@ func getConfigPath(stderr io.Writer, f *pflag.Flag) (string, string) {
 	}
 }
 
+// allowedProcessPluginNames returns the set of process plugin names the CLI
+// trusts to run. SQLCDEBUG=processplugins=0 disables every process plugin by
+// returning nil; otherwise we trust whatever the user declared in their own
+// config.
+func allowedProcessPluginNames(env Env, stderr io.Writer, dir, name string) []string {
+	if !env.Debug.ProcessPlugins {
+		return nil
+	}
+	names, err := processPluginNames(stderr, dir, name)
+	if err != nil {
+		os.Exit(1)
+	}
+	return names
+}
+
 var genCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate source code from SQL",
@@ -189,11 +204,13 @@ var genCmd = &cobra.Command{
 		defer trace.StartRegion(cmd.Context(), "generate").End()
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
+		env := ParseEnv(cmd)
 		res := api.Generate(cmd.Context(), api.GenerateOptions{
-			Dir:    dir,
-			File:   name,
-			Stderr: stderr,
-			Write:  true,
+			Dir:                        dir,
+			File:                       name,
+			Stderr:                     stderr,
+			Write:                      true,
+			InsecureProcessPluginNames: allowedProcessPluginNames(env, stderr, dir, name),
 		})
 		if len(res.Errors) > 0 {
 			os.Exit(1)
@@ -209,10 +226,12 @@ var checkCmd = &cobra.Command{
 		defer trace.StartRegion(cmd.Context(), "compile").End()
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
+		env := ParseEnv(cmd)
 		res := api.Generate(cmd.Context(), api.GenerateOptions{
-			Dir:    dir,
-			File:   name,
-			Stderr: stderr,
+			Dir:                        dir,
+			File:                       name,
+			Stderr:                     stderr,
+			InsecureProcessPluginNames: allowedProcessPluginNames(env, stderr, dir, name),
 		})
 		if len(res.Errors) > 0 {
 			os.Exit(1)
@@ -228,11 +247,13 @@ var diffCmd = &cobra.Command{
 		defer trace.StartRegion(cmd.Context(), "diff").End()
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
+		env := ParseEnv(cmd)
 		res := api.Generate(cmd.Context(), api.GenerateOptions{
-			Dir:    dir,
-			File:   name,
-			Stderr: stderr,
-			Diff:   true,
+			Dir:                        dir,
+			File:                       name,
+			Stderr:                     stderr,
+			Diff:                       true,
+			InsecureProcessPluginNames: allowedProcessPluginNames(env, stderr, dir, name),
 		})
 		if len(res.Errors) > 0 {
 			os.Exit(1)

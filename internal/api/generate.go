@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 
@@ -33,6 +34,15 @@ type GenerateOptions struct {
 	// on disk and writes a unified diff for differences to Stderr. If any
 	// differences are found, an error is appended to GenerateResult.Errors.
 	Diff bool
+
+	// InsecureProcessPluginNames is the allowlist of process-based plugin
+	// names that Generate is permitted to invoke. Any process plugin declared
+	// in the configuration whose name is not in this list causes Generate to
+	// fail before parsing or codegen runs. Process plugins execute arbitrary
+	// local commands; the "Insecure" prefix mirrors
+	// crypto/tls.Config.InsecureSkipVerify as a reminder that callers must
+	// consciously trust each plugin name they pass here.
+	InsecureProcessPluginNames []string
 }
 
 // GenerateResult is the outcome of a Generate call. Files maps absolute output
@@ -70,6 +80,18 @@ func Generate(ctx context.Context, opts GenerateOptions) GenerateResult {
 		fmt.Fprintf(stderr, "error validating %s: %s\n", base, err)
 		res.Errors = append(res.Errors, err)
 		return res
+	}
+
+	for _, plug := range conf.Plugins {
+		if plug.Process == nil {
+			continue
+		}
+		if !slices.Contains(opts.InsecureProcessPluginNames, plug.Name) {
+			err := fmt.Errorf("process plugin %q is not in InsecureProcessPluginNames; refusing to run", plug.Name)
+			fmt.Fprintf(stderr, "error validating %s: %s\n", base, err)
+			res.Errors = append(res.Errors, err)
+			return res
+		}
 	}
 
 	g := &generator{
