@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"os"
 	osexec "os/exec"
 	"path/filepath"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"gopkg.in/yaml.v3"
 
 	"github.com/sqlc-dev/sqlc/internal/api"
 	"github.com/sqlc-dev/sqlc/internal/cmd"
@@ -99,9 +101,71 @@ func BenchmarkExamples(b *testing.B) {
 	}
 }
 
+// textContext describes a TestReplay scenario. Mutate returns the config
+// filename (relative to the test directory) that should be passed to the
+// command under test. The "base" context returns "" to use the project's
+// existing sqlc config; the "managed-db" context writes a mutated copy of the
+// config to a temporary file inside the test directory and returns its name.
 type textContext struct {
-	Mutate  func(*testing.T, string) func(*config.Config)
+	Mutate  func(*testing.T, string) string
 	Enabled func() bool
+}
+
+// writeMutatedConfig parses the sqlc config in dir, applies mutate to the
+// in-memory Config (which is always v2-shaped, even when the file on disk is
+// v1), forces version "2", and writes the result to a temp file alongside the
+// original. The temp file is removed when the test ends.
+func writeMutatedConfig(t *testing.T, dir string, mutate func(*config.Config)) string {
+	t.Helper()
+	original, conf, err := readSqlcConfig(dir)
+	if err != nil {
+		t.Fatalf("read sqlc config from %s: %s", dir, err)
+	}
+
+	// Parsing v1 configs converts them to a v2-shaped Config. Force version "2"
+	// so the mutated config can be re-parsed as v2 from disk.
+	conf.Version = "2"
+	mutate(conf)
+
+	f, err := os.CreateTemp(dir, "sqlc.test-*"+filepath.Ext(original))
+	if err != nil {
+		t.Fatalf("create temp config in %s: %s", dir, err)
+	}
+	t.Cleanup(func() { os.Remove(f.Name()) })
+
+	enc := yaml.NewEncoder(f)
+	if err := enc.Encode(conf); err != nil {
+		f.Close()
+		t.Fatalf("write temp config %s: %s", f.Name(), err)
+	}
+	if err := enc.Close(); err != nil {
+		f.Close()
+		t.Fatalf("close yaml encoder for %s: %s", f.Name(), err)
+	}
+	if err := f.Close(); err != nil {
+		t.Fatalf("close temp config %s: %s", f.Name(), err)
+	}
+	return filepath.Base(f.Name())
+}
+
+func readSqlcConfig(dir string) (string, *config.Config, error) {
+	for _, name := range []string{"sqlc.yaml", "sqlc.yml", "sqlc.json"} {
+		path := filepath.Join(dir, name)
+		f, err := os.Open(path)
+		if err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return path, nil, err
+		}
+		defer f.Close()
+		conf, err := config.ParseConfig(f)
+		if err != nil {
+			return path, nil, fmt.Errorf("parse %s: %w", path, err)
+		}
+		return path, &conf, nil
+	}
+	return "", nil, fmt.Errorf("no sqlc config found in %s", dir)
 }
 
 func TestReplay(t *testing.T) {
@@ -172,45 +236,24 @@ func TestReplay(t *testing.T) {
 
 	contexts := map[string]textContext{
 		"base": {
-			Mutate:  func(t *testing.T, path string) func(*config.Config) { return func(c *config.Config) {} },
+			Mutate:  func(t *testing.T, path string) string { return "" },
 			Enabled: func() bool { return true },
 		},
 		"managed-db": {
-			Mutate: func(t *testing.T, path string) func(*config.Config) {
-				return func(c *config.Config) {
+			Mutate: func(t *testing.T, path string) string {
+				return writeMutatedConfig(t, path, func(c *config.Config) {
 					// Add all servers - tests will fail if database isn't available
 					c.Servers = []config.Server{
-						{
-							Name:   "postgres",
-							Engine: config.EnginePostgreSQL,
-							URI:    postgresURI,
-						},
-						{
-							Name:   "mysql",
-							Engine: config.EngineMySQL,
-							URI:    mysqlURI,
-						},
+						{Name: "postgres", Engine: config.EnginePostgreSQL, URI: postgresURI},
+						{Name: "mysql", Engine: config.EngineMySQL, URI: mysqlURI},
 					}
-
 					for i := range c.SQL {
 						switch c.SQL[i].Engine {
-						case config.EnginePostgreSQL:
-							c.SQL[i].Database = &config.Database{
-								Managed: true,
-							}
-						case config.EngineMySQL:
-							c.SQL[i].Database = &config.Database{
-								Managed: true,
-							}
-						case config.EngineSQLite:
-							c.SQL[i].Database = &config.Database{
-								Managed: true,
-							}
-						default:
-							// pass
+						case config.EnginePostgreSQL, config.EngineMySQL, config.EngineSQLite:
+							c.SQL[i].Database = &config.Database{Managed: true}
 						}
 					}
-				}
+				})
 			},
 			Enabled: func() bool {
 				// Enabled if at least one database URI is available
@@ -260,25 +303,31 @@ func TestReplay(t *testing.T) {
 					}
 				}
 
-				dbg := opts.DebugFromString(args.Env["SQLCDEBUG"])
+				configFile := testctx.Mutate(t, path)
 				cmdOpts := cmd.Options{
 					Env: cmd.Env{
-						Debug:      dbg,
+						Debug:      opts.DebugFromString(args.Env["SQLCDEBUG"]),
 						Experiment: opts.ExperimentFromString(args.Env["SQLCEXPERIMENT"]),
 					},
-					Stderr:       &stderr,
-					MutateConfig: testctx.Mutate(t, path),
+					Stderr: &stderr,
 				}
 
 				switch args.Command {
 				case "diff":
-					err = cmd.Diff(ctx, path, "", &cmdOpts)
+					res := api.Generate(ctx, api.GenerateOptions{
+						Dir:    path,
+						File:   configFile,
+						Stderr: &stderr,
+						Diff:   true,
+					})
+					if len(res.Errors) > 0 {
+						err = res.Errors[0]
+					}
 				case "generate":
 					res := api.Generate(ctx, api.GenerateOptions{
-						Dir:                   path,
-						Stderr:                &stderr,
-						DisableProcessPlugins: !dbg.ProcessPlugins,
-						MutateConfig:          testctx.Mutate(t, path),
+						Dir:    path,
+						File:   configFile,
+						Stderr: &stderr,
 					})
 					output = res.Files
 					if len(res.Errors) > 0 {
@@ -288,7 +337,7 @@ func TestReplay(t *testing.T) {
 						cmpDirectory(t, path, output)
 					}
 				case "vet":
-					err = cmd.Vet(ctx, path, "", &cmdOpts)
+					err = cmd.Vet(ctx, path, configFile, &cmdOpts)
 				default:
 					t.Fatalf("unknown command")
 				}
@@ -330,6 +379,10 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 			return nil
 		}
 		if filepath.Base(path) == "exec.json" {
+			return nil
+		}
+		// Mutated configs written by writeMutatedConfig.
+		if strings.HasPrefix(filepath.Base(path), "sqlc.test-") {
 			return nil
 		}
 		if strings.Contains(path, "/kotlin/build") {

@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"runtime/trace"
 
-	"github.com/sqlc-dev/sqlc/internal/api"
 	"github.com/sqlc-dev/sqlc/internal/compiler"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/debug"
@@ -105,23 +104,6 @@ func readConfig(stderr io.Writer, dir, filename string) (string, *config.Config,
 	}
 
 	return configPath, &conf, nil
-}
-
-// Generate is a thin wrapper around api.Generate that translates between the
-// CLI's Options struct and api.GenerateOptions. New callers should prefer
-// api.Generate directly.
-func Generate(ctx context.Context, dir, filename string, o *Options) (map[string]string, error) {
-	res := api.Generate(ctx, api.GenerateOptions{
-		Dir:                   dir,
-		File:                  filename,
-		Stderr:                o.Stderr,
-		DisableProcessPlugins: !o.Env.Debug.ProcessPlugins,
-		MutateConfig:          o.MutateConfig,
-	})
-	if len(res.Errors) > 0 {
-		return res.Files, res.Errors[0]
-	}
-	return res.Files, nil
 }
 
 func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {

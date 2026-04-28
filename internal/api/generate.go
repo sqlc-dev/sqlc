@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -12,10 +11,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/compiler"
 	"github.com/sqlc-dev/sqlc/internal/config"
 )
-
-// errPluginProcessDisabled is returned when the configuration uses a process
-// plugin but the caller has disabled them via GenerateOptions.DisableProcessPlugins.
-var errPluginProcessDisabled = errors.New("plugin: process-based plugins disabled via SQLCDEBUG=processplugins=0")
 
 // GenerateOptions controls a single Generate invocation.
 type GenerateOptions struct {
@@ -30,14 +25,14 @@ type GenerateOptions struct {
 	// Stderr receives diagnostic output. If nil, output is discarded.
 	Stderr io.Writer
 
-	// DisableProcessPlugins, when true, causes Generate to fail if the
-	// configuration uses a process-based plugin. The sqlc CLI sets this from
-	// SQLCDEBUG=processplugins=0.
-	DisableProcessPlugins bool
+	// Write, when true, writes the generated files to disk after a successful
+	// generate. Failures are reported via GenerateResult.Errors.
+	Write bool
 
-	// MutateConfig is called after the configuration is parsed but before it is
-	// validated. It is intended for tests.
-	MutateConfig func(*config.Config)
+	// Diff, when true, compares each generated file against any existing file
+	// on disk and writes a unified diff for differences to Stderr. If any
+	// differences are found, an error is appended to GenerateResult.Errors.
+	Diff bool
 }
 
 // GenerateResult is the outcome of a Generate call. Files maps absolute output
@@ -69,23 +64,12 @@ func Generate(ctx context.Context, opts GenerateOptions) GenerateResult {
 		res.Errors = append(res.Errors, err)
 		return res
 	}
-	if opts.MutateConfig != nil {
-		opts.MutateConfig(conf)
-	}
 
 	base := filepath.Base(configPath)
 	if err := config.Validate(conf); err != nil {
 		fmt.Fprintf(stderr, "error validating %s: %s\n", base, err)
 		res.Errors = append(res.Errors, err)
 		return res
-	}
-
-	if opts.DisableProcessPlugins {
-		if err := validateProcessPluginsDisabled(conf); err != nil {
-			fmt.Fprintf(stderr, "error validating %s: %s\n", base, err)
-			res.Errors = append(res.Errors, err)
-			return res
-		}
 	}
 
 	g := &generator{
@@ -99,16 +83,20 @@ func Generate(ctx context.Context, opts GenerateOptions) GenerateResult {
 	}
 
 	res.Files = g.output
-	return res
-}
 
-func validateProcessPluginsDisabled(cfg *config.Config) error {
-	for _, plugin := range cfg.Plugins {
-		if plugin.Process != nil {
-			return errPluginProcessDisabled
+	if opts.Write {
+		if err := writeFiles(ctx, res.Files, stderr); err != nil {
+			res.Errors = append(res.Errors, err)
 		}
 	}
-	return nil
+
+	if opts.Diff {
+		if err := diffFiles(ctx, opts.Dir, res.Files, stderr); err != nil {
+			res.Errors = append(res.Errors, err)
+		}
+	}
+
+	return res
 }
 
 type generator struct {

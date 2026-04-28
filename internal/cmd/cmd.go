@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -12,11 +10,11 @@ import (
 	"path/filepath"
 	"runtime/trace"
 
-	"github.com/cubicdaiya/gonp"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v3"
 
+	"github.com/sqlc-dev/sqlc/internal/api"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/info"
@@ -191,20 +189,14 @@ var genCmd = &cobra.Command{
 		defer trace.StartRegion(cmd.Context(), "generate").End()
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		output, err := Generate(cmd.Context(), dir, name, &Options{
-			Env:    ParseEnv(cmd),
+		res := api.Generate(cmd.Context(), api.GenerateOptions{
+			Dir:    dir,
+			File:   name,
 			Stderr: stderr,
+			Write:  true,
 		})
-		if err != nil {
+		if len(res.Errors) > 0 {
 			os.Exit(1)
-		}
-		defer trace.StartRegion(cmd.Context(), "writefiles").End()
-		for filename, source := range output {
-			os.MkdirAll(filepath.Dir(filename), 0755)
-			if err := os.WriteFile(filename, []byte(source), 0644); err != nil {
-				fmt.Fprintf(stderr, "%s: %s\n", filename, err)
-				return err
-			}
 		}
 		return nil
 	},
@@ -217,44 +209,16 @@ var checkCmd = &cobra.Command{
 		defer trace.StartRegion(cmd.Context(), "compile").End()
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		_, err := Generate(cmd.Context(), dir, name, &Options{
-			Env:    ParseEnv(cmd),
+		res := api.Generate(cmd.Context(), api.GenerateOptions{
+			Dir:    dir,
+			File:   name,
 			Stderr: stderr,
 		})
-		if err != nil {
+		if len(res.Errors) > 0 {
 			os.Exit(1)
 		}
 		return nil
 	},
-}
-
-func getLines(f []byte) []string {
-	fp := bytes.NewReader(f)
-	scanner := bufio.NewScanner(fp)
-	lines := make([]string, 0)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-	return lines
-}
-
-func filterHunks[T gonp.Elem](uniHunks []gonp.UniHunk[T]) []gonp.UniHunk[T] {
-	var out []gonp.UniHunk[T]
-	for i, uniHunk := range uniHunks {
-		var changed bool
-		for _, e := range uniHunk.GetChanges() {
-			switch e.GetType() {
-			case gonp.SesDelete:
-				changed = true
-			case gonp.SesAdd:
-				changed = true
-			}
-		}
-		if changed {
-			out = append(out, uniHunks[i])
-		}
-	}
-	return out
 }
 
 var diffCmd = &cobra.Command{
@@ -264,11 +228,13 @@ var diffCmd = &cobra.Command{
 		defer trace.StartRegion(cmd.Context(), "diff").End()
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		opts := &Options{
-			Env:    ParseEnv(cmd),
+		res := api.Generate(cmd.Context(), api.GenerateOptions{
+			Dir:    dir,
+			File:   name,
 			Stderr: stderr,
-		}
-		if err := Diff(cmd.Context(), dir, name, opts); err != nil {
+			Diff:   true,
+		})
+		if len(res.Errors) > 0 {
 			os.Exit(1)
 		}
 		return nil
