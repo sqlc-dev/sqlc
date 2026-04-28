@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 	"runtime/trace"
 
@@ -14,15 +15,21 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/opts"
 )
 
-func printFileErr(stderr io.Writer, dir string, fileErr *multierr.FileError) {
-	filename, err := filepath.Rel(dir, fileErr.Filename)
+func printFileErr(stderr io.Writer, fileErr *multierr.FileError) {
+	wd, err := os.Getwd()
 	if err != nil {
-		filename = fileErr.Filename
+		wd = ""
+	}
+	filename := fileErr.Filename
+	if wd != "" {
+		if rel, err := filepath.Rel(wd, fileErr.Filename); err == nil {
+			filename = rel
+		}
 	}
 	fmt.Fprintf(stderr, "%s:%d:%d: %s\n", filename, fileErr.Line, fileErr.Column, fileErr.Err)
 }
 
-func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
+func parse(ctx context.Context, name string, sql config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, stderr io.Writer) (*compiler.Result, bool) {
 	defer trace.StartRegion(ctx, "parse").End()
 	c, err := compiler.NewCompiler(sql, combo, parserOpts)
 	defer func() {
@@ -38,7 +45,7 @@ func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.C
 		fmt.Fprintf(stderr, "# package %s\n", name)
 		if parserErr, ok := err.(*multierr.Error); ok {
 			for _, fileErr := range parserErr.Errs() {
-				printFileErr(stderr, dir, fileErr)
+				printFileErr(stderr, fileErr)
 			}
 		} else {
 			fmt.Fprintf(stderr, "error parsing schema: %s\n", err)
@@ -52,7 +59,7 @@ func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.C
 		fmt.Fprintf(stderr, "# package %s\n", name)
 		if parserErr, ok := err.(*multierr.Error); ok {
 			for _, fileErr := range parserErr.Errs() {
-				printFileErr(stderr, dir, fileErr)
+				printFileErr(stderr, fileErr)
 			}
 		} else {
 			fmt.Fprintf(stderr, "error parsing queries: %s\n", err)

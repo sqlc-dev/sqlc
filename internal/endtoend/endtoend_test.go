@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	osexec "os/exec"
 	"path/filepath"
@@ -62,7 +63,7 @@ func TestExamples(t *testing.T) {
 			path := filepath.Join(examples, tc)
 			var stderr bytes.Buffer
 			res := api.Generate(ctx, api.GenerateOptions{
-				Dir:    path,
+				Config: openConfigReader(t, path),
 				Stderr: &stderr,
 			})
 			if len(res.Errors) > 0 {
@@ -90,10 +91,11 @@ func BenchmarkExamples(b *testing.B) {
 		tc := replay.Name()
 		b.Run(tc, func(b *testing.B) {
 			path := filepath.Join(examples, tc)
+			cfg := openConfigBytes(b, path)
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
 				api.Generate(ctx, api.GenerateOptions{
-					Dir:    path,
+					Config: bytes.NewReader(cfg),
 					Stderr: &stderr,
 				})
 			}
@@ -101,51 +103,94 @@ func BenchmarkExamples(b *testing.B) {
 	}
 }
 
-// textContext describes a TestReplay scenario. Mutate returns the config
-// filename (relative to the test directory) that should be passed to the
-// command under test. The "base" context returns "" to use the project's
-// existing sqlc config; the "managed-db" context writes a mutated copy of the
-// config to a temporary file inside the test directory and returns its name.
-type textContext struct {
-	Mutate  func(*testing.T, string) string
-	Enabled func() bool
+// openConfigReader reads the sqlc config in dir, rewrites every relative
+// schema/queries/output path to an absolute one (so api.Generate doesn't have
+// to know the config's directory), and returns the result as an io.Reader.
+func openConfigReader(t testing.TB, dir string) io.Reader {
+	return bytes.NewReader(openConfigBytes(t, dir))
 }
 
-// writeMutatedConfig parses the sqlc config in dir, applies mutate to the
-// in-memory Config (which is always v2-shaped, even when the file on disk is
-// v1), forces version "2", and writes the result to a temp file alongside the
-// original. The temp file is removed when the test ends.
-func writeMutatedConfig(t *testing.T, dir string, mutate func(*config.Config)) string {
+func openConfigBytes(t testing.TB, dir string) []byte {
+	t.Helper()
+	data, _ := mutatedConfigBytes(t, dir, nil)
+	return data
+}
+
+// mutatedConfigBytes parses the sqlc config in dir, applies mutate (when
+// non-nil) to the in-memory Config, makes every path absolute relative to dir,
+// and re-encodes as YAML. Parsing v1 configs converts them to a v2-shaped
+// Config; we force version "2" so the result can be parsed back by api.Generate.
+//
+// When mutate is non-nil, the encoded bytes are also written to a temp file
+// alongside the original (cleaned up at test end) and the filename is returned
+// so callers like cmd.Vet that still take a config-file path can use it.
+func mutatedConfigBytes(t testing.TB, dir string, mutate func(*config.Config)) ([]byte, string) {
 	t.Helper()
 	original, conf, err := readSqlcConfig(dir)
 	if err != nil {
 		t.Fatalf("read sqlc config from %s: %s", dir, err)
 	}
 
-	// Parsing v1 configs converts them to a v2-shaped Config. Force version "2"
-	// so the mutated config can be re-parsed as v2 from disk.
 	conf.Version = "2"
-	mutate(conf)
+	absolutizePaths(conf, dir)
+	if mutate != nil {
+		mutate(conf)
+	}
+
+	var buf bytes.Buffer
+	enc := yaml.NewEncoder(&buf)
+	if err := enc.Encode(conf); err != nil {
+		t.Fatalf("encode config: %s", err)
+	}
+	if err := enc.Close(); err != nil {
+		t.Fatalf("close yaml encoder: %s", err)
+	}
+	data := buf.Bytes()
+
+	if mutate == nil {
+		return data, ""
+	}
 
 	f, err := os.CreateTemp(dir, "sqlc.test-*"+filepath.Ext(original))
 	if err != nil {
 		t.Fatalf("create temp config in %s: %s", dir, err)
 	}
 	t.Cleanup(func() { os.Remove(f.Name()) })
-
-	enc := yaml.NewEncoder(f)
-	if err := enc.Encode(conf); err != nil {
+	if _, err := f.Write(data); err != nil {
 		f.Close()
 		t.Fatalf("write temp config %s: %s", f.Name(), err)
-	}
-	if err := enc.Close(); err != nil {
-		f.Close()
-		t.Fatalf("close yaml encoder for %s: %s", f.Name(), err)
 	}
 	if err := f.Close(); err != nil {
 		t.Fatalf("close temp config %s: %s", f.Name(), err)
 	}
-	return filepath.Base(f.Name())
+	return data, filepath.Base(f.Name())
+}
+
+func absolutizePaths(conf *config.Config, dir string) {
+	abs := func(p string) string {
+		if p == "" || filepath.IsAbs(p) {
+			return p
+		}
+		return filepath.Join(dir, p)
+	}
+	for i := range conf.SQL {
+		s := &conf.SQL[i]
+		for j, p := range s.Schema {
+			s.Schema[j] = abs(p)
+		}
+		for j, p := range s.Queries {
+			s.Queries[j] = abs(p)
+		}
+		if s.Gen.Go != nil {
+			s.Gen.Go.Out = abs(s.Gen.Go.Out)
+		}
+		if s.Gen.JSON != nil {
+			s.Gen.JSON.Out = abs(s.Gen.JSON.Out)
+		}
+		for j := range s.Codegen {
+			s.Codegen[j].Out = abs(s.Codegen[j].Out)
+		}
+	}
 }
 
 func readSqlcConfig(dir string) (string, *config.Config, error) {
@@ -166,6 +211,18 @@ func readSqlcConfig(dir string) (string, *config.Config, error) {
 		return path, &conf, nil
 	}
 	return "", nil, fmt.Errorf("no sqlc config found in %s", dir)
+}
+
+// configRef is the result of preparing a config for a single TestReplay case.
+// reader is for api.Generate; file is for cmd.Vet which still takes a path.
+type configRef struct {
+	reader io.Reader
+	file   string
+}
+
+type textContext struct {
+	Config  func(*testing.T, string) configRef
+	Enabled func() bool
 }
 
 func TestReplay(t *testing.T) {
@@ -236,12 +293,15 @@ func TestReplay(t *testing.T) {
 
 	contexts := map[string]textContext{
 		"base": {
-			Mutate:  func(t *testing.T, path string) string { return "" },
+			Config: func(t *testing.T, dir string) configRef {
+				data, _ := mutatedConfigBytes(t, dir, nil)
+				return configRef{reader: bytes.NewReader(data)}
+			},
 			Enabled: func() bool { return true },
 		},
 		"managed-db": {
-			Mutate: func(t *testing.T, path string) string {
-				return writeMutatedConfig(t, path, func(c *config.Config) {
+			Config: func(t *testing.T, dir string) configRef {
+				data, file := mutatedConfigBytes(t, dir, func(c *config.Config) {
 					// Add all servers - tests will fail if database isn't available
 					c.Servers = []config.Server{
 						{Name: "postgres", Engine: config.EnginePostgreSQL, URI: postgresURI},
@@ -254,6 +314,7 @@ func TestReplay(t *testing.T) {
 						}
 					}
 				})
+				return configRef{reader: bytes.NewReader(data), file: file}
 			},
 			Enabled: func() bool {
 				// Enabled if at least one database URI is available
@@ -303,7 +364,7 @@ func TestReplay(t *testing.T) {
 					}
 				}
 
-				configFile := testctx.Mutate(t, path)
+				cfg := testctx.Config(t, path)
 				cmdOpts := cmd.Options{
 					Env: cmd.Env{
 						Debug:      opts.DebugFromString(args.Env["SQLCDEBUG"]),
@@ -315,8 +376,7 @@ func TestReplay(t *testing.T) {
 				switch args.Command {
 				case "diff":
 					res := api.Generate(ctx, api.GenerateOptions{
-						Dir:    path,
-						File:   configFile,
+						Config: cfg.reader,
 						Stderr: &stderr,
 						Diff:   true,
 					})
@@ -325,8 +385,7 @@ func TestReplay(t *testing.T) {
 					}
 				case "generate":
 					res := api.Generate(ctx, api.GenerateOptions{
-						Dir:    path,
-						File:   configFile,
+						Config: cfg.reader,
 						Stderr: &stderr,
 					})
 					output = res.Files
@@ -337,7 +396,7 @@ func TestReplay(t *testing.T) {
 						cmpDirectory(t, path, output)
 					}
 				case "vet":
-					err = cmd.Vet(ctx, path, configFile, &cmdOpts)
+					err = cmd.Vet(ctx, path, cfg.file, &cmdOpts)
 				default:
 					t.Fatalf("unknown command")
 				}
@@ -381,7 +440,7 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 		if filepath.Base(path) == "exec.json" {
 			return nil
 		}
-		// Mutated configs written by writeMutatedConfig.
+		// Mutated configs written by mutatedConfigBytes.
 		if strings.HasPrefix(filepath.Base(path), "sqlc.test-") {
 			return nil
 		}
@@ -447,10 +506,11 @@ func BenchmarkReplay(b *testing.B) {
 		tc := replay
 		b.Run(tc, func(b *testing.B) {
 			path, _ := filepath.Abs(tc)
+			cfg := openConfigBytes(b, path)
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
 				api.Generate(ctx, api.GenerateOptions{
-					Dir:    path,
+					Config: bytes.NewReader(cfg),
 					Stderr: &stderr,
 				})
 			}

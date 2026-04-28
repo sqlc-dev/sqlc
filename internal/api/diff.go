@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"runtime/trace"
 	"sort"
-	"strings"
 
 	"github.com/cubicdaiya/gonp"
 )
@@ -31,9 +30,11 @@ func writeFiles(ctx context.Context, files map[string]string, stderr io.Writer) 
 	return nil
 }
 
-func diffFiles(ctx context.Context, dir string, files map[string]string, stderr io.Writer) error {
+func diffFiles(ctx context.Context, files map[string]string, stderr io.Writer) error {
 	defer trace.StartRegion(ctx, "checkfiles").End()
 	var errored bool
+
+	wd, _ := os.Getwd()
 
 	keys := make([]string, 0, len(files))
 	for k := range files {
@@ -59,8 +60,14 @@ func diffFiles(ctx context.Context, dir string, files map[string]string, stderr 
 
 		if len(uniHunks) > 0 {
 			errored = true
-			fmt.Fprintf(stderr, "--- a%s\n", strings.TrimPrefix(filename, dir))
-			fmt.Fprintf(stderr, "+++ b%s\n", strings.TrimPrefix(filename, dir))
+			label := filename
+			if wd != "" {
+				if rel, err := filepath.Rel(wd, filename); err == nil {
+					label = "/" + rel
+				}
+			}
+			fmt.Fprintf(stderr, "--- a%s\n", label)
+			fmt.Fprintf(stderr, "+++ b%s\n", label)
 			d.FprintUniHunks(stderr, uniHunks)
 		}
 	}

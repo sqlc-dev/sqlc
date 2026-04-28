@@ -74,15 +74,21 @@ func processQuerySets(ctx context.Context, rp ResultProcessor, conf *config.Conf
 			}
 
 			// TODO: This feels like a hack that will bite us later
+			joinDir := func(p string) string {
+				if filepath.IsAbs(p) {
+					return p
+				}
+				return filepath.Join(dir, p)
+			}
 			joined := make([]string, 0, len(sql.Schema))
 			for _, s := range sql.Schema {
-				joined = append(joined, filepath.Join(dir, s))
+				joined = append(joined, joinDir(s))
 			}
 			sql.Schema = joined
 
 			joined = make([]string, 0, len(sql.Queries))
 			for _, q := range sql.Queries {
-				joined = append(joined, filepath.Join(dir, q))
+				joined = append(joined, joinDir(q))
 			}
 			sql.Queries = joined
 

@@ -29,7 +29,7 @@ type resultProcessor interface {
 	ProcessResult(context.Context, config.CombinedSettings, outputPair, *compiler.Result) error
 }
 
-func processQuerySets(ctx context.Context, rp resultProcessor, conf *config.Config, dir string, stderr io.Writer) error {
+func processQuerySets(ctx context.Context, rp resultProcessor, conf *config.Config, stderr io.Writer) error {
 	errored := false
 
 	pairs := rp.Pairs(ctx, conf)
@@ -48,18 +48,29 @@ func processQuerySets(ctx context.Context, rp resultProcessor, conf *config.Conf
 				combo.Codegen = *sql.Plugin
 			}
 
-			// TODO: This feels like a hack that will bite us later
-			joined := make([]string, 0, len(sql.Schema))
+			absSchema := make([]string, 0, len(sql.Schema))
 			for _, s := range sql.Schema {
-				joined = append(joined, filepath.Join(dir, s))
+				abs, err := filepath.Abs(s)
+				if err != nil {
+					fmt.Fprintf(errout, "resolve schema path %s: %s\n", s, err)
+					errored = true
+					return nil
+				}
+				absSchema = append(absSchema, abs)
 			}
-			sql.Schema = joined
+			sql.Schema = absSchema
 
-			joined = make([]string, 0, len(sql.Queries))
+			absQueries := make([]string, 0, len(sql.Queries))
 			for _, q := range sql.Queries {
-				joined = append(joined, filepath.Join(dir, q))
+				abs, err := filepath.Abs(q)
+				if err != nil {
+					fmt.Fprintf(errout, "resolve query path %s: %s\n", q, err)
+					errored = true
+					return nil
+				}
+				absQueries = append(absQueries, abs)
 			}
-			sql.Queries = joined
+			sql.Queries = absQueries
 
 			var name, lang string
 			parseOpts := opts.Parser{
@@ -77,9 +88,9 @@ func processQuerySets(ctx context.Context, rp resultProcessor, conf *config.Conf
 			}
 
 			packageRegion := trace.StartRegion(gctx, "package")
-			trace.Logf(gctx, "", "name=%s dir=%s plugin=%s", name, dir, lang)
+			trace.Logf(gctx, "", "name=%s plugin=%s", name, lang)
 
-			result, failed := parse(gctx, name, dir, sql.SQL, combo, parseOpts, errout)
+			result, failed := parse(gctx, name, sql.SQL, combo, parseOpts, errout)
 			if failed {
 				packageRegion.End()
 				errored = true

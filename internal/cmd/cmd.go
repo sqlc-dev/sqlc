@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -182,19 +183,52 @@ func getConfigPath(stderr io.Writer, f *pflag.Flag) (string, string) {
 	}
 }
 
-// allowedProcessPluginNames returns the set of process plugin names the CLI
-// trusts to run. SQLCDEBUG=processplugins=0 disables every process plugin by
-// returning nil; otherwise we trust whatever the user declared in their own
-// config.
-func allowedProcessPluginNames(env Env, stderr io.Writer, dir, name string) []string {
-	if !env.Debug.ProcessPlugins {
-		return nil
-	}
-	names, err := processPluginNames(stderr, dir, name)
+// loadConfig opens the sqlc config and reads it into memory. It also chdirs
+// the process to the config's directory so that relative paths declared in the
+// config resolve correctly when api.Generate is called. Returns the config
+// bytes and the list of process plugin names declared in the config (used to
+// populate api.GenerateOptions.InsecureProcessPluginNames).
+func loadConfig(stderr io.Writer, dir, name string) ([]byte, []string) {
+	configPath, _, err := readConfig(stderr, dir, name)
 	if err != nil {
 		os.Exit(1)
 	}
-	return names
+	configPath, err = filepath.Abs(configPath)
+	if err != nil {
+		fmt.Fprintf(stderr, "error resolving config path: %s\n", err)
+		os.Exit(1)
+	}
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		fmt.Fprintf(stderr, "error reading %s: %s\n", configPath, err)
+		os.Exit(1)
+	}
+	conf, err := config.ParseConfig(bytes.NewReader(data))
+	if err != nil {
+		fmt.Fprintf(stderr, "error parsing %s: %s\n", configPath, err)
+		os.Exit(1)
+	}
+	if err := os.Chdir(filepath.Dir(configPath)); err != nil {
+		fmt.Fprintf(stderr, "error changing directory: %s\n", err)
+		os.Exit(1)
+	}
+	var names []string
+	for _, p := range conf.Plugins {
+		if p.Process != nil {
+			names = append(names, p.Name)
+		}
+	}
+	return data, names
+}
+
+// allowedProcessPluginNames returns the names that should populate
+// api.GenerateOptions.InsecureProcessPluginNames. SQLCDEBUG=processplugins=0
+// disables every process plugin by returning nil.
+func allowedProcessPluginNames(env Env, declared []string) []string {
+	if !env.Debug.ProcessPlugins {
+		return nil
+	}
+	return declared
 }
 
 var genCmd = &cobra.Command{
@@ -205,12 +239,12 @@ var genCmd = &cobra.Command{
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
 		env := ParseEnv(cmd)
+		data, declared := loadConfig(stderr, dir, name)
 		res := api.Generate(cmd.Context(), api.GenerateOptions{
-			Dir:                        dir,
-			File:                       name,
+			Config:                     bytes.NewReader(data),
 			Stderr:                     stderr,
 			Write:                      true,
-			InsecureProcessPluginNames: allowedProcessPluginNames(env, stderr, dir, name),
+			InsecureProcessPluginNames: allowedProcessPluginNames(env, declared),
 		})
 		if len(res.Errors) > 0 {
 			os.Exit(1)
@@ -227,11 +261,11 @@ var checkCmd = &cobra.Command{
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
 		env := ParseEnv(cmd)
+		data, declared := loadConfig(stderr, dir, name)
 		res := api.Generate(cmd.Context(), api.GenerateOptions{
-			Dir:                        dir,
-			File:                       name,
+			Config:                     bytes.NewReader(data),
 			Stderr:                     stderr,
-			InsecureProcessPluginNames: allowedProcessPluginNames(env, stderr, dir, name),
+			InsecureProcessPluginNames: allowedProcessPluginNames(env, declared),
 		})
 		if len(res.Errors) > 0 {
 			os.Exit(1)
@@ -248,12 +282,12 @@ var diffCmd = &cobra.Command{
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
 		env := ParseEnv(cmd)
+		data, declared := loadConfig(stderr, dir, name)
 		res := api.Generate(cmd.Context(), api.GenerateOptions{
-			Dir:                        dir,
-			File:                       name,
+			Config:                     bytes.NewReader(data),
 			Stderr:                     stderr,
 			Diff:                       true,
-			InsecureProcessPluginNames: allowedProcessPluginNames(env, stderr, dir, name),
+			InsecureProcessPluginNames: allowedProcessPluginNames(env, declared),
 		})
 		if len(res.Errors) > 0 {
 			os.Exit(1)
