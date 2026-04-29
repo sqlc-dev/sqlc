@@ -16,6 +16,10 @@ type Table struct {
 	Rel     *ast.TableName
 	Columns []*Column
 	Comment string
+
+	// If non-nil, this Table represents a view and depends on the listed tables.
+	// Only set when the Table is created via CREATE VIEW.
+	DependsOnTables []*ast.TableName
 }
 
 func checkMissing(err error, missingOK bool) error {
@@ -373,6 +377,24 @@ func (c *Catalog) dropTable(stmt *ast.DropTableStmt) error {
 			return err
 		}
 
+		// When CASCADE, drop dependent views first
+		// DROP_CASCADE = 2 in pg_query_go protobuf enum
+		if stmt.Behavior == 2 {
+			for i := len(schema.Tables) - 1; i >= 0; i-- {
+				view := schema.Tables[i]
+				if len(view.DependsOnTables) == 0 {
+					continue
+				}
+				for _, dep := range view.DependsOnTables {
+					if dep.Name == name.Name && tablesSameSchema(dep, name, c.DefaultSchema) {
+						// This view depends on the table being dropped
+						schema.Tables = append(schema.Tables[:i], schema.Tables[i+1:]...)
+						break
+					}
+				}
+			}
+		}
+
 		drop := &ast.DropTypeStmt{}
 		for _, col := range tbl.Columns {
 			if !col.linkedType {
@@ -387,6 +409,19 @@ func (c *Catalog) dropTable(stmt *ast.DropTableStmt) error {
 		schema.Tables = append(schema.Tables[:idx], schema.Tables[idx+1:]...)
 	}
 	return nil
+}
+
+// tablesSameSchema checks if two table references point to the same schema.
+func tablesSameSchema(a, b *ast.TableName, defaultSchema string) bool {
+	aSchema := a.Schema
+	bSchema := b.Schema
+	if aSchema == "" {
+		aSchema = defaultSchema
+	}
+	if bSchema == "" {
+		bSchema = defaultSchema
+	}
+	return aSchema == bSchema
 }
 
 func (c *Catalog) renameColumn(stmt *ast.RenameColumnStmt) error {
