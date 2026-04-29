@@ -13,12 +13,15 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 	"github.com/sqlc-dev/sqlc/internal/sql/validate"
+	"github.com/sqlc-dev/sqlc/internal/sqlcdebug"
 )
+
+var debugDumpAST = sqlcdebug.New("dumpast")
 
 func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query, error) {
 	ctx := context.Background()
 
-	if o.Debug.DumpAST {
+	if debugDumpAST.Value() == "1" {
 		debug.Dump(stmt)
 	}
 

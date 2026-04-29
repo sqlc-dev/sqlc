@@ -26,7 +26,10 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/multierr"
 	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
+	"github.com/sqlc-dev/sqlc/internal/sqlcdebug"
 )
+
+var debugDumpCatalog = sqlcdebug.New("dumpcatalog")
 
 const errMessageNoVersion = `The configuration file must have a version number.
 Set the version to 1 or 2 at the top of sqlc.json:
@@ -244,7 +247,7 @@ func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.C
 		}
 		return nil, true
 	}
-	if parserOpts.Debug.DumpCatalog {
+	if debugDumpCatalog.Value() == "1" {
 		debug.Dump(c.Catalog())
 	}
 	if err := c.ParseQueries(sql.Queries, parserOpts); err != nil {

@@ -17,9 +17,25 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/cmd"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/opts"
+	"github.com/sqlc-dev/sqlc/internal/sqlcdebug"
 	"github.com/sqlc-dev/sqlc/internal/sqltest/docker"
 	"github.com/sqlc-dev/sqlc/internal/sqltest/native"
 )
+
+// withSQLCDEBUG installs the given SQLCDEBUG-formatted string for the
+// duration of the test and restores the empty default afterwards.
+//
+// Callers in TestReplay are sequential, so this does not need a mutex:
+// Go's test scheduler does not run TestReplay concurrently with the
+// parallel top-level tests in this package.
+func withSQLCDEBUG(t *testing.T, raw string) func() {
+	t.Helper()
+	if raw == "" {
+		return func() {}
+	}
+	sqlcdebug.Update(raw)
+	return func() { sqlcdebug.Update("") }
+}
 
 func lineEndings() cmp.Option {
 	return cmp.Transformer("LineEndings", func(in string) string {
@@ -263,12 +279,14 @@ func TestReplay(t *testing.T) {
 
 				opts := cmd.Options{
 					Env: cmd.Env{
-						Debug:      opts.DebugFromString(args.Env["SQLCDEBUG"]),
 						Experiment: opts.ExperimentFromString(args.Env["SQLCEXPERIMENT"]),
 					},
 					Stderr:       &stderr,
 					MutateConfig: testctx.Mutate(t, path),
 				}
+
+				release := withSQLCDEBUG(t, args.Env["SQLCDEBUG"])
+				defer release()
 
 				switch args.Command {
 				case "diff":
