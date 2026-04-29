@@ -12,3 +12,13 @@ type FooPath struct {
 	PointOne sql.NullString
 	PointTwo sql.NullString
 }
+
+type FooPointType struct {
+	X sql.NullInt32
+	Y sql.NullInt32
+}
+
+type PointType struct {
+	X sql.NullInt32
+	Y sql.NullInt32
+}
