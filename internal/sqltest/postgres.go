@@ -6,9 +6,11 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/sqlc-dev/sqlc/internal/schemautil"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 
 	_ "github.com/lib/pq"
@@ -98,13 +100,20 @@ func CreatePostgreSQLDatabase(t *testing.T, name string, schema bool, migrations
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, f := range files {
-		blob, err := os.ReadFile(f)
-		if err != nil {
-			t.Fatal(err)
+	ddl, err := schemautil.LoadSchemasForApply(migrations, "postgresql", func(warning string) {
+		t.Log(warning)
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i, stmt := range ddl {
+		if strings.Contains(stmt, "\nCREATE SCHEMA public;\n") || strings.HasPrefix(stmt, "CREATE SCHEMA public;\n") {
+			if _, err := sdb.Exec(`DROP SCHEMA IF EXISTS public CASCADE`); err != nil {
+				t.Fatalf("drop public schema: %s", err)
+			}
 		}
-		if _, err := sdb.Exec(string(blob)); err != nil {
-			t.Fatalf("%s: %s", filepath.Base(f), err)
+		if _, err := sdb.Exec(stmt); err != nil {
+			t.Fatalf("%s: %s", filepath.Base(files[i]), err)
 		}
 	}
 

@@ -27,12 +27,11 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/dbmanager"
 	"github.com/sqlc-dev/sqlc/internal/debug"
-	"github.com/sqlc-dev/sqlc/internal/migrations"
 	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 	"github.com/sqlc-dev/sqlc/internal/quickdb"
+	"github.com/sqlc-dev/sqlc/internal/schemautil"
 	"github.com/sqlc-dev/sqlc/internal/shfmt"
-	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 	"github.com/sqlc-dev/sqlc/internal/vet"
 )
 
@@ -422,17 +421,11 @@ func (c *checker) fetchDatabaseUri(ctx context.Context, s config.SQL) (string, f
 		c.Client = dbmanager.NewClient(c.Conf.Servers)
 	})
 
-	var ddl []string
-	files, err := sqlpath.Glob(s.Schema)
+	ddl, err := schemautil.LoadSchemasForApply(s.Schema, string(s.Engine), func(warning string) {
+		fmt.Fprintln(c.Stderr, warning)
+	})
 	if err != nil {
 		return "", cleanup, err
-	}
-	for _, schema := range files {
-		contents, err := os.ReadFile(schema)
-		if err != nil {
-			return "", cleanup, fmt.Errorf("read file: %w", err)
-		}
-		ddl = append(ddl, migrations.RemoveRollbackStatements(string(contents)))
 	}
 
 	resp, err := c.Client.CreateDatabase(ctx, &dbmanager.CreateDatabaseRequest{
@@ -540,18 +533,15 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 			defer db.Close()
 			// For in-memory SQLite databases, apply migrations
 			if isInMemorySQLite(dburl) {
-				files, err := sqlpath.Glob(s.Schema)
+				ddl, err := schemautil.LoadSchemasForApply(s.Schema, string(s.Engine), func(warning string) {
+					fmt.Fprintln(c.Stderr, warning)
+				})
 				if err != nil {
 					return fmt.Errorf("schema: %w", err)
 				}
-				for _, schema := range files {
-					contents, err := os.ReadFile(schema)
-					if err != nil {
-						return fmt.Errorf("read schema file: %w", err)
-					}
-					ddl := migrations.RemoveRollbackStatements(string(contents))
-					if _, err := db.ExecContext(ctx, ddl); err != nil {
-						return fmt.Errorf("apply schema %s: %w", schema, err)
+				for _, stmt := range ddl {
+					if _, err := db.ExecContext(ctx, stmt); err != nil {
+						return fmt.Errorf("apply schema: %w", err)
 					}
 				}
 			}

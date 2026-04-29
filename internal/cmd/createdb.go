@@ -10,8 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/dbmanager"
-	"github.com/sqlc-dev/sqlc/internal/migrations"
-	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
+	"github.com/sqlc-dev/sqlc/internal/schemautil"
 )
 
 var createDBCmd = &cobra.Command{
@@ -76,16 +75,11 @@ func CreateDB(ctx context.Context, dir, filename, querySetName string, o *Option
 	}
 
 	var ddl []string
-	files, err := sqlpath.Glob(queryset.Schema)
+	ddl, err = schemautil.LoadSchemasForApply(queryset.Schema, string(queryset.Engine), func(warning string) {
+		fmt.Fprintln(o.Stderr, warning)
+	})
 	if err != nil {
 		return err
-	}
-	for _, schema := range files {
-		contents, err := os.ReadFile(schema)
-		if err != nil {
-			return fmt.Errorf("read file: %w", err)
-		}
-		ddl = append(ddl, migrations.RemoveRollbackStatements(string(contents)))
 	}
 
 	now := time.Now().UTC().UnixNano()

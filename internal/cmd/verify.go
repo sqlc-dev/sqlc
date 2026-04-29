@@ -14,11 +14,10 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/dbmanager"
-	"github.com/sqlc-dev/sqlc/internal/migrations"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 	"github.com/sqlc-dev/sqlc/internal/quickdb"
 	pb "github.com/sqlc-dev/sqlc/internal/quickdb/v1"
-	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
+	"github.com/sqlc-dev/sqlc/internal/schemautil"
 )
 
 func init() {
@@ -93,16 +92,11 @@ func Verify(ctx context.Context, dir, filename string, opts *Options) error {
 
 			// Read the schema files into memory, removing rollback statements
 			var ddl []string
-			files, err := sqlpath.Glob(current.Schema)
+			ddl, err = schemautil.LoadSchemasForApply(current.Schema, string(current.Engine), func(warning string) {
+				fmt.Fprintln(stderr, warning)
+			})
 			if err != nil {
 				return err
-			}
-			for _, schema := range files {
-				contents, err := os.ReadFile(schema)
-				if err != nil {
-					return fmt.Errorf("read file: %w", err)
-				}
-				ddl = append(ddl, migrations.RemoveRollbackStatements(string(contents)))
 			}
 
 			var codegen plugin.GenerateRequest

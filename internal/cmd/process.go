@@ -122,12 +122,12 @@ func processQuerySets(ctx context.Context, rp ResultProcessor, conf *config.Conf
 	if err := grp.Wait(); err != nil {
 		return err
 	}
-	if errored {
-		for i, _ := range stderrs {
-			if _, err := io.Copy(stderr, &stderrs[i]); err != nil {
-				return err
-			}
+	for i := range stderrs {
+		if _, err := io.Copy(stderr, &stderrs[i]); err != nil {
+			return err
 		}
+	}
+	if errored {
 		return fmt.Errorf("errored")
 	}
 	return nil
