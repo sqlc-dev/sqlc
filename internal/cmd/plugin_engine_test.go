@@ -1,20 +1,6 @@
 package cmd
 
-// Engine-plugin pipeline integration tests.
-//
-// Why here (cmd) and not in endtoend?
-//   - endtoend: black-box replay of full sqlc on testdata dirs, comparing stdout/stderr/output to golden files.
-//   - These tests: unit-style integration of the engine-plugin path inside cmd — in-memory config and FileContents,
-//     mocks for engine and codegen, no temp dirs or real plugins. They assert the data flow (schema+query → engine
-//     mock → codegen request) and that the plugin package is used when PluginParseFunc is nil.
-//
-// Proof that the technology works:
-//   - TestPluginPipeline_FullPipeline: one block → one Parse call; that call receives schema; codegen gets the result.
-//   - TestPluginPipeline_NBlocksNCalls: N blocks in query.sql → exactly N Parse calls; each call receives schema.
-//   - TestPluginPipeline_DatabaseOnly_ReceivesNoSchema: with analyzer.database: only + database.uri, each Parse
-//     call receives empty schema (the real runner would get connection_params in ParseRequest).
-//   - TestPluginPipeline_WithoutOverride_UsesPluginPackage: with PluginParseFunc nil, generate fails with an error
-//     that is NOT "unknown engine", so we did enter runPluginQuerySet and call the engine process runner.
+// Integration tests for the engine-plugin path in cmd (in-memory sourceFiles + mocks; no real subprocesses).
 
 import (
 	"bytes"

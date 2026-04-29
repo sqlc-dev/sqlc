@@ -158,15 +158,24 @@ func Generate(ctx context.Context, dir, filename string, o *Options) (map[string
 		return nil, err
 	}
 
-	g := &generator{
-		dir:    inputs.Dir,
-		output: map[string]string{},
-	}
+	return generate(ctx, &sourceFiles{
+		Config:       conf,
+		ConfigPath:   configPath,
+		Dir:          dir,
+		FileContents: nil,
+	}, o)
+}
 
-  if err := processQuerySets(ctx, g, inputs, o); err != nil {
+// generate runs codegen from in-memory or on-disk inputs (see sourceFiles).
+func generate(ctx context.Context, inputs *sourceFiles, o *Options) (map[string]string, error) {
+	g := &generator{
+		dir:                    inputs.Dir,
+		output:                 map[string]string{},
+		codegenHandlerOverride: o.CodegenHandlerOverride,
+	}
+	if err := processQuerySets(ctx, g, inputs, o); err != nil {
 		return nil, err
 	}
-
 	return g.output, nil
 }
 
