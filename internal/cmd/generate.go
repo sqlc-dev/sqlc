@@ -186,23 +186,23 @@ type generator struct {
 	codegenHandlerOverride grpc.ClientConnInterface
 }
 
-func (g *generator) Pairs(ctx context.Context, conf *config.Config) []outputPair {
-	var pairs []outputPair
+func (g *generator) Pairs(ctx context.Context, conf *config.Config) []OutputPair {
+	var pairs []OutputPair
 	for _, sql := range conf.SQL {
 		if sql.Gen.Go != nil {
-			pairs = append(pairs, outputPair{
+			pairs = append(pairs, OutputPair{
 				SQL: sql,
 				Gen: config.SQLGen{Go: sql.Gen.Go},
 			})
 		}
 		if sql.Gen.JSON != nil {
-			pairs = append(pairs, outputPair{
+			pairs = append(pairs, OutputPair{
 				SQL: sql,
 				Gen: config.SQLGen{JSON: sql.Gen.JSON},
 			})
 		}
 		for i := range sql.Codegen {
-			pairs = append(pairs, outputPair{
+			pairs = append(pairs, OutputPair{
 				SQL:    sql,
 				Plugin: &sql.Codegen[i],
 			})
@@ -211,7 +211,7 @@ func (g *generator) Pairs(ctx context.Context, conf *config.Config) []outputPair
 	return pairs
 }
 
-func (g *generator) ProcessResult(ctx context.Context, combo config.CombinedSettings, sql outputPair, result *compiler.Result) error {
+func (g *generator) ProcessResult(ctx context.Context, combo config.CombinedSettings, sql OutputPair, result *compiler.Result) error {
 	out, resp, err := codegen(ctx, combo, sql, result, g.codegenHandlerOverride)
 	if err != nil {
 		return err
@@ -282,7 +282,7 @@ func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.C
 	return c.Result(), false
 }
 
-func codegen(ctx context.Context, combo config.CombinedSettings, sql outputPair, result *compiler.Result, codegenOverride grpc.ClientConnInterface) (string, *plugin.GenerateResponse, error) {
+func codegen(ctx context.Context, combo config.CombinedSettings, sql OutputPair, result *compiler.Result, codegenOverride grpc.ClientConnInterface) (string, *plugin.GenerateResponse, error) {
 	defer trace.StartRegion(ctx, "codegen").End()
 	req := codeGenRequest(result, combo)
 	var handler grpc.ClientConnInterface
