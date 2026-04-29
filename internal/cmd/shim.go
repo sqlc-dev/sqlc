@@ -224,9 +224,13 @@ func pluginQueryParam(p compiler.Parameter) *plugin.Parameter {
 }
 
 func codeGenRequest(r *compiler.Result, settings config.CombinedSettings) *plugin.GenerateRequest {
+	cat := pluginCatalog(r.Catalog)
+	if r.PluginCatalog != nil {
+		cat = r.PluginCatalog
+	}
 	return &plugin.GenerateRequest{
 		Settings:    pluginSettings(r, settings),
-		Catalog:     pluginCatalog(r.Catalog),
+		Catalog:     cat,
 		Queries:     pluginQueries(r),
 		SqlcVersion: info.Version,
 	}
