@@ -34,6 +34,11 @@ type GenerateOptions struct {
 	// found, an error is appended to GenerateResult.Errors.
 	Diff bool
 
+	// BaseDir is the directory relative paths in Config are resolved against,
+	// and the prefix stripped from file paths shown in parse errors and diff
+	// labels. When empty, BaseDir defaults to the current working directory.
+	BaseDir string
+
 	// InsecureProcessPluginNames is the allowlist of process-based plugin
 	// names that Generate is permitted to invoke. Any process plugin declared
 	// in the configuration whose name is not in this list causes Generate to
@@ -104,9 +109,9 @@ func Generate(ctx context.Context, opts GenerateOptions) GenerateResult {
 		}
 	}
 
-	g := &generator{output: map[string]string{}}
+	g := &generator{output: map[string]string{}, baseDir: opts.BaseDir}
 
-	if err := processQuerySets(ctx, g, &conf, stderr); err != nil {
+	if err := processQuerySets(ctx, g, &conf, opts.BaseDir, stderr); err != nil {
 		res.Errors = append(res.Errors, err)
 		return res
 	}
@@ -120,7 +125,7 @@ func Generate(ctx context.Context, opts GenerateOptions) GenerateResult {
 	}
 
 	if opts.Diff {
-		if err := diffFiles(ctx, res.Files, stderr); err != nil {
+		if err := diffFiles(ctx, opts.BaseDir, res.Files, stderr); err != nil {
 			res.Errors = append(res.Errors, err)
 		}
 	}
@@ -144,8 +149,9 @@ The supported version can only be "1" or "2".
 const errMessageNoPackages = `No packages are configured`
 
 type generator struct {
-	m      sync.Mutex
-	output map[string]string
+	m       sync.Mutex
+	baseDir string
+	output  map[string]string
 }
 
 func (g *generator) Pairs(ctx context.Context, conf *config.Config) []outputPair {
@@ -185,16 +191,10 @@ func (g *generator) ProcessResult(ctx context.Context, combo config.CombinedSett
 	g.m.Lock()
 	defer g.m.Unlock()
 
-	absout, err := filepath.Abs(out)
-	if err != nil {
-		return err
-	}
+	absout := resolvePath(g.baseDir, out)
 
 	for n, source := range files {
-		filename, err := filepath.Abs(filepath.Join(out, n))
-		if err != nil {
-			return err
-		}
+		filename := resolvePath(g.baseDir, filepath.Join(out, n))
 		if strings.Contains(filename, "..") {
 			return fmt.Errorf("invalid file output path: %s", filename)
 		}
@@ -204,4 +204,20 @@ func (g *generator) ProcessResult(ctx context.Context, combo config.CombinedSett
 		g.output[filename] = source
 	}
 	return nil
+}
+
+// resolvePath joins p with baseDir when p is relative. baseDir is treated as
+// the current working directory when empty.
+func resolvePath(baseDir, p string) string {
+	if filepath.IsAbs(p) {
+		return p
+	}
+	if baseDir == "" {
+		abs, err := filepath.Abs(p)
+		if err == nil {
+			return abs
+		}
+		return p
+	}
+	return filepath.Join(baseDir, p)
 }

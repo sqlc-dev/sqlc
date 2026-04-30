@@ -186,9 +186,10 @@ func getConfigPath(stderr io.Writer, f *pflag.Flag) (string, string) {
 // loadConfig opens the sqlc config and reads it into memory. It also chdirs
 // the process to the config's directory so that relative paths declared in the
 // config resolve correctly when api.Generate is called. Returns the config
-// bytes and the list of process plugin names declared in the config (used to
-// populate api.GenerateOptions.InsecureProcessPluginNames).
-func loadConfig(stderr io.Writer, dir, name string) ([]byte, []string) {
+// bytes, the absolute config directory (for api.GenerateOptions.BaseDir), and
+// the list of process plugin names declared in the config (used to populate
+// api.GenerateOptions.InsecureProcessPluginNames).
+func loadConfig(stderr io.Writer, dir, name string) ([]byte, string, []string) {
 	configPath, _, err := readConfig(stderr, dir, name)
 	if err != nil {
 		os.Exit(1)
@@ -208,7 +209,8 @@ func loadConfig(stderr io.Writer, dir, name string) ([]byte, []string) {
 		fmt.Fprintf(stderr, "error parsing %s: %s\n", configPath, err)
 		os.Exit(1)
 	}
-	if err := os.Chdir(filepath.Dir(configPath)); err != nil {
+	configDir := filepath.Dir(configPath)
+	if err := os.Chdir(configDir); err != nil {
 		fmt.Fprintf(stderr, "error changing directory: %s\n", err)
 		os.Exit(1)
 	}
@@ -218,7 +220,7 @@ func loadConfig(stderr io.Writer, dir, name string) ([]byte, []string) {
 			names = append(names, p.Name)
 		}
 	}
-	return data, names
+	return data, configDir, names
 }
 
 // allowedProcessPluginNames returns the names that should populate
@@ -239,11 +241,12 @@ var genCmd = &cobra.Command{
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
 		env := ParseEnv(cmd)
-		data, declared := loadConfig(stderr, dir, name)
+		data, baseDir, declared := loadConfig(stderr, dir, name)
 		res := api.Generate(cmd.Context(), api.GenerateOptions{
 			Config:                     bytes.NewReader(data),
 			Stderr:                     stderr,
 			Write:                      true,
+			BaseDir:                    baseDir,
 			InsecureProcessPluginNames: allowedProcessPluginNames(env, declared),
 		})
 		if len(res.Errors) > 0 {
@@ -261,10 +264,11 @@ var checkCmd = &cobra.Command{
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
 		env := ParseEnv(cmd)
-		data, declared := loadConfig(stderr, dir, name)
+		data, baseDir, declared := loadConfig(stderr, dir, name)
 		res := api.Generate(cmd.Context(), api.GenerateOptions{
 			Config:                     bytes.NewReader(data),
 			Stderr:                     stderr,
+			BaseDir:                    baseDir,
 			InsecureProcessPluginNames: allowedProcessPluginNames(env, declared),
 		})
 		if len(res.Errors) > 0 {
@@ -282,11 +286,12 @@ var diffCmd = &cobra.Command{
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
 		env := ParseEnv(cmd)
-		data, declared := loadConfig(stderr, dir, name)
+		data, baseDir, declared := loadConfig(stderr, dir, name)
 		res := api.Generate(cmd.Context(), api.GenerateOptions{
 			Config:                     bytes.NewReader(data),
 			Stderr:                     stderr,
 			Diff:                       true,
+			BaseDir:                    baseDir,
 			InsecureProcessPluginNames: allowedProcessPluginNames(env, declared),
 		})
 		if len(res.Errors) > 0 {

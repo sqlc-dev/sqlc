@@ -30,11 +30,13 @@ func writeFiles(ctx context.Context, files map[string]string, stderr io.Writer) 
 	return nil
 }
 
-func diffFiles(ctx context.Context, files map[string]string, stderr io.Writer) error {
+func diffFiles(ctx context.Context, baseDir string, files map[string]string, stderr io.Writer) error {
 	defer trace.StartRegion(ctx, "checkfiles").End()
 	var errored bool
 
-	wd, _ := os.Getwd()
+	if baseDir == "" {
+		baseDir, _ = os.Getwd()
+	}
 
 	keys := make([]string, 0, len(files))
 	for k := range files {
@@ -61,8 +63,8 @@ func diffFiles(ctx context.Context, files map[string]string, stderr io.Writer) e
 		if len(uniHunks) > 0 {
 			errored = true
 			label := filename
-			if wd != "" {
-				if rel, err := filepath.Rel(wd, filename); err == nil {
+			if baseDir != "" {
+				if rel, err := filepath.Rel(baseDir, filename); err == nil {
 					label = "/" + rel
 				}
 			}

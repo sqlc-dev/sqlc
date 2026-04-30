@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"path/filepath"
 	"runtime"
 	"runtime/trace"
 
@@ -29,7 +28,7 @@ type resultProcessor interface {
 	ProcessResult(context.Context, config.CombinedSettings, outputPair, *compiler.Result) error
 }
 
-func processQuerySets(ctx context.Context, rp resultProcessor, conf *config.Config, stderr io.Writer) error {
+func processQuerySets(ctx context.Context, rp resultProcessor, conf *config.Config, baseDir string, stderr io.Writer) error {
 	errored := false
 
 	pairs := rp.Pairs(ctx, conf)
@@ -50,25 +49,13 @@ func processQuerySets(ctx context.Context, rp resultProcessor, conf *config.Conf
 
 			absSchema := make([]string, 0, len(sql.Schema))
 			for _, s := range sql.Schema {
-				abs, err := filepath.Abs(s)
-				if err != nil {
-					fmt.Fprintf(errout, "resolve schema path %s: %s\n", s, err)
-					errored = true
-					return nil
-				}
-				absSchema = append(absSchema, abs)
+				absSchema = append(absSchema, resolvePath(baseDir, s))
 			}
 			sql.Schema = absSchema
 
 			absQueries := make([]string, 0, len(sql.Queries))
 			for _, q := range sql.Queries {
-				abs, err := filepath.Abs(q)
-				if err != nil {
-					fmt.Fprintf(errout, "resolve query path %s: %s\n", q, err)
-					errored = true
-					return nil
-				}
-				absQueries = append(absQueries, abs)
+				absQueries = append(absQueries, resolvePath(baseDir, q))
 			}
 			sql.Queries = absQueries
 
@@ -90,7 +77,7 @@ func processQuerySets(ctx context.Context, rp resultProcessor, conf *config.Conf
 			packageRegion := trace.StartRegion(gctx, "package")
 			trace.Logf(gctx, "", "name=%s plugin=%s", name, lang)
 
-			result, failed := parse(gctx, name, sql.SQL, combo, parseOpts, errout)
+			result, failed := parse(gctx, name, baseDir, sql.SQL, combo, parseOpts, errout)
 			if failed {
 				packageRegion.End()
 				errored = true

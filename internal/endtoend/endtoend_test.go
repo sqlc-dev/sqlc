@@ -63,8 +63,9 @@ func TestExamples(t *testing.T) {
 			path := filepath.Join(examples, tc)
 			var stderr bytes.Buffer
 			res := api.Generate(ctx, api.GenerateOptions{
-				Config: openConfigReader(t, path),
-				Stderr: &stderr,
+				Config:  openConfigReader(t, path),
+				Stderr:  &stderr,
+				BaseDir: path,
 			})
 			if len(res.Errors) > 0 {
 				t.Fatalf("sqlc generate failed: %s", stderr.String())
@@ -95,8 +96,9 @@ func BenchmarkExamples(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
 				api.Generate(ctx, api.GenerateOptions{
-					Config: bytes.NewReader(cfg),
-					Stderr: &stderr,
+					Config:  bytes.NewReader(cfg),
+					Stderr:  &stderr,
+					BaseDir: path,
 				})
 			}
 		})
@@ -116,14 +118,13 @@ func openConfigBytes(t testing.TB, dir string) []byte {
 	return data
 }
 
-// mutatedConfigBytes parses the sqlc config in dir, applies mutate (when
-// non-nil) to the in-memory Config, makes every path absolute relative to dir,
-// and re-encodes as YAML. Parsing v1 configs converts them to a v2-shaped
-// Config; we force version "2" so the result can be parsed back by api.Generate.
-//
-// When mutate is non-nil, the encoded bytes are also written to a temp file
-// alongside the original (cleaned up at test end) and the filename is returned
-// so callers like cmd.Vet that still take a config-file path can use it.
+// mutatedConfigBytes parses the sqlc config in dir and re-encodes it as YAML.
+// When mutate is non-nil, it is applied to the in-memory Config first and the
+// encoded bytes are also written to a temp file alongside the original
+// (cleaned up at test end). The filename is returned so callers like cmd.Vet
+// that still take a config-file path can use it. Parsing v1 configs converts
+// them to a v2-shaped Config; we force version "2" so the result can be
+// parsed back by api.Generate.
 func mutatedConfigBytes(t testing.TB, dir string, mutate func(*config.Config)) ([]byte, string) {
 	t.Helper()
 	original, conf, err := readSqlcConfig(dir)
@@ -132,7 +133,6 @@ func mutatedConfigBytes(t testing.TB, dir string, mutate func(*config.Config)) (
 	}
 
 	conf.Version = "2"
-	absolutizePaths(conf, dir)
 	if mutate != nil {
 		mutate(conf)
 	}
@@ -164,33 +164,6 @@ func mutatedConfigBytes(t testing.TB, dir string, mutate func(*config.Config)) (
 		t.Fatalf("close temp config %s: %s", f.Name(), err)
 	}
 	return data, filepath.Base(f.Name())
-}
-
-func absolutizePaths(conf *config.Config, dir string) {
-	abs := func(p string) string {
-		if p == "" || filepath.IsAbs(p) {
-			return p
-		}
-		return filepath.Join(dir, p)
-	}
-	for i := range conf.SQL {
-		s := &conf.SQL[i]
-		for j, p := range s.Schema {
-			s.Schema[j] = abs(p)
-		}
-		for j, p := range s.Queries {
-			s.Queries[j] = abs(p)
-		}
-		if s.Gen.Go != nil {
-			s.Gen.Go.Out = abs(s.Gen.Go.Out)
-		}
-		if s.Gen.JSON != nil {
-			s.Gen.JSON.Out = abs(s.Gen.JSON.Out)
-		}
-		for j := range s.Codegen {
-			s.Codegen[j].Out = abs(s.Codegen[j].Out)
-		}
-	}
 }
 
 func readSqlcConfig(dir string) (string, *config.Config, error) {
@@ -376,17 +349,19 @@ func TestReplay(t *testing.T) {
 				switch args.Command {
 				case "diff":
 					res := api.Generate(ctx, api.GenerateOptions{
-						Config: cfg.reader,
-						Stderr: &stderr,
-						Diff:   true,
+						Config:  cfg.reader,
+						Stderr:  &stderr,
+						BaseDir: path,
+						Diff:    true,
 					})
 					if len(res.Errors) > 0 {
 						err = res.Errors[0]
 					}
 				case "generate":
 					res := api.Generate(ctx, api.GenerateOptions{
-						Config: cfg.reader,
-						Stderr: &stderr,
+						Config:  cfg.reader,
+						Stderr:  &stderr,
+						BaseDir: path,
 					})
 					output = res.Files
 					if len(res.Errors) > 0 {
@@ -510,8 +485,9 @@ func BenchmarkReplay(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
 				api.Generate(ctx, api.GenerateOptions{
-					Config: bytes.NewReader(cfg),
-					Stderr: &stderr,
+					Config:  bytes.NewReader(cfg),
+					Stderr:  &stderr,
+					BaseDir: path,
 				})
 			}
 		})
