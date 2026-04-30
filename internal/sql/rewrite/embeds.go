@@ -7,15 +7,19 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 )
 
-// Embed is an instance of `sqlc.embed(param)`
+// Embed is an instance of `sqlc.embed(param)` or `sqlc.nembed(param)`
 type Embed struct {
-	Table *ast.TableName
-	param string
-	Node  *ast.ColumnRef
+	Table    *ast.TableName
+	param    string
+	Node     *ast.ColumnRef
+	Nullable bool
 }
 
 // Orig string to replace
 func (e Embed) Orig() string {
+	if e.Nullable {
+		return fmt.Sprintf("sqlc.nembed(%s)", e.param)
+	}
 	return fmt.Sprintf("sqlc.embed(%s)", e.param)
 }
 
@@ -41,7 +45,11 @@ func Embeds(raw *ast.RawStmt) (*ast.RawStmt, EmbedSet) {
 	node := astutils.Apply(raw, func(cr *astutils.Cursor) bool {
 		node := cr.Node()
 
+		nullable := false
 		switch {
+		case isNullableEmbed(node):
+			nullable = true
+			fallthrough
 		case isEmbed(node):
 			fun := node.(*ast.FuncCall)
 
@@ -61,9 +69,10 @@ func Embeds(raw *ast.RawStmt) (*ast.RawStmt, EmbedSet) {
 			}
 
 			embeds = append(embeds, &Embed{
-				Table: &ast.TableName{Name: param},
-				param: param,
-				Node:  node,
+				Table:    &ast.TableName{Name: param},
+				param:    param,
+				Node:     node,
+				Nullable: nullable,
 			})
 
 			cr.Replace(node)
@@ -88,4 +97,17 @@ func isEmbed(node ast.Node) bool {
 
 	isValid := call.Func.Schema == "sqlc" && call.Func.Name == "embed"
 	return isValid
+}
+
+func isNullableEmbed(node ast.Node) bool {
+	call, ok := node.(*ast.FuncCall)
+	if !ok {
+		return false
+	}
+
+	if call.Func == nil {
+		return false
+	}
+
+	return call.Func.Schema == "sqlc" && call.Func.Name == "nembed"
 }

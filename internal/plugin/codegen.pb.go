@@ -655,8 +655,9 @@ type Column struct {
 	IsSqlcSlice  bool        `protobuf:"varint,13,opt,name=is_sqlc_slice,json=isSqlcSlice,proto3" json:"is_sqlc_slice,omitempty"`
 	EmbedTable   *Identifier `protobuf:"bytes,14,opt,name=embed_table,json=embedTable,proto3" json:"embed_table,omitempty"`
 	OriginalName string      `protobuf:"bytes,15,opt,name=original_name,json=originalName,proto3" json:"original_name,omitempty"`
-	Unsigned     bool        `protobuf:"varint,16,opt,name=unsigned,proto3" json:"unsigned,omitempty"`
-	ArrayDims    int32       `protobuf:"varint,17,opt,name=array_dims,json=arrayDims,proto3" json:"array_dims,omitempty"`
+	Unsigned        bool        `protobuf:"varint,16,opt,name=unsigned,proto3" json:"unsigned,omitempty"`
+	ArrayDims       int32       `protobuf:"varint,17,opt,name=array_dims,json=arrayDims,proto3" json:"array_dims,omitempty"`
+	IsNullableEmbed bool        `protobuf:"varint,18,opt,name=is_nullable_embed,json=isNullableEmbed,proto3" json:"is_nullable_embed,omitempty"`
 }
 
 func (x *Column) Reset() {
@@ -801,6 +802,13 @@ func (x *Column) GetArrayDims() int32 {
 		return x.ArrayDims
 	}
 	return 0
+}
+
+func (x *Column) GetIsNullableEmbed() bool {
+	if x != nil {
+		return x.IsNullableEmbed
+	}
+	return false
 }
 
 type Query struct {

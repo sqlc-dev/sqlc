@@ -319,6 +319,12 @@ func (i *importer) queryImports(filename string) fileImports {
 						if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
 							return true
 						}
+						// Check nullable embed scan types
+						for _, info := range f.NullableEmbedInfo {
+							if hasPrefixIgnoringSliceAndPointerPrefix(info.ScanType, name) {
+								return true
+							}
+						}
 					}
 				}
 				if hasPrefixIgnoringSliceAndPointerPrefix(q.Ret.Type(), name) {
@@ -458,6 +464,11 @@ func (i *importer) batchImports() fileImports {
 					for _, f := range q.Ret.Struct.Fields {
 						if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
 							return true
+						}
+						for _, info := range f.NullableEmbedInfo {
+							if hasPrefixIgnoringSliceAndPointerPrefix(info.ScanType, name) {
+								return true
+							}
 						}
 					}
 				}

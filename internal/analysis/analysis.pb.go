@@ -104,7 +104,8 @@ type Column struct {
 	TableAlias   string      `protobuf:"bytes,14,opt,name=table_alias,json=tableAlias,proto3" json:"table_alias,omitempty"`
 	Type         *Identifier `protobuf:"bytes,15,opt,name=type,proto3" json:"type,omitempty"`
 	EmbedTable   *Identifier `protobuf:"bytes,16,opt,name=embed_table,json=embedTable,proto3" json:"embed_table,omitempty"`
-	IsSqlcSlice  bool        `protobuf:"varint,17,opt,name=is_sqlc_slice,json=isSqlcSlice,proto3" json:"is_sqlc_slice,omitempty"`
+	IsSqlcSlice     bool        `protobuf:"varint,17,opt,name=is_sqlc_slice,json=isSqlcSlice,proto3" json:"is_sqlc_slice,omitempty"`
+	IsNullableEmbed bool        `protobuf:"varint,18,opt,name=is_nullable_embed,json=isNullableEmbed,proto3" json:"is_nullable_embed,omitempty"`
 }
 
 func (x *Column) Reset() {
@@ -254,6 +255,13 @@ func (x *Column) GetEmbedTable() *Identifier {
 func (x *Column) GetIsSqlcSlice() bool {
 	if x != nil {
 		return x.IsSqlcSlice
+	}
+	return false
+}
+
+func (x *Column) GetIsNullableEmbed() bool {
+	if x != nil {
+		return x.IsNullableEmbed
 	}
 	return false
 }
