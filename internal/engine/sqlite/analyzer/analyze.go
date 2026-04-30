@@ -10,18 +10,19 @@ import (
 
 	core "github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/config"
-	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/shfmt"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
+	"github.com/sqlc-dev/sqlc/internal/sqlcdebug"
 )
+
+var debugDatabases = sqlcdebug.New("databases")
 
 type Analyzer struct {
 	db       config.Database
 	conn     *sqlite3.Conn
-	dbg      opts.Debug
 	replacer *shfmt.Replacer
 	mu       sync.Mutex
 }
@@ -29,7 +30,6 @@ type Analyzer struct {
 func New(db config.Database) *Analyzer {
 	return &Analyzer{
 		db:       db,
-		dbg:      opts.DebugFromEnv(),
 		replacer: shfmt.NewReplacer(nil),
 	}
 }
@@ -44,7 +44,7 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 		if a.db.Managed {
 			// For managed databases, create an in-memory database
 			uri = ":memory:"
-		} else if a.dbg.OnlyManagedDatabases {
+		} else if debugDatabases.Value() == "managed" {
 			return nil, fmt.Errorf("database: connections disabled via SQLCDEBUG=databases=managed")
 		} else {
 			uri = a.replacer.Replace(a.db.URI)
@@ -200,7 +200,7 @@ func (a *Analyzer) EnsureConn(ctx context.Context, migrations []string) error {
 	if a.db.Managed {
 		// For managed databases, create an in-memory database
 		uri = ":memory:"
-	} else if a.dbg.OnlyManagedDatabases {
+	} else if debugDatabases.Value() == "managed" {
 		return fmt.Errorf("database: connections disabled via SQLCDEBUG=databases=managed")
 	} else {
 		uri = a.replacer.Replace(a.db.URI)
