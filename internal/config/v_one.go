@@ -50,6 +50,10 @@ type v1PackageSettings struct {
 	OutputBatchFileName          string            `json:"output_batch_file_name,omitempty" yaml:"output_batch_file_name"`
 	OutputDBFileName             string            `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
 	OutputModelsFileName         string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
+	OutputModelsPath             string            `json:"output_models_path,omitempty" yaml:"output_models_path"`
+	OutputModelsPackage          string            `json:"output_models_package,omitempty" yaml:"output_models_package"`
+	OutputModelsImport           string            `json:"output_models_import,omitempty" yaml:"output_models_import"`
+	OutputModelsEmit             *bool             `json:"output_models_emit,omitempty" yaml:"output_models_emit"`
 	OutputQuerierFileName        string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 	OutputCopyFromFileName       string            `json:"output_copyfrom_file_name,omitempty" yaml:"output_copyfrom_file_name"`
 	OutputFilesSuffix            string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
@@ -163,6 +167,10 @@ func (c *V1GenerateSettings) Translate() Config {
 					OutputBatchFileName:          pkg.OutputBatchFileName,
 					OutputDbFileName:             pkg.OutputDBFileName,
 					OutputModelsFileName:         pkg.OutputModelsFileName,
+					OutputModelsPath:             pkg.OutputModelsPath,
+					OutputModelsPackage:          pkg.OutputModelsPackage,
+					OutputModelsImport:           pkg.OutputModelsImport,
+					OutputModelsEmit:             pkg.OutputModelsEmit,
 					OutputQuerierFileName:        pkg.OutputQuerierFileName,
 					OutputCopyfromFileName:       pkg.OutputCopyFromFileName,
 					OutputFilesSuffix:            pkg.OutputFilesSuffix,
