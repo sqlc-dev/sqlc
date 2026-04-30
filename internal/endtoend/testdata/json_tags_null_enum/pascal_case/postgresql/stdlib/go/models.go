@@ -54,7 +54,7 @@ func (ns NullJobPostLocationType) Value() (driver.Value, error) {
 }
 
 type Author struct {
-	ID   int64                   `json:"ID"`
+	ID   int64                   `json:"Id"`
 	Type NullJobPostLocationType `json:"Type"`
 	Name string                  `json:"Name"`
 	Bio  sql.NullString          `json:"Bio"`
