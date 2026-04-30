@@ -243,6 +243,17 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 		}
 	}
 
+	// Models package import. When models live in a separate Go package and
+	// any type in this file references a qualified model type, we need to
+	// import the models package. The qualifier is derived from the
+	// configured models package name, so the alias matches references like
+	// `model.User`.
+	if options.ModelsAreExternal() {
+		if uses(options.ModelsTypeQualifier()) {
+			pkg[ImportSpec{Path: options.OutputModelsImport, ID: options.OutputModelsPackage}] = struct{}{}
+		}
+	}
+
 	return std, pkg
 }
 

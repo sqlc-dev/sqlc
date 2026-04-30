@@ -37,6 +37,10 @@ type Options struct {
 	OutputBatchFileName          string            `json:"output_batch_file_name,omitempty" yaml:"output_batch_file_name"`
 	OutputDbFileName             string            `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
 	OutputModelsFileName         string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
+	OutputModelsPath             string            `json:"output_models_path,omitempty" yaml:"output_models_path"`
+	OutputModelsPackage          string            `json:"output_models_package,omitempty" yaml:"output_models_package"`
+	OutputModelsImport           string            `json:"output_models_import,omitempty" yaml:"output_models_import"`
+	OutputModelsEmit             *bool             `json:"output_models_emit,omitempty" yaml:"output_models_emit"`
 	OutputQuerierFileName        string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
 	OutputCopyfromFileName       string            `json:"output_copyfrom_file_name,omitempty" yaml:"output_copyfrom_file_name"`
 	OutputFilesSuffix            string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
@@ -152,6 +156,75 @@ func ValidateOpts(opts *Options) error {
 	}
 	if *opts.QueryParameterLimit < 0 {
 		return fmt.Errorf("invalid options: query parameter limit must not be negative")
+	}
+
+	if err := validateModelsOptions(opts); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ModelsEmitEnabled reports whether this codegen block should write the
+// models file. Defaults to true when the option is unset.
+func (o *Options) ModelsEmitEnabled() bool {
+	if o.OutputModelsEmit == nil {
+		return true
+	}
+	return *o.OutputModelsEmit
+}
+
+// ModelsPackage returns the Go package name to use for model types. When the
+// caller has not configured a separate models package, this is the same as
+// Package.
+func (o *Options) ModelsPackage() string {
+	if o.OutputModelsPackage != "" {
+		return o.OutputModelsPackage
+	}
+	return o.Package
+}
+
+// ModelsAreExternal reports whether model types live in a different Go
+// package than the queries package. When true, query files must import the
+// models package and reference types as `<pkg>.Type`.
+func (o *Options) ModelsAreExternal() bool {
+	return o.OutputModelsPackage != "" && o.OutputModelsPackage != o.Package
+}
+
+// ModelsTypeQualifier returns the prefix to use when referencing a model
+// type from a query file (e.g. "model."). Empty string when no qualifier is
+// needed.
+func (o *Options) ModelsTypeQualifier() string {
+	if o.ModelsAreExternal() {
+		return o.OutputModelsPackage + "."
+	}
+	return ""
+}
+
+func validateModelsOptions(opts *Options) error {
+	hasAnyModelsOpt := opts.OutputModelsPath != "" ||
+		opts.OutputModelsPackage != "" ||
+		opts.OutputModelsImport != "" ||
+		opts.OutputModelsEmit != nil
+
+	if !hasAnyModelsOpt {
+		return nil
+	}
+
+	if opts.OutputModelsImport == "" {
+		return fmt.Errorf("invalid options: output_models_import is required when any output_models_* option is set")
+	}
+
+	if opts.ModelsEmitEnabled() && opts.OutputModelsPath == "" {
+		return fmt.Errorf("invalid options: output_models_path is required when emitting models to a separate package")
+	}
+
+	if opts.OutputModelsPackage == "" {
+		return fmt.Errorf("invalid options: output_models_package is required when any output_models_* option is set")
+	}
+
+	if !opts.ModelsEmitEnabled() && opts.OutputModelsPackage == opts.Package {
+		return fmt.Errorf("invalid options: output_models_emit is false but output_models_package matches package; nothing to import")
 	}
 
 	return nil

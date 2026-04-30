@@ -1,0 +1,33 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "schema.sql",
+      "queries": "queries/primary",
+      "engine": "postgresql",
+      "gen": {
+        "go": {
+          "out": "primary",
+          "package": "primary",
+          "output_models_path": "model",
+          "output_models_package": "model",
+          "output_models_import": "github.com/sqlc-dev/sqlc/endtoend/output_models_shared/postgresql/model"
+        }
+      }
+    },
+    {
+      "schema": "schema.sql",
+      "queries": "queries/replica",
+      "engine": "postgresql",
+      "gen": {
+        "go": {
+          "out": "replica",
+          "package": "replica",
+          "output_models_package": "model",
+          "output_models_import": "github.com/sqlc-dev/sqlc/endtoend/output_models_shared/postgresql/model",
+          "output_models_emit": false
+        }
+      }
+    }
+  ]
+}

@@ -248,6 +248,18 @@
                                 "output_models_file_name": {
                                     "type": "string"
                                 },
+                                "output_models_path": {
+                                    "type": "string"
+                                },
+                                "output_models_package": {
+                                    "type": "string"
+                                },
+                                "output_models_import": {
+                                    "type": "string"
+                                },
+                                "output_models_emit": {
+                                    "type": "boolean"
+                                },
                                 "output_querier_file_name": {
                                     "type": "string"
                                 },
