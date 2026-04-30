@@ -8,22 +8,22 @@ package replica
 import (
 	"context"
 
-	model "github.com/sqlc-dev/sqlc/endtoend/output_models_shared/postgresql/model"
+	models "github.com/sqlc-dev/sqlc/endtoend/output_models_shared/postgresql/model"
 )
 
 const listAuthors = `-- name: ListAuthors :many
 SELECT id, name, status FROM authors ORDER BY name
 `
 
-func (q *Queries) ListAuthors(ctx context.Context) ([]model.Author, error) {
+func (q *Queries) ListAuthors(ctx context.Context) ([]models.Author, error) {
 	rows, err := q.db.QueryContext(ctx, listAuthors)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []model.Author
+	var items []models.Author
 	for rows.Next() {
-		var i model.Author
+		var i models.Author
 		if err := rows.Scan(&i.ID, &i.Name, &i.Status); err != nil {
 			return nil, err
 		}
@@ -42,15 +42,15 @@ const listAuthorsByStatus = `-- name: ListAuthorsByStatus :many
 SELECT id, name, status FROM authors WHERE status = $1 ORDER BY name
 `
 
-func (q *Queries) ListAuthorsByStatus(ctx context.Context, status model.Status) ([]model.Author, error) {
+func (q *Queries) ListAuthorsByStatus(ctx context.Context, status models.Status) ([]models.Author, error) {
 	rows, err := q.db.QueryContext(ctx, listAuthorsByStatus, status)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []model.Author
+	var items []models.Author
 	for rows.Next() {
-		var i model.Author
+		var i models.Author
 		if err := rows.Scan(&i.ID, &i.Name, &i.Status); err != nil {
 			return nil, err
 		}

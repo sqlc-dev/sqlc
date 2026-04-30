@@ -7,15 +7,15 @@ package db
 import (
 	"context"
 
-	model "github.com/sqlc-dev/sqlc/endtoend/output_models_path/postgresql/model"
+	models "github.com/sqlc-dev/sqlc/endtoend/output_models_path/postgresql/model"
 )
 
 type Querier interface {
-	CreateAuthor(ctx context.Context, arg CreateAuthorParams) (model.Author, error)
-	GetAuthor(ctx context.Context, id int64) (model.Author, error)
-	GetBook(ctx context.Context, id int64) (model.Book, error)
-	ListAuthors(ctx context.Context) ([]model.Author, error)
-	ListAuthorsByStatus(ctx context.Context, status model.Status) ([]model.Author, error)
+	CreateAuthor(ctx context.Context, arg CreateAuthorParams) (models.Author, error)
+	GetAuthor(ctx context.Context, id int64) (models.Author, error)
+	GetBook(ctx context.Context, id int64) (models.Book, error)
+	ListAuthors(ctx context.Context) ([]models.Author, error)
+	ListAuthorsByStatus(ctx context.Context, status models.Status) ([]models.Author, error)
 }
 
 var _ Querier = (*Queries)(nil)

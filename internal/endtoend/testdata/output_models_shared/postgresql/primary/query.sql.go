@@ -8,7 +8,7 @@ package primary
 import (
 	"context"
 
-	model "github.com/sqlc-dev/sqlc/endtoend/output_models_shared/postgresql/model"
+	models "github.com/sqlc-dev/sqlc/endtoend/output_models_shared/postgresql/model"
 )
 
 const createAuthor = `-- name: CreateAuthor :one
@@ -17,12 +17,12 @@ INSERT INTO authors (name, status) VALUES ($1, $2) RETURNING id, name, status
 
 type CreateAuthorParams struct {
 	Name   string
-	Status model.Status
+	Status models.Status
 }
 
-func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (model.Author, error) {
+func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (models.Author, error) {
 	row := q.db.QueryRowContext(ctx, createAuthor, arg.Name, arg.Status)
-	var i model.Author
+	var i models.Author
 	err := row.Scan(&i.ID, &i.Name, &i.Status)
 	return i, err
 }
@@ -31,9 +31,9 @@ const getAuthor = `-- name: GetAuthor :one
 SELECT id, name, status FROM authors WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetAuthor(ctx context.Context, id int64) (model.Author, error) {
+func (q *Queries) GetAuthor(ctx context.Context, id int64) (models.Author, error) {
 	row := q.db.QueryRowContext(ctx, getAuthor, id)
-	var i model.Author
+	var i models.Author
 	err := row.Scan(&i.ID, &i.Name, &i.Status)
 	return i, err
 }

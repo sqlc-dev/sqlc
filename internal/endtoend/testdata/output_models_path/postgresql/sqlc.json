@@ -11,7 +11,6 @@
           "package": "db",
           "emit_interface": true,
           "output_models_path": "model",
-          "output_models_package": "model",
           "output_models_import": "github.com/sqlc-dev/sqlc/endtoend/output_models_path/postgresql/model"
         }
       }

@@ -98,6 +98,17 @@ func parseOpts(req *plugin.GenerateRequest) (*Options, error) {
 		}
 	}
 
+	// Default the models package name to the base of the models path. When
+	// the user only configures output_models_emit: false (no path), fall
+	// back to the base of the import path.
+	if options.OutputModelsPackage == "" {
+		if options.OutputModelsPath != "" {
+			options.OutputModelsPackage = filepath.Base(options.OutputModelsPath)
+		} else if options.OutputModelsImport != "" {
+			options.OutputModelsPackage = filepath.Base(options.OutputModelsImport)
+		}
+	}
+
 	for i := range options.Overrides {
 		if err := options.Overrides[i].parse(req); err != nil {
 			return nil, err
@@ -174,9 +185,14 @@ func (o *Options) ModelsEmitEnabled() bool {
 	return *o.OutputModelsEmit
 }
 
-// ModelsPackage returns the Go package name to use for model types. When the
-// caller has not configured a separate models package, this is the same as
-// Package.
+// ModelsImportAlias is the fixed Go import alias used for the models
+// package in query files. Using a constant alias keeps the type qualifier
+// consistent regardless of how the user names the actual package.
+const ModelsImportAlias = "models"
+
+// ModelsPackage returns the Go package name to use in the models file
+// itself (i.e. the `package X` declaration). When the caller has not
+// configured a separate models package, this is the same as Package.
 func (o *Options) ModelsPackage() string {
 	if o.OutputModelsPackage != "" {
 		return o.OutputModelsPackage
@@ -186,17 +202,17 @@ func (o *Options) ModelsPackage() string {
 
 // ModelsAreExternal reports whether model types live in a different Go
 // package than the queries package. When true, query files must import the
-// models package and reference types as `<pkg>.Type`.
+// models package and reference types as `models.Type`.
 func (o *Options) ModelsAreExternal() bool {
-	return o.OutputModelsPackage != "" && o.OutputModelsPackage != o.Package
+	return o.OutputModelsImport != ""
 }
 
 // ModelsTypeQualifier returns the prefix to use when referencing a model
-// type from a query file (e.g. "model."). Empty string when no qualifier is
+// type from a query file ("models."). Empty string when no qualifier is
 // needed.
 func (o *Options) ModelsTypeQualifier() string {
 	if o.ModelsAreExternal() {
-		return o.OutputModelsPackage + "."
+		return ModelsImportAlias + "."
 	}
 	return ""
 }
@@ -219,12 +235,8 @@ func validateModelsOptions(opts *Options) error {
 		return fmt.Errorf("invalid options: output_models_path is required when emitting models to a separate package")
 	}
 
-	if opts.OutputModelsPackage == "" {
-		return fmt.Errorf("invalid options: output_models_package is required when any output_models_* option is set")
-	}
-
-	if !opts.ModelsEmitEnabled() && opts.OutputModelsPackage == opts.Package {
-		return fmt.Errorf("invalid options: output_models_emit is false but output_models_package matches package; nothing to import")
+	if opts.ModelsEmitEnabled() && opts.OutputModelsPath == opts.Out {
+		return fmt.Errorf("invalid options: output_models_path matches out; models would overwrite the queries package")
 	}
 
 	return nil
