@@ -95,9 +95,7 @@ func processQuerySets(ctx context.Context, rp ResultProcessor, inputs *sourceFil
 			sql.Queries = joined
 
 			var name, lang string
-			parseOpts := opts.Parser{
-				Debug: debug.Debug,
-			}
+			parseOpts := opts.Parser{}
 
 			switch {
 			case sql.Gen.Go != nil:
