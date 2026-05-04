@@ -12,7 +12,7 @@ imagesize==2.0.0
 myst-parser==5.0.0 
 packaging==26.2
 pyparsing==3.3.2
-pytz==2026.1.post1
+pytz==2026.2
 requests==2.33.1
 snowballstemmer==3.0.1
 sphinx-favicon==1.1.0
