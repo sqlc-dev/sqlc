@@ -14,6 +14,10 @@ type Struct struct {
 	Name    string
 	Fields  []Field
 	Comment string
+	// IsModel is true for table structs that live in the models file. When
+	// the models file is generated into a different Go package, references
+	// to these types from query files must be qualified.
+	IsModel bool
 }
 
 func StructName(name string, options *opts.Options) string {

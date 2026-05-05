@@ -207,7 +207,35 @@ func (g *generator) ProcessResult(ctx context.Context, combo config.CombinedSett
 	// out is specified by the user, not a plugin
 	absout := filepath.Join(g.dir, out)
 
+	// When the Go codegen is configured to emit the models file into a
+	// separate package directory, route that file to its own absolute path.
+	// This is the only file allowed to live outside of `out`.
+	var (
+		modelsFileName string
+		modelsAbsout   string
+		modelsAbsfile  string
+	)
+	if sql.Gen.Go != nil && sql.Gen.Go.OutputModelsPath != "" && sql.Gen.Go.ModelsEmitEnabled() {
+		modelsFileName = sql.Gen.Go.OutputModelsFileName
+		if modelsFileName == "" {
+			modelsFileName = "models.go"
+		}
+		modelsAbsout = filepath.Join(g.dir, sql.Gen.Go.OutputModelsPath)
+		modelsAbsfile = filepath.Join(modelsAbsout, modelsFileName)
+	}
+
 	for n, source := range files {
+		if modelsFileName != "" && n == modelsFileName {
+			// Models file routed to a separate package directory.
+			if strings.Contains(modelsAbsfile, "..") {
+				return fmt.Errorf("invalid file output path: %s", modelsAbsfile)
+			}
+			if !strings.HasPrefix(modelsAbsfile, modelsAbsout) {
+				return fmt.Errorf("invalid file output path: %s", modelsAbsfile)
+			}
+			g.output[modelsAbsfile] = source
+			continue
+		}
 		filename := filepath.Join(g.dir, out, n)
 		// filepath.Join calls filepath.Clean which should remove all "..", but
 		// double check to make sure
