@@ -140,10 +140,10 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 
 			// TODO: This code assumes that @foo::bool is on a single line
 			var replace string
-			if engine == config.EngineMySQL || !dollar {
-				replace = "?"
-			} else if engine == config.EngineSQLite {
+			if engine == config.EngineSQLite {
 				replace = fmt.Sprintf("?%d", argn)
+			} else if engine == config.EngineMySQL || !dollar {
+				replace = "?"
 			} else {
 				replace = fmt.Sprintf("$%d", argn)
 			}
@@ -168,10 +168,10 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 
 			// TODO: This code assumes that @foo is on a single line
 			var replace string
-			if engine == config.EngineMySQL || !dollar {
-				replace = "?"
-			} else if engine == config.EngineSQLite {
+			if engine == config.EngineSQLite {
 				replace = fmt.Sprintf("?%d", argn)
+			} else if engine == config.EngineMySQL || !dollar {
+				replace = "?"
 			} else {
 				replace = fmt.Sprintf("$%d", argn)
 			}
