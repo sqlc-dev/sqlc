@@ -60,11 +60,11 @@ func TestExamplesVet(t *testing.T) {
 				}
 				if s, found := findSchema(t, filepath.Join(path, "mysql")); found {
 					uri := local.MySQL(t, []string{s})
-					os.Setenv(fmt.Sprintf("VET_TEST_EXAMPLES_MYSQL_%s", strings.ToUpper(tc)), uri)
+					t.Setenv(fmt.Sprintf("VET_TEST_EXAMPLES_MYSQL_%s", strings.ToUpper(tc)), uri)
 				}
 				if s, found := findSchema(t, filepath.Join(path, "postgresql")); found {
 					uri := local.PostgreSQL(t, []string{s})
-					os.Setenv(fmt.Sprintf("VET_TEST_EXAMPLES_POSTGRES_%s", strings.ToUpper(tc)), uri)
+					t.Setenv(fmt.Sprintf("VET_TEST_EXAMPLES_POSTGRES_%s", strings.ToUpper(tc)), uri)
 				}
 			}
 

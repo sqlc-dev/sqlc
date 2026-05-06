@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"io"
 	"os"
 	osexec "os/exec"
 	"path/filepath"
@@ -13,29 +15,15 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"gopkg.in/yaml.v3"
 
+	"github.com/sqlc-dev/sqlc/internal/api"
 	"github.com/sqlc-dev/sqlc/internal/cmd"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/opts"
-	"github.com/sqlc-dev/sqlc/internal/sqlcdebug"
 	"github.com/sqlc-dev/sqlc/internal/sqltest/docker"
 	"github.com/sqlc-dev/sqlc/internal/sqltest/native"
 )
-
-// withSQLCDEBUG installs the given SQLCDEBUG-formatted string for the
-// duration of the test and restores the empty default afterwards.
-//
-// Callers in TestReplay are sequential, so this does not need a mutex:
-// Go's test scheduler does not run TestReplay concurrently with the
-// parallel top-level tests in this package.
-func withSQLCDEBUG(t *testing.T, raw string) func() {
-	t.Helper()
-	if raw == "" {
-		return func() {}
-	}
-	sqlcdebug.Update(raw)
-	return func() { sqlcdebug.Update("") }
-}
 
 func lineEndings() cmp.Option {
 	return cmp.Transformer("LineEndings", func(in string) string {
@@ -74,15 +62,15 @@ func TestExamples(t *testing.T) {
 			t.Parallel()
 			path := filepath.Join(examples, tc)
 			var stderr bytes.Buffer
-			opts := &cmd.Options{
-				Env:    cmd.Env{},
-				Stderr: &stderr,
-			}
-			output, err := cmd.Generate(ctx, path, "", opts)
-			if err != nil {
+			res := api.Generate(ctx, api.GenerateOptions{
+				Config:  openConfigReader(t, path),
+				Stderr:  &stderr,
+				BaseDir: path,
+			})
+			if len(res.Errors) > 0 {
 				t.Fatalf("sqlc generate failed: %s", stderr.String())
 			}
-			cmpDirectory(t, path, output)
+			cmpDirectory(t, path, res.Files)
 		})
 	}
 }
@@ -104,27 +92,116 @@ func BenchmarkExamples(b *testing.B) {
 		tc := replay.Name()
 		b.Run(tc, func(b *testing.B) {
 			path := filepath.Join(examples, tc)
+			cfg := openConfigBytes(b, path)
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
-				opts := &cmd.Options{
-					Env:    cmd.Env{},
-					Stderr: &stderr,
-				}
-				cmd.Generate(ctx, path, "", opts)
+				api.Generate(ctx, api.GenerateOptions{
+					Config:  bytes.NewReader(cfg),
+					Stderr:  &stderr,
+					BaseDir: path,
+				})
 			}
 		})
 	}
 }
 
+// openConfigReader reads the sqlc config in dir, rewrites every relative
+// schema/queries/output path to an absolute one (so api.Generate doesn't have
+// to know the config's directory), and returns the result as an io.Reader.
+func openConfigReader(t testing.TB, dir string) io.Reader {
+	return bytes.NewReader(openConfigBytes(t, dir))
+}
+
+func openConfigBytes(t testing.TB, dir string) []byte {
+	t.Helper()
+	data, _ := mutatedConfigBytes(t, dir, nil)
+	return data
+}
+
+// mutatedConfigBytes parses the sqlc config in dir and re-encodes it as YAML.
+// When mutate is non-nil, it is applied to the in-memory Config first and the
+// encoded bytes are also written to a temp file alongside the original
+// (cleaned up at test end). The filename is returned so callers like cmd.Vet
+// that still take a config-file path can use it. Parsing v1 configs converts
+// them to a v2-shaped Config; we force version "2" so the result can be
+// parsed back by api.Generate.
+func mutatedConfigBytes(t testing.TB, dir string, mutate func(*config.Config)) ([]byte, string) {
+	t.Helper()
+	original, conf, err := readSqlcConfig(dir)
+	if err != nil {
+		t.Fatalf("read sqlc config from %s: %s", dir, err)
+	}
+
+	conf.Version = "2"
+	if mutate != nil {
+		mutate(conf)
+	}
+
+	var buf bytes.Buffer
+	enc := yaml.NewEncoder(&buf)
+	if err := enc.Encode(conf); err != nil {
+		t.Fatalf("encode config: %s", err)
+	}
+	if err := enc.Close(); err != nil {
+		t.Fatalf("close yaml encoder: %s", err)
+	}
+	data := buf.Bytes()
+
+	if mutate == nil {
+		return data, ""
+	}
+
+	f, err := os.CreateTemp(dir, "sqlc.test-*"+filepath.Ext(original))
+	if err != nil {
+		t.Fatalf("create temp config in %s: %s", dir, err)
+	}
+	t.Cleanup(func() { os.Remove(f.Name()) })
+	if _, err := f.Write(data); err != nil {
+		f.Close()
+		t.Fatalf("write temp config %s: %s", f.Name(), err)
+	}
+	if err := f.Close(); err != nil {
+		t.Fatalf("close temp config %s: %s", f.Name(), err)
+	}
+	return data, filepath.Base(f.Name())
+}
+
+func readSqlcConfig(dir string) (string, *config.Config, error) {
+	for _, name := range []string{"sqlc.yaml", "sqlc.yml", "sqlc.json"} {
+		path := filepath.Join(dir, name)
+		f, err := os.Open(path)
+		if err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return path, nil, err
+		}
+		defer f.Close()
+		conf, err := config.ParseConfig(f)
+		if err != nil {
+			return path, nil, fmt.Errorf("parse %s: %w", path, err)
+		}
+		return path, &conf, nil
+	}
+	return "", nil, fmt.Errorf("no sqlc config found in %s", dir)
+}
+
+// configRef is the result of preparing a config for a single TestReplay case.
+// reader is for api.Generate; file is for cmd.Vet which still takes a path.
+type configRef struct {
+	reader io.Reader
+	file   string
+}
+
 type textContext struct {
-	Mutate  func(*testing.T, string) func(*config.Config)
+	Config  func(*testing.T, string) configRef
 	Enabled func() bool
 }
 
 func TestReplay(t *testing.T) {
 	// Ensure that this environment variable is always set to true when running
 	// end-to-end tests
-	os.Setenv("SQLC_DUMMY_VALUE", "true")
+	t.Setenv("SQLC_DUMMY_VALUE", "true")
 
 	// t.Parallel()
 	ctx := context.Background()
@@ -189,45 +266,28 @@ func TestReplay(t *testing.T) {
 
 	contexts := map[string]textContext{
 		"base": {
-			Mutate:  func(t *testing.T, path string) func(*config.Config) { return func(c *config.Config) {} },
+			Config: func(t *testing.T, dir string) configRef {
+				data, _ := mutatedConfigBytes(t, dir, nil)
+				return configRef{reader: bytes.NewReader(data)}
+			},
 			Enabled: func() bool { return true },
 		},
 		"managed-db": {
-			Mutate: func(t *testing.T, path string) func(*config.Config) {
-				return func(c *config.Config) {
+			Config: func(t *testing.T, dir string) configRef {
+				data, file := mutatedConfigBytes(t, dir, func(c *config.Config) {
 					// Add all servers - tests will fail if database isn't available
 					c.Servers = []config.Server{
-						{
-							Name:   "postgres",
-							Engine: config.EnginePostgreSQL,
-							URI:    postgresURI,
-						},
-						{
-							Name:   "mysql",
-							Engine: config.EngineMySQL,
-							URI:    mysqlURI,
-						},
+						{Name: "postgres", Engine: config.EnginePostgreSQL, URI: postgresURI},
+						{Name: "mysql", Engine: config.EngineMySQL, URI: mysqlURI},
 					}
-
 					for i := range c.SQL {
 						switch c.SQL[i].Engine {
-						case config.EnginePostgreSQL:
-							c.SQL[i].Database = &config.Database{
-								Managed: true,
-							}
-						case config.EngineMySQL:
-							c.SQL[i].Database = &config.Database{
-								Managed: true,
-							}
-						case config.EngineSQLite:
-							c.SQL[i].Database = &config.Database{
-								Managed: true,
-							}
-						default:
-							// pass
+						case config.EnginePostgreSQL, config.EngineMySQL, config.EngineSQLite:
+							c.SQL[i].Database = &config.Database{Managed: true}
 						}
 					}
-				}
+				})
+				return configRef{reader: bytes.NewReader(data), file: file}
 			},
 			Enabled: func() bool {
 				// Enabled if at least one database URI is available
@@ -277,27 +337,43 @@ func TestReplay(t *testing.T) {
 					}
 				}
 
-				opts := cmd.Options{
-					Env: cmd.Env{
-						Experiment: opts.ExperimentFromString(args.Env["SQLCEXPERIMENT"]),
-					},
-					Stderr:       &stderr,
-					MutateConfig: testctx.Mutate(t, path),
+				cfg := testctx.Config(t, path)
+				for k, v := range args.Env {
+					t.Setenv(k, v)
 				}
-
-				release := withSQLCDEBUG(t, args.Env["SQLCDEBUG"])
-				defer release()
+				cmdOpts := cmd.Options{
+					Env: cmd.Env{
+						Experiment: opts.ExperimentFromEnv(),
+					},
+					Stderr: &stderr,
+				}
 
 				switch args.Command {
 				case "diff":
-					err = cmd.Diff(ctx, path, "", &opts)
+					res := api.Generate(ctx, api.GenerateOptions{
+						Config:  cfg.reader,
+						Stderr:  &stderr,
+						BaseDir: path,
+						Diff:    true,
+					})
+					if len(res.Errors) > 0 {
+						err = res.Errors[0]
+					}
 				case "generate":
-					output, err = cmd.Generate(ctx, path, "", &opts)
+					res := api.Generate(ctx, api.GenerateOptions{
+						Config:  cfg.reader,
+						Stderr:  &stderr,
+						BaseDir: path,
+					})
+					output = res.Files
+					if len(res.Errors) > 0 {
+						err = res.Errors[0]
+					}
 					if err == nil {
 						cmpDirectory(t, path, output)
 					}
 				case "vet":
-					err = cmd.Vet(ctx, path, "", &opts)
+					err = cmd.Vet(ctx, path, cfg.file, &cmdOpts)
 				default:
 					t.Fatalf("unknown command")
 				}
@@ -339,6 +415,10 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 			return nil
 		}
 		if filepath.Base(path) == "exec.json" {
+			return nil
+		}
+		// Mutated configs written by mutatedConfigBytes.
+		if strings.HasPrefix(filepath.Base(path), "sqlc.test-") {
 			return nil
 		}
 		if strings.Contains(path, "/kotlin/build") {
@@ -403,13 +483,14 @@ func BenchmarkReplay(b *testing.B) {
 		tc := replay
 		b.Run(tc, func(b *testing.B) {
 			path, _ := filepath.Abs(tc)
+			cfg := openConfigBytes(b, path)
 			for i := 0; i < b.N; i++ {
 				var stderr bytes.Buffer
-				opts := &cmd.Options{
-					Env:    cmd.Env{},
-					Stderr: &stderr,
-				}
-				cmd.Generate(ctx, path, "", opts)
+				api.Generate(ctx, api.GenerateOptions{
+					Config:  bytes.NewReader(cfg),
+					Stderr:  &stderr,
+					BaseDir: path,
+				})
 			}
 		})
 	}
