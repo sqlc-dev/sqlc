@@ -7,7 +7,7 @@ certifi==2026.4.22
 chardet==7.4.3
 commonmark==0.9.1
 docutils==0.20.1
-idna==3.13
+idna==3.14
 imagesize==2.0.0
 myst-parser==5.0.0 
 packaging==26.2
@@ -24,4 +24,4 @@ sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==2.0.0
 sphinxcontrib-serializinghtml==2.0.0
 sphinxext-rediraffe==0.3.0
-urllib3==2.6.3
+urllib3==2.7.0
