@@ -513,10 +513,11 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			}
 			col := toColumn(n.TypeName)
 			defaultP := named.NewInferredParam(col.Name, col.NotNull)
-			p, _ := params.FetchMerge(ref.ref.Number, defaultP)
+			p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
 
 			col.Name = p.Name()
 			col.NotNull = p.NotNull()
+			col.IsNamedParam = isNamed
 			a = append(a, Parameter{
 				Number: ref.ref.Number,
 				Column: col,

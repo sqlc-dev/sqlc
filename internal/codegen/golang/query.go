@@ -18,6 +18,10 @@ type QueryValue struct {
 	Typ         string
 	SQLDriver   opts.SQLDriver
 
+	// ModelQualifier prefixes references to model types when the models file
+	// lives in a different Go package (e.g. "model."). Empty otherwise.
+	ModelQualifier string
+
 	// Column is kept so late in the generation process around to differentiate
 	// between mysql slices and pg arrays
 	Column *plugin.Column
@@ -88,6 +92,14 @@ func (v QueryValue) Type() string {
 		return v.Typ
 	}
 	if v.Struct != nil {
+		// Model structs (table-derived) live in the models file. When that
+		// file is generated into a different Go package, references from
+		// query files must be qualified. Synthetic structs (Params/Row)
+		// are defined in the same query file as their use, so they stay
+		// bare.
+		if v.Struct.IsModel && v.ModelQualifier != "" {
+			return v.ModelQualifier + v.Struct.Name
+		}
 		return v.Struct.Name
 	}
 	panic("no type for QueryValue: " + v.Name)

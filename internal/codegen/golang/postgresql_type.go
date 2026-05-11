@@ -39,6 +39,10 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 	notNull := col.NotNull || col.IsArray
 	driver := parseDriver(options.SqlPackage)
 	emitPointersForNull := driver.IsPGX() && options.EmitPointersForNullTypes
+	emitPointersForNullEnums := emitPointersForNull
+	if options.EmitPointersForNullEnumTypes != nil {
+		emitPointersForNullEnums = driver.IsPGX() && *options.EmitPointersForNullEnumTypes
+	}
 
 	switch columnType {
 	case "serial", "serial4", "pg_catalog.serial4":
@@ -503,6 +507,11 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 			return "pgtype.XID"
 		}
 
+	case "xid8":
+		if driver == opts.SQLDriverPGXV5 {
+			return "pgtype.Uint64"
+		}
+
 	case "box":
 		if driver.IsPGX() {
 			return "pgtype.Box"
@@ -577,10 +586,14 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 						}
 						return StructName(schema.Name+"_"+enum.Name, options)
 					} else {
-						if schema.Name == req.Catalog.DefaultSchema {
-							return "Null" + StructName(enum.Name, options)
+						nullPrefix := "Null"
+						if emitPointersForNullEnums {
+							nullPrefix = "*"
 						}
-						return "Null" + StructName(schema.Name+"_"+enum.Name, options)
+						if schema.Name == req.Catalog.DefaultSchema {
+							return nullPrefix + StructName(enum.Name, options)
+						}
+						return nullPrefix + StructName(schema.Name+"_"+enum.Name, options)
 					}
 				}
 			}

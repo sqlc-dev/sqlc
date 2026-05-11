@@ -21,7 +21,6 @@ Flags:
   -f, --file string    specify an alternate config file (default: sqlc.yaml)
   -h, --help           help for sqlc
       --no-database    disable database connections (default: false)
-      --no-remote      disable remote execution (default: false)
 
 Use "sqlc [command] --help" for more information about a command.
 ```

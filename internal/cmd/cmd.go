@@ -18,11 +18,13 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/sqlc-dev/sqlc/internal/config"
-	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/info"
 	"github.com/sqlc-dev/sqlc/internal/opts"
+	"github.com/sqlc-dev/sqlc/internal/sqlcdebug"
 	"github.com/sqlc-dev/sqlc/internal/tracer"
 )
+
+var debugProcessPlugins = sqlcdebug.New("processplugins")
 
 func init() {
 	createDBCmd.Flags().StringP("queryset", "", "", "name of the queryset to use")
@@ -37,8 +39,6 @@ func init() {
 func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
 	rootCmd := &cobra.Command{Use: "sqlc", SilenceUsage: true}
 	rootCmd.PersistentFlags().StringP("file", "f", "", "specify an alternate config file (default: sqlc.yaml)")
-	rootCmd.PersistentFlags().Bool("no-remote", false, "disable remote execution (default: false)")
-	rootCmd.PersistentFlags().Bool("remote", false, "enable remote execution (default: false)")
 
 	rootCmd.AddCommand(checkCmd)
 	rootCmd.AddCommand(createDBCmd)
@@ -57,7 +57,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.SetErr(stderr)
 
 	ctx := context.Background()
-	if debug.Debug.Trace != "" {
+	if tracer.Path() != "" {
 		tracectx, cleanup, err := tracer.Start(ctx)
 		if err != nil {
 			fmt.Printf("failed to start trace: %v\n", err)
@@ -139,22 +139,14 @@ var initCmd = &cobra.Command{
 
 type Env struct {
 	DryRun     bool
-	Debug      opts.Debug
 	Experiment opts.Experiment
-	Remote     bool
-	NoRemote   bool
 }
 
 func ParseEnv(c *cobra.Command) Env {
 	dr := c.Flag("dry-run")
-	r := c.Flag("remote")
-	nr := c.Flag("no-remote")
 	return Env{
 		DryRun:     dr != nil && dr.Changed,
-		Debug:      opts.DebugFromEnv(),
 		Experiment: opts.ExperimentFromEnv(),
-		Remote:     r != nil && r.Value.String() == "true",
-		NoRemote:   nr != nil && nr.Value.String() == "true",
 	}
 }
 
@@ -162,7 +154,7 @@ var ErrPluginProcessDisabled = errors.New("plugin: process-based plugins disable
 
 func (e *Env) Validate(cfg *config.Config) error {
 	for _, plugin := range cfg.Plugins {
-		if plugin.Process != nil && !e.Debug.ProcessPlugins {
+		if plugin.Process != nil && debugProcessPlugins.Value() == "0" {
 			return ErrPluginProcessDisabled
 		}
 	}

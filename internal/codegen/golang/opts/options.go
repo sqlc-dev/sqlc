@@ -10,43 +10,49 @@ import (
 )
 
 type Options struct {
-	EmitInterface               bool              `json:"emit_interface" yaml:"emit_interface"`
-	EmitJsonTags                bool              `json:"emit_json_tags" yaml:"emit_json_tags"`
-	JsonTagsIdUppercase         bool              `json:"json_tags_id_uppercase" yaml:"json_tags_id_uppercase"`
-	EmitDbTags                  bool              `json:"emit_db_tags" yaml:"emit_db_tags"`
-	EmitPreparedQueries         bool              `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
-	EmitExactTableNames         bool              `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
-	EmitEmptySlices             bool              `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
-	EmitExportedQueries         bool              `json:"emit_exported_queries" yaml:"emit_exported_queries"`
-	EmitResultStructPointers    bool              `json:"emit_result_struct_pointers" yaml:"emit_result_struct_pointers"`
-	EmitParamsStructPointers    bool              `json:"emit_params_struct_pointers" yaml:"emit_params_struct_pointers"`
-	EmitMethodsWithDbArgument   bool              `json:"emit_methods_with_db_argument,omitempty" yaml:"emit_methods_with_db_argument"`
-	EmitPointersForNullTypes    bool              `json:"emit_pointers_for_null_types" yaml:"emit_pointers_for_null_types"`
-	EmitEnumValidMethod         bool              `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
-	EmitAllEnumValues           bool              `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
-	EmitSqlAsComment            bool              `json:"emit_sql_as_comment,omitempty" yaml:"emit_sql_as_comment"`
-	JsonTagsCaseStyle           string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
-	Package                     string            `json:"package" yaml:"package"`
-	Out                         string            `json:"out" yaml:"out"`
-	Overrides                   []Override        `json:"overrides,omitempty" yaml:"overrides"`
-	Rename                      map[string]string `json:"rename,omitempty" yaml:"rename"`
-	SqlPackage                  string            `json:"sql_package" yaml:"sql_package"`
-	SqlDriver                   string            `json:"sql_driver" yaml:"sql_driver"`
-	OutputBatchFileName         string            `json:"output_batch_file_name,omitempty" yaml:"output_batch_file_name"`
-	OutputDbFileName            string            `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
-	OutputModelsFileName        string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
-	OutputQuerierFileName       string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
-	OutputCopyfromFileName      string            `json:"output_copyfrom_file_name,omitempty" yaml:"output_copyfrom_file_name"`
-	OutputFilesSuffix           string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
-	InflectionExcludeTableNames []string          `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
-	WrapErrors                  bool              `json:"wrap_errors,omitempty" yaml:"wrap_errors"`
-	QueryParameterLimit         *int32            `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
-	OmitSqlcVersion             bool              `json:"omit_sqlc_version,omitempty" yaml:"omit_sqlc_version"`
-	OmitUnusedStructs           bool              `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
-	BuildTags                   string            `json:"build_tags,omitempty" yaml:"build_tags"`
-	Initialisms                 *[]string         `json:"initialisms,omitempty" yaml:"initialisms"`
-	EmitQueryBatch              bool              `json:"emit_query_batch,omitempty" yaml:"emit_query_batch"`
-	OutputQueryBatchFileName    string            `json:"output_query_batch_file_name,omitempty" yaml:"output_query_batch_file_name"`
+	EmitInterface             bool `json:"emit_interface" yaml:"emit_interface"`
+	EmitJsonTags              bool `json:"emit_json_tags" yaml:"emit_json_tags"`
+	JsonTagsIdUppercase       bool `json:"json_tags_id_uppercase" yaml:"json_tags_id_uppercase"`
+	EmitDbTags                bool `json:"emit_db_tags" yaml:"emit_db_tags"`
+	EmitPreparedQueries       bool `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
+	EmitExactTableNames       bool `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
+	EmitEmptySlices           bool `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
+	EmitExportedQueries       bool `json:"emit_exported_queries" yaml:"emit_exported_queries"`
+	EmitResultStructPointers  bool `json:"emit_result_struct_pointers" yaml:"emit_result_struct_pointers"`
+	EmitParamsStructPointers  bool `json:"emit_params_struct_pointers" yaml:"emit_params_struct_pointers"`
+	EmitMethodsWithDbArgument bool `json:"emit_methods_with_db_argument,omitempty" yaml:"emit_methods_with_db_argument"`
+	EmitPointersForNullTypes  bool `json:"emit_pointers_for_null_types" yaml:"emit_pointers_for_null_types"`
+	// nil inherits EmitPointersForNullTypes; non-nil overrides for enums only.
+	EmitPointersForNullEnumTypes *bool             `json:"emit_pointers_for_null_enum_types,omitempty" yaml:"emit_pointers_for_null_enum_types"`
+	EmitEnumValidMethod          bool              `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
+	EmitAllEnumValues            bool              `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
+	EmitSqlAsComment             bool              `json:"emit_sql_as_comment,omitempty" yaml:"emit_sql_as_comment"`
+	JsonTagsCaseStyle            string            `json:"json_tags_case_style,omitempty" yaml:"json_tags_case_style"`
+	Package                      string            `json:"package" yaml:"package"`
+	Out                          string            `json:"out" yaml:"out"`
+	Overrides                    []Override        `json:"overrides,omitempty" yaml:"overrides"`
+	Rename                       map[string]string `json:"rename,omitempty" yaml:"rename"`
+	SqlPackage                   string            `json:"sql_package" yaml:"sql_package"`
+	SqlDriver                    string            `json:"sql_driver" yaml:"sql_driver"`
+	OutputBatchFileName          string            `json:"output_batch_file_name,omitempty" yaml:"output_batch_file_name"`
+	OutputDbFileName             string            `json:"output_db_file_name,omitempty" yaml:"output_db_file_name"`
+	OutputModelsFileName         string            `json:"output_models_file_name,omitempty" yaml:"output_models_file_name"`
+	OutputModelsPath             string            `json:"output_models_path,omitempty" yaml:"output_models_path"`
+	OutputModelsPackage          string            `json:"output_models_package,omitempty" yaml:"output_models_package"`
+	OutputModelsImport           string            `json:"output_models_import,omitempty" yaml:"output_models_import"`
+	OutputModelsEmit             *bool             `json:"output_models_emit,omitempty" yaml:"output_models_emit"`
+	OutputQuerierFileName        string            `json:"output_querier_file_name,omitempty" yaml:"output_querier_file_name"`
+	OutputCopyfromFileName       string            `json:"output_copyfrom_file_name,omitempty" yaml:"output_copyfrom_file_name"`
+	OutputFilesSuffix            string            `json:"output_files_suffix,omitempty" yaml:"output_files_suffix"`
+	InflectionExcludeTableNames  []string          `json:"inflection_exclude_table_names,omitempty" yaml:"inflection_exclude_table_names"`
+	WrapErrors                   bool              `json:"wrap_errors,omitempty" yaml:"wrap_errors"`
+	QueryParameterLimit          *int32            `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
+	OmitSqlcVersion              bool              `json:"omit_sqlc_version,omitempty" yaml:"omit_sqlc_version"`
+	OmitUnusedStructs            bool              `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
+	BuildTags                    string            `json:"build_tags,omitempty" yaml:"build_tags"`
+	Initialisms                  *[]string         `json:"initialisms,omitempty" yaml:"initialisms"`
+	EmitQueryBatch               bool              `json:"emit_query_batch,omitempty" yaml:"emit_query_batch"`
+	OutputQueryBatchFileName     string            `json:"output_query_batch_file_name,omitempty" yaml:"output_query_batch_file_name"`
 
 	InitialismsMap map[string]struct{} `json:"-" yaml:"-"`
 }
@@ -91,6 +97,17 @@ func parseOpts(req *plugin.GenerateRequest) (*Options, error) {
 			options.Package = filepath.Base(options.Out)
 		} else {
 			return nil, fmt.Errorf("invalid options: missing package name")
+		}
+	}
+
+	// Default the models package name to the base of the models path. When
+	// the user only configures output_models_emit: false (no path), fall
+	// back to the base of the import path.
+	if options.OutputModelsPackage == "" {
+		if options.OutputModelsPath != "" {
+			options.OutputModelsPackage = filepath.Base(options.OutputModelsPath)
+		} else if options.OutputModelsImport != "" {
+			options.OutputModelsPackage = filepath.Base(options.OutputModelsImport)
 		}
 	}
 
@@ -152,6 +169,76 @@ func ValidateOpts(opts *Options) error {
 	}
 	if *opts.QueryParameterLimit < 0 {
 		return fmt.Errorf("invalid options: query parameter limit must not be negative")
+	}
+
+	if err := validateModelsOptions(opts); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ModelsEmitEnabled reports whether this codegen block should write the
+// models file. Defaults to true when the option is unset.
+func (o *Options) ModelsEmitEnabled() bool {
+	if o.OutputModelsEmit == nil {
+		return true
+	}
+	return *o.OutputModelsEmit
+}
+
+// ModelsImportAlias is the fixed Go import alias used for the models
+// package in query files. Using a constant alias keeps the type qualifier
+// consistent regardless of how the user names the actual package.
+const ModelsImportAlias = "models"
+
+// ModelsPackage returns the Go package name to use in the models file
+// itself (i.e. the `package X` declaration). When the caller has not
+// configured a separate models package, this is the same as Package.
+func (o *Options) ModelsPackage() string {
+	if o.OutputModelsPackage != "" {
+		return o.OutputModelsPackage
+	}
+	return o.Package
+}
+
+// ModelsAreExternal reports whether model types live in a different Go
+// package than the queries package. When true, query files must import the
+// models package and reference types as `models.Type`.
+func (o *Options) ModelsAreExternal() bool {
+	return o.OutputModelsImport != ""
+}
+
+// ModelsTypeQualifier returns the prefix to use when referencing a model
+// type from a query file ("models."). Empty string when no qualifier is
+// needed.
+func (o *Options) ModelsTypeQualifier() string {
+	if o.ModelsAreExternal() {
+		return ModelsImportAlias + "."
+	}
+	return ""
+}
+
+func validateModelsOptions(opts *Options) error {
+	hasAnyModelsOpt := opts.OutputModelsPath != "" ||
+		opts.OutputModelsPackage != "" ||
+		opts.OutputModelsImport != "" ||
+		opts.OutputModelsEmit != nil
+
+	if !hasAnyModelsOpt {
+		return nil
+	}
+
+	if opts.OutputModelsImport == "" {
+		return fmt.Errorf("invalid options: output_models_import is required when any output_models_* option is set")
+	}
+
+	if opts.ModelsEmitEnabled() && opts.OutputModelsPath == "" {
+		return fmt.Errorf("invalid options: output_models_path is required when emitting models to a separate package")
+	}
+
+	if opts.ModelsEmitEnabled() && opts.OutputModelsPath == opts.Out {
+		return fmt.Errorf("invalid options: output_models_path matches out; models would overwrite the queries package")
 	}
 
 	return nil

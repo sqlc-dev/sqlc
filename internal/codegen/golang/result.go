@@ -84,6 +84,7 @@ func buildStructs(req *plugin.GenerateRequest, options *opts.Options) []Struct {
 				Table:   &plugin.Identifier{Schema: schema.Name, Name: table.Rel.Name},
 				Name:    StructName(structName, options),
 				Comment: table.Comment,
+				IsModel: true,
 			}
 			for _, column := range table.Columns {
 				tags := map[string]string{}
@@ -181,7 +182,9 @@ func argName(name string) string {
 	return out
 }
 
-func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []Struct) ([]Query, error) {
+func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, structs []Struct) ([]Query, error) {
+	models := buildModelTypeSet(enums, structs)
+	qualifier := options.ModelsTypeQualifier()
 	qs := make([]Query, 0, len(req.Queries))
 	for _, query := range req.Queries {
 		if query.Name == "" {
@@ -231,11 +234,12 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []
 		if len(query.Params) == 1 && qpl != 0 {
 			p := query.Params[0]
 			gq.Arg = QueryValue{
-				Name:      escape(paramName(p)),
-				DBName:    p.Column.GetName(),
-				Typ:       goType(req, options, p.Column),
-				SQLDriver: sqlpkg,
-				Column:    p.Column,
+				Name:           escape(paramName(p)),
+				DBName:         p.Column.GetName(),
+				Typ:            qualifyType(goType(req, options, p.Column), models, qualifier),
+				SQLDriver:      sqlpkg,
+				ModelQualifier: qualifier,
+				Column:         p.Column,
 			}
 		} else if len(query.Params) >= 1 {
 			var cols []goColumn
@@ -245,16 +249,17 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []
 					Column: p.Column,
 				})
 			}
-			s, err := columnsToStruct(req, options, gq.MethodName+"Params", cols, false)
+			s, err := columnsToStruct(req, options, gq.MethodName+"Params", cols, false, models, qualifier)
 			if err != nil {
 				return nil, err
 			}
 			gq.Arg = QueryValue{
-				Emit:        true,
-				Name:        "arg",
-				Struct:      s,
-				SQLDriver:   sqlpkg,
-				EmitPointer: options.EmitParamsStructPointers,
+				Emit:           true,
+				Name:           "arg",
+				Struct:         s,
+				SQLDriver:      sqlpkg,
+				EmitPointer:    options.EmitParamsStructPointers,
+				ModelQualifier: qualifier,
 			}
 
 			// if query params is 2, and query params limit is 4 AND this is a copyfrom, we still want to emit the query's model
@@ -268,11 +273,30 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []
 			c := query.Columns[0]
 			name := columnName(c, 0)
 			name = strings.Replace(name, "$", "_", -1)
+			retName := escape(name)
+			// For :one queries the scan destination lives in the same scope as
+			// the query parameters, so reusing a parameter's name would cause
+			// Scan to overwrite the input and leak it back to the caller on
+			// sql.ErrNoRows (see sqlc-dev/sqlc#4354). Rename the return
+			// variable when it would collide.
+			if query.Cmd == metadata.CmdOne {
+				argNames := map[string]struct{}{}
+				for _, p := range gq.Arg.Pairs() {
+					argNames[p.Name] = struct{}{}
+				}
+				for {
+					if _, conflict := argNames[retName]; !conflict {
+						break
+					}
+					retName += "_2"
+				}
+			}
 			gq.Ret = QueryValue{
-				Name:      escape(name),
-				DBName:    name,
-				Typ:       goType(req, options, c),
-				SQLDriver: sqlpkg,
+				Name:           retName,
+				DBName:         name,
+				Typ:            qualifyType(goType(req, options, c), models, qualifier),
+				SQLDriver:      sqlpkg,
+				ModelQualifier: qualifier,
 			}
 		} else if putOutColumns(query) {
 			var gs *Struct
@@ -308,18 +332,19 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, structs []
 					})
 				}
 				var err error
-				gs, err = columnsToStruct(req, options, gq.MethodName+"Row", columns, true)
+				gs, err = columnsToStruct(req, options, gq.MethodName+"Row", columns, true, models, qualifier)
 				if err != nil {
 					return nil, err
 				}
 				emit = true
 			}
 			gq.Ret = QueryValue{
-				Emit:        emit,
-				Name:        "i",
-				Struct:      gs,
-				SQLDriver:   sqlpkg,
-				EmitPointer: options.EmitResultStructPointers,
+				Emit:           emit,
+				Name:           "i",
+				Struct:         gs,
+				SQLDriver:      sqlpkg,
+				EmitPointer:    options.EmitResultStructPointers,
+				ModelQualifier: qualifier,
 			}
 		}
 
@@ -349,7 +374,7 @@ func putOutColumns(query *plugin.Query) bool {
 // JSON tags: count, count_2, count_2
 //
 // This is unlikely to happen, so don't fix it yet
-func columnsToStruct(req *plugin.GenerateRequest, options *opts.Options, name string, columns []goColumn, useID bool) (*Struct, error) {
+func columnsToStruct(req *plugin.GenerateRequest, options *opts.Options, name string, columns []goColumn, useID bool, models modelTypeSet, qualifier string) (*Struct, error) {
 	gs := Struct{
 		Name: name,
 	}
@@ -395,9 +420,9 @@ func columnsToStruct(req *plugin.GenerateRequest, options *opts.Options, name st
 			Column: c.Column,
 		}
 		if c.embed == nil {
-			f.Type = goType(req, options, c.Column)
+			f.Type = qualifyType(goType(req, options, c.Column), models, qualifier)
 		} else {
-			f.Type = c.embed.modelType
+			f.Type = qualifyType(c.embed.modelType, models, qualifier)
 			f.EmbedFields = c.embed.fields
 		}
 

@@ -39,6 +39,7 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 			continue
 		}
 		contents := migrations.RemoveRollbackStatements(string(blob))
+		contents = migrations.RemovePsqlMetaCommands(contents)
 		c.schema = append(c.schema, contents)
 
 		// In database-only mode, we parse the schema to validate syntax

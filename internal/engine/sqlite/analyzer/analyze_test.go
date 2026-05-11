@@ -40,10 +40,11 @@ func TestAnalyzer_Analyze(t *testing.T) {
 	expectedCols := []struct {
 		name     string
 		dataType string
+		notNull  bool
 	}{
-		{"id", "integer"},
-		{"name", "text"},
-		{"email", "text"},
+		{"id", "integer", false},
+		{"name", "text", true},
+		{"email", "text", false},
 	}
 
 	for i, expected := range expectedCols {
@@ -56,6 +57,9 @@ func TestAnalyzer_Analyze(t *testing.T) {
 		}
 		if col.DataType != expected.dataType {
 			t.Errorf("Column %d: expected dataType %q, got %q", i, expected.dataType, col.DataType)
+		}
+		if col.NotNull != expected.notNull {
+			t.Errorf("Column %d: expected notNull %v, got %v", i, expected.notNull, col.NotNull)
 		}
 		if col.Table == nil || col.Table.Name != "users" {
 			t.Errorf("Column %d: expected table 'users', got %v", i, col.Table)

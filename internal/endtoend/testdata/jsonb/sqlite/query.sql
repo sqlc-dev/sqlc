@@ -3,12 +3,20 @@ INSERT INTO foo (
     a,
     b,
     c,
-    d
+    d,
+    e,
+    f,
+    g,
+    h
 ) VALUES (
     @a,
     @b,
     @c,
-    @d
+    @d,
+    @e,
+    @f,
+    @g,
+    @h
 ) RETURNING *;
 
 -- name: SelectFoo :exec
