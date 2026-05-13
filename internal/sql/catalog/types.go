@@ -39,6 +39,13 @@ func (ct *CompositeType) SetComment(c string) {
 	ct.Comment = c
 }
 
+func arrayDims(n *ast.TypeName) int {
+	if n == nil || n.ArrayBounds == nil {
+		return 0
+	}
+	return len(n.ArrayBounds.Items)
+}
+
 func sameType(a, b *ast.TypeName) bool {
 	if a.Catalog != b.Catalog {
 		return false
@@ -57,6 +64,9 @@ func sameType(a, b *ast.TypeName) bool {
 		return false
 	}
 	if a.Name != b.Name {
+		return false
+	}
+	if arrayDims(a) != arrayDims(b) {
 		return false
 	}
 	return true
