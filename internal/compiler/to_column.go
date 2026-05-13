@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -14,13 +15,13 @@ func arrayDims(n *ast.TypeName) int {
 	return len(n.ArrayBounds.Items)
 }
 
-func toColumn(n *ast.TypeName) *Column {
+func toColumn(n *ast.TypeName) (*Column, error) {
 	if n == nil {
-		panic("can't build column for nil type name")
+		return nil, fmt.Errorf("can't build column for nil type name")
 	}
 	typ, err := ParseTypeName(n)
 	if err != nil {
-		panic("toColumn: " + err.Error())
+		return nil, fmt.Errorf("toColumn: %w", err)
 	}
 	arrayDims := arrayDims(n)
 	return &Column{
@@ -29,5 +30,5 @@ func toColumn(n *ast.TypeName) *Column {
 		NotNull:   true, // XXX: How do we know if this should be null?
 		IsArray:   arrayDims > 0,
 		ArrayDims: arrayDims,
-	}
+	}, nil
 }
