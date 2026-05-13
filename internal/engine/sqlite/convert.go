@@ -28,7 +28,7 @@ func todo(funcname string, n node) *ast.TODO {
 }
 
 func identifier(id string) string {
-	if len(id) >= 2 && id[0] == '"' && id[len(id)-1] == '"' {
+	if len(id) >= 2 && (id[0] == '"' && id[len(id)-1] == '"' || id[0] == '`' && id[len(id)-1] == '`') {
 		unquoted, _ := strconv.Unquote(id)
 		return unquoted
 	}
