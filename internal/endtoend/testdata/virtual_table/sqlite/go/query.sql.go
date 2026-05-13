@@ -65,15 +65,20 @@ SELECT b, c FROM tbl_ft
 WHERE b MATCH ?
 `
 
-func (q *Queries) SelectAllColsTblFt(ctx context.Context, b string) ([]TblFt, error) {
+type SelectAllColsTblFtRow struct {
+	B string
+	C string
+}
+
+func (q *Queries) SelectAllColsTblFt(ctx context.Context, b string) ([]SelectAllColsTblFtRow, error) {
 	rows, err := q.db.QueryContext(ctx, selectAllColsTblFt, b)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []TblFt
+	var items []SelectAllColsTblFtRow
 	for rows.Next() {
-		var i TblFt
+		var i SelectAllColsTblFtRow
 		if err := rows.Scan(&i.B, &i.C); err != nil {
 			return nil, err
 		}
@@ -89,14 +94,15 @@ func (q *Queries) SelectAllColsTblFt(ctx context.Context, b string) ([]TblFt, er
 }
 
 const selectBm25Func = `-- name: SelectBm25Func :many
-SELECT b, c, bm25(tbl_ft, 2.0) FROM tbl_ft
+SELECT rowid, b, c, bm25(tbl_ft, 2.0) FROM tbl_ft
 WHERE b MATCH ? ORDER BY bm25(tbl_ft)
 `
 
 type SelectBm25FuncRow struct {
-	B    string
-	C    string
-	Bm25 float64
+	Rowid int64
+	B     string
+	C     string
+	Bm25  float64
 }
 
 func (q *Queries) SelectBm25Func(ctx context.Context, b string) ([]SelectBm25FuncRow, error) {
@@ -108,7 +114,12 @@ func (q *Queries) SelectBm25Func(ctx context.Context, b string) ([]SelectBm25Fun
 	var items []SelectBm25FuncRow
 	for rows.Next() {
 		var i SelectBm25FuncRow
-		if err := rows.Scan(&i.B, &i.C, &i.Bm25); err != nil {
+		if err := rows.Scan(
+			&i.Rowid,
+			&i.B,
+			&i.C,
+			&i.Bm25,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -204,6 +215,18 @@ func (q *Queries) SelectOneColTblFt(ctx context.Context, b string) ([]string, er
 		return nil, err
 	}
 	return items, nil
+}
+
+const selectRowID = `-- name: SelectRowID :one
+SELECT rowid FROM ft
+LIMIT 1
+`
+
+func (q *Queries) SelectRowID(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, selectRowID)
+	var rowid int64
+	err := row.Scan(&rowid)
+	return rowid, err
 }
 
 const selectSnippetFunc = `-- name: SelectSnippetFunc :many
