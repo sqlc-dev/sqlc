@@ -3,6 +3,8 @@ package golang
 import (
 	"bufio"
 	"fmt"
+	"log"
+	"slices"
 	"sort"
 	"strings"
 
@@ -13,10 +15,27 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
+// getSchemasToSkip Returns a list of schemas which should not be included in the generated output
+func getSchemasToSkip(req *plugin.GenerateRequest) []string {
+	switch req.Settings.Engine {
+	case "postgresql":
+		return []string{"pg_catalog", "information_schema"}
+	case "mysql":
+		return []string{"information_schema", "performance_schema", "sys", "mysql"}
+	case "sqlite":
+		return []string{}
+	default:
+		log.Printf("WARN internal/codegen/golang/result.go:getSchemasToSkip unhandled engine: %s\n", req.Settings.Engine)
+		return []string{}
+	}
+}
+
 func buildEnums(req *plugin.GenerateRequest, options *opts.Options) []Enum {
 	var enums []Enum
+	schemasToSkip := getSchemasToSkip(req)
+
 	for _, schema := range req.Catalog.Schemas {
-		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
+		if slices.Contains(schemasToSkip, schema.Name) {
 			continue
 		}
 		for _, enum := range schema.Enums {
@@ -62,8 +81,10 @@ func buildEnums(req *plugin.GenerateRequest, options *opts.Options) []Enum {
 
 func buildStructs(req *plugin.GenerateRequest, options *opts.Options) []Struct {
 	var structs []Struct
+	schemasToSkip := getSchemasToSkip(req)
+
 	for _, schema := range req.Catalog.Schemas {
-		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
+		if slices.Contains(schemasToSkip, schema.Name) {
 			continue
 		}
 		for _, table := range schema.Tables {
