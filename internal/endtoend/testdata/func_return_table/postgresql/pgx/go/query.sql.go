@@ -12,12 +12,33 @@ import (
 )
 
 const foo = `-- name: Foo :one
-SELECT register_account FROM register_account('a', 'b')
+SELECT account_id FROM register_account('a', 'b')
 `
 
 func (q *Queries) Foo(ctx context.Context) (pgtype.Int4, error) {
 	row := q.db.QueryRow(ctx, foo)
-	var register_account pgtype.Int4
-	err := row.Scan(&register_account)
-	return register_account, err
+	var account_id pgtype.Int4
+	err := row.Scan(&account_id)
+	return account_id, err
+}
+
+const getAccount = `-- name: GetAccount :one
+SELECT account_id, username FROM get_account($1, $2)
+`
+
+type GetAccountParams struct {
+	AccountID int32
+	Tags      [][]string
+}
+
+type GetAccountRow struct {
+	AccountID pgtype.Int4
+	Username  pgtype.Text
+}
+
+func (q *Queries) GetAccount(ctx context.Context, arg GetAccountParams) (GetAccountRow, error) {
+	row := q.db.QueryRow(ctx, getAccount, arg.AccountID, arg.Tags)
+	var i GetAccountRow
+	err := row.Scan(&i.AccountID, &i.Username)
+	return i, err
 }
