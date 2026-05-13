@@ -16,6 +16,7 @@ type Table struct {
 	Rel     *ast.TableName
 	Columns []*Column
 	Comment string
+	Hidden  bool
 }
 
 func checkMissing(err error, missingOK bool) error {
