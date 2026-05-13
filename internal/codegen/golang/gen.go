@@ -75,6 +75,12 @@ func (t *tmplCtx) codegenQueryMethod(q Query) string {
 		}
 		return db + ".QueryRowContext"
 
+	case ":first":
+		if t.EmitPreparedQueries {
+			return "q.queryRow"
+		}
+		return db + ".QueryRowContext"
+
 	case ":many":
 		if t.EmitPreparedQueries {
 			return "q.query"
@@ -92,6 +98,8 @@ func (t *tmplCtx) codegenQueryMethod(q Query) string {
 func (t *tmplCtx) codegenQueryRetval(q Query) (string, error) {
 	switch q.Cmd {
 	case ":one":
+		fallthrough
+	case ":first":
 		return "row :=", nil
 	case ":many":
 		return "rows, err :=", nil
