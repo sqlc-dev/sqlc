@@ -339,6 +339,7 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql OutputPair,
 
 	case sql.Gen.Go != nil:
 		out = combo.Go.Out
+		applyQueryComments(req, combo.Package.QueryComments)
 		handler = ext.HandleFunc(golang.Generate)
 		opts, err := json.Marshal(sql.Gen.Go)
 		if err != nil {
@@ -356,6 +357,7 @@ func codegen(ctx context.Context, combo config.CombinedSettings, sql OutputPair,
 
 	case sql.Gen.JSON != nil:
 		out = combo.JSON.Out
+		applyQueryComments(req, combo.Package.QueryComments)
 		handler = ext.HandleFunc(genjson.Generate)
 		opts, err := json.Marshal(sql.Gen.JSON)
 		if err != nil {

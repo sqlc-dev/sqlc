@@ -109,24 +109,31 @@ type Overrides struct {
 }
 
 type SQL struct {
-	Name                 string    `json:"name" yaml:"name"`
-	Engine               Engine    `json:"engine,omitempty" yaml:"engine"`
-	Schema               Paths     `json:"schema" yaml:"schema"`
-	Queries              Paths     `json:"queries" yaml:"queries"`
-	Database             *Database `json:"database" yaml:"database"`
-	StrictFunctionChecks bool      `json:"strict_function_checks" yaml:"strict_function_checks"`
-	StrictOrderBy        *bool     `json:"strict_order_by" yaml:"strict_order_by"`
-	Gen                  SQLGen    `json:"gen" yaml:"gen"`
-	Codegen              []Codegen `json:"codegen" yaml:"codegen"`
-	Rules                []string  `json:"rules" yaml:"rules"`
-	Analyzer             Analyzer  `json:"analyzer" yaml:"analyzer"`
+	Name                 string        `json:"name" yaml:"name"`
+	Engine               Engine        `json:"engine,omitempty" yaml:"engine"`
+	Schema               Paths         `json:"schema" yaml:"schema"`
+	Queries              Paths         `json:"queries" yaml:"queries"`
+	QueryComments        QueryComments `json:"query_comments" yaml:"query_comments"`
+	Database             *Database     `json:"database" yaml:"database"`
+	StrictFunctionChecks bool          `json:"strict_function_checks" yaml:"strict_function_checks"`
+	StrictOrderBy        *bool         `json:"strict_order_by" yaml:"strict_order_by"`
+	Gen                  SQLGen        `json:"gen" yaml:"gen"`
+	Codegen              []Codegen     `json:"codegen" yaml:"codegen"`
+	Rules                []string      `json:"rules" yaml:"rules"`
+	Analyzer             Analyzer      `json:"analyzer" yaml:"analyzer"`
+}
+
+type QueryComments struct {
+	Enabled bool     `json:"enabled" yaml:"enabled"`
+	Format  string   `json:"format,omitempty" yaml:"format"`
+	Tags    []string `json:"tags,omitempty" yaml:"tags"`
 }
 
 // AnalyzerDatabase represents the database analyzer setting.
 // It can be a boolean (true/false) or the string "only" for database-only mode.
 type AnalyzerDatabase struct {
-	value   *bool  // nil means not set, true/false for boolean values
-	isOnly  bool   // true when set to "only"
+	value  *bool // nil means not set, true/false for boolean values
+	isOnly bool  // true when set to "only"
 }
 
 // IsEnabled returns true if the database analyzer should be used.
@@ -227,6 +234,9 @@ var ErrPluginNotFound = errors.New("no plugin found")
 var ErrPluginNoType = errors.New("plugin: field `process` or `wasm` required")
 var ErrPluginBothTypes = errors.New("plugin: `process` and `wasm` cannot both be defined")
 var ErrPluginProcessNoCmd = errors.New("plugin: missing process command")
+
+var ErrInvalidQueryCommentFormat = errors.New("invalid query_comments format")
+var ErrInvalidQueryCommentTag = errors.New("invalid query_comments tag")
 
 var ErrInvalidDatabase = errors.New("database must be managed or have a non-empty URI")
 var ErrManagedDatabaseNoProject = errors.New(`managed databases require a cloud project

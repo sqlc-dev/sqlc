@@ -217,13 +217,16 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 			}
 		}
 
+		sqlComment, sql := splitSQLComment(query.Text)
+
 		gq := Query{
 			Cmd:          query.Cmd,
 			ConstantName: constantName,
 			FieldName:    sdk.LowerTitle(query.Name) + "Stmt",
 			MethodName:   query.Name,
 			SourceName:   query.Filename,
-			SQL:          query.Text,
+			SQLComment:   sqlComment,
+			SQL:          sql,
 			Comments:     comments,
 			Table:        query.InsertIntoTable,
 		}
@@ -352,6 +355,17 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 	}
 	sort.Slice(qs, func(i, j int) bool { return qs[i].MethodName < qs[j].MethodName })
 	return qs, nil
+}
+
+func splitSQLComment(sql string) (string, string) {
+	if !strings.HasPrefix(sql, "/*sqlc_") {
+		return "", sql
+	}
+	idx := strings.Index(sql, "*/")
+	if idx == -1 {
+		return "", sql
+	}
+	return sql[:idx+2], strings.TrimLeft(sql[idx+2:], " \t\r\n")
 }
 
 var cmdReturnsData = map[string]struct{}{

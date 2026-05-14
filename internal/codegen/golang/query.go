@@ -273,6 +273,7 @@ type Query struct {
 	MethodName   string
 	FieldName    string
 	ConstantName string
+	SQLComment   string
 	SQL          string
 	SourceName   string
 	Ret          QueryValue
