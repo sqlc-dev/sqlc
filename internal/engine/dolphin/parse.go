@@ -52,7 +52,14 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	if err != nil {
 		return nil, err
 	}
-	stmtNodes, _, err := p.pingcap.Parse(string(blob), "", "")
+	sql := strings.ReplaceAll(
+    string(blob),
+    "utf8mb4_uca1400_ai_ci",
+    "utf8mb4_general_ci",
+)
+
+    stmtNodes, _, err := p.pingcap.Parse(sql, "", "")
+	
 	if err != nil {
 		return nil, normalizeErr(err)
 	}
