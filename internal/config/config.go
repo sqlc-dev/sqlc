@@ -189,6 +189,30 @@ func (a *AnalyzerDatabase) UnmarshalYAML(unmarshal func(interface{}) error) erro
 	return errors.New("analyzer.database must be true, false, or \"only\"")
 }
 
+// MarshalJSON serialises the value back to its source form so configs
+// produced via UnmarshalJSON round-trip through json.Marshal.
+func (a AnalyzerDatabase) MarshalJSON() ([]byte, error) {
+	if a.isOnly {
+		return json.Marshal("only")
+	}
+	if a.value == nil {
+		return json.Marshal(true)
+	}
+	return json.Marshal(*a.value)
+}
+
+// MarshalYAML serialises the value back to its source form so configs
+// produced via UnmarshalYAML round-trip through yaml.Marshal.
+func (a AnalyzerDatabase) MarshalYAML() (interface{}, error) {
+	if a.isOnly {
+		return "only", nil
+	}
+	if a.value == nil {
+		return true, nil
+	}
+	return *a.value, nil
+}
+
 type Analyzer struct {
 	Database AnalyzerDatabase `json:"database" yaml:"database"`
 }

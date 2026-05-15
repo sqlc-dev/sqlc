@@ -1,11 +1,10 @@
-package cmd
+package api
 
 import (
 	"bytes"
 	"context"
 	"fmt"
 	"io"
-	"path/filepath"
 	"runtime"
 	"runtime/trace"
 
@@ -16,44 +15,19 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/opts"
 )
 
-type OutputPair struct {
+type outputPair struct {
 	Gen    config.SQLGen
 	Plugin *config.Codegen
 
 	config.SQL
 }
 
-type ResultProcessor interface {
-	Pairs(context.Context, *config.Config) []OutputPair
-	ProcessResult(context.Context, config.CombinedSettings, OutputPair, *compiler.Result) error
+type resultProcessor interface {
+	Pairs(context.Context, *config.Config) []outputPair
+	ProcessResult(context.Context, config.CombinedSettings, outputPair, *compiler.Result) error
 }
 
-func Process(ctx context.Context, rp ResultProcessor, dir, filename string, o *Options) error {
-	e := o.Env
-	stderr := o.Stderr
-
-	configPath, conf, err := o.ReadConfig(dir, filename)
-	if err != nil {
-		return err
-	}
-
-	base := filepath.Base(configPath)
-	if err := config.Validate(conf); err != nil {
-		fmt.Fprintf(stderr, "error validating %s: %s\n", base, err)
-		return err
-	}
-
-	if err := e.Validate(conf); err != nil {
-		fmt.Fprintf(stderr, "error validating %s: %s\n", base, err)
-		return err
-	}
-
-	return processQuerySets(ctx, rp, conf, dir, o)
-}
-
-func processQuerySets(ctx context.Context, rp ResultProcessor, conf *config.Config, dir string, o *Options) error {
-	stderr := o.Stderr
-
+func processQuerySets(ctx context.Context, rp resultProcessor, conf *config.Config, baseDir string, stderr io.Writer) error {
 	errored := false
 
 	pairs := rp.Pairs(ctx, conf)
@@ -72,24 +46,17 @@ func processQuerySets(ctx context.Context, rp ResultProcessor, conf *config.Conf
 				combo.Codegen = *sql.Plugin
 			}
 
-			// TODO: This feels like a hack that will bite us later
-			joinDir := func(p string) string {
-				if filepath.IsAbs(p) {
-					return p
-				}
-				return filepath.Join(dir, p)
-			}
-			joined := make([]string, 0, len(sql.Schema))
+			absSchema := make([]string, 0, len(sql.Schema))
 			for _, s := range sql.Schema {
-				joined = append(joined, joinDir(s))
+				absSchema = append(absSchema, resolvePath(baseDir, s))
 			}
-			sql.Schema = joined
+			sql.Schema = absSchema
 
-			joined = make([]string, 0, len(sql.Queries))
+			absQueries := make([]string, 0, len(sql.Queries))
 			for _, q := range sql.Queries {
-				joined = append(joined, joinDir(q))
+				absQueries = append(absQueries, resolvePath(baseDir, q))
 			}
-			sql.Queries = joined
+			sql.Queries = absQueries
 
 			var name, lang string
 			parseOpts := opts.Parser{}
@@ -105,9 +72,9 @@ func processQuerySets(ctx context.Context, rp ResultProcessor, conf *config.Conf
 			}
 
 			packageRegion := trace.StartRegion(gctx, "package")
-			trace.Logf(gctx, "", "name=%s dir=%s plugin=%s", name, dir, lang)
+			trace.Logf(gctx, "", "name=%s plugin=%s", name, lang)
 
-			result, failed := parse(gctx, name, dir, sql.SQL, combo, parseOpts, errout)
+			result, failed := parse(gctx, name, baseDir, sql.SQL, combo, parseOpts, errout)
 			if failed {
 				packageRegion.End()
 				errored = true
@@ -126,7 +93,7 @@ func processQuerySets(ctx context.Context, rp ResultProcessor, conf *config.Conf
 		return err
 	}
 	if errored {
-		for i, _ := range stderrs {
+		for i := range stderrs {
 			if _, err := io.Copy(stderr, &stderrs[i]); err != nil {
 				return err
 			}

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"errors"
@@ -12,11 +11,11 @@ import (
 	"path/filepath"
 	"runtime/trace"
 
-	"github.com/cubicdaiya/gonp"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v3"
 
+	"github.com/sqlc-dev/sqlc/internal/api"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/info"
 	"github.com/sqlc-dev/sqlc/internal/opts"
@@ -184,6 +183,33 @@ func getConfigPath(stderr io.Writer, f *pflag.Flag) (string, string) {
 	}
 }
 
+// loadConfig reads the sqlc config into memory and chdirs the process to its
+// directory so relative paths in the config resolve correctly. Returns the
+// config bytes and the absolute config directory (for
+// api.GenerateOptions.BaseDir).
+func loadConfig(stderr io.Writer, dir, name string) ([]byte, string) {
+	configPath, _, err := readConfig(stderr, dir, name)
+	if err != nil {
+		os.Exit(1)
+	}
+	configPath, err = filepath.Abs(configPath)
+	if err != nil {
+		fmt.Fprintf(stderr, "error resolving config path: %s\n", err)
+		os.Exit(1)
+	}
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		fmt.Fprintf(stderr, "error reading %s: %s\n", configPath, err)
+		os.Exit(1)
+	}
+	configDir := filepath.Dir(configPath)
+	if err := os.Chdir(configDir); err != nil {
+		fmt.Fprintf(stderr, "error changing directory: %s\n", err)
+		os.Exit(1)
+	}
+	return data, configDir
+}
+
 var genCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate source code from SQL",
@@ -191,20 +217,16 @@ var genCmd = &cobra.Command{
 		defer trace.StartRegion(cmd.Context(), "generate").End()
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		output, err := Generate(cmd.Context(), dir, name, &Options{
-			Env:    ParseEnv(cmd),
-			Stderr: stderr,
+		data, baseDir := loadConfig(stderr, dir, name)
+		res := api.Generate(cmd.Context(), api.GenerateOptions{
+			Config:               bytes.NewReader(data),
+			Stderr:               stderr,
+			Write:                true,
+			BaseDir:              baseDir,
+			EnableProcessPlugins: debugProcessPlugins.Value() != "0",
 		})
-		if err != nil {
+		if len(res.Errors) > 0 {
 			os.Exit(1)
-		}
-		defer trace.StartRegion(cmd.Context(), "writefiles").End()
-		for filename, source := range output {
-			os.MkdirAll(filepath.Dir(filename), 0755)
-			if err := os.WriteFile(filename, []byte(source), 0644); err != nil {
-				fmt.Fprintf(stderr, "%s: %s\n", filename, err)
-				return err
-			}
 		}
 		return nil
 	},
@@ -217,44 +239,18 @@ var checkCmd = &cobra.Command{
 		defer trace.StartRegion(cmd.Context(), "compile").End()
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		_, err := Generate(cmd.Context(), dir, name, &Options{
-			Env:    ParseEnv(cmd),
-			Stderr: stderr,
+		data, baseDir := loadConfig(stderr, dir, name)
+		res := api.Generate(cmd.Context(), api.GenerateOptions{
+			Config:               bytes.NewReader(data),
+			Stderr:               stderr,
+			BaseDir:              baseDir,
+			EnableProcessPlugins: debugProcessPlugins.Value() != "0",
 		})
-		if err != nil {
+		if len(res.Errors) > 0 {
 			os.Exit(1)
 		}
 		return nil
 	},
-}
-
-func getLines(f []byte) []string {
-	fp := bytes.NewReader(f)
-	scanner := bufio.NewScanner(fp)
-	lines := make([]string, 0)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-	return lines
-}
-
-func filterHunks[T gonp.Elem](uniHunks []gonp.UniHunk[T]) []gonp.UniHunk[T] {
-	var out []gonp.UniHunk[T]
-	for i, uniHunk := range uniHunks {
-		var changed bool
-		for _, e := range uniHunk.GetChanges() {
-			switch e.GetType() {
-			case gonp.SesDelete:
-				changed = true
-			case gonp.SesAdd:
-				changed = true
-			}
-		}
-		if changed {
-			out = append(out, uniHunks[i])
-		}
-	}
-	return out
 }
 
 var diffCmd = &cobra.Command{
@@ -264,11 +260,15 @@ var diffCmd = &cobra.Command{
 		defer trace.StartRegion(cmd.Context(), "diff").End()
 		stderr := cmd.ErrOrStderr()
 		dir, name := getConfigPath(stderr, cmd.Flag("file"))
-		opts := &Options{
-			Env:    ParseEnv(cmd),
-			Stderr: stderr,
-		}
-		if err := Diff(cmd.Context(), dir, name, opts); err != nil {
+		data, baseDir := loadConfig(stderr, dir, name)
+		res := api.Generate(cmd.Context(), api.GenerateOptions{
+			Config:               bytes.NewReader(data),
+			Stderr:               stderr,
+			Diff:                 true,
+			BaseDir:              baseDir,
+			EnableProcessPlugins: debugProcessPlugins.Value() != "0",
+		})
+		if len(res.Errors) > 0 {
 			os.Exit(1)
 		}
 		return nil
