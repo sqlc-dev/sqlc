@@ -1031,7 +1031,67 @@ func (c *cc) convertInsert_stmtContext(n *parser.Insert_stmtContext) ast.Node {
 		}
 	}
 
+	insert.OnConflictClause = c.convertUpsert_clauseContext(n.Upsert_clause())
+
 	return insert
+}
+
+func (c *cc) convertUpsert_clauseContext(n parser.IUpsert_clauseContext) *ast.OnConflictClause {
+    if n == nil {
+        return nil
+    }
+
+    // ON CONFLICT DO NOTHING
+    if n.NOTHING_() != nil {
+        return &ast.OnConflictClause{
+            Action: ast.OnConflictActionNothing,
+        }
+    }
+
+    // Build Infer clause from ON CONFLICT (col, ...) target columns
+    var infer *ast.InferClause
+    indexCols := n.AllIndexed_column()
+    if len(indexCols) > 0 {
+        indexElems := &ast.List{}
+        for _, col := range indexCols {
+            name := identifier(col.GetText())
+            indexElems.Items = append(indexElems.Items, &ast.IndexElem{
+                Name: &name,
+            })
+        }
+        infer = &ast.InferClause{
+            IndexElems: indexElems,
+        }
+    }
+
+    // Build DO UPDATE SET col = expr target list
+    targetList := &ast.List{}
+    cols := n.AllColumn_name()
+    exprs := n.AllExpr()
+    for i, col := range cols {
+        if i >= len(exprs) {
+            break
+        }
+        colName := identifier(col.GetText())
+        target := &ast.ResTarget{
+            Name: &colName,
+            Val:  c.convert(exprs[i]),
+        }
+        targetList.Items = append(targetList.Items, target)
+    }
+
+    // Handle optional WHERE clause
+    var whereClause ast.Node
+    if n.WHERE_(0) != nil && len(exprs) > len(cols) {
+        whereClause = c.convert(exprs[len(exprs)-1])
+    }
+
+    return &ast.OnConflictClause{
+        Action:      ast.OnConflictActionUpdate,
+        Infer:       infer,
+        TargetList:  targetList,
+        WhereClause: whereClause,
+    }
 }
 
 func (c *cc) convertColumnNames(cols []parser.IColumn_nameContext) *ast.List {
