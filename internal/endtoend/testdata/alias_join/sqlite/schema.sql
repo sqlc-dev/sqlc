@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS aws_rds_databases (
+  account_id TEXT NOT NULL,
+  region TEXT NOT NULL,
+  arn TEXT NOT NULL,
+  name TEXT NOT NULL,
+  engine TEXT NOT NULL,
+  engine_version TEXT NOT NULL,
+
+  -- tags is a JSON object
+  tags TEXT NOT NULL,
+
+  UNIQUE (account_id, region, arn) ON CONFLICT REPLACE
+);
+
+CREATE TABLE IF NOT EXISTS aws_rds_databases_engines (
+  engine TEXT NOT NULL,
+  engine_version TEXT NOT NULL,
+  deprecation TEXT NOT NULL,
+
+  UNIQUE (engine, engine_version) ON CONFLICT REPLACE
+);

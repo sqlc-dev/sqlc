@@ -2,6 +2,7 @@
 __pycache__
 .DS_Store
 .*.swp
+.vscode
 
 # Devenv
 .envrc
