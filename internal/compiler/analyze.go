@@ -65,6 +65,41 @@ func convertColumn(c *analyzer.Column) *Column {
 	}
 }
 
+func mergeColumnOrigin(dst, src *Column) {
+	if dst == nil || src == nil {
+		return
+	}
+
+	// Column overrides in the Go generator depend on the column's original
+	// table identity. The analyzer can fill in missing origin metadata, but it
+	// must not overwrite catalog-inferred origin metadata.
+	//
+	// In particular, CTE output columns are deliberately re-scoped to the CTE
+	// relation by buildQueryCatalog. If we overwrite that with the analyzer's
+	// underlying base table, queries like:
+	//
+	//   WITH expensive AS (SELECT * FROM products)
+	//   SELECT * FROM expensive
+	//
+	// start looking like they return products directly, causing the Go generator
+	// to reuse Product instead of emitting ListExpensiveProductsRow.
+	if dst.OriginalName == "" && src.OriginalName != "" {
+		dst.OriginalName = src.OriginalName
+	}
+	if dst.Table == nil && src.Table != nil {
+		dst.Table = src.Table
+	}
+	if dst.TableAlias == "" && src.TableAlias != "" {
+		dst.TableAlias = src.TableAlias
+	}
+	if dst.Scope == "" && src.Scope != "" {
+		dst.Scope = src.Scope
+	}
+	if dst.EmbedTable == nil && src.EmbedTable != nil {
+		dst.EmbedTable = src.EmbedTable
+	}
+}
+
 func combineAnalysis(prev *analysis, a *analyzer.Analysis) *analysis {
 	var cols []*Column
 	for _, c := range a.Columns {
@@ -79,6 +114,7 @@ func combineAnalysis(prev *analysis, a *analyzer.Analysis) *analysis {
 	}
 	if len(prev.Columns) == len(cols) {
 		for i := range prev.Columns {
+			mergeColumnOrigin(prev.Columns[i], cols[i])
 			// Only override column types if the analyzer provides a specific type
 			// (not "any"), since the catalog-based inference may have better info
 			if cols[i].DataType != "any" {
