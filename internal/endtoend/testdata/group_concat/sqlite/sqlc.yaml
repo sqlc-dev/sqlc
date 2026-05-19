@@ -1,0 +1,9 @@
+version: '2'
+sql:
+- schema: schema.sql
+  queries: query.sql
+  engine: sqlite
+  gen:
+    go:
+      package: querytest
+      out: go
