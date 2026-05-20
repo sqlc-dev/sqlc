@@ -15,7 +15,7 @@ require (
 	github.com/jackc/pgx/v5 v5.9.2
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lib/pq v1.12.3
-	github.com/ncruces/go-sqlite3 v0.34.1
+	github.com/ncruces/go-sqlite3 v0.34.2
 	github.com/pganalyze/pg_query_go/v6 v6.2.2
 	github.com/riza-io/grpc-go v0.2.0
 	github.com/spf13/cobra v1.10.2
@@ -26,7 +26,7 @@ require (
 	github.com/wasilibs/go-pgquery v0.0.0-20250409022910-10ac41983c07
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/sync v0.20.0
-	google.golang.org/grpc v1.81.0
+	google.golang.org/grpc v1.81.1
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -39,7 +39,7 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/ncruces/go-sqlite3-wasm/v2 v2.2.35301 // indirect
+	github.com/ncruces/go-sqlite3-wasm/v2 v2.4.35301 // indirect
 	github.com/ncruces/julianday v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/wasilibs/wazero-helpers v0.0.0-20240620070341-3dff1577cd52 // indirect
