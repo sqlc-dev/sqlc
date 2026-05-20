@@ -77,10 +77,37 @@ func (o *Override) Matches(n *plugin.Identifier, defaultSchema string) bool {
 	return true
 }
 
-func (o *Override) MatchesColumn(col *plugin.Column) bool {
-	columnType := sdk.DataType(col.Type)
+func typesMatches(dbType string, colType *plugin.Identifier, isPostgresql bool) bool {
+	if dbType == "" {
+		return false
+	}
+	columnType := sdk.DataType(colType)
+	if dbType == columnType {
+		return true
+	}
+	// For example, in PostgreSQL, built-in types are in the 'pg_catalog' schema.
+	// colType Identifier might show them as:
+	// - Schema: "pg_catalog", Name: "json"
+	// - Or Name: "pg_catalog.json"
+	// - Or just Name: "json"
+	// This checks both to match types.
+	if isPostgresql {
+		if strings.TrimPrefix(dbType, "pg_catalog.") == columnType {
+			return true
+		}
+		if colType.Schema == "pg_catalog" && colType.Name == dbType {
+			return true
+		}
+
+		return strings.TrimPrefix(colType.Name, "pg_catalog.") == dbType
+	}
+
+	return false
+}
+
+func (o *Override) MatchesColumn(col *plugin.Column, engine string) bool {
 	notNull := col.NotNull || col.IsArray
-	return o.DBType != "" && o.DBType == columnType && o.Nullable != notNull && o.Unsigned == col.Unsigned
+	return typesMatches(o.DBType, col.Type, engine == "postgresql") && o.Nullable != notNull && o.Unsigned == col.Unsigned
 }
 
 func (o *Override) parse(req *plugin.GenerateRequest) (err error) {
