@@ -124,6 +124,7 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 				if query == nil {
 					continue
 				}
+				query.Metadata.SwitchGroup = ss.group
 				query.Metadata.Filename = filepath.Base(filename)
 				queryName := query.Metadata.Name
 				if queryName != "" {

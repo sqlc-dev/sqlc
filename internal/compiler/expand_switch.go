@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"unicode"
 
@@ -62,17 +63,19 @@ func camelize(s string) string {
 }
 
 // stmtSource pairs a statement to compile with the source text its byte
-// locations are relative to.
+// locations are relative to. group is the sqlc.switch() group name (the
+// original query name) for branch variants, empty otherwise.
 type stmtSource struct {
-	raw *ast.RawStmt
-	src string
+	raw   *ast.RawStmt
+	src   string
+	group string
 }
 
 // statementSources returns the statements to compile for a single parsed
 // statement. Normally that is just the statement itself; if it contains a
 // sqlc.switch(...) macro, it is the re-parsed branch variants it expands into.
 func (c *Compiler) statementSources(raw *ast.RawStmt, src string) ([]stmtSource, error) {
-	variants, err := c.expandSqlcSwitch(raw, src)
+	variants, group, err := c.expandSqlcSwitch(raw, src)
 	if err != nil {
 		return nil, err
 	}
@@ -86,60 +89,27 @@ func (c *Compiler) statementSources(raw *ast.RawStmt, src string) ([]stmtSource,
 			return nil, err
 		}
 		for i := range stmts {
-			sources = append(sources, stmtSource{raw: stmts[i].Raw, src: v})
+			sources = append(sources, stmtSource{raw: stmts[i].Raw, src: v, group: group})
 		}
 	}
 	return sources, nil
 }
 
-// expandSqlcSwitch looks for a sqlc.switch(...) macro in a statement and, if
-// present, returns one rewritten SQL string per branch. Each rewritten string
-// is a normal query: the whole sqlc.switch(...) call is replaced by that
-// branch's SQL fragment and the "-- name:" comment is renamed to
-// <QueryName><BranchKey>. Each variant is re-parsed and analyzed as an ordinary
-// query, so a bad column reference in a fragment is a compile error, and a
-// generated name that collides with another query is caught by the normal
-// duplicate-query-name check.
-//
-// The macro is recognized from the AST the same way sqlc.arg/sqlc.slice are
-// (a FuncCall with schema "sqlc"), so it works in exactly the clauses where
-// those macros parse. Returning (nil, nil) means there is no sqlc.switch and the
-// statement should be compiled as-is.
-func (c *Compiler) expandSqlcSwitch(raw *ast.RawStmt, src string) ([]string, error) {
-	found := astutils.Search(raw, func(n ast.Node) bool { return isSqlcFunc(n, "switch") })
-	if len(found.Items) == 0 {
-		// Some parsers (e.g. SQLite for ORDER BY) silently discard a function
-		// call they cannot place rather than erroring. If the text clearly
-		// contains the macro but no node survived, fail loudly instead of
-		// emitting the unexpanded call into the generated SQL.
-		if stmtSQL, err := source.Pluck(src, raw.StmtLocation, raw.StmtLen); err == nil &&
-			strings.Contains(stmtSQL, "sqlc.switch") {
-			return nil, fmt.Errorf("sqlc.switch() is not supported in this position for this engine")
-		}
-		return nil, nil
-	}
-	if len(found.Items) > 1 {
-		return nil, fmt.Errorf("only one sqlc.switch() per query is supported")
-	}
-	call := found.Items[0].(*ast.FuncCall)
+// parsedSwitch is one sqlc.switch(...) call: its byte span within the statement
+// text and its branches in declaration order.
+type parsedSwitch struct {
+	start, end int
+	branches   []sqlcSwitchBranch
+}
 
-	// sqlc.switch() is only allowed where it does not change the result shape
-	// (WHERE, ORDER BY, ...), never in the SELECT projection: different branches
-	// there could produce different columns and break the shared row type.
-	if sel, ok := raw.Stmt.(*ast.SelectStmt); ok && sel.TargetList != nil {
-		inTarget := astutils.Search(sel.TargetList, func(n ast.Node) bool { return isSqlcFunc(n, "switch") })
-		if len(inTarget.Items) > 0 {
-			return nil, fmt.Errorf("sqlc.switch() is not allowed in the SELECT list; use it in WHERE or ORDER BY")
-		}
-	}
-
+// switchBranches parses the when()/else() branches of a single sqlc.switch call.
+func switchBranches(call *ast.FuncCall) ([]sqlcSwitchBranch, error) {
 	if call.Args == nil || len(call.Args.Items) < 2 {
 		return nil, fmt.Errorf("sqlc.switch() requires a selector and at least one sqlc.when()/sqlc.else() branch")
 	}
-
-	// args[0] is the runtime selector (e.g. @sort). It plays no role in the
-	// generated code (one function per branch, named by branch key) but is
-	// required so the intent is explicit.
+	// args[0] is the runtime selector (e.g. @sort). It is not used by the
+	// generated code (one function per branch, named by key) but is required so
+	// the intent is explicit.
 	branches := make([]sqlcSwitchBranch, 0, len(call.Args.Items)-1)
 	seenElse := false
 	for _, arg := range call.Args.Items[1:] {
@@ -176,44 +146,138 @@ func (c *Compiler) expandSqlcSwitch(raw *ast.RawStmt, src string) ([]string, err
 			return nil, fmt.Errorf("sqlc.switch() branches must be sqlc.when() or sqlc.else() calls")
 		}
 	}
+	return branches, nil
+}
 
-	// Locate the byte span of the whole sqlc.switch(...) call within its
-	// statement so it can be replaced textually with each branch fragment.
+// expandSqlcSwitch looks for sqlc.switch(...) macros in a statement and, if
+// present, returns one rewritten SQL string per branch key. In each variant
+// every sqlc.switch(...) call is replaced by that key's SQL fragment and the
+// "-- name:" comment is renamed to <QueryName><BranchKey>. Each variant is
+// re-parsed and analyzed as an ordinary query, so a bad column reference in a
+// fragment is a compile error and a generated name that collides with another
+// query is caught by the normal duplicate-query-name check.
+//
+// A query may contain several sqlc.switch() calls (e.g. the same sort applied in
+// a CTE pre-sort and in the final ORDER BY). They must all declare the same set
+// of keys; expansion stays linear in the number of keys (one function per key),
+// not the cross product, with each call contributing its own fragment per key.
+//
+// The macro is recognized from the AST the same way sqlc.arg/sqlc.slice are
+// (a FuncCall with schema "sqlc"), so it works in exactly the clauses where
+// those macros parse. Returning (nil, nil) means there is no sqlc.switch and the
+// statement should be compiled as-is.
+func (c *Compiler) expandSqlcSwitch(raw *ast.RawStmt, src string) ([]string, string, error) {
+	found := astutils.Search(raw, func(n ast.Node) bool { return isSqlcFunc(n, "switch") })
+	if len(found.Items) == 0 {
+		// Some parsers (e.g. SQLite for ORDER BY) silently discard a function
+		// call they cannot place rather than erroring. If the text clearly
+		// contains the macro but no node survived, fail loudly instead of
+		// emitting the unexpanded call into the generated SQL.
+		if stmtSQL, err := source.Pluck(src, raw.StmtLocation, raw.StmtLen); err == nil &&
+			strings.Contains(stmtSQL, "sqlc.switch") {
+			return nil, "", fmt.Errorf("sqlc.switch() is not supported in this position for this engine")
+		}
+		return nil, "", nil
+	}
+
+	// sqlc.switch() is only allowed where it does not change the result shape
+	// (WHERE, ORDER BY, ...), never in the SELECT projection: different branches
+	// there could produce different columns and break the shared row type.
+	if sel, ok := raw.Stmt.(*ast.SelectStmt); ok && sel.TargetList != nil {
+		inTarget := astutils.Search(sel.TargetList, func(n ast.Node) bool { return isSqlcFunc(n, "switch") })
+		if len(inTarget.Items) > 0 {
+			return nil, "", fmt.Errorf("sqlc.switch() is not allowed in the SELECT list; use it in WHERE or ORDER BY")
+		}
+	}
+
 	stmtSQL, err := source.Pluck(src, raw.StmtLocation, raw.StmtLen)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
-	switchStart := call.Location - raw.StmtLocation
-	if switchStart < 0 || switchStart >= len(stmtSQL) {
-		return nil, fmt.Errorf("could not locate sqlc.switch() in source")
-	}
-	switchEnd, err := matchParen(stmtSQL, switchStart)
-	if err != nil {
-		return nil, err
-	}
-
 	name, _, err := metadata.ParseQueryNameAndType(stmtSQL, metadata.CommentSyntax(c.parser.CommentSyntax()))
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	if name == "" {
-		return nil, fmt.Errorf("sqlc.switch() requires the query to have a -- name: annotation")
+		return nil, "", fmt.Errorf("sqlc.switch() requires the query to have a -- name: annotation")
 	}
 
-	variants := make([]string, 0, len(branches))
-	for _, br := range branches {
-		spliced := stmtSQL[:switchStart] + br.fragment + stmtSQL[switchEnd+1:]
+	// Parse every switch and locate its byte span.
+	switches := make([]parsedSwitch, 0, len(found.Items))
+	for _, item := range found.Items {
+		call := item.(*ast.FuncCall)
+		branches, err := switchBranches(call)
+		if err != nil {
+			return nil, "", err
+		}
+		start := call.Location - raw.StmtLocation
+		if start < 0 || start >= len(stmtSQL) {
+			return nil, "", fmt.Errorf("could not locate sqlc.switch() in source")
+		}
+		end, err := matchParen(stmtSQL, start)
+		if err != nil {
+			return nil, "", err
+		}
+		switches = append(switches, parsedSwitch{start: start, end: end, branches: branches})
+	}
+
+	// All switches must use the same keys; the first one fixes the order.
+	canonical := switches[0].branches
+	for _, sw := range switches[1:] {
+		if !sameKeys(canonical, sw.branches) {
+			return nil, "", fmt.Errorf("all sqlc.switch() in a query must use the same when()/else() keys")
+		}
+	}
+
+	// Apply switch spans right-to-left so earlier (leftward) spans keep their
+	// original offsets while later ones are replaced.
+	ordered := append([]parsedSwitch(nil), switches...)
+	sort.Slice(ordered, func(i, j int) bool { return ordered[i].start > ordered[j].start })
+
+	variants := make([]string, 0, len(canonical))
+	for _, cb := range canonical {
+		spliced := stmtSQL
+		for _, sw := range ordered {
+			spliced = spliced[:sw.start] + fragmentForKey(sw.branches, cb.key) + spliced[sw.end+1:]
+		}
 		// The plucked statement may exclude its trailing ";" (it can fall
 		// outside StmtLen), so re-parsing a branch without one could yield an
 		// empty statement. Normalize to exactly one terminator.
 		spliced = strings.TrimRight(spliced, " \t\r\n;") + ";"
-		newName := name + camelize(br.key)
+		newName := name + camelize(cb.key)
 		// Rename only the name comment. "name: <Name>" is shared by all comment
 		// styles (-- /* #), so a single replacement is enough.
 		spliced = strings.Replace(spliced, "name: "+name, "name: "+newName, 1)
 		variants = append(variants, spliced)
 	}
-	return variants, nil
+	return variants, name, nil
+}
+
+// sameKeys reports whether two branch lists declare the same set of keys.
+func sameKeys(a, b []sqlcSwitchBranch) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	set := make(map[string]bool, len(a))
+	for _, br := range a {
+		set[br.key] = true
+	}
+	for _, br := range b {
+		if !set[br.key] {
+			return false
+		}
+	}
+	return true
+}
+
+// fragmentForKey returns the SQL fragment a switch declares for the given key.
+func fragmentForKey(branches []sqlcSwitchBranch, key string) string {
+	for _, br := range branches {
+		if br.key == key {
+			return br.fragment
+		}
+	}
+	return ""
 }
 
 // matchParen returns the index of the ')' that closes the first '(' at or after
