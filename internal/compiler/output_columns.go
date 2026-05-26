@@ -129,9 +129,32 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 		}
 
 		// For UNION queries, targets is empty and we need to look for the
-		// columns in Largs.
+		// columns in Largs. We also walk Rarg to merge per-column nullability:
+		// SQL semantics — a column in the result is non-nullable only when
+		// every contributing leg's column is non-nullable. Without this merge
+		// the right leg's nullable values would be silently scanned into a
+		// non-nullable Go type and fail at scan time.
 		if isUnion {
-			return c.outputColumns(qc, n.Larg)
+			leftCols, err := c.outputColumns(qc, n.Larg)
+			if err != nil {
+				return nil, err
+			}
+			if n.Rarg == nil {
+				return leftCols, nil
+			}
+			rightCols, err := c.outputColumns(qc, n.Rarg)
+			if err != nil {
+				return nil, err
+			}
+			for i := range leftCols {
+				if i >= len(rightCols) {
+					break
+				}
+				if !rightCols[i].NotNull {
+					leftCols[i].NotNull = false
+				}
+			}
+			return leftCols, nil
 		}
 	case *ast.UpdateStmt:
 		targets = n.ReturningList
