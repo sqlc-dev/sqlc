@@ -266,7 +266,10 @@ func (v QueryValue) VariableForField(f Field) string {
 	if !v.IsStruct() {
 		return v.Name
 	}
-	if !v.EmitStruct() {
+	// Use v.Emit (single struct param) rather than EmitStruct(): a value whose
+	// struct is DefinedElsewhere still receives a single struct arg, so fields
+	// are referenced as arg.Field, not as inlined bare names.
+	if !v.Emit {
 		return toLowerCase(f.Name)
 	}
 	return v.Name + "." + f.Name
