@@ -60,6 +60,71 @@ func buildEnums(req *plugin.GenerateRequest, options *opts.Options) []Enum {
 	return enums
 }
 
+func compositeTypeStructName(schemaName, typeName, defaultSchema string, options *opts.Options) string {
+	if schemaName == defaultSchema {
+		return StructName(typeName, options)
+	}
+	return StructName(schemaName+"_"+typeName, options)
+}
+
+func compositeHasTypeOverride(options *opts.Options, schemaName, typeName string) bool {
+	qualified := schemaName + "." + typeName
+	for _, override := range options.Overrides {
+		o := override.ShimOverride
+		if o.GoType.TypeName == "" {
+			continue
+		}
+		if o.DbType == qualified || o.DbType == typeName {
+			return true
+		}
+	}
+	return false
+}
+
+func buildCompositeTypeStructs(req *plugin.GenerateRequest, options *opts.Options) []Struct {
+	var structs []Struct
+	for _, schema := range req.Catalog.Schemas {
+		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
+			continue
+		}
+		for _, ct := range schema.CompositeTypes {
+			if len(ct.Columns) == 0 {
+				continue
+			}
+			if compositeHasTypeOverride(options, schema.Name, ct.Name) {
+				continue
+			}
+			name := compositeTypeStructName(schema.Name, ct.Name, req.Catalog.DefaultSchema, options)
+			s := Struct{
+				Table:   &plugin.Identifier{Schema: schema.Name, Name: ct.Name},
+				Name:    name,
+				Comment: ct.Comment,
+			}
+			for _, column := range ct.Columns {
+				tags := map[string]string{}
+				if options.EmitDbTags {
+					tags["db"] = column.Name
+				}
+				if options.EmitJsonTags {
+					tags["json"] = JSONTagName(column.Name, options)
+				}
+				addExtraGoStructTags(tags, req, options, column)
+				s.Fields = append(s.Fields, Field{
+					Name:    StructName(column.Name, options),
+					Type:    goType(req, options, column),
+					Tags:    tags,
+					Comment: column.Comment,
+				})
+			}
+			structs = append(structs, s)
+		}
+	}
+	if len(structs) > 0 {
+		sort.Slice(structs, func(i, j int) bool { return structs[i].Name < structs[j].Name })
+	}
+	return structs
+}
+
 func buildStructs(req *plugin.GenerateRequest, options *opts.Options) []Struct {
 	var structs []Struct
 	for _, schema := range req.Catalog.Schemas {

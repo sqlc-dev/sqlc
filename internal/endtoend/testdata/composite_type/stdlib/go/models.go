@@ -9,6 +9,16 @@ import (
 )
 
 type FooPath struct {
-	PointOne sql.NullString
-	PointTwo sql.NullString
+	PointOne PointType
+	PointTwo FooPointType
+}
+
+type FooPointType struct {
+	X sql.NullInt32
+	Y sql.NullInt32
+}
+
+type PointType struct {
+	X sql.NullInt32
+	Y sql.NullInt32
 }

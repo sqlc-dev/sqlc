@@ -594,16 +594,20 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 					}
 					if len(fn.Outs) > 0 {
 						for _, arg := range fn.Outs {
+							resolvedType := qc.ResolveType(arg.Type)
 							table.Columns = append(table.Columns, &Column{
 								Name:     arg.Name,
-								DataType: arg.Type.Name,
+								DataType: resolvedType.Name,
+								Type:     resolvedType,
 							})
 						}
 					} else if fn.ReturnType != nil {
+						resolvedType := qc.ResolveType(fn.ReturnType)
 						table.Columns = []*Column{
 							{
 								Name:     colName,
-								DataType: fn.ReturnType.Name,
+								DataType: resolvedType.Name,
+								Type:     resolvedType,
 							},
 						}
 					}

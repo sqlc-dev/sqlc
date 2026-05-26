@@ -329,9 +329,11 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 }
 
 func (c *Catalog) defineColumn(table *ast.TableName, col *ast.ColumnDef) (*Column, error) {
+	// Resolve the type schema for custom types
+	resolvedType := c.ResolveType(col.TypeName)
 	tc := &Column{
 		Name:       col.Colname,
-		Type:       *col.TypeName,
+		Type:       *resolvedType,
 		IsNotNull:  col.IsNotNull,
 		IsUnsigned: col.IsUnsigned,
 		IsArray:    col.IsArray,

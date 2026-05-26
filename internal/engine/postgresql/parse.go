@@ -392,9 +392,29 @@ func translate(node *nodes.Node) (ast.Node, error) {
 	case *nodes.Node_CompositeTypeStmt:
 		n := inner.CompositeTypeStmt
 		rel := parseRelationFromRangeVar(n.Typevar)
-		return &ast.CompositeTypeStmt{
+		stmt := &ast.CompositeTypeStmt{
 			TypeName: rel.TypeName(),
-		}, nil
+			Coldefs:  &ast.List{},
+		}
+		for _, elt := range n.Coldeflist {
+			item, ok := elt.Node.(*nodes.Node_ColumnDef)
+			if !ok {
+				continue
+			}
+			cd := item.ColumnDef
+			rel, err := parseRelationFromNodes(cd.TypeName.Names)
+			if err != nil {
+				return nil, err
+			}
+			stmt.Coldefs.Items = append(stmt.Coldefs.Items, &ast.ColumnDef{
+				Colname:   cd.Colname,
+				TypeName:  rel.TypeName(),
+				IsNotNull: isNotNull(cd),
+				IsArray:   isArray(cd.TypeName),
+				ArrayDims: len(cd.TypeName.ArrayBounds),
+			})
+		}
+		return stmt, nil
 
 	case *nodes.Node_CreateStmt:
 		n := inner.CreateStmt
@@ -506,9 +526,17 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			if err != nil {
 				return nil, err
 			}
+			argType := rel.TypeName()
+			if len(arg.ArgType.ArrayBounds) > 0 {
+				bounds := &ast.List{}
+				for range arg.ArgType.ArrayBounds {
+					bounds.Items = append(bounds.Items, &ast.TODO{})
+				}
+				argType.ArrayBounds = bounds
+			}
 			fp := &ast.FuncParam{
 				Name: &arg.Name,
-				Type: rel.TypeName(),
+				Type: argType,
 				Mode: mode,
 			}
 			if arg.Defexpr != nil {

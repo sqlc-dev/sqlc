@@ -107,3 +107,39 @@ func (qc QueryCatalog) GetFunc(rel *ast.FuncName) (*Function, error) {
 		ReturnType: funcs[0].ReturnType,
 	}, nil
 }
+
+// ResolveType resolves an unqualified type name to its fully-qualified form
+// by looking up the type in the catalog. If the type is found in the default
+// schema, the returned TypeName will have the Schema field set.
+func (qc QueryCatalog) ResolveType(rel *ast.TypeName) *ast.TypeName {
+	// If schema is already set, return as-is
+	if rel == nil || rel.Schema != "" {
+		return rel
+	}
+	// Try to find the type in the catalog's default schema
+	ns := qc.catalog.DefaultSchema
+	for _, schema := range qc.catalog.Schemas {
+		if schema.Name != ns {
+			continue
+		}
+		for _, typ := range schema.Types {
+			var typeName string
+			switch t := typ.(type) {
+			case *catalog.Enum:
+				typeName = t.Name
+			case *catalog.CompositeType:
+				typeName = t.Name
+			case *catalog.Domain:
+				typeName = t.Name
+			}
+			if typeName == rel.Name {
+				return &ast.TypeName{
+					Catalog: rel.Catalog,
+					Schema:  ns,
+					Name:    rel.Name,
+				}
+			}
+		}
+	}
+	return rel
+}

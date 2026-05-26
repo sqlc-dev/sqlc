@@ -21,7 +21,7 @@ func dataType(n *ast.TypeName) string {
 	}
 }
 
-func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, params *named.ParamSet, embeds rewrite.EmbedSet) ([]Parameter, error) {
+func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, rfs []*ast.RangeFunction, args []paramRef, params *named.ParamSet, embeds rewrite.EmbedSet) ([]Parameter, error) {
 	c := comp.catalog
 
 	aliasMap := map[string]*ast.TableName{}
@@ -78,6 +78,77 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		}
 		if rv.Alias != nil {
 			aliasMap[*rv.Alias.Aliasname] = fqn
+		}
+	}
+
+	// Process range functions (table functions) to index their output columns
+	for _, rf := range rfs {
+		if rf.Functions == nil || len(rf.Functions.Items) == 0 {
+			continue
+		}
+
+		var funcCall *ast.FuncCall
+		switch f := rf.Functions.Items[0].(type) {
+		case *ast.List:
+			if len(f.Items) == 0 {
+				continue
+			}
+			switch fi := f.Items[0].(type) {
+			case *ast.FuncCall:
+				funcCall = fi
+			default:
+				continue
+			}
+		case *ast.FuncCall:
+			funcCall = f
+		default:
+			continue
+		}
+
+		fn, err := qc.GetFunc(funcCall.Func)
+		if err != nil {
+			continue
+		}
+
+		// Build a table name for the function
+		tableName := fn.Rel.Name
+		schema := fn.Rel.Schema
+		if schema == "" {
+			schema = c.DefaultSchema
+		}
+		if rf.Alias != nil {
+			tableName = *rf.Alias.Aliasname
+		}
+
+		fqn := &ast.TableName{
+			Catalog: fn.Rel.Catalog,
+			Schema:  schema,
+			Name:    tableName,
+		}
+
+		tables = append(tables, fqn)
+		if defaultTable == nil {
+			defaultTable = fqn
+		}
+
+		if _, exists := typeMap[schema]; !exists {
+			typeMap[schema] = map[string]map[string]*catalog.Column{}
+		}
+		typeMap[schema][tableName] = map[string]*catalog.Column{}
+
+		// Add columns from function output arguments
+		for _, arg := range fn.Outs {
+			resolvedType := qc.ResolveType(arg.Type)
+			col := &catalog.Column{
+				Name:      arg.Name,
+				Type:      *resolvedType,
+				IsNotNull: false,
+			}
+			typeMap[schema][tableName][arg.Name] = col
+		}
+
+		if rf.Alias != nil {
+			aliasMap[*rf.Alias.Aliasname] = fqn
 		}
 	}
 
@@ -416,6 +487,10 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				defaultP := named.NewInferredParam(paramName, true)
 				p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
 				added = true
+				arrayDims := 0
+				if paramType.ArrayBounds != nil {
+					arrayDims = len(paramType.ArrayBounds.Items)
+				}
 				a = append(a, Parameter{
 					Number: ref.ref.Number,
 					Column: &Column{
@@ -424,6 +499,8 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 						NotNull:      p.NotNull(),
 						IsNamedParam: isNamed,
 						IsSqlcSlice:  p.IsSqlcSlice(),
+						IsArray:      arrayDims > 0,
+						ArrayDims:    arrayDims,
 					},
 				})
 			}

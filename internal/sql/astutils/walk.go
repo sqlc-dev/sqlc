@@ -86,6 +86,9 @@ func Walk(f Visitor, node ast.Node) {
 		if n.TypeName != nil {
 			Walk(f, n.TypeName)
 		}
+		if n.Coldefs != nil {
+			Walk(f, n.Coldefs)
+		}
 
 	case *ast.CreateTableStmt:
 		if n.Name != nil {

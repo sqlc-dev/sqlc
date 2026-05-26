@@ -9,10 +9,12 @@ import (
 )
 
 type TestDatum struct {
-	TestID      pgtype.Int4
-	TestDate    pgtype.Date
-	TestTime    pgtype.Timestamptz
-	TestString  pgtype.Text
-	TestVarchar pgtype.Text
-	TestDouble  pgtype.Float8
+	TestID          pgtype.Int4
+	TestDate        pgtype.Date
+	TestTime        pgtype.Timestamptz
+	TestString      pgtype.Text
+	TestVarchar     pgtype.Text
+	TestDouble      pgtype.Float8
+	TestJsonb       TestJsonb
+	TestJsonbDomain TestJsonbDomain
 }

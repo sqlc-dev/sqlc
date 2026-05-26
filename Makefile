@@ -58,3 +58,6 @@ remote-proto:
 		--go_out=. --go_opt="Minternal/remote/gen.proto=github.com/sqlc-dev/sqlc/internal/remote" --go_opt=module=github.com/sqlc-dev/sqlc \
         --go-grpc_out=. --go-grpc_opt="Minternal/remote/gen.proto=github.com/sqlc-dev/sqlc/internal/remote" --go-grpc_opt=module=github.com/sqlc-dev/sqlc \
         internal/remote/gen.proto
+
+gen-func-table:
+	./bin/sqlc -f ./internal/endtoend/testdata/ddl_create_function_table/postgresql/pgx/v5/sqlc.json generate

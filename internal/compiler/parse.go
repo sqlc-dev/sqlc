@@ -193,6 +193,18 @@ func rangeVars(root ast.Node) []*ast.RangeVar {
 	return vars
 }
 
+func rangeFuncs(root ast.Node) []*ast.RangeFunction {
+	var funcs []*ast.RangeFunction
+	find := astutils.VisitorFunc(func(node ast.Node) {
+		switch n := node.(type) {
+		case *ast.RangeFunction:
+			funcs = append(funcs, n)
+		}
+	})
+	astutils.Walk(find, root)
+	return funcs
+}
+
 func uniqueParamRefs(in []paramRef, dollar bool) []paramRef {
 	m := make(map[int]bool, len(in))
 	o := make([]paramRef, 0, len(in))
