@@ -98,33 +98,43 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 			continue
 		}
 		for _, stmt := range stmts {
-			query, err := c.parseQuery(stmt.Raw, src, o)
+			// A statement may expand into several: a sqlc.case(...) macro
+			// produces one static query per branch. Without a macro this
+			// yields the original statement unchanged.
+			sources, err := c.statementSources(stmt.Raw, src)
 			if err != nil {
-				var e *sqlerr.Error
-				loc := stmt.Raw.Pos()
-				if errors.As(err, &e) && e.Location != 0 {
-					loc = e.Location
-				}
-				merr.Add(filename, src, loc, err)
-				// If this rpc unauthenticated error bubbles up, then all future parsing/analysis will fail
-				if errors.Is(err, rpc.ErrUnauthenticated) {
-					return nil, merr
-				}
+				merr.Add(filename, src, stmt.Raw.Pos(), err)
 				continue
 			}
-			if query == nil {
-				continue
-			}
-			query.Metadata.Filename = filepath.Base(filename)
-			queryName := query.Metadata.Name
-			if queryName != "" {
-				if _, exists := set[queryName]; exists {
-					merr.Add(filename, src, stmt.Raw.Pos(), fmt.Errorf("duplicate query name: %s", queryName))
+			for _, ss := range sources {
+				query, err := c.parseQuery(ss.raw, ss.src, o)
+				if err != nil {
+					var e *sqlerr.Error
+					loc := ss.raw.Pos()
+					if errors.As(err, &e) && e.Location != 0 {
+						loc = e.Location
+					}
+					merr.Add(filename, ss.src, loc, err)
+					// If this rpc unauthenticated error bubbles up, then all future parsing/analysis will fail
+					if errors.Is(err, rpc.ErrUnauthenticated) {
+						return nil, merr
+					}
 					continue
 				}
-				set[queryName] = struct{}{}
+				if query == nil {
+					continue
+				}
+				query.Metadata.Filename = filepath.Base(filename)
+				queryName := query.Metadata.Name
+				if queryName != "" {
+					if _, exists := set[queryName]; exists {
+						merr.Add(filename, ss.src, ss.raw.Pos(), fmt.Errorf("duplicate query name: %s", queryName))
+						continue
+					}
+					set[queryName] = struct{}{}
+				}
+				q = append(q, query)
 			}
-			q = append(q, query)
 		}
 	}
 	if len(merr.Errs()) > 0 {
