@@ -13,9 +13,10 @@ import (
 // A database table is a collection of related data held in a table format within a database.
 // It consists of columns and rows.
 type Table struct {
-	Rel     *ast.TableName
-	Columns []*Column
-	Comment string
+	Rel       *ast.TableName
+	Columns   []*Column
+	Comment   string
+	DependsOn []*ast.TableName // for views: tables/views referenced by the view query
 }
 
 func checkMissing(err error, missingOK bool) error {
@@ -384,9 +385,41 @@ func (c *Catalog) dropTable(stmt *ast.DropTableStmt) error {
 			return err
 		}
 
+		droppedName := schema.Tables[idx].Rel.Name
 		schema.Tables = append(schema.Tables[:idx], schema.Tables[idx+1:]...)
+
+		if stmt.Behavior == ast.DropBehaviorCascade {
+			c.dropDependentViews(schema, droppedName)
+		}
 	}
 	return nil
+}
+
+// dropDependentViews removes every view in schema whose DependsOn references
+// name, recursing so views-on-views are also evicted. Cascade-only.
+func (c *Catalog) dropDependentViews(schema *Schema, name string) {
+	for {
+		removed := false
+		for i, t := range schema.Tables {
+			depends := false
+			for _, d := range t.DependsOn {
+				if d.Name == name {
+					depends = true
+					break
+				}
+			}
+			if depends {
+				victim := schema.Tables[i].Rel.Name
+				schema.Tables = append(schema.Tables[:i], schema.Tables[i+1:]...)
+				c.dropDependentViews(schema, victim)
+				removed = true
+				break
+			}
+		}
+		if !removed {
+			return
+		}
+	}
 }
 
 func (c *Catalog) renameColumn(stmt *ast.RenameColumnStmt) error {

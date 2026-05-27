@@ -2,6 +2,7 @@ package catalog
 
 import (
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
@@ -20,13 +21,32 @@ func (c *Catalog) createView(stmt *ast.ViewStmt, colGen columnGenerator) error {
 		schemaName = *stmt.View.Schemaname
 	}
 
+	var dependsOn []*ast.TableName
+	list := astutils.Search(stmt.Query, func(node ast.Node) bool {
+		_, ok := node.(*ast.RangeVar)
+		return ok
+	})
+	for _, item := range list.Items {
+		if rv, ok := item.(*ast.RangeVar); ok && rv.Relname != nil {
+			tn := &ast.TableName{Name: *rv.Relname}
+			if rv.Schemaname != nil {
+				tn.Schema = *rv.Schemaname
+			}
+			if rv.Catalogname != nil {
+				tn.Catalog = *rv.Catalogname
+			}
+			dependsOn = append(dependsOn, tn)
+		}
+	}
+
 	tbl := Table{
 		Rel: &ast.TableName{
 			Catalog: catName,
 			Schema:  schemaName,
 			Name:    *stmt.View.Relname,
 		},
-		Columns: cols,
+		Columns:   cols,
+		DependsOn: dependsOn,
 	}
 
 	ns := tbl.Rel.Schema
