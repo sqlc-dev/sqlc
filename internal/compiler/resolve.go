@@ -215,6 +215,10 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 							}
 						}
 					}
+				} else if ref.inSubquery {
+					if scoped := narrowToInnermostScope(tables, typeMap, c.DefaultSchema, ref.rv, key); scoped != nil {
+						search = scoped
+					}
 				}
 
 				var found int
@@ -581,6 +585,10 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 							}
 						}
 					}
+				} else if ref.inSubquery {
+					if scoped := narrowToInnermostScope(tables, typeMap, c.DefaultSchema, ref.rv, key); scoped != nil {
+						search = scoped
+					}
 				}
 
 				for _, table := range search {
@@ -635,4 +643,49 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		}
 	}
 	return a, nil
+}
+
+// narrowToInnermostScope returns a single-element search slice when the
+// parameter reference (ref.rv) points to a known table that actually
+// contains the column being resolved. It implements the lexical-scope rule
+// real PostgreSQL applies inside subqueries: an unqualified column reference
+// is bound to the innermost FROM-clause table that defines it. If the
+// innermost scope is unknown (rv nil) or the column is not present there
+// (correlated-subquery referring to an outer column), it returns nil so the
+// caller falls back to the full table list. See issue #4251.
+func narrowToInnermostScope(
+	tables []*ast.TableName,
+	typeMap map[string]map[string]map[string]*catalog.Column,
+	defaultSchema string,
+	rv *ast.RangeVar,
+	column string,
+) []*ast.TableName {
+	if rv == nil || rv.Relname == nil {
+		return nil
+	}
+	innerName := *rv.Relname
+	innerSchema := ""
+	if rv.Schemaname != nil {
+		innerSchema = *rv.Schemaname
+	}
+	lookupSchema := innerSchema
+	if lookupSchema == "" {
+		lookupSchema = defaultSchema
+	}
+	// Only narrow if the column actually exists in the innermost scope.
+	// Falling back to the full search preserves correlated-subquery
+	// behavior (e.g. an inner WHERE referring to an outer column).
+	if _, ok := typeMap[lookupSchema][innerName][column]; !ok {
+		return nil
+	}
+	for _, t := range tables {
+		tSchema := t.Schema
+		if tSchema == "" {
+			tSchema = defaultSchema
+		}
+		if t.Name == innerName && tSchema == lookupSchema {
+			return []*ast.TableName{t}
+		}
+	}
+	return nil
 }

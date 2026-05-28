@@ -20,18 +20,20 @@ func findParameters(root ast.Node) ([]paramRef, []error) {
 }
 
 type paramRef struct {
-	parent ast.Node
-	rv     *ast.RangeVar
-	ref    *ast.ParamRef
-	name   string // Named parameter support
+	parent     ast.Node
+	rv         *ast.RangeVar
+	ref        *ast.ParamRef
+	name       string // Named parameter support
+	inSubquery bool   // true if this ParamRef sits inside a SubLink's subselect; gates scope narrowing to subqueries only (issue #4251)
 }
 
 type paramSearch struct {
-	parent   ast.Node
-	rangeVar *ast.RangeVar
-	refs     *[]paramRef
-	seen     map[int]struct{}
-	errs     *[]error
+	parent     ast.Node
+	rangeVar   *ast.RangeVar
+	refs       *[]paramRef
+	seen       map[int]struct{}
+	errs       *[]error
+	inSubquery bool // true once we have descended into a SubLink's subselect; propagates to ParamRefs encountered below it (issue #4251)
 
 	// XXX: Gross state hack for limit
 	limitCount  ast.Node
@@ -139,6 +141,22 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 	case *ast.ResTarget:
 		p.parent = node
 
+	case *ast.SubLink:
+		// Issue #4251: when descending into a SubLink's subselect (e.g.
+		// "x IN (SELECT y FROM t WHERE id = $1)"), capture the subselect's
+		// first FROM-clause RangeVar so ParamRefs inside its WHERE/GROUP/etc.
+		// resolve against the inner scope. Only narrow when the subselect's
+		// FROM is unambiguous on its own (single RangeVar; no JOINs / no
+		// multi-table FROM / no nested subselect). Scoped to SubLinks
+		// specifically: top-level INSERT-SELECT / JOIN / etc. continue to use
+		// the full-table search the resolver has always done.
+		p.inSubquery = true
+		if sel, ok := n.Subselect.(*ast.SelectStmt); ok && sel.FromClause != nil && len(sel.FromClause.Items) == 1 {
+			if rv, ok := sel.FromClause.Items[0].(*ast.RangeVar); ok && rv != nil && rv.Relname != nil {
+				p.rangeVar = rv
+			}
+		}
+
 	case *ast.SelectStmt:
 		if n.LimitCount != nil {
 			p.limitCount = n.LimitCount
@@ -186,7 +204,7 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 		}
 
 		if set {
-			*p.refs = append(*p.refs, paramRef{parent: parent, ref: n, rv: p.rangeVar})
+			*p.refs = append(*p.refs, paramRef{parent: parent, ref: n, rv: p.rangeVar, inSubquery: p.inSubquery})
 			p.seen[n.Location] = struct{}{}
 		}
 		return nil
