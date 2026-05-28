@@ -138,6 +138,12 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 			tableName := c.quoteIdent(t.Rel.Name)
 			scopeName := c.quoteIdent(scope)
 			for _, column := range t.Columns {
+				// Skip PostgreSQL system columns (xmin, ctid, ...) when expanding *.
+				// This matches PostgreSQL's own behavior — they must be referenced
+				// explicitly. See issue #3742.
+				if column.IsSystem {
+					continue
+				}
 				cname := column.Name
 				if res.Name != nil {
 					cname = *res.Name
