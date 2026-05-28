@@ -366,6 +366,18 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 					col.NotNull = false
 				}
 			}
+			// A type cast does not make its argument non-nullable. If the
+			// wrapped expression is itself nullable, the result of the cast
+			// is too. Today we cover the common case of JSON accessor
+			// operators (`->`, `->>`, `#>`, `#>>`) which return NULL when
+			// the requested key/path is missing — wrapping `(data ->> 'k')`
+			// in `::text` was previously emitting a non-nullable string.
+			// See issue #3792.
+			if argExpr, ok := n.Arg.(*ast.A_Expr); ok {
+				if lang.IsJSONNullableOperator(astutils.Join(argExpr.Name, "")) {
+					col.NotNull = false
+				}
+			}
 			cols = append(cols, col)
 
 		case *ast.SelectStmt:
