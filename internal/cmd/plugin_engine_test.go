@@ -10,7 +10,6 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/ext"
-	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 	pb "github.com/sqlc-dev/sqlc/pkg/engine"
 )
@@ -122,10 +121,8 @@ func TestPluginPipeline_FullPipeline(t *testing.T) {
 	}
 
 	var stderr bytes.Buffer
-	debug := opts.DebugFromString("")
-	debug.ProcessPlugins = true
 	o := &Options{
-		Env:                    Env{Debug: debug},
+		Env:                    Env{},
 		Stderr:                 &stderr,
 		PluginParseFunc:        pluginParse,
 		CodegenHandlerOverride: mockCodegen,
@@ -239,10 +236,8 @@ func TestPluginPipeline_WithoutOverride_UsesPluginPackage(t *testing.T) {
 		},
 	}
 	var stderr bytes.Buffer
-	debug := opts.DebugFromString("")
-	debug.ProcessPlugins = true
 	o := &Options{
-		Env:             Env{Debug: debug},
+		Env:             Env{},
 		Stderr:          &stderr,
 		PluginParseFunc: nil, // do not override — must use built-in engine process runner
 		CodegenHandlerOverride: ext.HandleFunc(func(_ context.Context, _ *plugin.GenerateRequest) (*plugin.GenerateResponse, error) {
@@ -293,10 +288,8 @@ func TestPluginPipeline_NBlocksNCalls(t *testing.T) {
 		Config: &conf, ConfigPath: "sqlc.yaml", Dir: ".",
 		FileContents: map[string][]byte{"schema.sql": []byte(schemaContent), "query.sql": []byte(queryContent)},
 	}
-	debug := opts.DebugFromString("")
-	debug.ProcessPlugins = true
 	o := &Options{
-		Env: Env{Debug: debug}, Stderr: &bytes.Buffer{}, PluginParseFunc: pluginParse,
+		Env: Env{}, Stderr: &bytes.Buffer{}, PluginParseFunc: pluginParse,
 		CodegenHandlerOverride: ext.HandleFunc(func(_ context.Context, req *plugin.GenerateRequest) (*plugin.GenerateResponse, error) {
 			codegenReq = req
 			return &plugin.GenerateResponse{}, nil
@@ -368,11 +361,13 @@ func TestPluginPipeline_DatabaseOnly_ReceivesNoSchema(t *testing.T) {
 		Config: &conf, ConfigPath: "sqlc.yaml", Dir: ".",
 		FileContents: map[string][]byte{"schema.sql": []byte("CREATE TABLE t (id INT);"), "query.sql": []byte(queryContent)},
 	}
-	debug := opts.DebugFromString("")
-	debug.ProcessPlugins = true
 	o := &Options{
-		Env: Env{Debug: debug}, Stderr: &bytes.Buffer{}, PluginParseFunc: pluginParse,
-		CodegenHandlerOverride: ext.HandleFunc(func(_ context.Context, req *plugin.GenerateRequest) (*plugin.GenerateResponse, error) { return &plugin.GenerateResponse{}, nil }),
+		Env:             Env{},
+		Stderr:          &bytes.Buffer{},
+		PluginParseFunc: pluginParse,
+		CodegenHandlerOverride: ext.HandleFunc(func(_ context.Context, req *plugin.GenerateRequest) (*plugin.GenerateResponse, error) {
+			return &plugin.GenerateResponse{}, nil
+		}),
 	}
 	_, err = generate(context.Background(), inputs, o)
 	if err != nil {
