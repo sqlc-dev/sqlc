@@ -39,6 +39,9 @@ message Query
 message Parameter
 {
   int32 number = 1;
+  // Parameter name, inferred from the SQL. Empty when sqlc cannot infer a name
+  // (codegen then falls back to a generated name like dollar_1).
+  string name = 2;
 }
 ```
 
@@ -69,6 +72,7 @@ sql:
       - no-delete
       - only-one-param
       - no-exec
+      - no-anonymous-params
 rules:
   - name: no-pg
     message: "invalid engine: postgresql"
@@ -86,6 +90,10 @@ rules:
     message: "don't use exec"
     rule: |
       query.cmd == "exec"
+  - name: no-anonymous-params
+    message: "don't use anonymous parameters"
+    rule: |
+      query.params.exists(p, p.name == "")
 ```
 
 ### Rules using `EXPLAIN ...` output
