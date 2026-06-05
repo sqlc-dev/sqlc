@@ -39,8 +39,6 @@ message Query
 message Parameter
 {
   int32 number = 1;
-  // Parameter name, inferred from the SQL. Empty when sqlc cannot infer a name
-  // (codegen then falls back to a generated name like dollar_1).
   string name = 2;
 }
 ```
