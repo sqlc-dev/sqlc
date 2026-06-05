@@ -693,6 +693,7 @@ func vetQuery(q *plugin.Query) *vet.Query {
 	for _, p := range q.Params {
 		params = append(params, &vet.Parameter{
 			Number: p.Number,
+			Name:   p.Column.GetName(),
 		})
 	}
 	return &vet.Query{
