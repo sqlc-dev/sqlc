@@ -82,6 +82,18 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 	foundFunc := astutils.Search(raw, named.IsParamFunc)
 	foundSign := astutils.Search(raw, named.IsParamSign)
 	hasNamedParameterSupport := engine != config.EngineMySQL
+
+	// SQLite uses numbered ?N for sqlc.arg() but also accepts bare ?. When both
+	// coexist we must number all placeholders in text order so that positional
+	// argument binding matches the generated ?N values.
+	foundBare := astutils.Search(raw, isBareParamRef)
+	hasMixedParams := engine == config.EngineSQLite &&
+		len(foundBare.Items) > 0 &&
+		len(foundFunc.Items)+len(foundSign.Items) > 0
+	if hasMixedParams {
+		numbs = nil
+	}
+
 	allParams := named.NewParamSet(numbs, hasNamedParameterSupport)
 
 	if len(foundFunc.Items)+len(foundSign.Items) == 0 {
@@ -183,10 +195,29 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			})
 			return false
 
+		case hasMixedParams && isBareParamRef(node):
+			ref := node.(*ast.ParamRef)
+			argn := allParams.AddAnonymous()
+			cr.Replace(&ast.ParamRef{
+				Number:   argn,
+				Location: ref.Location,
+			})
+			edits = append(edits, source.Edit{
+				Location: ref.Location - raw.StmtLocation,
+				Old:      "?",
+				New:      fmt.Sprintf("?%d", argn),
+			})
+			return false
+
 		default:
 			return true
 		}
 	}, nil)
 
 	return node.(*ast.RawStmt), allParams, edits
+}
+
+func isBareParamRef(node ast.Node) bool {
+	ref, ok := node.(*ast.ParamRef)
+	return ok && !ref.Dollar
 }
