@@ -111,6 +111,7 @@ message Query {
   repeated string comments = 6 [json_name = "comments"];
   string filename = 7 [json_name = "filename"];
   Identifier insert_into_table = 8 [json_name = "insert_into_table"];
+  repeated string source_tables = 9 [json_name = "source_tables"];
 }
 
 message Parameter {
