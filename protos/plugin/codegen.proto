@@ -111,6 +111,11 @@ message Query {
   repeated string comments = 6 [json_name = "comments"];
   string filename = 7 [json_name = "filename"];
   Identifier insert_into_table = 8 [json_name = "insert_into_table"];
+  // source_tables lists every base table a query reads from, including tables
+  // that appear only in a join, a subquery, or a common table expression body.
+  // Names are schema-qualified when a schema is present, deduplicated, and
+  // sorted ascending. Common table expression names and the write targets of
+  // INSERT, UPDATE, DELETE, and TRUNCATE statements are excluded.
   repeated string source_tables = 9 [json_name = "source_tables"];
 }
 

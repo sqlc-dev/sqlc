@@ -48,10 +48,11 @@ type Query struct {
 	Columns  []*Column
 	Params   []Parameter
 
-	// SourceTables lists the names of the base tables the query reads from,
-	// including tables that appear only in joins, subqueries, or common table
-	// expression bodies. Common table expression names and the target relations
-	// of write statements are excluded.
+	// SourceTables lists the base tables the query reads from, including tables
+	// that appear only in joins, subqueries, or common table expression bodies.
+	// Names are schema-qualified when a schema is present, deduplicated, and
+	// sorted. Common table expression names and the target relations of write
+	// statements are excluded.
 	SourceTables []string
 
 	// Needed for CopyFrom

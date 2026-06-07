@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"sort"
+	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
@@ -43,7 +44,7 @@ func sourceTableNames(root ast.Node) []string {
 	astutils.Walk(collect, root)
 
 	seen := map[string]struct{}{}
-	var names []string
+	names := []string{}
 	for _, rv := range rangeVars(root) {
 		if _, ok := writeTargets[rv]; ok {
 			continue
@@ -55,14 +56,31 @@ func sourceTableNames(root ast.Node) []string {
 		if _, ok := cteNames[table.Name]; ok {
 			continue
 		}
-		if _, ok := seen[table.Name]; ok {
+		name := qualifiedName(table)
+		if _, ok := seen[name]; ok {
 			continue
 		}
-		seen[table.Name] = struct{}{}
-		names = append(names, table.Name)
+		seen[name] = struct{}{}
+		names = append(names, name)
 	}
 	sort.Strings(names)
 	return names
+}
+
+// qualifiedName joins a table's catalog, schema, and name with dots, omitting
+// the parts that are empty. A table referenced without a schema is reported by
+// its bare name; one referenced with a schema keeps the schema so tables of the
+// same name in different schemas stay distinct.
+func qualifiedName(tn *ast.TableName) string {
+	parts := make([]string, 0, 3)
+	if tn.Catalog != "" {
+		parts = append(parts, tn.Catalog)
+	}
+	if tn.Schema != "" {
+		parts = append(parts, tn.Schema)
+	}
+	parts = append(parts, tn.Name)
+	return strings.Join(parts, ".")
 }
 
 func markRangeVars(set map[*ast.RangeVar]struct{}, node ast.Node) {

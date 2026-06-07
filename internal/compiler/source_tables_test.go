@@ -38,9 +38,14 @@ func TestSourceTableNames(t *testing.T) {
 			want: []string{"accounts"},
 		},
 		{
+			name: "schema-qualified tables stay distinct",
+			sql:  `SELECT 1 FROM audit.accounts JOIN accounts ON true`,
+			want: []string{"accounts", "audit.accounts"},
+		},
+		{
 			name: "no base tables",
 			sql:  `SELECT 1`,
-			want: nil,
+			want: []string{},
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
