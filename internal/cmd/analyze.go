@@ -3,6 +3,8 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -31,8 +33,12 @@ Examples:
   sqlc analyze --dialect mysql --schema schema.sql query.sql
 
   # Analyze a SQLite query
-  sqlc analyze --dialect sqlite --schema schema.sql query.sql`,
-	Args: cobra.ExactArgs(1),
+  sqlc analyze --dialect sqlite --schema schema.sql query.sql
+
+  # Analyze a query piped via stdin
+  echo "-- name: GetAuthor :one
+  SELECT * FROM authors WHERE id = $1;" | sqlc analyze --dialect postgresql --schema schema.sql`,
+	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		dialect, err := cmd.Flags().GetString("dialect")
 		if err != nil {
@@ -50,7 +56,38 @@ Examples:
 			return fmt.Errorf("--schema flag is required")
 		}
 
-		queryPath := args[0]
+		// The query comes from a file argument or, when none is given, from
+		// stdin. The compiler reads queries from files, so stdin is written to
+		// a temporary file.
+		var queryPath string
+		if len(args) == 1 {
+			queryPath = args[0]
+		} else {
+			stat, err := os.Stdin.Stat()
+			if err != nil {
+				return fmt.Errorf("failed to stat stdin: %w", err)
+			}
+			if (stat.Mode() & os.ModeCharDevice) != 0 {
+				return fmt.Errorf("no query provided. Specify a query file or pipe SQL via stdin")
+			}
+			data, err := io.ReadAll(cmd.InOrStdin())
+			if err != nil {
+				return fmt.Errorf("failed to read stdin: %w", err)
+			}
+			tmp, err := os.CreateTemp("", "sqlc-analyze-*.sql")
+			if err != nil {
+				return fmt.Errorf("failed to create temp file: %w", err)
+			}
+			defer os.Remove(tmp.Name())
+			if _, err := tmp.Write(data); err != nil {
+				tmp.Close()
+				return fmt.Errorf("failed to write temp file: %w", err)
+			}
+			if err := tmp.Close(); err != nil {
+				return fmt.Errorf("failed to close temp file: %w", err)
+			}
+			queryPath = tmp.Name()
+		}
 
 		var engine config.Engine
 		switch dialect {
