@@ -85,15 +85,17 @@ Examples:
 			return fmt.Errorf("parse error: %w", err)
 		}
 
-		// Output AST as JSON
+		// Output the AST as a single JSON document
+		raws := make([]*ast.RawStmt, 0, len(stmts))
+		for _, stmt := range stmts {
+			raws = append(raws, stmt.Raw)
+		}
+
 		stdout := cmd.OutOrStdout()
 		encoder := json.NewEncoder(stdout)
 		encoder.SetIndent("", "  ")
-
-		for _, stmt := range stmts {
-			if err := encoder.Encode(stmt.Raw); err != nil {
-				return fmt.Errorf("failed to encode AST: %w", err)
-			}
+		if err := encoder.Encode(raws); err != nil {
+			return fmt.Errorf("failed to encode AST: %w", err)
 		}
 
 		return nil
