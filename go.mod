@@ -2,7 +2,7 @@ module github.com/sqlc-dev/sqlc
 
 go 1.26.0
 
-toolchain go1.26.2
+toolchain go1.26.4
 
 require (
 	github.com/antlr4-go/antlr/v4 v4.13.1
