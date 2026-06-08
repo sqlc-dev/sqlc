@@ -507,9 +507,11 @@ func translate(node *nodes.Node) (ast.Node, error) {
 				return nil, err
 			}
 			fp := &ast.FuncParam{
-				Name: &arg.Name,
-				Type: rel.TypeName(),
-				Mode: mode,
+				Name:      &arg.Name,
+				Type:      rel.TypeName(),
+				Mode:      mode,
+				IsArray:   isArray(arg.ArgType),
+				ArrayDims: len(arg.ArgType.ArrayBounds),
 			}
 			if arg.Defexpr != nil {
 				fp.DefExpr = &ast.TODO{}
