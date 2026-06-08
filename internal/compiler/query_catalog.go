@@ -102,8 +102,9 @@ func (qc QueryCatalog) GetFunc(rel *ast.FuncName) (*Function, error) {
 		return nil, fmt.Errorf("function not found: %s", rel.Name)
 	}
 	return &Function{
-		Rel:        rel,
-		Outs:       funcs[0].OutArgs(),
-		ReturnType: funcs[0].ReturnType,
+		Rel:                rel,
+		Outs:               funcs[0].OutArgs(),
+		ReturnType:         funcs[0].ReturnType,
+		ReturnTableColumns: funcs[0].ReturnTableColumns(),
 	}, nil
 }

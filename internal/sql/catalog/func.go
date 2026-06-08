@@ -50,6 +50,17 @@ func (f *Function) OutArgs() []*Argument {
 	return args
 }
 
+func (f *Function) ReturnTableColumns() []*Argument {
+	var args []*Argument
+	for _, a := range f.Args {
+		switch a.Mode {
+		case ast.FuncParamTable:
+			args = append(args, a)
+		}
+	}
+	return args
+}
+
 func (c *Catalog) createFunction(stmt *ast.CreateFunctionStmt) error {
 	ns := stmt.Func.Schema
 	if ns == "" {
