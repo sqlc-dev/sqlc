@@ -4,8 +4,10 @@ import "github.com/sqlc-dev/sqlc/internal/sql/catalog"
 
 // toPointer converts an int to a pointer without a temporary
 // variable at the call-site, and is used by the generated schemas
+//
+//go:fix inline
 func toPointer(x int) *int {
-	return &x
+	return new(x)
 }
 
 func NewCatalog() *catalog.Catalog {

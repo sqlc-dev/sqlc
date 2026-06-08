@@ -144,7 +144,7 @@ func parse(raw string) map[string]string {
 	if raw == "" {
 		return out
 	}
-	for _, pair := range strings.Split(raw, ",") {
+	for pair := range strings.SplitSeq(raw, ",") {
 		pair = strings.TrimSpace(pair)
 		if pair == "" {
 			continue

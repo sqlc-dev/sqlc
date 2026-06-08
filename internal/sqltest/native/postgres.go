@@ -23,7 +23,7 @@ func StartPostgreSQLServer(ctx context.Context) (string, error) {
 	if postgresURI != "" {
 		return postgresURI, nil
 	}
-	value, err, _ := postgresFlight.Do("postgresql", func() (interface{}, error) {
+	value, err, _ := postgresFlight.Do("postgresql", func() (any, error) {
 		uri, err := startPostgreSQLServer(ctx)
 		if err != nil {
 			return "", err
