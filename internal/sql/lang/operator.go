@@ -41,3 +41,25 @@ func IsMathematicalOperator(s string) bool {
 	}
 	return true
 }
+
+func IsJSONOperator(s string) bool {
+	switch s {
+	case "->":
+	case "->>":
+	case "#>":
+	case "#>>":
+	default:
+		return false
+	}
+	return true
+}
+
+func IsJSONResultAsText(s string) bool {
+	switch s {
+	case "->>":
+	case "#>>":
+	default:
+		return false
+	}
+	return true
+}
