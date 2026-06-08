@@ -65,6 +65,10 @@ type Config struct {
 	Plugins   []Plugin             `json:"plugins" yaml:"plugins"`
 	Rules     []Rule               `json:"rules" yaml:"rules"`
 	Options   map[string]yaml.Node `json:"options" yaml:"options"`
+
+	// expect `$schema` so that parsing a json file which contains `$schema` will not
+	// cause error
+	Schema string `json:"$schema,omitempty" yaml:"$schema,omitempty"`
 }
 
 type Server struct {
