@@ -17,7 +17,7 @@ type File struct {
 }
 
 func main() {
-	in := make(map[string]interface{})
+	in := make(map[string]any)
 	decoder := json.NewDecoder(os.Stdin)
 	err := decoder.Decode(&in)
 	if err != nil {
@@ -26,9 +26,9 @@ func main() {
 	}
 
 	buf := bytes.NewBuffer(nil)
-	queries := in["queries"].([]interface{})
+	queries := in["queries"].([]any)
 	for _, q := range queries {
-		text := q.(map[string]interface{})["text"].(string)
+		text := q.(map[string]any)["text"].(string)
 		buf.WriteString(text)
 		buf.WriteString("\n")
 	}

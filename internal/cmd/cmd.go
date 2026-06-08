@@ -100,7 +100,7 @@ var initCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		var yamlConfig interface{}
+		var yamlConfig any
 		if useV1 {
 			yamlConfig = config.V1GenerateSettings{Version: "1"}
 		} else {
