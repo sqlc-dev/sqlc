@@ -1,0 +1,14 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "sql_package": "database/sql",
+      "sql_driver": "github.com/go-sql-driver/mysql",
+      "engine": "mysql",
+      "name": "querytest",
+      "schema": "schema.sql",
+      "queries": "query.sql"
+    }
+  ]
+}
