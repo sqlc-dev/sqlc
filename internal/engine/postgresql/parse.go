@@ -578,6 +578,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 
 		case nodes.ObjectType_OBJECT_TABLE, nodes.ObjectType_OBJECT_VIEW, nodes.ObjectType_OBJECT_MATVIEW:
 			drop := &ast.DropTableStmt{
+				Behavior: ast.DropBehavior(n.Behavior),
 				IfExists: n.MissingOk,
 			}
 			for _, obj := range n.Objects {

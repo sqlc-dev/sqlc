@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 
 	"github.com/google/go-cmp/cmp"
@@ -167,4 +169,120 @@ func TestUpdateErrors(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDropTableCascadeViewRecreate(t *testing.T) {
+	// Regression test for https://github.com/sqlc-dev/sqlc/issues/4416
+	// DROP TABLE CASCADE should remove dependent views from the catalog,
+	// allowing a subsequent CREATE VIEW with the same name to succeed.
+	p := NewParser()
+
+	// First: create the table
+	stmts1, err := p.Parse(strings.NewReader(`
+		CREATE TABLE reference_rates (id BIGSERIAL PRIMARY KEY);
+	`))
+	if err != nil {
+		t.Fatalf("parse error: %v", err)
+	}
+
+	c := NewCatalog()
+	if err := c.Build(stmts1); err != nil {
+		t.Fatalf("create table error: %v", err)
+	}
+
+	// Manually add a view that depends on reference_rates to the catalog
+	var schema *catalog.Schema
+	for _, s := range c.Schemas {
+		if s.Name == "public" {
+			schema = s
+		}
+	}
+	schema.Tables = append(schema.Tables, &catalog.Table{
+		Rel:     &ast.TableName{Schema: "public", Name: "vw_reference_rates"},
+		Columns: []*catalog.Column{{Name: "id"}},
+		DependsOnTables: []*ast.TableName{
+			{Schema: "public", Name: "reference_rates"},
+		},
+	})
+
+	// Verify the view exists
+	if !viewExists(schema, "vw_reference_rates") {
+		t.Fatal("view not found in catalog before drop")
+	}
+
+	// Second: DROP TABLE CASCADE
+	stmts2, err := p.Parse(strings.NewReader(`
+		DROP TABLE reference_rates CASCADE;
+	`))
+	if err != nil {
+		t.Fatalf("parse error: %v", err)
+	}
+	if err := c.Build(stmts2); err != nil {
+		t.Fatalf("DROP TABLE CASCADE error: %v", err)
+	}
+
+	// Verify the view was removed
+	if viewExists(schema, "vw_reference_rates") {
+		t.Fatal("expected view to be removed by CASCADE, but it still exists")
+	}
+}
+
+func TestDropTableCascadeWithoutCascadeFails(t *testing.T) {
+	// Without CASCADE, dropping a table that has a dependent view leaves the view
+	// in the catalog (matching current sqlc behavior, though real PostgreSQL would
+	// reject DROP TABLE without CASCADE when views depend on it).
+	p := NewParser()
+
+	// Create the table
+	stmts1, err := p.Parse(strings.NewReader(`
+		CREATE TABLE reference_rates (id BIGSERIAL PRIMARY KEY);
+	`))
+	if err != nil {
+		t.Fatalf("parse error: %v", err)
+	}
+
+	c := NewCatalog()
+	if err := c.Build(stmts1); err != nil {
+		t.Fatalf("create table error: %v", err)
+	}
+
+	// Manually add a view that depends on reference_rates
+	schema := c.Schemas[0]
+	for _, s := range c.Schemas {
+		if s.Name == "public" {
+			schema = s
+		}
+	}
+	schema.Tables = append(schema.Tables, &catalog.Table{
+		Rel:     &ast.TableName{Schema: "public", Name: "vw_reference_rates"},
+		Columns: []*catalog.Column{{Name: "id"}},
+		DependsOnTables: []*ast.TableName{
+			{Schema: "public", Name: "reference_rates"},
+		},
+	})
+
+	// DROP TABLE without CASCADE
+	stmts2, err := p.Parse(strings.NewReader(`
+		DROP TABLE reference_rates;
+	`))
+	if err != nil {
+		t.Fatalf("parse error: %v", err)
+	}
+	if err := c.Build(stmts2); err != nil {
+		t.Fatalf("DROP TABLE error: %v", err)
+	}
+
+	// Without CASCADE, the view should still exist in the catalog
+	if !viewExists(schema, "vw_reference_rates") {
+		t.Fatal("expected view to still exist without CASCADE, but it was removed")
+	}
+}
+
+func viewExists(schema *catalog.Schema, name string) bool {
+	for _, tbl := range schema.Tables {
+		if tbl.Rel.Name == name {
+			return true
+		}
+	}
+	return false
 }
