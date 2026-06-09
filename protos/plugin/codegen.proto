@@ -73,6 +73,7 @@ message Table {
   Identifier rel = 1;
   repeated Column columns = 2;
   string comment = 3;
+  bool hidden = 4;
 }
 
 message Identifier {
