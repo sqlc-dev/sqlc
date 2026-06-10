@@ -39,6 +39,12 @@ type Column struct {
 
 	IsSqlcSlice bool // is this sqlc.slice()
 
+	// IsSystem indicates this is a PostgreSQL system column synthesized by
+	// QueryCatalog.GetTable (tableoid, xmin, cmin, xmax, cmax, ctid). System
+	// columns are excluded from SELECT * / RETURNING * expansion to match
+	// PostgreSQL's own behavior.
+	IsSystem bool
+
 	skipTableRequiredCheck bool
 }
 
