@@ -13,6 +13,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/multierr"
 	"github.com/sqlc-dev/sqlc/internal/opts"
+	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
 var analyzeCmd = &cobra.Command{
@@ -37,7 +38,10 @@ Examples:
 
   # Analyze a query piped via stdin
   echo "-- name: GetAuthor :one
-  SELECT * FROM authors WHERE id = $1;" | sqlc analyze --dialect postgresql --schema schema.sql`,
+  SELECT * FROM authors WHERE id = $1;" | sqlc analyze --dialect postgresql --schema schema.sql
+
+  # Include the statement AST in the output
+  sqlc analyze --dialect postgresql --schema schema.sql --ast query.sql`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		dialect, err := cmd.Flags().GetString("dialect")
@@ -54,6 +58,11 @@ Examples:
 		}
 		if schemaPath == "" {
 			return fmt.Errorf("--schema flag is required")
+		}
+
+		includeAST, err := cmd.Flags().GetBool("ast")
+		if err != nil {
+			return err
 		}
 
 		// The query comes from a file argument or, when none is given, from
@@ -127,7 +136,7 @@ Examples:
 
 		out := make([]analyzedQuery, 0, len(result.Queries))
 		for _, q := range result.Queries {
-			out = append(out, newAnalyzedQuery(q))
+			out = append(out, newAnalyzedQuery(q, includeAST))
 		}
 
 		stdout := cmd.OutOrStdout()
@@ -165,6 +174,7 @@ type analyzedQuery struct {
 	Cmd     string           `json:"cmd"`
 	Columns []analyzedColumn `json:"columns"`
 	Params  []analyzedParam  `json:"params"`
+	AST     *ast.RawStmt     `json:"ast,omitempty"`
 }
 
 type analyzedColumn struct {
@@ -180,7 +190,7 @@ type analyzedParam struct {
 	Column analyzedColumn `json:"column"`
 }
 
-func newAnalyzedQuery(q *compiler.Query) analyzedQuery {
+func newAnalyzedQuery(q *compiler.Query, includeAST bool) analyzedQuery {
 	aq := analyzedQuery{
 		Name:    q.Metadata.Name,
 		Cmd:     q.Metadata.Cmd,
@@ -195,6 +205,9 @@ func newAnalyzedQuery(q *compiler.Query) analyzedQuery {
 			Number: p.Number,
 			Column: newAnalyzedColumn(p.Column),
 		})
+	}
+	if includeAST {
+		aq.AST = q.RawStmt
 	}
 	return aq
 }

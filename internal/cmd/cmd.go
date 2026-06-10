@@ -35,6 +35,7 @@ func init() {
 	parseCmd.Flags().StringP("dialect", "d", "", "SQL dialect to use (postgresql, mysql, or sqlite)")
 	analyzeCmd.Flags().StringP("dialect", "d", "", "SQL dialect to use (postgresql, mysql, or sqlite)")
 	analyzeCmd.Flags().StringP("schema", "s", "", "path to the schema file")
+	analyzeCmd.Flags().BoolP("ast", "", false, "include the statement AST in the output")
 }
 
 // Do runs the command logic.
