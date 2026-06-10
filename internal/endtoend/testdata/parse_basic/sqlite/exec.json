@@ -1,0 +1,5 @@
+{
+  "command": "parse",
+  "args": ["--dialect", "sqlite", "query.sql"],
+  "contexts": ["base"]
+}

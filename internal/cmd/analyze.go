@@ -16,10 +16,11 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
-var analyzeCmd = &cobra.Command{
-	Use:   "analyze [query-file]",
-	Short: "Analyze a query against a schema and output the result columns and parameters",
-	Long: `Analyze a query file against a schema file and output the inferred result
+func newAnalyzeCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "analyze [query-file]",
+		Short: "Analyze a query against a schema and output the result columns and parameters",
+		Long: `Analyze a query file against a schema file and output the inferred result
 columns and parameters as JSON.
 
 Unlike "sqlc generate", this command does not require a configuration file and
@@ -42,112 +43,117 @@ Examples:
 
   # Include the statement AST in the output
   sqlc analyze --dialect postgresql --schema schema.sql --ast query.sql`,
-	Args: cobra.MaximumNArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		dialect, err := cmd.Flags().GetString("dialect")
-		if err != nil {
-			return err
-		}
-		if dialect == "" {
-			return fmt.Errorf("--dialect flag is required (postgresql, mysql, or sqlite)")
-		}
-
-		schemaPath, err := cmd.Flags().GetString("schema")
-		if err != nil {
-			return err
-		}
-		if schemaPath == "" {
-			return fmt.Errorf("--schema flag is required")
-		}
-
-		includeAST, err := cmd.Flags().GetBool("ast")
-		if err != nil {
-			return err
-		}
-
-		// The query comes from a file argument or, when none is given, from
-		// stdin. The compiler reads queries from files, so stdin is written to
-		// a temporary file.
-		var queryPath string
-		if len(args) == 1 {
-			queryPath = args[0]
-		} else {
-			stat, err := os.Stdin.Stat()
+		Args: cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			dialect, err := cmd.Flags().GetString("dialect")
 			if err != nil {
-				return fmt.Errorf("failed to stat stdin: %w", err)
+				return err
 			}
-			if (stat.Mode() & os.ModeCharDevice) != 0 {
-				return fmt.Errorf("no query provided. Specify a query file or pipe SQL via stdin")
+			if dialect == "" {
+				return fmt.Errorf("--dialect flag is required (postgresql, mysql, or sqlite)")
 			}
-			data, err := io.ReadAll(cmd.InOrStdin())
+
+			schemaPath, err := cmd.Flags().GetString("schema")
 			if err != nil {
-				return fmt.Errorf("failed to read stdin: %w", err)
+				return err
 			}
-			tmp, err := os.CreateTemp("", "sqlc-analyze-*.sql")
+			if schemaPath == "" {
+				return fmt.Errorf("--schema flag is required")
+			}
+
+			includeAST, err := cmd.Flags().GetBool("ast")
 			if err != nil {
-				return fmt.Errorf("failed to create temp file: %w", err)
+				return err
 			}
-			defer os.Remove(tmp.Name())
-			if _, err := tmp.Write(data); err != nil {
-				tmp.Close()
-				return fmt.Errorf("failed to write temp file: %w", err)
+
+			// The query comes from a file argument or, when none is given, from
+			// stdin. The compiler reads queries from files, so stdin is written to
+			// a temporary file.
+			var queryPath string
+			if len(args) == 1 {
+				queryPath = args[0]
+			} else {
+				stat, err := os.Stdin.Stat()
+				if err != nil {
+					return fmt.Errorf("failed to stat stdin: %w", err)
+				}
+				if (stat.Mode() & os.ModeCharDevice) != 0 {
+					return fmt.Errorf("no query provided. Specify a query file or pipe SQL via stdin")
+				}
+				data, err := io.ReadAll(cmd.InOrStdin())
+				if err != nil {
+					return fmt.Errorf("failed to read stdin: %w", err)
+				}
+				tmp, err := os.CreateTemp("", "sqlc-analyze-*.sql")
+				if err != nil {
+					return fmt.Errorf("failed to create temp file: %w", err)
+				}
+				defer os.Remove(tmp.Name())
+				if _, err := tmp.Write(data); err != nil {
+					tmp.Close()
+					return fmt.Errorf("failed to write temp file: %w", err)
+				}
+				if err := tmp.Close(); err != nil {
+					return fmt.Errorf("failed to close temp file: %w", err)
+				}
+				queryPath = tmp.Name()
 			}
-			if err := tmp.Close(); err != nil {
-				return fmt.Errorf("failed to close temp file: %w", err)
+
+			var engine config.Engine
+			switch dialect {
+			case "postgresql", "postgres", "pg":
+				engine = config.EnginePostgreSQL
+			case "mysql":
+				engine = config.EngineMySQL
+			case "sqlite":
+				engine = config.EngineSQLite
+			default:
+				return fmt.Errorf("unsupported dialect: %s (use postgresql, mysql, or sqlite)", dialect)
 			}
-			queryPath = tmp.Name()
-		}
 
-		var engine config.Engine
-		switch dialect {
-		case "postgresql", "postgres", "pg":
-			engine = config.EnginePostgreSQL
-		case "mysql":
-			engine = config.EngineMySQL
-		case "sqlite":
-			engine = config.EngineSQLite
-		default:
-			return fmt.Errorf("unsupported dialect: %s (use postgresql, mysql, or sqlite)", dialect)
-		}
+			sql := config.SQL{
+				Engine:  engine,
+				Schema:  config.Paths{schemaPath},
+				Queries: config.Paths{queryPath},
+			}
+			combo := config.Combine(config.Config{}, sql)
+			parserOpts := opts.Parser{}
 
-		sql := config.SQL{
-			Engine:  engine,
-			Schema:  config.Paths{schemaPath},
-			Queries: config.Paths{queryPath},
-		}
-		combo := config.Combine(config.Config{}, sql)
-		parserOpts := opts.Parser{}
+			ctx := cmd.Context()
+			c, err := compiler.NewCompiler(sql, combo, parserOpts)
+			if err != nil {
+				return fmt.Errorf("error creating compiler: %w", err)
+			}
+			defer c.Close(ctx)
 
-		ctx := cmd.Context()
-		c, err := compiler.NewCompiler(sql, combo, parserOpts)
-		if err != nil {
-			return fmt.Errorf("error creating compiler: %w", err)
-		}
-		defer c.Close(ctx)
+			if err := c.ParseCatalog(sql.Schema); err != nil {
+				return fmt.Errorf("error parsing schema: %w", formatParseError(err))
+			}
+			if err := c.ParseQueries(sql.Queries, parserOpts); err != nil {
+				return fmt.Errorf("error parsing queries: %w", formatParseError(err))
+			}
 
-		if err := c.ParseCatalog(sql.Schema); err != nil {
-			return fmt.Errorf("error parsing schema: %w", formatParseError(err))
-		}
-		if err := c.ParseQueries(sql.Queries, parserOpts); err != nil {
-			return fmt.Errorf("error parsing queries: %w", formatParseError(err))
-		}
+			result := c.Result()
 
-		result := c.Result()
+			out := make([]analyzedQuery, 0, len(result.Queries))
+			for _, q := range result.Queries {
+				out = append(out, newAnalyzedQuery(q, includeAST))
+			}
 
-		out := make([]analyzedQuery, 0, len(result.Queries))
-		for _, q := range result.Queries {
-			out = append(out, newAnalyzedQuery(q, includeAST))
-		}
+			stdout := cmd.OutOrStdout()
+			encoder := json.NewEncoder(stdout)
+			encoder.SetIndent("", "  ")
+			if err := encoder.Encode(out); err != nil {
+				return fmt.Errorf("failed to encode analysis: %w", err)
+			}
 
-		stdout := cmd.OutOrStdout()
-		encoder := json.NewEncoder(stdout)
-		encoder.SetIndent("", "  ")
-		if err := encoder.Encode(out); err != nil {
-			return fmt.Errorf("failed to encode analysis: %w", err)
-		}
-
-		return nil
-	},
+			return nil
+		},
+	}
+	cmd.Flags().StringP("dialect", "d", "", "SQL dialect to use (postgresql, mysql, or sqlite)")
+	cmd.Flags().StringP("schema", "s", "", "path to the schema file")
+	cmd.Flags().BoolP("ast", "", false, "include the statement AST in the output")
+	return cmd
 }
 
 // formatParseError unwraps a multierr.Error into a single error containing all

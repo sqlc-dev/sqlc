@@ -1,0 +1,34 @@
+[
+  {
+    "name": "GetUser",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "data_type": "INTEGER",
+        "not_null": true,
+        "is_array": false,
+        "table": "users"
+      },
+      {
+        "name": "name",
+        "data_type": "TEXT",
+        "not_null": true,
+        "is_array": false,
+        "table": "users"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "data_type": "INTEGER",
+          "not_null": true,
+          "is_array": false,
+          "table": "users"
+        }
+      }
+    ]
+  }
+]
