@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -12,13 +13,35 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
+	"github.com/sqlc-dev/sqlc/internal/metadata"
+	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
+
+// dialectParser is the subset of the engine parsers that the parse command
+// needs: parsing SQL into statements and reporting the dialect's comment syntax
+// (used to extract the sqlc query name and command).
+type dialectParser interface {
+	Parse(io.Reader) ([]ast.Statement, error)
+	CommentSyntax() source.CommentSyntax
+}
+
+// parsedStatement is the JSON representation of a single parsed statement. The
+// name and cmd are extracted from the sqlc query annotation (e.g.
+// "-- name: GetAuthor :one") and are omitted when the statement has none.
+type parsedStatement struct {
+	Name string       `json:"name,omitempty"`
+	Cmd  string       `json:"cmd,omitempty"`
+	AST  *ast.RawStmt `json:"ast"`
+}
 
 var parseCmd = &cobra.Command{
 	Use:   "parse [file]",
 	Short: "Parse SQL and output the AST as JSON",
 	Long: `Parse SQL from a file or stdin and output the abstract syntax tree as JSON.
+
+Each statement is reported with its sqlc query name and command (when the
+statement carries a "-- name:" annotation) alongside the AST.
 
 Examples:
   # Parse a SQL file with PostgreSQL dialect
@@ -63,38 +86,56 @@ Examples:
 			input = cmd.InOrStdin()
 		}
 
-		// Parse SQL based on dialect
-		var stmts []ast.Statement
+		// Select the parser for the requested dialect
+		var parser dialectParser
 		switch dialect {
 		case "postgresql", "postgres", "pg":
-			parser := postgresql.NewParser()
-			stmts, err = parser.Parse(input)
+			parser = postgresql.NewParser()
 		case "mysql":
-			parser := dolphin.NewParser()
-			stmts, err = parser.Parse(input)
+			parser = dolphin.NewParser()
 		case "sqlite":
-			parser := sqlite.NewParser()
-			stmts, err = parser.Parse(input)
+			parser = sqlite.NewParser()
 		case "clickhouse":
-			parser := clickhouse.NewParser()
-			stmts, err = parser.Parse(input)
+			parser = clickhouse.NewParser()
 		default:
 			return fmt.Errorf("unsupported dialect: %s (use postgresql, mysql, sqlite, or clickhouse)", dialect)
 		}
+
+		// Read the full source so each statement's name and command can be
+		// extracted from its annotation comment.
+		src, err := io.ReadAll(input)
+		if err != nil {
+			return fmt.Errorf("failed to read input: %w", err)
+		}
+
+		stmts, err := parser.Parse(strings.NewReader(string(src)))
 		if err != nil {
 			return fmt.Errorf("parse error: %w", err)
 		}
 
+		commentSyntax := metadata.CommentSyntax(parser.CommentSyntax())
+
 		// Output the AST as a single JSON document
-		raws := make([]*ast.RawStmt, 0, len(stmts))
+		out := make([]parsedStatement, 0, len(stmts))
 		for _, stmt := range stmts {
-			raws = append(raws, stmt.Raw)
+			ps := parsedStatement{AST: stmt.Raw}
+			rawSQL, err := source.Pluck(string(src), stmt.Raw.StmtLocation, stmt.Raw.StmtLen)
+			if err != nil {
+				return fmt.Errorf("failed to read statement source: %w", err)
+			}
+			name, cmd, err := metadata.ParseQueryNameAndType(rawSQL, commentSyntax)
+			if err != nil {
+				return fmt.Errorf("failed to parse query annotation: %w", err)
+			}
+			ps.Name = name
+			ps.Cmd = cmd
+			out = append(out, ps)
 		}
 
 		stdout := cmd.OutOrStdout()
 		encoder := json.NewEncoder(stdout)
 		encoder.SetIndent("", "  ")
-		if err := encoder.Encode(raws); err != nil {
+		if err := encoder.Encode(out); err != nil {
 			return fmt.Errorf("failed to encode AST: %w", err)
 		}
 
