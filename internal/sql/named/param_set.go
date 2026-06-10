@@ -47,6 +47,14 @@ func (p *ParamSet) Add(param Param) int {
 	return argn
 }
 
+// AddAnonymous allocates the next available parameter position without
+// associating a name. Used for bare ? placeholders that need explicit numbering.
+func (p *ParamSet) AddAnonymous() int {
+	argn := p.nextArgNum()
+	p.positionToName[argn] = ""
+	return argn
+}
+
 // FetchMerge fetches an indexed parameter, and merges `mergeP` into it
 // Returns: the merged parameter and whether it was a named parameter
 func (p *ParamSet) FetchMerge(idx int, mergeP Param) (param Param, isNamed bool) {
