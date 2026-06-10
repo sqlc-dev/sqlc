@@ -1,0 +1,6 @@
+-- Example queries for sqlc
+CREATE TABLE USERS
+(
+  ID TEXT NOT NULL,
+  USERNAME TEXT NOT NULL
+);
