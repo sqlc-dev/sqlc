@@ -27,7 +27,9 @@ type Compiler struct {
 	client   dbmanager.Client
 	selector selector
 
-	schema []string
+	schema      []string
+	applySchema []string
+	warns       []string
 
 	// databaseOnlyMode indicates that the compiler should use database-only analysis
 	// and skip building the internal catalog from schema files (analyzer.database: only)
@@ -125,6 +127,17 @@ func (c *Compiler) ParseCatalog(schema []string) error {
 	return c.parseCatalog(schema)
 }
 
+func (c *Compiler) usesManagedAnalyzer() bool {
+	return c.analyzer != nil && c.conf.Database != nil && c.conf.Database.Managed
+}
+
+func (c *Compiler) analyzerMigrations() []string {
+	if c.usesManagedAnalyzer() {
+		return c.applySchema
+	}
+	return c.schema
+}
+
 func (c *Compiler) ParseQueries(queries []string, o opts.Parser) error {
 	r, err := c.parseQueries(o)
 	if err != nil {
@@ -136,6 +149,12 @@ func (c *Compiler) ParseQueries(queries []string, o opts.Parser) error {
 
 func (c *Compiler) Result() *Result {
 	return c.result
+}
+
+// Warnings returns a copy of any non-fatal schema preprocessing warnings
+// collected while parsing the catalog.
+func (c *Compiler) Warnings() []string {
+	return append([]string(nil), c.warns...)
 }
 
 func (c *Compiler) Close(ctx context.Context) {
