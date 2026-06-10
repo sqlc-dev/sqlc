@@ -4,6 +4,7 @@ package vet;
 
 message Parameter {
   int32 number = 1 [json_name = "number"];
+  string name = 2 [json_name = "name"];
 }
 
 message Config {
