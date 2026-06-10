@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"os"
 	osexec "os/exec"
 	"path/filepath"
@@ -298,6 +299,28 @@ func TestReplay(t *testing.T) {
 					}
 				case "vet":
 					err = cmd.Vet(ctx, path, "", &opts)
+				case "parse", "analyze":
+					// These commands are config-less and flag-driven. Run them
+					// through the real CLI entry point from inside the test
+					// directory so file arguments resolve and the output stays
+					// independent of the absolute path.
+					var stdout bytes.Buffer
+					wd, werr := os.Getwd()
+					if werr != nil {
+						t.Fatal(werr)
+					}
+					if cerr := os.Chdir(path); cerr != nil {
+						t.Fatal(cerr)
+					}
+					code := cmd.Do(append([]string{args.Command}, args.Args...), nil, &stdout, &stderr)
+					if cerr := os.Chdir(wd); cerr != nil {
+						t.Fatal(cerr)
+					}
+					if code != 0 {
+						err = fmt.Errorf("%s exited with code %d", args.Command, code)
+					} else if diff := cmp.Diff(strings.TrimSpace(string(tc.Stdout)), strings.TrimSpace(stdout.String()), lineEndings()); diff != "" {
+						t.Errorf("stdout differed (-want +got):\n%s", diff)
+					}
 				default:
 					t.Fatalf("unknown command")
 				}

@@ -20,6 +20,11 @@ func TestValidSchema(t *testing.T) {
 			}
 		}
 
+		// Config-less command tests (parse, analyze) have no schema to validate.
+		if replay.ConfigName == "" {
+			continue
+		}
+
 		file := filepath.Join(replay.Path, replay.ConfigName)
 		rd, err := os.Open(file)
 		if err != nil {

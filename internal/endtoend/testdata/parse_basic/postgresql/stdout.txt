@@ -1,0 +1,60 @@
+[
+  {
+    "name": "GetValue",
+    "cmd": ":one",
+    "ast": {
+      "Stmt": {
+        "DistinctClause": {
+          "Items": null
+        },
+        "IntoClause": null,
+        "TargetList": {
+          "Items": [
+            {
+              "Name": null,
+              "Indirection": {
+                "Items": null
+              },
+              "Val": {
+                "Val": {
+                  "Ival": 1
+                },
+                "Location": 30
+              },
+              "Location": 30
+            }
+          ]
+        },
+        "FromClause": {
+          "Items": null
+        },
+        "WhereClause": {},
+        "GroupClause": {
+          "Items": null
+        },
+        "HavingClause": {},
+        "WindowClause": {
+          "Items": null
+        },
+        "ValuesLists": {
+          "Items": null
+        },
+        "SortClause": {
+          "Items": null
+        },
+        "LimitOffset": {},
+        "LimitCount": {},
+        "LockingClause": {
+          "Items": null
+        },
+        "WithClause": null,
+        "Op": 0,
+        "All": false,
+        "Larg": null,
+        "Rarg": null
+      },
+      "StmtLocation": 0,
+      "StmtLen": 31
+    }
+  }
+]

@@ -32,6 +32,10 @@ func TestFormat(t *testing.T) {
 	t.Parallel()
 	for _, tc := range FindTests(t, "testdata", "base") {
 		tc := tc
+		// Config-less command tests (parse, analyze) have no config to format.
+		if tc.ConfigName == "" {
+			continue
+		}
 		t.Run(tc.Name, func(t *testing.T) {
 			// Parse the config file to determine the engine
 			configPath := filepath.Join(tc.Path, tc.ConfigName)

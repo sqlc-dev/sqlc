@@ -1,0 +1,41 @@
+[
+  {
+    "name": "GetAuthor",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "data_type": "bigserial",
+        "not_null": true,
+        "is_array": false,
+        "table": "authors"
+      },
+      {
+        "name": "name",
+        "data_type": "text",
+        "not_null": true,
+        "is_array": false,
+        "table": "authors"
+      },
+      {
+        "name": "bio",
+        "data_type": "text",
+        "not_null": false,
+        "is_array": false,
+        "table": "authors"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "data_type": "bigserial",
+          "not_null": true,
+          "is_array": false,
+          "table": "authors"
+        }
+      }
+    ]
+  }
+]

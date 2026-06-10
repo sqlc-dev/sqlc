@@ -1,0 +1,5 @@
+{
+  "command": "parse",
+  "args": ["--dialect", "postgresql", "query.sql"],
+  "contexts": ["base"]
+}
