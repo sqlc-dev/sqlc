@@ -155,7 +155,13 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 				// TODO: Generate a name for these operations
 				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
 			case lang.IsMathematicalOperator(op):
-				cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
+				if inferredCol := c.inferExprType(n, tables); inferredCol != nil {
+					inferredCol.Name = name
+					inferredCol.skipTableRequiredCheck = true
+					cols = append(cols, inferredCol)
+				} else {
+					cols = append(cols, &Column{Name: name, DataType: "int", NotNull: true})
+				}
 			default:
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}
