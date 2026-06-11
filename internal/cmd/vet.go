@@ -474,15 +474,22 @@ func (c *checker) checkSQL(ctx context.Context, s config.SQL) error {
 	combo := config.Combine(*c.Conf, s)
 
 	// TODO: This feels like a hack that will bite us later
+	// TODO: This feels like a hack that will bite us later
+	joinDir := func(p string) string {
+		if filepath.IsAbs(p) {
+			return p
+		}
+		return filepath.Join(c.Dir, p)
+	}
 	joined := make([]string, 0, len(s.Schema))
-	for _, s := range s.Schema {
-		joined = append(joined, filepath.Join(c.Dir, s))
+	for _, p := range s.Schema {
+		joined = append(joined, joinDir(p))
 	}
 	s.Schema = joined
 
 	joined = make([]string, 0, len(s.Queries))
 	for _, q := range s.Queries {
-		joined = append(joined, filepath.Join(c.Dir, q))
+		joined = append(joined, joinDir(q))
 	}
 	s.Queries = joined
 
