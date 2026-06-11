@@ -113,6 +113,25 @@ func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
 }
 ```
 
+## `:first`
+
+The generated method will return a pointer to a single record via
+[QueryRowContext](https://golang.org/pkg/database/sql/#DB.QueryRowContext).
+If there are no results, it returns `nil, nil`.
+
+```sql
+-- name: GetAuthor :first
+SELECT * FROM authors
+WHERE id = $1 LIMIT 1;
+```
+
+```go
+func (q *Queries) GetAuthor(ctx context.Context, id int64) (*Author, error) {
+	row := q.db.QueryRowContext(ctx, getAuthor, id)
+	// ...
+}
+```
+
 ## `:batchexec`
 
 __NOTE: This command only works with PostgreSQL using the `pgx/v4` and `pgx/v5` drivers and outputting Go code.__
