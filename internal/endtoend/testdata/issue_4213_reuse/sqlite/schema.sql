@@ -1,0 +1,5 @@
+CREATE TABLE mytable (
+    id INTEGER PRIMARY KEY,
+    typ INTEGER NOT NULL,
+    name TEXT NOT NULL
+);

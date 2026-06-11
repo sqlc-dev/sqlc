@@ -12,7 +12,7 @@ import (
 
 const funcParamIdent = `-- name: FuncParamIdent :many
 SELECT name FROM foo
-WHERE name = ?1
+WHERE name = ?
   AND id IN (/*SLICE:favourites*/?)
 `
 

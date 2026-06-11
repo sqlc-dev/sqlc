@@ -81,7 +81,20 @@ func paramFromFuncCall(call *ast.FuncCall) (named.Param, string) {
 func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool, dollar bool) (*ast.RawStmt, *named.ParamSet, []source.Edit) {
 	foundFunc := astutils.Search(raw, named.IsParamFunc)
 	foundSign := astutils.Search(raw, named.IsParamSign)
+
+	hasSlice := false
+	for _, item := range foundFunc.Items {
+		if call, ok := item.(*ast.FuncCall); ok && call.Func.Name == "slice" {
+			hasSlice = true
+			break
+		}
+	}
+
 	hasNamedParameterSupport := engine != config.EngineMySQL
+	if engine == config.EngineSQLite && hasSlice {
+		hasNamedParameterSupport = false
+	}
+
 	allParams := named.NewParamSet(numbs, hasNamedParameterSupport)
 
 	if len(foundFunc.Items)+len(foundSign.Items) == 0 {
@@ -108,7 +121,7 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 					// since it's needed during template generation for replacement
 					replace = fmt.Sprintf(`/*SLICE:%s*/?`, param.Name())
 				} else {
-					if engine == config.EngineSQLite {
+					if engine == config.EngineSQLite && hasNamedParameterSupport {
 						replace = fmt.Sprintf("?%d", argn)
 					} else {
 						replace = "?"
@@ -143,7 +156,11 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			if engine == config.EngineMySQL || !dollar {
 				replace = "?"
 			} else if engine == config.EngineSQLite {
-				replace = fmt.Sprintf("?%d", argn)
+				if hasNamedParameterSupport {
+					replace = fmt.Sprintf("?%d", argn)
+				} else {
+					replace = "?"
+				}
 			} else {
 				replace = fmt.Sprintf("$%d", argn)
 			}
@@ -171,7 +188,11 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			if engine == config.EngineMySQL || !dollar {
 				replace = "?"
 			} else if engine == config.EngineSQLite {
-				replace = fmt.Sprintf("?%d", argn)
+				if hasNamedParameterSupport {
+					replace = fmt.Sprintf("?%d", argn)
+				} else {
+					replace = "?"
+				}
 			} else {
 				replace = fmt.Sprintf("$%d", argn)
 			}
