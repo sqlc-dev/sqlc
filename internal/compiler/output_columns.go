@@ -521,7 +521,6 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 
 	var tables []*Table
 	for _, item := range list.Items {
-		item := item
 		switch n := item.(type) {
 
 		case *ast.RangeFunction:
