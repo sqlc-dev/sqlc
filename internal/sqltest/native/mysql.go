@@ -23,7 +23,7 @@ func StartMySQLServer(ctx context.Context) (string, error) {
 	if mysqlURI != "" {
 		return mysqlURI, nil
 	}
-	value, err, _ := mysqlFlight.Do("mysql", func() (interface{}, error) {
+	value, err, _ := mysqlFlight.Do("mysql", func() (any, error) {
 		uri, err := startMySQLServer(ctx)
 		if err != nil {
 			return "", err
