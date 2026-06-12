@@ -18,6 +18,12 @@ type QueryValue struct {
 	Typ         string
 	SQLDriver   opts.SQLDriver
 
+	// DefinedElsewhere suppresses emitting this value's struct definition
+	// because another query already emits an identical one (e.g. sqlc.switch
+	// branches that share a single Params/Row struct). The struct is still used
+	// by value in the method signature.
+	DefinedElsewhere bool
+
 	// ModelQualifier prefixes references to model types when the models file
 	// lives in a different Go package (e.g. "model."). Empty otherwise.
 	ModelQualifier string
@@ -28,7 +34,7 @@ type QueryValue struct {
 }
 
 func (v QueryValue) EmitStruct() bool {
-	return v.Emit
+	return v.Emit && !v.DefinedElsewhere
 }
 
 func (v QueryValue) IsStruct() bool {
@@ -62,7 +68,7 @@ func (v QueryValue) Pairs() []Argument {
 	if v.isEmpty() {
 		return nil
 	}
-	if !v.EmitStruct() && v.IsStruct() {
+	if !v.Emit && v.IsStruct() {
 		var out []Argument
 		for _, f := range v.Struct.Fields {
 			out = append(out, Argument{
@@ -260,7 +266,10 @@ func (v QueryValue) VariableForField(f Field) string {
 	if !v.IsStruct() {
 		return v.Name
 	}
-	if !v.EmitStruct() {
+	// Use v.Emit (single struct param) rather than EmitStruct(): a value whose
+	// struct is DefinedElsewhere still receives a single struct arg, so fields
+	// are referenced as arg.Field, not as inlined bare names.
+	if !v.Emit {
 		return toLowerCase(f.Name)
 	}
 	return v.Name + "." + f.Name
@@ -279,6 +288,9 @@ type Query struct {
 	Arg          QueryValue
 	// Used for :copyfrom
 	Table *plugin.Identifier
+	// SwitchGroup links the branches expanded from one sqlc.switch() macro so
+	// they can share a single Params/Row struct.
+	SwitchGroup string
 }
 
 func (q Query) hasRetType() bool {

@@ -226,6 +226,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 			SQL:          query.Text,
 			Comments:     comments,
 			Table:        query.InsertIntoTable,
+			SwitchGroup:  query.SwitchGroup,
 		}
 		sqlpkg := parseDriver(options.SqlPackage)
 
@@ -470,4 +471,45 @@ func checkIncompatibleFieldTypes(fields []Field) error {
 		}
 	}
 	return nil
+}
+
+// shareSwitchGroupStructs makes the branch functions expanded from a single
+// sqlc.switch() macro use one shared Params and Row struct instead of an
+// identical copy per branch. All branches of a macro have the same parameters
+// and result columns (only the spliced ORDER BY/WHERE fragment differs), so the
+// per-query structs are byte-identical; this collapses them to one named after
+// the original query (the SwitchGroup), emitted once.
+func shareSwitchGroupStructs(queries []Query, options *opts.Options) {
+	groups := map[string][]int{}
+	for i := range queries {
+		if g := queries[i].SwitchGroup; g != "" {
+			groups[g] = append(groups[g], i)
+		}
+	}
+	for group, idx := range groups {
+		if len(idx) < 2 {
+			continue
+		}
+		canon := &queries[idx[0]]
+
+		// Params: a single struct arg becomes shared. (Few-param queries inline
+		// their args instead of using a struct, so they are already identical.)
+		if canon.Arg.IsStruct() && canon.Arg.Emit {
+			canon.Arg.Struct.Name = StructName(group+"Params", options)
+			for _, i := range idx[1:] {
+				queries[i].Arg.Struct = canon.Arg.Struct
+				queries[i].Arg.DefinedElsewhere = true
+			}
+		}
+
+		// Row: only when the branch built its own *Row struct. If it reused a
+		// table model, every branch already shares that model.
+		if canon.Ret.IsStruct() && canon.Ret.Emit {
+			canon.Ret.Struct.Name = StructName(group+"Row", options)
+			for _, i := range idx[1:] {
+				queries[i].Ret.Struct = canon.Ret.Struct
+				queries[i].Ret.Emit = false
+			}
+		}
+	}
 }

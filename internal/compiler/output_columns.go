@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
@@ -83,6 +84,9 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 				for _, item := range n.SortClause.Items {
 					sb, ok := item.(*ast.SortBy)
 					if !ok {
+						continue
+					}
+					if c.conf.Engine == config.EngineSQLite && isSQLiteImplicitColumn(sb.Node) {
 						continue
 					}
 					if err := findColumnForNode(sb.Node, tables, targets); err != nil {
@@ -711,6 +715,25 @@ func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) 
 		}
 	}
 	return cols, nil
+}
+
+// isSQLiteImplicitColumn reports whether the node references one of SQLite's
+// implicit rowid columns, which exist on most tables but never appear in the
+// declared schema.
+func isSQLiteImplicitColumn(node ast.Node) bool {
+	ref, ok := node.(*ast.ColumnRef)
+	if !ok {
+		return false
+	}
+	parts := stringSlice(ref.Fields)
+	if len(parts) == 0 {
+		return false
+	}
+	switch parts[len(parts)-1] {
+	case "rowid", "_rowid_", "oid":
+		return true
+	}
+	return false
 }
 
 func findColumnForNode(item ast.Node, tables []*Table, targetList *ast.List) error {

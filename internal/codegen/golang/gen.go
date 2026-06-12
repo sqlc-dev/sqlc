@@ -126,6 +126,7 @@ func Generate(ctx context.Context, req *plugin.GenerateRequest) (*plugin.Generat
 	if err != nil {
 		return nil, err
 	}
+	shareSwitchGroupStructs(queries, options)
 
 	if options.OmitUnusedStructs {
 		enums, structs = filterUnusedStructs(enums, structs, queries, options.ModelsTypeQualifier())
