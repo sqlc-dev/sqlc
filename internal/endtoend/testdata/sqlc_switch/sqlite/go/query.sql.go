@@ -64,3 +64,87 @@ func (q *Queries) FindAuthorsNamed(ctx context.Context) ([]Author, error) {
 	}
 	return items, nil
 }
+
+const listAuthorsElse = `-- name: ListAuthorsElse :many
+SELECT id, name, created_at FROM authors
+ORDER BY authors.id ASC
+`
+
+func (q *Queries) ListAuthorsElse(ctx context.Context) ([]Author, error) {
+	rows, err := q.db.QueryContext(ctx, listAuthorsElse)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Author
+	for rows.Next() {
+		var i Author
+		if err := rows.Scan(&i.ID, &i.Name, &i.CreatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAuthorsNameAsc = `-- name: ListAuthorsNameAsc :many
+SELECT id, name, created_at FROM authors
+ORDER BY authors.name ASC
+`
+
+func (q *Queries) ListAuthorsNameAsc(ctx context.Context) ([]Author, error) {
+	rows, err := q.db.QueryContext(ctx, listAuthorsNameAsc)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Author
+	for rows.Next() {
+		var i Author
+		if err := rows.Scan(&i.ID, &i.Name, &i.CreatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAuthorsRecent = `-- name: ListAuthorsRecent :many
+SELECT id, name, created_at FROM authors
+ORDER BY authors.created_at DESC, authors.id DESC
+`
+
+func (q *Queries) ListAuthorsRecent(ctx context.Context) ([]Author, error) {
+	rows, err := q.db.QueryContext(ctx, listAuthorsRecent)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Author
+	for rows.Next() {
+		var i Author
+		if err := rows.Scan(&i.ID, &i.Name, &i.CreatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
