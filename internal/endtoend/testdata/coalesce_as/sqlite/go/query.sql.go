@@ -18,7 +18,7 @@ GROUP BY 1
 
 type SumBazRow struct {
 	Bar      sql.NullString
-	Quantity interface{}
+	Quantity any
 }
 
 func (q *Queries) SumBaz(ctx context.Context) ([]SumBazRow, error) {

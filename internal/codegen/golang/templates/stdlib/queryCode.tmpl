@@ -127,7 +127,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{define "queryCodeStdExec"}}
     {{- if .Arg.HasSqlcSlices }}
         query := {{.ConstantName}}
-        var queryParams []interface{}
+        var queryParams []any
         {{- if .Arg.Struct }}
             {{- $arg := .Arg }}
             {{- range .Arg.Struct.Fields }}
