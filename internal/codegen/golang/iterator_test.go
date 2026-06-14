@@ -7,6 +7,20 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 )
 
+func TestFilterStreamAnnotationComments(t *testing.T) {
+	t.Parallel()
+	in := []string{" doc", metadata.StreamAnnotationComment, " more"}
+	got := filterStreamAnnotationComments(in)
+	if len(got) != 2 {
+		t.Fatalf("len=%d", len(got))
+	}
+	for _, c := range got {
+		if c == metadata.StreamAnnotationComment {
+			t.Fatal("marker not filtered")
+		}
+	}
+}
+
 func TestIteratorMethodName(t *testing.T) {
 	t.Parallel()
 	tests := []struct {

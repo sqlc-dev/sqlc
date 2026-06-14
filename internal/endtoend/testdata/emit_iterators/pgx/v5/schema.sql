@@ -1,0 +1,5 @@
+CREATE TABLE author (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  bio TEXT
+);
