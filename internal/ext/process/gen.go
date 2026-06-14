@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -22,6 +23,12 @@ type Runner struct {
 	Cmd    string
 	Format string
 	Env    []string
+	// Dir, if set, is the working directory for the child process (e.g. directory of sqlc.yaml).
+	Dir string
+	// InheritParentEnv, if true, starts the child with os.Environ() and appends SQLC_VERSION and
+	// variables listed in Env (same names as codegen). Use for database engine plugins that need
+	// a normal shell-like environment (e.g. PATH). Default false matches historical codegen behavior.
+	InheritParentEnv bool
 }
 
 func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any, opts ...grpc.CallOption) error {
@@ -53,16 +60,25 @@ func (r *Runner) Invoke(ctx context.Context, method string, args any, reply any,
 		return fmt.Errorf("unknown plugin format: %s", r.Format)
 	}
 
-	// Check if the output plugin exists
-	path, err := exec.LookPath(r.Cmd)
+	cmdFields := strings.Fields(strings.TrimSpace(r.Cmd))
+	if len(cmdFields) == 0 {
+		return fmt.Errorf("process: empty command")
+	}
+	exePath, err := exec.LookPath(cmdFields[0])
 	if err != nil {
 		return fmt.Errorf("process: %s not found", r.Cmd)
 	}
 
-	cmd := exec.CommandContext(ctx, path, method)
+	argv := append(append([]string(nil), cmdFields[1:]...), method)
+	cmd := exec.CommandContext(ctx, exePath, argv...)
 	cmd.Stdin = bytes.NewReader(stdin)
-	cmd.Env = []string{
-		fmt.Sprintf("SQLC_VERSION=%s", info.Version),
+	if r.Dir != "" {
+		cmd.Dir = r.Dir
+	}
+	if r.InheritParentEnv {
+		cmd.Env = append(append([]string(nil), os.Environ()...), fmt.Sprintf("SQLC_VERSION=%s", info.Version))
+	} else {
+		cmd.Env = []string{fmt.Sprintf("SQLC_VERSION=%s", info.Version)}
 	}
 	for _, key := range r.Env {
 		if key == "SQLC_AUTH_TOKEN" {

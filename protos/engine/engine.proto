@@ -1,0 +1,158 @@
+syntax = "proto3";
+
+package engine;
+
+// EngineService defines the interface for database engine plugins.
+// Engine plugins are responsible for parsing SQL statements and extracting
+// information about parameters and result columns.
+service EngineService {
+  // Parse parses SQL statements and returns the processed SQL along with
+  // information about parameters and result columns.
+  rpc Parse (ParseRequest) returns (ParseResponse);
+}
+
+// ParseRequest contains the SQL to parse and either schema or connection parameters.
+message ParseRequest {
+  // The SQL query text to parse.
+  string sql = 1;
+  
+  // Either schema SQL or connection parameters for database-only mode.
+  oneof schema_source {
+    // Schema SQL text (schema.sql) for schema-based parsing.
+    string schema_sql = 2;
+    
+    // Connection parameters for database-only mode.
+    ConnectionParams connection_params = 3;
+  }
+}
+
+// ConnectionParams contains database connection parameters for database-only mode.
+message ConnectionParams {
+  // Database connection string or DSN.
+  string dsn = 1;
+  
+  // Additional connection parameters as key-value pairs.
+  map<string, string> params = 2;
+}
+
+// Cmd is the query command/type. Matches sqlc's ":one", ":many", ":exec", etc.
+enum Cmd {
+  CMD_UNSPECIFIED = 0;
+  CMD_ONE = 1;
+  CMD_MANY = 2;
+  CMD_EXEC = 3;
+  CMD_EXEC_RESULT = 4;
+  CMD_EXEC_ROWS = 5;
+  CMD_EXEC_LAST_ID = 6;
+  CMD_COPY_FROM = 7;
+  CMD_BATCH_EXEC = 8;
+  CMD_BATCH_MANY = 9;
+  CMD_BATCH_ONE = 10;
+}
+
+// Statement is one parsed query block: name/cmd from " name: X :cmd", plus sql and type info.
+message Statement {
+  // Query name (from "-- name: GetUser" etc.).
+  string name = 1;
+  // Command/type for this statement.
+  Cmd cmd = 2;
+  // Processed SQL for this statement (wildcards expanded if applicable).
+  string sql = 3;
+  // Parameters for this statement.
+  repeated Parameter parameters = 4;
+  // Result columns for this statement.
+  repeated Column columns = 5;
+}
+
+// ParseResponse contains the processed statements and optional catalog. The plugin receives
+// the full query file and schema (or connection params); it returns one Statement per query
+// block. Catalog is derived from schema_sql or connection_params and is passed to codegen.
+message ParseResponse {
+  repeated Statement statements = 1;
+  Catalog catalog = 2;
+}
+
+// Identifier identifies a catalog/schema/name (used in Catalog types).
+message Identifier {
+  string catalog = 1;
+  string schema = 2;
+  string name = 3;
+}
+
+// Catalog mirrors plugin.Catalog so engine plugins can return schema without importing plugin.
+// The sqlc app converts it to plugin.Catalog when calling codegen.
+message Catalog {
+  string comment = 1;
+  string default_schema = 2;
+  string name = 3;
+  repeated CatalogSchema schemas = 4;
+}
+
+message CatalogSchema {
+  string comment = 1;
+  string name = 2;
+  repeated CatalogTable tables = 3;
+}
+
+message CatalogTable {
+  Identifier rel = 1;
+  repeated CatalogColumn columns = 2;
+  string comment = 3;
+}
+
+message CatalogColumn {
+  string name = 1;
+  bool not_null = 3;
+  bool is_array = 4;
+  string comment = 5;
+  int32 length = 6;
+  int32 array_dims = 17;
+  Identifier type = 12;
+  Identifier table = 10;
+}
+
+// Parameter represents a query parameter.
+message Parameter {
+  // Parameter name (if named) or empty for positional parameters.
+  string name = 1;
+  
+  // Parameter position (1-based) for positional parameters.
+  int32 position = 2;
+  
+  // SQL data type of the parameter.
+  string data_type = 3;
+  
+  // Whether the parameter is nullable.
+  bool nullable = 4;
+  
+  // Whether the parameter is an array type.
+  bool is_array = 5;
+  
+  // Array dimensions if is_array is true.
+  int32 array_dims = 6;
+}
+
+// Column represents a result column.
+message Column {
+  // Column name.
+  string name = 1;
+  
+  // SQL data type of the column.
+  string data_type = 2;
+  
+  // Whether the column is nullable.
+  bool nullable = 3;
+  
+  // Whether the column is an array type.
+  bool is_array = 4;
+  
+  // Array dimensions if is_array is true.
+  int32 array_dims = 5;
+  
+  // Table name this column belongs to (if known).
+  string table_name = 6;
+  
+  // Schema name this column belongs to (if known).
+  string schema_name = 7;
+}
+

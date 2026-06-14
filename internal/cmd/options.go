@@ -3,7 +3,10 @@ package cmd
 import (
 	"io"
 
+	"google.golang.org/grpc"
+
 	"github.com/sqlc-dev/sqlc/internal/config"
+	pb "github.com/sqlc-dev/sqlc/pkg/engine"
 )
 
 type Options struct {
@@ -15,6 +18,10 @@ type Options struct {
 
 	// Testing only
 	MutateConfig func(*config.Config)
+	// CodegenHandlerOverride injects a mock codegen handler instead of spawning a process.
+	CodegenHandlerOverride grpc.ClientConnInterface
+	// PluginParseFunc, when set, is used in the plugin-engine path instead of invoking the engine process (for tests).
+	PluginParseFunc func(schemaSQL, querySQL string) (*pb.ParseResponse, error)
 }
 
 func (o *Options) ReadConfig(dir, filename string) (string, *config.Config, error) {
