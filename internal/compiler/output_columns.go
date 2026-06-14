@@ -379,6 +379,13 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 			}
 			cols = append(cols, first)
 
+		case *ast.NullTest:
+			name := ""
+			if res.Name != nil {
+				name = *res.Name
+			}
+			cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
+
 		default:
 			name := ""
 			if res.Name != nil {
