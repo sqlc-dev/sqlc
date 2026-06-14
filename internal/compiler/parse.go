@@ -44,7 +44,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		return nil, errors.New("missing semicolon at end of file")
 	}
 
-	name, cmd, err := metadata.ParseQueryNameAndType(rawSQL, metadata.CommentSyntax(c.parser.CommentSyntax()))
+	name, cmd, stream, err := metadata.ParseQueryNameAndType(rawSQL, metadata.CommentSyntax(c.parser.CommentSyntax()))
 	if err != nil {
 		return nil, err
 	}
@@ -58,8 +58,9 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 	}
 
 	md := metadata.Metadata{
-		Name: name,
-		Cmd:  cmd,
+		Name:   name,
+		Cmd:    cmd,
+		Stream: stream,
 	}
 
 	// TODO eventually can use this for name and type/cmd parsing too

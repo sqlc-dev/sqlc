@@ -16,7 +16,12 @@ type Options struct {
 	EmitDbTags                bool `json:"emit_db_tags" yaml:"emit_db_tags"`
 	EmitPreparedQueries       bool `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
 	EmitExactTableNames       bool `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
-	EmitEmptySlices           bool `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
+	EmitEmptySlices           bool   `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
+	EmitIterators             bool   `json:"emit_iterators,omitempty" yaml:"emit_iterators"`
+	IteratorScope             string `json:"iterator_scope,omitempty" yaml:"iterator_scope"`
+	IteratorMethodPrefix      string `json:"iterator_method_prefix,omitempty" yaml:"iterator_method_prefix"`
+	IteratorStyle             string `json:"iterator_style,omitempty" yaml:"iterator_style"`
+	IteratorStart             string `json:"iterator_start,omitempty" yaml:"iterator_start"`
 	EmitExportedQueries       bool `json:"emit_exported_queries" yaml:"emit_exported_queries"`
 	EmitResultStructPointers  bool `json:"emit_result_struct_pointers" yaml:"emit_result_struct_pointers"`
 	EmitParamsStructPointers  bool `json:"emit_params_struct_pointers" yaml:"emit_params_struct_pointers"`
@@ -137,6 +142,19 @@ func parseOpts(req *plugin.GenerateRequest) (*Options, error) {
 		*options.Initialisms = []string{"id"}
 	}
 
+	if options.IteratorScope == "" {
+		options.IteratorScope = "global"
+	}
+	if options.IteratorMethodPrefix == "" {
+		options.IteratorMethodPrefix = "Iter"
+	}
+	if options.IteratorStyle == "" {
+		options.IteratorStyle = "seq2"
+	}
+	if options.IteratorStart == "" {
+		options.IteratorStart = "lazy"
+	}
+
 	options.InitialismsMap = map[string]struct{}{}
 	for _, initial := range *options.Initialisms {
 		options.InitialismsMap[initial] = struct{}{}
@@ -167,6 +185,24 @@ func ValidateOpts(opts *Options) error {
 	}
 	if *opts.QueryParameterLimit < 0 {
 		return fmt.Errorf("invalid options: query parameter limit must not be negative")
+	}
+
+	if opts.EmitIterators {
+		switch opts.IteratorScope {
+		case "global", "explicit_only":
+		default:
+			return fmt.Errorf("invalid options: iterator_scope must be global or explicit_only")
+		}
+		switch opts.IteratorStyle {
+		case "seq2", "callback", "rows":
+		default:
+			return fmt.Errorf("invalid options: iterator_style must be seq2, callback, or rows")
+		}
+		switch opts.IteratorStart {
+		case "lazy", "eager":
+		default:
+			return fmt.Errorf("invalid options: iterator_start must be lazy or eager")
+		}
 	}
 
 	if err := validateModelsOptions(opts); err != nil {

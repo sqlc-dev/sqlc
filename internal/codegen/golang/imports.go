@@ -417,6 +417,10 @@ func (i *importer) queryImports(filename string) fileImports {
 		std["fmt"] = struct{}{}
 	}
 
+	if i.Options.EmitIterators && i.Options.IteratorStyle == IteratorStyleSeq2 {
+		std["iter"] = struct{}{}
+	}
+
 	return sortedImports(std, pkg)
 }
 
