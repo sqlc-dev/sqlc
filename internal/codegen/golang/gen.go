@@ -36,6 +36,9 @@ type tmplCtx struct {
 	EmitPreparedQueries       bool
 	EmitInterface             bool
 	EmitEmptySlices           bool
+	EmitIterators             bool
+	IteratorStyle             string
+	LazyIteratorStart         bool
 	EmitMethodsWithDBArgument bool
 	EmitEnumValidMethod       bool
 	EmitAllEnumValues         bool
@@ -180,6 +183,9 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		EmitDBTags:                options.EmitDbTags,
 		EmitPreparedQueries:       options.EmitPreparedQueries,
 		EmitEmptySlices:           options.EmitEmptySlices,
+		EmitIterators:             options.EmitIterators && options.IteratorStyle == IteratorStyleSeq2,
+		IteratorStyle:             options.IteratorStyle,
+		LazyIteratorStart:         options.IteratorStart == IteratorStartLazy,
 		EmitMethodsWithDBArgument: options.EmitMethodsWithDbArgument,
 		EmitEnumValidMethod:       options.EmitEnumValidMethod,
 		EmitAllEnumValues:         options.EmitAllEnumValues,
@@ -226,6 +232,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		"emitPreparedQueries": tctx.codegenEmitPreparedQueries,
 		"queryMethod":         tctx.codegenQueryMethod,
 		"queryRetval":         tctx.codegenQueryRetval,
+		"zeroValue": func(v QueryValue) string { return v.zeroValue() },
 	}
 
 	tmpl := template.Must(

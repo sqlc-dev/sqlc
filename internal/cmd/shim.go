@@ -5,6 +5,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/config/convert"
 	"github.com/sqlc-dev/sqlc/internal/info"
+	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 )
@@ -156,7 +157,7 @@ func pluginQueries(r *compiler.Result) []*plugin.Query {
 			Name:            q.Metadata.Name,
 			Cmd:             q.Metadata.Cmd,
 			Text:            q.SQL,
-			Comments:        q.Metadata.Comments,
+			Comments:        pluginQueryComments(q.Metadata),
 			Columns:         columns,
 			Params:          params,
 			Filename:        q.Metadata.Filename,
@@ -164,6 +165,14 @@ func pluginQueries(r *compiler.Result) []*plugin.Query {
 		})
 	}
 	return out
+}
+
+func pluginQueryComments(md metadata.Metadata) []string {
+	comments := md.Comments
+	if md.Stream {
+		comments = append(comments, metadata.StreamAnnotationComment)
+	}
+	return comments
 }
 
 func pluginQueryColumn(c *compiler.Column) *plugin.Column {

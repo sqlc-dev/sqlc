@@ -201,7 +201,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 			constantName = sdk.LowerTitle(query.Name)
 		}
 
-		comments := query.Comments
+		comments := filterStreamAnnotationComments(query.Comments)
 		if options.EmitSqlAsComment {
 			if len(comments) == 0 {
 				comments = append(comments, query.Name)
@@ -218,14 +218,16 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 		}
 
 		gq := Query{
-			Cmd:          query.Cmd,
-			ConstantName: constantName,
-			FieldName:    sdk.LowerTitle(query.Name) + "Stmt",
-			MethodName:   query.Name,
-			SourceName:   query.Filename,
-			SQL:          query.Text,
-			Comments:     comments,
-			Table:        query.InsertIntoTable,
+			Cmd:            query.Cmd,
+			ConstantName:   constantName,
+			FieldName:      sdk.LowerTitle(query.Name) + "Stmt",
+			MethodName:     query.Name,
+			EmitIterator:   shouldEmitIterator(options, query.Cmd, query.Comments),
+			IterMethodName: iteratorMethodName(query.Name, options.IteratorMethodPrefix),
+			SourceName:     query.Filename,
+			SQL:            query.Text,
+			Comments:       comments,
+			Table:          query.InsertIntoTable,
 		}
 		sqlpkg := parseDriver(options.SqlPackage)
 
