@@ -41,7 +41,9 @@ code ever again.
    :caption: Commands
    :hidden:
 
+   howto/analyze.md
    howto/generate.md
+   howto/parse.md
    howto/push.md
    howto/verify.md
    howto/vet.md
