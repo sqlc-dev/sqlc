@@ -8,6 +8,7 @@ const (
 	AT_DropColumn
 	AT_DropNotNull
 	AT_SetNotNull
+	AT_RenameColumn
 )
 
 type AlterTableType int
@@ -24,6 +25,8 @@ func (t AlterTableType) String() string {
 		return "DropNotNull"
 	case AT_SetNotNull:
 		return "SetNotNull"
+	case AT_RenameColumn:
+		return "RenameColumn"
 	default:
 		return "Unknown"
 	}
@@ -32,6 +35,7 @@ func (t AlterTableType) String() string {
 type AlterTableCmd struct {
 	Subtype   AlterTableType
 	Name      *string
+	Newname   *string
 	Def       *ColumnDef
 	Newowner  *RoleSpec
 	Behavior  DropBehavior

@@ -95,14 +95,13 @@ func (c *cc) convertAlterTableStmt(n *pcast.AlterTableStmt) ast.Node {
 			// 	spew.Dump("add const", spec)
 
 		case pcast.AlterTableRenameColumn:
-			// TODO: Returning here may be incorrect if there are multiple specs
 			oldName := spec.OldColumnName.String()
 			newName := spec.NewColumnName.String()
-			return &ast.RenameColumnStmt{
-				Table:   parseTableName(n.Table),
-				Col:     &ast.ColumnRef{Name: oldName},
-				NewName: &newName,
-			}
+			alt.Cmds.Items = append(alt.Cmds.Items, &ast.AlterTableCmd{
+				Name:    &oldName,
+				Newname: &newName,
+				Subtype: ast.AT_RenameColumn,
+			})
 
 		case pcast.AlterTableRenameTable:
 			// TODO: Returning here may be incorrect if there are multiple specs

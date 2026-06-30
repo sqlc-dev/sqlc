@@ -177,6 +177,8 @@ func isStmtImplemented(stmt *ast.AlterTableStmt) bool {
 				implemented = true
 			case ast.AT_SetNotNull:
 				implemented = true
+			case ast.AT_RenameColumn:
+				implemented = true
 			}
 		}
 	}
@@ -213,6 +215,10 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 				}
 			case ast.AT_SetNotNull:
 				if err := table.setNotNull(cmd); err != nil {
+					return err
+				}
+			case ast.AT_RenameColumn:
+				if err := c.renameColumnOnTable(table, *cmd.Name, *cmd.Newname); err != nil {
 					return err
 				}
 			}
@@ -394,22 +400,26 @@ func (c *Catalog) renameColumn(stmt *ast.RenameColumnStmt) error {
 	if err != nil {
 		return checkMissing(err, stmt.MissingOk)
 	}
+	return c.renameColumnOnTable(tbl, stmt.Col.Name, *stmt.NewName)
+}
+
+func (c *Catalog) renameColumnOnTable(tbl *Table, oldName, newName string) error {
 	idx := -1
 	for i := range tbl.Columns {
-		if tbl.Columns[i].Name == stmt.Col.Name {
+		if tbl.Columns[i].Name == oldName {
 			idx = i
 		}
-		if tbl.Columns[i].Name == *stmt.NewName {
-			return sqlerr.ColumnExists(tbl.Rel.Name, *stmt.NewName)
+		if tbl.Columns[i].Name == newName {
+			return sqlerr.ColumnExists(tbl.Rel.Name, newName)
 		}
 	}
 	if idx == -1 {
-		return sqlerr.ColumnNotFound(tbl.Rel.Name, stmt.Col.Name)
+		return sqlerr.ColumnNotFound(tbl.Rel.Name, oldName)
 	}
-	tbl.Columns[idx].Name = *stmt.NewName
+	tbl.Columns[idx].Name = newName
 
 	if tbl.Columns[idx].linkedType {
-		name := fmt.Sprintf("%s_%s", tbl.Rel.Name, *stmt.NewName)
+		name := fmt.Sprintf("%s_%s", tbl.Rel.Name, newName)
 		rename := &ast.RenameTypeStmt{
 			Type:    &tbl.Columns[idx].Type,
 			NewName: &name,
