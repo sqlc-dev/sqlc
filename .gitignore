@@ -9,3 +9,6 @@ __pycache__
 .devenv*
 devenv.local.nix
 
+# Internal planning / research notes
+/plans/
+

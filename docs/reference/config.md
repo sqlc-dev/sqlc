@@ -37,7 +37,8 @@ Each mapping in the `sql` collection has the following keys:
 - `name`:
   - An human-friendly identifier for this query set. Optional.
 - `engine`:
-  - One of `postgresql`, `mysql` or `sqlite`.
+  - One of `postgresql`, `mysql`, `sqlite` or `oracle`. The `oracle` engine is
+    experimental and currently supported only by the built-in Go code generator.
 - `schema`:
   - Directory of SQL migrations or path to single SQL file; or a list of paths.
 - `queries`:

@@ -38,7 +38,8 @@
                         "enum": [
                             "postgresql",
                             "mysql",
-                            "sqlite"
+                            "sqlite",
+                            "oracle"
                         ]
                     },
                     "schema": {
@@ -209,7 +210,8 @@
                                                     "enum": [
                                                         "postgresql",
                                                         "mysql",
-                                                        "sqlite"
+                                                        "sqlite",
+                            "oracle"
                                                     ]
                                                 },
                                                 "nullable": {
@@ -378,7 +380,8 @@
                                         "enum": [
                                             "postgresql",
                                             "mysql",
-                                            "sqlite"
+                                            "sqlite",
+                            "oracle"
                                         ]
                                     },
                                     "nullable": {

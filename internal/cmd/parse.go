@@ -10,6 +10,7 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/engine/clickhouse"
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
+	"github.com/sqlc-dev/sqlc/internal/engine/oracle"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -39,7 +40,7 @@ Examples:
 			return err
 		}
 		if dialect == "" {
-			return fmt.Errorf("--dialect flag is required (postgresql, mysql, sqlite, or clickhouse)")
+			return fmt.Errorf("--dialect flag is required (postgresql, mysql, sqlite, oracle, or clickhouse)")
 		}
 
 		// Determine input source
@@ -75,11 +76,14 @@ Examples:
 		case "sqlite":
 			parser := sqlite.NewParser()
 			stmts, err = parser.Parse(input)
+		case "oracle", "plsql":
+			parser := oracle.NewParser()
+			stmts, err = parser.Parse(input)
 		case "clickhouse":
 			parser := clickhouse.NewParser()
 			stmts, err = parser.Parse(input)
 		default:
-			return fmt.Errorf("unsupported dialect: %s (use postgresql, mysql, sqlite, or clickhouse)", dialect)
+			return fmt.Errorf("unsupported dialect: %s (use postgresql, mysql, sqlite, oracle, or clickhouse)", dialect)
 		}
 		if err != nil {
 			return fmt.Errorf("parse error: %w", err)

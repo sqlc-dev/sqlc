@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Features
+
+- (oracle) Add experimental Oracle database support for the built-in Go code
+  generator: PL/SQL parser (ANTLR grammars-v4), catalog with built-in
+  functions, and Oracle-to-Go type mapping targeting `github.com/sijms/go-ora/v2`.
+  Enable with `engine: "oracle"`.
+
 (v1-31-1)=
 ## [1.31.1](https://github.com/sqlc-dev/sqlc/releases/tag/v1.31.1)
 Released 2026-04-22
