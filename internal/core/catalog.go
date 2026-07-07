@@ -1,0 +1,79 @@
+// Package core provides a SQL catalog backed by an in-memory SQLite database.
+//
+// The catalog stores schema metadata (namespaces, types, tables, columns,
+// constraints) in tables prefixed with sql_. Engine packages populate the
+// catalog from DDL and then query it to resolve types during statement
+// preparation.
+package core
+
+import (
+	"database/sql"
+	_ "embed"
+	"fmt"
+
+	_ "modernc.org/sqlite"
+)
+
+//go:embed schema.sql
+var ddl string
+
+// Catalog is an in-memory SQLite database that stores schema metadata in
+// sql_* tables modeled after PostgreSQL's system catalogs.
+type Catalog struct {
+	db *sql.DB
+}
+
+// Option configures a Catalog at creation time. The most common use is
+// to seed dialect-specific built-ins; see WithSeed.
+type Option func(*Catalog) error
+
+// WithSeed runs a seed function (typically dialect-provided) against the
+// freshly bootstrapped catalog. Failures abort Catalog creation.
+func WithSeed(fn func(*Catalog) error) Option {
+	return func(c *Catalog) error { return fn(c) }
+}
+
+// New creates a new in-memory catalog and initializes the sql_* tables.
+// Each Option runs after schema initialization and the default-namespace
+// bootstrap; an Option that fails aborts catalog creation.
+func New(opts ...Option) (*Catalog, error) {
+	db, err := sql.Open("sqlite", ":memory:")
+	if err != nil {
+		return nil, fmt.Errorf("core: open catalog: %w", err)
+	}
+	if _, err := db.Exec(ddl); err != nil {
+		db.Close()
+		return nil, fmt.Errorf("core: init schema: %w", err)
+	}
+	c := &Catalog{db: db}
+	if err := c.bootstrap(); err != nil {
+		db.Close()
+		return nil, fmt.Errorf("core: bootstrap: %w", err)
+	}
+	for i, opt := range opts {
+		if err := opt(c); err != nil {
+			db.Close()
+			return nil, fmt.Errorf("core: option %d: %w", i, err)
+		}
+	}
+	return c, nil
+}
+
+// Close closes the underlying database connection.
+func (c *Catalog) Close() error {
+	return c.db.Close()
+}
+
+// DB returns the underlying *sql.DB for advanced queries.
+func (c *Catalog) DB() *sql.DB {
+	return c.db
+}
+
+// bootstrap seeds the catalog with the default "public" namespace.
+// Built-in types and functions are added by per-dialect seed files,
+// not here, so that nothing in the catalog is hardcoded to a single
+// dialect's view of the world.
+func (c *Catalog) bootstrap() error {
+	_, err := c.CreateNamespace("public")
+	return err
+}
