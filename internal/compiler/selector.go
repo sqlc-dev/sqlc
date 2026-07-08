@@ -14,7 +14,7 @@ type selector interface {
 	ColumnExpr(name string, column *Column) string
 }
 
-// defaultSelector is a selector implementation that does the simpliest possible
+// defaultSelector is a selector implementation that does the simplest possible
 // pass through when generating column expressions. Its use is suitable for all
 // database engines not requiring additional customization.
 type defaultSelector struct{}
