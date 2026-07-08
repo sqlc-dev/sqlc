@@ -370,7 +370,7 @@ func run(ctx context.Context) error {
 type schemaToLoad struct {
 	// name is the name of a schema to load
 	Name string
-	// DestPath is the desination for the generate file
+	// DestPath is the destination for the generate file
 	DestPath string
 	// The name of the function to generate for loading this schema
 	GenFnName string

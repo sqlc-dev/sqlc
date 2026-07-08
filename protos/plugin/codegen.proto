@@ -13,7 +13,7 @@ message File {
 
 message Settings {
   // Rename message was field 5
-  // Overides message was field 6
+  // Overrides message was field 6
   // PythonCode message was field 8
   // KotlinCode message was field 9
   // GoCode message was field 10;

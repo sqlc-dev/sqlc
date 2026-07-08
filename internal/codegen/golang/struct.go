@@ -43,7 +43,7 @@ func StructName(name string, options *opts.Options) string {
 		}
 	}
 
-	// If a name has a digit as its first char, prepand an underscore to make it a valid Go name.
+	// If a name has a digit as its first char, prepend an underscore to make it a valid Go name.
 	r, _ := utf8.DecodeRuneInString(out.String())
 	if unicode.IsDigit(r) {
 		return "_" + out.String()
