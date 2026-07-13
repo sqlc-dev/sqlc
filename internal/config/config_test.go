@@ -77,15 +77,29 @@ func FuzzConfig(f *testing.F) {
 }
 
 func TestInvalidConfig(t *testing.T) {
-	err := Validate(&Config{
-		SQL: []SQL{{
-			Database: &Database{
-				URI:     "",
-				Managed: false,
-			},
-		}},
-	})
-	if err == nil {
-		t.Errorf("expected err; got nil")
+	cases := []struct {
+		name    string
+		db      *Database
+		wantErr bool
+	}{
+		{"no uri no managed no testcontainers", &Database{}, true},
+		{"testcontainers_image empty", &Database{TestcontainersImage: ""}, true},
+		{"testcontainers_image set", &Database{TestcontainersImage: "postgres:18-alpine"}, false},
+		{"managed true", &Database{Managed: true}, false},
+		{"uri set", &Database{URI: "postgres://localhost/db"}, false},
+		{"uri and testcontainers_image both set", &Database{URI: "postgres://localhost/db", TestcontainersImage: "postgres:18-alpine"}, true},
+		{"managed and testcontainers_image both set", &Database{Managed: true, TestcontainersImage: "postgres:18-alpine"}, true},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := Validate(&Config{SQL: []SQL{{Database: tc.db}}})
+			if tc.wantErr && err == nil {
+				t.Errorf("expected err; got nil")
+			}
+			if !tc.wantErr && err != nil {
+				t.Errorf("unexpected err: %v", err)
+			}
+		})
 	}
 }

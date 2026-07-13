@@ -97,6 +97,8 @@ The `database` mapping supports the following keys:
   - If true, connect to a [managed database](../howto/managed-databases.md). Defaults to `false`.
 - `uri`:
   - Database connection URI
+- `testcontainers_image`:
+  - Docker image to start a local PostgreSQL container automatically (e.g. `postgres:18-alpine`). Currently supported for PostgreSQL only. Mutually exclusive with `uri` and `managed`.
 
 The `uri` string can contain references to environment variables using the `${...}`
 syntax. In the following example, the connection string will have the value of

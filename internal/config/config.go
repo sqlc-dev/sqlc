@@ -74,8 +74,9 @@ type Server struct {
 }
 
 type Database struct {
-	URI     string `json:"uri" yaml:"uri"`
-	Managed bool   `json:"managed" yaml:"managed"`
+	URI                 string `json:"uri" yaml:"uri"`
+	Managed             bool   `json:"managed" yaml:"managed"`
+	TestcontainersImage string `json:"testcontainers_image" yaml:"testcontainers_image"`
 }
 
 type Cloud struct {
@@ -125,8 +126,8 @@ type SQL struct {
 // AnalyzerDatabase represents the database analyzer setting.
 // It can be a boolean (true/false) or the string "only" for database-only mode.
 type AnalyzerDatabase struct {
-	value   *bool  // nil means not set, true/false for boolean values
-	isOnly  bool   // true when set to "only"
+	value  *bool // nil means not set, true/false for boolean values
+	isOnly bool  // true when set to "only"
 }
 
 // IsEnabled returns true if the database analyzer should be used.
@@ -228,7 +229,9 @@ var ErrPluginNoType = errors.New("plugin: field `process` or `wasm` required")
 var ErrPluginBothTypes = errors.New("plugin: `process` and `wasm` cannot both be defined")
 var ErrPluginProcessNoCmd = errors.New("plugin: missing process command")
 
-var ErrInvalidDatabase = errors.New("database must be managed or have a non-empty URI")
+var ErrInvalidDatabase = errors.New("database must have uri, managed, or testcontainers_image set")
+var ErrDatabaseConflict = errors.New("database.uri and database.testcontainers_image are mutually exclusive")
+var ErrManagedTestcontainersConflict = errors.New("database.managed and database.testcontainers_image are mutually exclusive")
 var ErrManagedDatabaseNoProject = errors.New(`managed databases require a cloud project
 
 If you don't have a project, you can create one from the sqlc Cloud

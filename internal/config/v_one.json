@@ -72,6 +72,10 @@
                             },
                             "managed": {
                                 "type": "boolean"
+                            },
+                            "testcontainers_image": {
+                                "type": "string",
+                                "description": "Docker image to use for a local PostgreSQL testcontainer (e.g. postgres:18-alpine). Currently supported for PostgreSQL only. Mutually exclusive with uri and managed."
                             }
                         }
                     },

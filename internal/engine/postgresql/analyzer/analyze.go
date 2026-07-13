@@ -25,13 +25,14 @@ import (
 var debugDatabases = sqlcdebug.New("databases")
 
 type Analyzer struct {
-	db       config.Database
-	client   dbmanager.Client
-	pool     *pgxpool.Pool
-	replacer *shfmt.Replacer
-	formats  sync.Map
-	columns  sync.Map
-	tables   sync.Map
+	db        config.Database
+	client    dbmanager.Client
+	pool      *pgxpool.Pool
+	replacer  *shfmt.Replacer
+	formats   sync.Map
+	columns   sync.Map
+	tables    sync.Map
+	tcCleanup func(context.Context)
 }
 
 func New(client dbmanager.Client, db config.Database) *Analyzer {
@@ -185,8 +186,7 @@ func parseType(dt string) (string, bool, int) {
 // Don't create a database per query
 func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrations []string, ps *named.ParamSet) (*core.Analysis, error) {
 	extractSqlErr := func(e error) error {
-		var pgErr *pgconn.PgError
-		if errors.As(e, &pgErr) {
+		if pgErr, ok := errors.AsType[*pgconn.PgError](e); ok {
 			return &sqlerr.Error{
 				Code:     pgErr.Code,
 				Message:  pgErr.Message,
@@ -197,33 +197,9 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 	}
 
 	if a.pool == nil {
-		var uri string
-		if a.db.Managed {
-			if a.client == nil {
-				return nil, fmt.Errorf("client is nil")
-			}
-			edb, err := a.client.CreateDatabase(ctx, &dbmanager.CreateDatabaseRequest{
-				Engine:     "postgresql",
-				Migrations: migrations,
-			})
-			if err != nil {
-				return nil, err
-			}
-			uri = edb.Uri
-		} else if debugDatabases.Value() == "managed" {
-			return nil, fmt.Errorf("database: connections disabled via SQLCDEBUG=databases=managed")
-		} else {
-			uri = a.replacer.Replace(a.db.URI)
-		}
-		conf, err := pgxpool.ParseConfig(uri)
-		if err != nil {
+		if err := a.connect(ctx, migrations); err != nil {
 			return nil, err
 		}
-		pool, err := pgxpool.NewWithConfig(ctx, conf)
-		if err != nil {
-			return nil, err
-		}
-		a.pool = pool
 	}
 
 	c, err := a.pool.Acquire(ctx)
@@ -315,9 +291,58 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 	return &result, nil
 }
 
-func (a *Analyzer) Close(_ context.Context) error {
+func (a *Analyzer) connect(ctx context.Context, migrations []string) error {
+	var uri string
+	if a.db.Managed {
+		if a.client == nil {
+			return fmt.Errorf("client is nil")
+		}
+		edb, err := a.client.CreateDatabase(ctx, &dbmanager.CreateDatabaseRequest{
+			Engine:     "postgresql",
+			Migrations: migrations,
+		})
+		if err != nil {
+			return err
+		}
+		uri = edb.Uri
+	} else if a.db.TestcontainersImage != "" {
+		tcURI, cleanup, err := startPostgresContainer(ctx, a.db.TestcontainersImage, migrations)
+		if err != nil {
+			return fmt.Errorf("testcontainers: %w", err)
+		}
+		a.tcCleanup = cleanup
+		uri = tcURI
+	} else if debugDatabases.Value() == "managed" {
+		return fmt.Errorf("database: connections disabled via SQLCDEBUG=databases=managed")
+	} else {
+		uri = a.replacer.Replace(a.db.URI)
+	}
+	conf, err := pgxpool.ParseConfig(uri)
+	if err != nil {
+		if a.tcCleanup != nil {
+			a.tcCleanup(ctx)
+			a.tcCleanup = nil
+		}
+		return err
+	}
+	pool, err := pgxpool.NewWithConfig(ctx, conf)
+	if err != nil {
+		if a.tcCleanup != nil {
+			a.tcCleanup(ctx)
+			a.tcCleanup = nil
+		}
+		return err
+	}
+	a.pool = pool
+	return nil
+}
+
+func (a *Analyzer) Close(ctx context.Context) error {
 	if a.pool != nil {
 		a.pool.Close()
+	}
+	if a.tcCleanup != nil {
+		a.tcCleanup(ctx)
 	}
 	return nil
 }
@@ -482,42 +507,11 @@ func (a *Analyzer) IntrospectSchema(ctx context.Context, schemas []string) (*cat
 	return cat, nil
 }
 
-// EnsureConn initializes the database connection pool if not already done.
-// This is useful for database-only mode where we need to connect before analyzing queries.
 func (a *Analyzer) EnsureConn(ctx context.Context, migrations []string) error {
 	if a.pool != nil {
 		return nil
 	}
-
-	var uri string
-	if a.db.Managed {
-		if a.client == nil {
-			return fmt.Errorf("client is nil")
-		}
-		edb, err := a.client.CreateDatabase(ctx, &dbmanager.CreateDatabaseRequest{
-			Engine:     "postgresql",
-			Migrations: migrations,
-		})
-		if err != nil {
-			return err
-		}
-		uri = edb.Uri
-	} else if debugDatabases.Value() == "managed" {
-		return fmt.Errorf("database: connections disabled via SQLCDEBUG=databases=managed")
-	} else {
-		uri = a.replacer.Replace(a.db.URI)
-	}
-
-	conf, err := pgxpool.ParseConfig(uri)
-	if err != nil {
-		return err
-	}
-	pool, err := pgxpool.NewWithConfig(ctx, conf)
-	if err != nil {
-		return err
-	}
-	a.pool = pool
-	return nil
+	return a.connect(ctx, migrations)
 }
 
 // GetColumnNames implements the expander.ColumnGetter interface.

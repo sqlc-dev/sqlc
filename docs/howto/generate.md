@@ -74,3 +74,23 @@ sql:
 
 Databases configured with a `uri` must have an up-to-date schema for query analysis to work correctly, and `sqlc` does not apply schema migrations your database. Use your migration tool of choice to create the necessary
 tables and objects before running `sqlc generate`.
+
+## Enhanced analysis with a local container
+
+If you have Docker available, `sqlc` can automatically start a local PostgreSQL container, apply your schema, and use it for query analysis — no external database required. Currently supported for PostgreSQL only. Set `testcontainers_image` to the Docker image you want to use:
+
+```yaml
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "query.sql"
+    schema: "schema.sql"
+    database:
+      testcontainers_image: "postgres:18-alpine"
+    gen:
+      go:
+        out: "db"
+        sql_package: "pgx/v5"
+```
+
+`testcontainers_image` is mutually exclusive with `uri` and `managed`.

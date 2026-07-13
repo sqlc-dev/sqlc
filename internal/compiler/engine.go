@@ -93,8 +93,8 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 			if conf.Database == nil {
 				return nil, fmt.Errorf("analyzer.database: only requires database configuration")
 			}
-			if conf.Database.URI == "" && !conf.Database.Managed {
-				return nil, fmt.Errorf("analyzer.database: only requires database.uri or database.managed")
+			if conf.Database.URI == "" && !conf.Database.Managed && conf.Database.TestcontainersImage == "" {
+				return nil, fmt.Errorf("analyzer.database: requires database.uri, database.managed, or database.testcontainers_image")
 			}
 			c.databaseOnlyMode = true
 			// Create the PostgreSQL analyzer (implements Analyzer interface)

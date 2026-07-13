@@ -99,3 +99,7 @@ sql:
   rules:
   - sqlc/db-prepare
 ```
+
+## Local alternative
+
+If you prefer not to use managed databases, you can use [`testcontainers_image`](generate.md#enhanced-analysis-with-a-local-container) to have `sqlc` spin up a local PostgreSQL container automatically using Docker.
