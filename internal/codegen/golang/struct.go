@@ -24,7 +24,7 @@ func StructName(name string, options *opts.Options) string {
 	if rename := options.Rename[name]; rename != "" {
 		return rename
 	}
-	out := ""
+	var out strings.Builder
 	name = strings.Map(func(r rune) rune {
 		if unicode.IsLetter(r) {
 			return r
@@ -35,19 +35,19 @@ func StructName(name string, options *opts.Options) string {
 		return rune('_')
 	}, name)
 
-	for _, p := range strings.Split(name, "_") {
+	for p := range strings.SplitSeq(name, "_") {
 		if _, found := options.InitialismsMap[p]; found {
-			out += strings.ToUpper(p)
+			out.WriteString(strings.ToUpper(p))
 		} else {
-			out += strings.Title(p)
+			out.WriteString(strings.Title(p))
 		}
 	}
 
 	// If a name has a digit as its first char, prepand an underscore to make it a valid Go name.
-	r, _ := utf8.DecodeRuneInString(out)
+	r, _ := utf8.DecodeRuneInString(out.String())
 	if unicode.IsDigit(r) {
-		return "_" + out
+		return "_" + out.String()
 	} else {
-		return out
+		return out.String()
 	}
 }

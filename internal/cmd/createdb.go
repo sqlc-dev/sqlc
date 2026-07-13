@@ -47,7 +47,6 @@ func CreateDB(ctx context.Context, dir, filename, querySetName string, o *Option
 	var queryset *config.SQL
 	var count int
 	for _, sql := range conf.SQL {
-		sql := sql
 		if querySetName != "" && sql.Name != querySetName {
 			continue
 		}

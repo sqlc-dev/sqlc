@@ -12,12 +12,16 @@ import (
 
 func TestValidSchema(t *testing.T) {
 	for _, replay := range FindTests(t, "testdata", "base") {
-		replay := replay // https://golang.org/doc/faq#closures_and_goroutines
 
 		if replay.Exec != nil {
 			if replay.Exec.Meta.InvalidSchema {
 				continue
 			}
+		}
+
+		// Config-less command tests (parse, analyze) have no schema to validate.
+		if replay.ConfigName == "" {
+			continue
 		}
 
 		file := filepath.Join(replay.Path, replay.ConfigName)
@@ -32,7 +36,6 @@ func TestValidSchema(t *testing.T) {
 		}
 
 		for j, pkg := range conf.SQL {
-			j, pkg := j, pkg
 			switch pkg.Engine {
 			case config.EnginePostgreSQL:
 				// pass

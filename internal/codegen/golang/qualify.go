@@ -9,23 +9,23 @@ func stripQualifier(t, qualifier string) string {
 	if qualifier == "" {
 		return t
 	}
-	prefix := ""
+	var prefix strings.Builder
 	rest := t
 	for {
 		if strings.HasPrefix(rest, "[]") {
-			prefix += "[]"
+			prefix.WriteString("[]")
 			rest = rest[2:]
 			continue
 		}
 		if strings.HasPrefix(rest, "*") {
-			prefix += "*"
+			prefix.WriteString("*")
 			rest = rest[1:]
 			continue
 		}
 		break
 	}
 	if strings.HasPrefix(rest, qualifier) {
-		return prefix + rest[len(qualifier):]
+		return prefix.String() + rest[len(qualifier):]
 	}
 	return t
 }
@@ -57,23 +57,23 @@ func qualifyType(t string, models modelTypeSet, qualifier string) string {
 	if qualifier == "" || t == "" || len(models) == 0 {
 		return t
 	}
-	prefix := ""
+	var prefix strings.Builder
 	rest := t
 	for {
 		if strings.HasPrefix(rest, "[]") {
-			prefix += "[]"
+			prefix.WriteString("[]")
 			rest = rest[2:]
 			continue
 		}
 		if strings.HasPrefix(rest, "*") {
-			prefix += "*"
+			prefix.WriteString("*")
 			rest = rest[1:]
 			continue
 		}
 		break
 	}
 	if _, ok := models[rest]; ok {
-		return prefix + qualifier + rest
+		return prefix.String() + qualifier + rest
 	}
 	return t
 }

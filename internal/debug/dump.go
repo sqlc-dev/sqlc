@@ -14,7 +14,7 @@ import (
 // specific setting can gate their output on "is debug mode on at all".
 var Active = sqlcdebug.Any()
 
-func Dump(n ...interface{}) {
+func Dump(n ...any) {
 	if Active {
 		spew.Dump(n)
 	}

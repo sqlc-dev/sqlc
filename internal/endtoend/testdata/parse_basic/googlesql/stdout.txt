@@ -1,0 +1,42 @@
+[
+  {
+    "ast": {
+      "Stmt": {
+        "DistinctClause": null,
+        "IntoClause": null,
+        "TargetList": {
+          "Items": [
+            {
+              "Name": null,
+              "Indirection": null,
+              "Val": {
+                "Val": {
+                  "Ival": 1
+                },
+                "Location": 30
+              },
+              "Location": 30
+            }
+          ]
+        },
+        "FromClause": null,
+        "WhereClause": null,
+        "GroupClause": null,
+        "HavingClause": null,
+        "WindowClause": null,
+        "ValuesLists": null,
+        "SortClause": null,
+        "LimitOffset": null,
+        "LimitCount": null,
+        "LockingClause": null,
+        "WithClause": null,
+        "Op": 0,
+        "All": false,
+        "Larg": null,
+        "Rarg": null
+      },
+      "StmtLocation": 23,
+      "StmtLen": 8
+    }
+  }
+]

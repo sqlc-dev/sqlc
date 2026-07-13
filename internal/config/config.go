@@ -36,7 +36,7 @@ func (p *Paths) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (p *Paths) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (p *Paths) UnmarshalYAML(unmarshal func(any) error) error {
 	out := []string{}
 	if sliceErr := unmarshal(&out); sliceErr != nil {
 		var ele string
@@ -61,7 +61,7 @@ type Config struct {
 	Cloud     Cloud                `json:"cloud" yaml:"cloud"`
 	Servers   []Server             `json:"servers" yaml:"servers"`
 	SQL       []SQL                `json:"sql" yaml:"sql"`
-	Overrides Overrides            `json:"overrides,omitempty" yaml:"overrides"`
+	Overrides Overrides            `json:"overrides" yaml:"overrides"`
 	Plugins   []Plugin             `json:"plugins" yaml:"plugins"`
 	Rules     []Rule               `json:"rules" yaml:"rules"`
 	Options   map[string]yaml.Node `json:"options" yaml:"options"`
@@ -167,7 +167,7 @@ func (a *AnalyzerDatabase) UnmarshalJSON(data []byte) error {
 	return errors.New("analyzer.database must be true, false, or \"only\"")
 }
 
-func (a *AnalyzerDatabase) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (a *AnalyzerDatabase) UnmarshalYAML(unmarshal func(any) error) error {
 	// Try to unmarshal as boolean first
 	var b bool
 	if err := unmarshal(&b); err == nil {

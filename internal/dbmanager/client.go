@@ -90,7 +90,7 @@ func (m *ManagedClient) CreateDatabase(ctx context.Context, req *CreateDatabaseR
 	uri.Path = "/" + name
 
 	key := uri.String()
-	_, err, _ = flight.Do(key, func() (interface{}, error) {
+	_, err, _ = flight.Do(key, func() (any, error) {
 		// TODO: Use a parameterized query
 		row := pool.QueryRow(ctx,
 			fmt.Sprintf(`SELECT datname FROM pg_database WHERE datname = '%s'`, name))

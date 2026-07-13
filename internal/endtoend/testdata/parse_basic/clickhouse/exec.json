@@ -1,0 +1,5 @@
+{
+  "command": "parse",
+  "args": ["--dialect", "clickhouse", "query.sql"],
+  "contexts": ["base"]
+}
