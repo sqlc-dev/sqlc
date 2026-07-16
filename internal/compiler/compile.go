@@ -38,9 +38,24 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 			merr.Add(filename, "", 0, err)
 			continue
 		}
-		contents := migrations.RemoveRollbackStatements(string(blob))
-		contents = migrations.RemovePsqlMetaCommands(contents)
+		contents, warnings, err := migrations.PreprocessSchema(string(blob), string(c.conf.Engine))
+		if err != nil {
+			merr.Add(filename, string(blob), 0, err)
+			continue
+		}
+		var applyContents string
+		if c.usesManagedAnalyzer() {
+			applyContents, _, err = migrations.PreprocessSchemaForApply(string(blob), string(c.conf.Engine))
+			if err != nil {
+				merr.Add(filename, string(blob), 0, err)
+				continue
+			}
+		}
+		c.warns = append(c.warns, warnings...)
 		c.schema = append(c.schema, contents)
+		if c.usesManagedAnalyzer() {
+			c.applySchema = append(c.applySchema, applyContents)
+		}
 
 		// In database-only mode, we parse the schema to validate syntax
 		// but don't update the catalog - the database will be the source of truth
@@ -73,7 +88,7 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 
 	// In database-only mode, initialize the database connection before parsing queries
 	if c.databaseOnlyMode && c.analyzer != nil {
-		if err := c.analyzer.EnsureConn(ctx, c.schema); err != nil {
+		if err := c.analyzer.EnsureConn(ctx, c.analyzerMigrations()); err != nil {
 			return nil, fmt.Errorf("failed to initialize database connection: %w", err)
 		}
 	}

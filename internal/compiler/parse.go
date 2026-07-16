@@ -93,7 +93,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		expandedRaw := expandedStmts[0].Raw
 
 		// Use the analyzer to get type information from the database
-		result, err := c.analyzer.Analyze(ctx, expandedRaw, expandedQuery, c.schema, nil)
+		result, err := c.analyzer.Analyze(ctx, expandedRaw, expandedQuery, c.analyzerMigrations(), nil)
 		if err != nil {
 			return nil, err
 		}
@@ -132,7 +132,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 			inference.Query = rawSQL
 		}
 
-		result, err := c.analyzer.Analyze(ctx, raw, inference.Query, c.schema, inference.Named)
+		result, err := c.analyzer.Analyze(ctx, raw, inference.Query, c.analyzerMigrations(), inference.Named)
 		if err != nil {
 			return nil, err
 		}

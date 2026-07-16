@@ -265,6 +265,9 @@ func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.C
 		return nil, true
 	}
 	if err := c.ParseCatalog(sql.Schema); err != nil {
+		for _, warning := range c.Warnings() {
+			fmt.Fprintln(stderr, warning)
+		}
 		fmt.Fprintf(stderr, "# package %s\n", name)
 		if parserErr, ok := err.(*multierr.Error); ok {
 			for _, fileErr := range parserErr.Errs() {
@@ -274,6 +277,9 @@ func parse(ctx context.Context, name, dir string, sql config.SQL, combo config.C
 			fmt.Fprintf(stderr, "error parsing schema: %s\n", err)
 		}
 		return nil, true
+	}
+	for _, warning := range c.Warnings() {
+		fmt.Fprintln(stderr, warning)
 	}
 	if debugDumpCatalog.Value() == "1" {
 		debug.Dump(c.Catalog())
