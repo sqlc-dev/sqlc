@@ -7,6 +7,30 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 )
 
+// paramRefForAssignment returns the ParamRef assigned to a single UPDATE SET
+// target, handling both `col = $1` and the multi-column form
+// `(a, b) = ($1, $2)`, where each column is a separate ResTarget carrying a
+// MultiAssignRef with its own Colno pointing into a shared RowExpr source.
+func paramRefForAssignment(target *ast.ResTarget) (*ast.ParamRef, bool) {
+	switch val := target.Val.(type) {
+	case *ast.ParamRef:
+		return val, true
+	case *ast.MultiAssignRef:
+		row, ok := val.Source.(*ast.RowExpr)
+		if !ok || row.Args == nil {
+			return nil, false
+		}
+		idx := val.Colno - 1
+		if idx < 0 || idx >= len(row.Args.Items) {
+			return nil, false
+		}
+		if ref, ok := row.Args.Items[idx].(*ast.ParamRef); ok {
+			return ref, true
+		}
+	}
+	return nil, false
+}
+
 func findParameters(root ast.Node) ([]paramRef, []error) {
 	refs := make([]paramRef, 0)
 	errors := make([]error, 0)
@@ -105,6 +129,66 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 						return p
 					}
 					*p.refs = append(*p.refs, paramRef{parent: n.Cols.Items[i], ref: ref, rv: n.Relation})
+					p.seen[ref.Location] = struct{}{}
+				}
+			}
+		}
+
+	case *ast.MergeStmt:
+		if n.MergeWhenClauses == nil {
+			break
+		}
+		for _, item := range n.MergeWhenClauses.Items {
+			clause, ok := item.(*ast.MergeWhenClause)
+			if !ok {
+				continue
+			}
+			switch clause.CommandType {
+			case ast.CmdTypeUpdate:
+				// WHEN MATCHED THEN UPDATE SET col = $1
+				if clause.TargetList == nil {
+					continue
+				}
+				for _, item := range clause.TargetList.Items {
+					target, ok := item.(*ast.ResTarget)
+					if !ok {
+						continue
+					}
+					ref, ok := paramRefForAssignment(target)
+					if !ok {
+						continue
+					}
+					*p.refs = append(*p.refs, paramRef{parent: target, ref: ref, rv: n.Relation})
+					p.seen[ref.Location] = struct{}{}
+				}
+			case ast.CmdTypeInsert:
+				// WHEN NOT MATCHED THEN INSERT (a, b) VALUES ($1, $2)
+				if clause.Values == nil {
+					continue
+				}
+				if clause.TargetList == nil || len(clause.TargetList.Items) == 0 {
+					// Without an explicit column list sqlc cannot map the
+					// positional VALUES parameters to target columns.
+					params := astutils.Search(clause.Values, func(node ast.Node) bool {
+						_, ok := node.(*ast.ParamRef)
+						return ok
+					})
+					if len(params.Items) > 0 {
+						*p.errs = append(*p.errs, fmt.Errorf("MERGE INSERT with parameters requires an explicit column list"))
+						return p
+					}
+					continue
+				}
+				for i, v := range clause.Values.Items {
+					ref, ok := v.(*ast.ParamRef)
+					if !ok {
+						continue
+					}
+					if len(clause.TargetList.Items) <= i {
+						*p.errs = append(*p.errs, fmt.Errorf("MERGE INSERT has more expressions than target columns"))
+						return p
+					}
+					*p.refs = append(*p.refs, paramRef{parent: clause.TargetList.Items[i], ref: ref, rv: n.Relation})
 					p.seen[ref.Location] = struct{}{}
 				}
 			}

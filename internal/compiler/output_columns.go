@@ -63,6 +63,8 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 		targets = n.ReturningList
 	case *ast.InsertStmt:
 		targets = n.ReturningList
+	case *ast.MergeStmt:
+		targets = n.ReturningList
 	case *ast.SelectStmt:
 		targets = n.TargetList
 		isUnion := len(targets.Items) == 0 && n.Larg != nil
@@ -404,7 +406,71 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 		}
 	}
 
+	if m, ok := node.(*ast.MergeStmt); ok && mergeHasNotMatchedBySource(m) {
+		// A WHEN NOT MATCHED BY SOURCE action returns NULL for every column of
+		// the source relation (there is no matching source row), so any source
+		// column in the RETURNING list is nullable. The target is always
+		// m.Relation, so treat every provenance-bearing column that is not the
+		// target as a source column (this covers subquery sources too).
+		for _, col := range cols {
+			if !col.NotNull || col.skipTableRequiredCheck {
+				continue
+			}
+			// Columns without table provenance (e.g. merge_action()) are never
+			// NULL from a NOT MATCHED BY SOURCE action.
+			if col.Table == nil && col.TableAlias == "" {
+				continue
+			}
+			if !columnIsMergeTarget(col, m.Relation) {
+				col.NotNull = false
+			}
+		}
+	}
+
 	return cols, nil
+}
+
+// mergeHasNotMatchedBySource reports whether the MERGE has a WHEN NOT MATCHED
+// BY SOURCE clause, which makes source-relation columns nullable in RETURNING.
+func mergeHasNotMatchedBySource(m *ast.MergeStmt) bool {
+	if m.MergeWhenClauses == nil {
+		return false
+	}
+	for _, item := range m.MergeWhenClauses.Items {
+		if clause, ok := item.(*ast.MergeWhenClause); ok {
+			if clause.MatchKind == ast.MergeWhenNotMatchedBySource {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// columnIsMergeTarget reports whether col is qualified as (or resolves to) the
+// MERGE target relation.
+func columnIsMergeTarget(col *Column, target *ast.RangeVar) bool {
+	if target == nil {
+		return false
+	}
+	var name, alias string
+	if target.Relname != nil {
+		name = *target.Relname
+	}
+	if target.Alias != nil && target.Alias.Aliasname != nil {
+		alias = *target.Alias.Aliasname
+	}
+	if col.TableAlias != "" {
+		// Qualified: it is the target only if the qualifier is the target's
+		// alias (or, when the target is unaliased, its table name).
+		if alias != "" {
+			return col.TableAlias == alias
+		}
+		return col.TableAlias == name
+	}
+	if col.Table != nil && name != "" {
+		return col.Table.Name == name
+	}
+	return false
 }
 
 const (
@@ -494,6 +560,19 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 		list = &ast.List{
 			Items: []ast.Node{n.Relation},
 		}
+	case *ast.MergeStmt:
+		// PostgreSQL expands MERGE ... RETURNING * to all source columns
+		// followed by all target columns, so collect the source relation
+		// before the target relation.
+		// https://www.postgresql.org/docs/17/sql-merge.html
+		var tv tableVisitor
+		if n.SourceRelation != nil {
+			astutils.Walk(&tv, n.SourceRelation)
+		}
+		if n.Relation != nil {
+			astutils.Walk(&tv, n.Relation)
+		}
+		list = &tv.list
 	case *ast.SelectStmt:
 		var tv tableVisitor
 		astutils.Walk(&tv, n.FromClause)

@@ -24,6 +24,7 @@ func (c *Compiler) expand(qc *QueryCatalog, raw *ast.RawStmt) ([]source.Edit, er
 		switch node.(type) {
 		case *ast.DeleteStmt:
 		case *ast.InsertStmt:
+		case *ast.MergeStmt:
 		case *ast.SelectStmt:
 		case *ast.UpdateStmt:
 		default:
@@ -89,6 +90,8 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 	case *ast.DeleteStmt:
 		targets = n.ReturningList
 	case *ast.InsertStmt:
+		targets = n.ReturningList
+	case *ast.MergeStmt:
 		targets = n.ReturningList
 	case *ast.SelectStmt:
 		targets = n.TargetList
