@@ -1,0 +1,9 @@
+version: "2"
+sql:
+  - schema: "./schema.sql"
+    queries: "./"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "querytest"
+        out: "./go"
