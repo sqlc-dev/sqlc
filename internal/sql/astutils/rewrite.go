@@ -724,9 +724,6 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Query", nil, n.Query)
 		a.apply(n, "Options", nil, n.Options)
 
-	case *ast.Expr:
-		// pass
-
 	case *ast.FetchStmt:
 		// pass
 
