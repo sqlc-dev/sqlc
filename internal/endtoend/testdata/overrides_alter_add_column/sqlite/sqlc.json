@@ -1,0 +1,22 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "name": "db",
+      "engine": "sqlite",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "overrides": [
+        {
+          "column": "chat_messages.created_at",
+          "go_type": "time.Time"
+        },
+        {
+          "column": "chat_messages.updated_at",
+          "go_type": "time.Time"
+        }
+      ]
+    }
+  ]
+}

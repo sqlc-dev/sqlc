@@ -67,14 +67,18 @@ func (c *cc) convertAlter_table_stmtContext(n *parser.Alter_table_stmtContext) a
 				Table: parseTableName(n),
 				Cmds:  &ast.List{},
 			}
-			name := def.Column_name().GetText()
+			name := identifier(def.Column_name().GetText())
+			typeName := "any"
+			if def.Type_name() != nil {
+				typeName = def.Type_name().GetText()
+			}
 			stmt.Cmds.Items = append(stmt.Cmds.Items, &ast.AlterTableCmd{
 				Name:    &name,
 				Subtype: ast.AT_AddColumn,
 				Def: &ast.ColumnDef{
 					Colname: name,
 					TypeName: &ast.TypeName{
-						Name: def.Type_name().GetText(),
+						Name: typeName,
 					},
 					IsNotNull: hasNotNullConstraint(def.AllColumn_constraint()),
 				},
@@ -88,7 +92,7 @@ func (c *cc) convertAlter_table_stmtContext(n *parser.Alter_table_stmtContext) a
 			Table: parseTableName(n),
 			Cmds:  &ast.List{},
 		}
-		name := n.Column_name(0).GetText()
+		name := identifier(n.Column_name(0).GetText())
 		stmt.Cmds.Items = append(stmt.Cmds.Items, &ast.AlterTableCmd{
 			Name:    &name,
 			Subtype: ast.AT_DropColumn,
@@ -826,7 +830,7 @@ func (c *cc) convertUnaryExpr(n *parser.Expr_unaryContext) ast.Node {
 		if opCtx.MINUS() != nil {
 			// Negative number: -expr
 			return &ast.A_Expr{
-				Name: &ast.List{Items: []ast.Node{&ast.String{Str: "-"}}},
+				Name:  &ast.List{Items: []ast.Node{&ast.String{Str: "-"}}},
 				Rexpr: expr,
 			}
 		}
@@ -837,7 +841,7 @@ func (c *cc) convertUnaryExpr(n *parser.Expr_unaryContext) ast.Node {
 		if opCtx.TILDE() != nil {
 			// Bitwise NOT: ~expr
 			return &ast.A_Expr{
-				Name: &ast.List{Items: []ast.Node{&ast.String{Str: "~"}}},
+				Name:  &ast.List{Items: []ast.Node{&ast.String{Str: "~"}}},
 				Rexpr: expr,
 			}
 		}
