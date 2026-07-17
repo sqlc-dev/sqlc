@@ -3,6 +3,7 @@ package compiler
 import (
 	"fmt"
 
+	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 	"github.com/sqlc-dev/sqlc/internal/sql/rewrite"
@@ -12,6 +13,7 @@ type QueryCatalog struct {
 	catalog *catalog.Catalog
 	ctes    map[string]*Table
 	embeds  rewrite.EmbedSet
+	engine  config.Engine
 }
 
 func (comp *Compiler) buildQueryCatalog(c *catalog.Catalog, node ast.Node, embeds rewrite.EmbedSet) (*QueryCatalog, error) {
@@ -28,7 +30,7 @@ func (comp *Compiler) buildQueryCatalog(c *catalog.Catalog, node ast.Node, embed
 	default:
 		with = nil
 	}
-	qc := &QueryCatalog{catalog: c, ctes: map[string]*Table{}, embeds: embeds}
+	qc := &QueryCatalog{catalog: c, ctes: map[string]*Table{}, embeds: embeds, engine: comp.conf.Engine}
 	if with != nil {
 		for _, item := range with.Ctes.Items {
 			if cte, ok := item.(*ast.CommonTableExpr); ok {
@@ -90,7 +92,41 @@ func (qc QueryCatalog) GetTable(rel *ast.TableName) (*Table, error) {
 	for _, c := range src.Columns {
 		cols = append(cols, ConvertColumn(rel, c))
 	}
+	// PostgreSQL exposes six system columns on every user table
+	// (tableoid, xmin, cmin, xmax, cmax, ctid). They are not part of the
+	// CREATE TABLE definition, so the catalog has no record of them — but
+	// queries are allowed to reference them by name. Synthesize them here
+	// so the compiler can resolve refs like `SELECT xmin, ctid FROM foo`.
+	// They are marked IsSystem so SELECT * / RETURNING * skip them, which
+	// matches PostgreSQL's own behavior. See issues #1745, #3742.
+	if qc.engine == config.EnginePostgreSQL {
+		cols = append(cols, pgSystemColumns(rel)...)
+	}
 	return &Table{Rel: rel, Columns: cols}, nil
+}
+
+// pgSystemColumns returns the six PostgreSQL system columns synthesized for
+// every user table. See https://www.postgresql.org/docs/current/ddl-system-columns.html
+func pgSystemColumns(rel *ast.TableName) []*Column {
+	mk := func(name, typ string) *Column {
+		t := &ast.TypeName{Name: typ}
+		return &Column{
+			Name:     name,
+			DataType: typ,
+			NotNull:  true,
+			Table:    rel,
+			Type:     t,
+			IsSystem: true,
+		}
+	}
+	return []*Column{
+		mk("tableoid", "oid"),
+		mk("xmin", "xid"),
+		mk("cmin", "cid"),
+		mk("xmax", "xid"),
+		mk("cmax", "cid"),
+		mk("ctid", "tid"),
+	}
 }
 
 func (qc QueryCatalog) GetFunc(rel *ast.FuncName) (*Function, error) {

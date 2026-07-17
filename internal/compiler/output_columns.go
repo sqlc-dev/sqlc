@@ -273,6 +273,11 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 						continue
 					}
 					for _, c := range t.Columns {
+						// Skip PostgreSQL system columns on SELECT * to match PG behavior.
+						// See issue #3742.
+						if c.IsSystem {
+							continue
+						}
 						cname := c.Name
 						if res.Name != nil {
 							cname = *res.Name
