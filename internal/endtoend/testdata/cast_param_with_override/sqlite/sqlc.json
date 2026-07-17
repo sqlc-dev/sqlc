@@ -1,0 +1,18 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "engine": "sqlite",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "name": "querytest",
+      "overrides": [
+        {
+          "db_type": "REAL",
+          "go_type": "github.com/sqlc-dev/sqlc-testdata/pkg.CustomType"
+        }
+      ]
+    }
+  ]
+}
