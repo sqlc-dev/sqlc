@@ -7,13 +7,14 @@ package querytest
 
 import (
 	"context"
+	"database/sql"
 )
 
 const deleteTblFt = `-- name: DeleteTblFt :exec
 DELETE FROM tbl_ft WHERE b = ?
 `
 
-func (q *Queries) DeleteTblFt(ctx context.Context, b string) error {
+func (q *Queries) DeleteTblFt(ctx context.Context, b sql.NullString) error {
 	_, err := q.db.ExecContext(ctx, deleteTblFt, b)
 	return err
 }
@@ -23,8 +24,8 @@ INSERT INTO tbl_ft(b, c) VALUES(?, ?)
 `
 
 type InsertTblFtParams struct {
-	B string
-	C string
+	B sql.NullString
+	C sql.NullString
 }
 
 func (q *Queries) InsertTblFt(ctx context.Context, arg InsertTblFtParams) error {
@@ -37,15 +38,15 @@ SELECT b FROM ft
 WHERE b MATCH ?
 `
 
-func (q *Queries) SelectAllColsFt(ctx context.Context, b string) ([]string, error) {
+func (q *Queries) SelectAllColsFt(ctx context.Context, b sql.NullString) ([]sql.NullString, error) {
 	rows, err := q.db.QueryContext(ctx, selectAllColsFt, b)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []string
+	var items []sql.NullString
 	for rows.Next() {
-		var b string
+		var b sql.NullString
 		if err := rows.Scan(&b); err != nil {
 			return nil, err
 		}
@@ -65,7 +66,7 @@ SELECT b, c FROM tbl_ft
 WHERE b MATCH ?
 `
 
-func (q *Queries) SelectAllColsTblFt(ctx context.Context, b string) ([]TblFt, error) {
+func (q *Queries) SelectAllColsTblFt(ctx context.Context, b sql.NullString) ([]TblFt, error) {
 	rows, err := q.db.QueryContext(ctx, selectAllColsTblFt, b)
 	if err != nil {
 		return nil, err
@@ -94,12 +95,12 @@ WHERE b MATCH ? ORDER BY bm25(tbl_ft)
 `
 
 type SelectBm25FuncRow struct {
-	B    string
-	C    string
+	B    sql.NullString
+	C    sql.NullString
 	Bm25 float64
 }
 
-func (q *Queries) SelectBm25Func(ctx context.Context, b string) ([]SelectBm25FuncRow, error) {
+func (q *Queries) SelectBm25Func(ctx context.Context, b sql.NullString) ([]SelectBm25FuncRow, error) {
 	rows, err := q.db.QueryContext(ctx, selectBm25Func, b)
 	if err != nil {
 		return nil, err
@@ -127,7 +128,7 @@ SELECT highlight(tbl_ft, 0, '<b>', '</b>') FROM tbl_ft
 WHERE b MATCH ?
 `
 
-func (q *Queries) SelectHightlighFunc(ctx context.Context, b string) ([]string, error) {
+func (q *Queries) SelectHightlighFunc(ctx context.Context, b sql.NullString) ([]string, error) {
 	rows, err := q.db.QueryContext(ctx, selectHightlighFunc, b)
 	if err != nil {
 		return nil, err
@@ -155,15 +156,15 @@ SELECT b FROM ft
 WHERE b = ?
 `
 
-func (q *Queries) SelectOneColFt(ctx context.Context, b string) ([]string, error) {
+func (q *Queries) SelectOneColFt(ctx context.Context, b sql.NullString) ([]sql.NullString, error) {
 	rows, err := q.db.QueryContext(ctx, selectOneColFt, b)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []string
+	var items []sql.NullString
 	for rows.Next() {
-		var b string
+		var b sql.NullString
 		if err := rows.Scan(&b); err != nil {
 			return nil, err
 		}
@@ -183,15 +184,15 @@ SELECT c FROM tbl_ft
 WHERE b = ?
 `
 
-func (q *Queries) SelectOneColTblFt(ctx context.Context, b string) ([]string, error) {
+func (q *Queries) SelectOneColTblFt(ctx context.Context, b sql.NullString) ([]sql.NullString, error) {
 	rows, err := q.db.QueryContext(ctx, selectOneColTblFt, b)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []string
+	var items []sql.NullString
 	for rows.Next() {
-		var c string
+		var c sql.NullString
 		if err := rows.Scan(&c); err != nil {
 			return nil, err
 		}
@@ -238,8 +239,8 @@ UPDATE tbl_ft SET c = ? WHERE b = ?
 `
 
 type UpdateTblFtParams struct {
-	C string
-	B string
+	C sql.NullString
+	B sql.NullString
 }
 
 func (q *Queries) UpdateTblFt(ctx context.Context, arg UpdateTblFtParams) error {
