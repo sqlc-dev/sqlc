@@ -114,7 +114,8 @@ func buildStructs(req *plugin.GenerateRequest, options *opts.Options) []Struct {
 type goColumn struct {
 	id int
 	*plugin.Column
-	embed *goEmbed
+	embed    *goEmbed
+	jsonType string
 }
 
 type goEmbed struct {
@@ -186,6 +187,9 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 	models := buildModelTypeSet(enums, structs)
 	qualifier := options.ModelsTypeQualifier()
 	qs := make([]Query, 0, len(req.Queries))
+	// JSON types emitted so far, so a name reused across queries is declared
+	// once (see internJSONTypes).
+	seenJSONTypes := map[string]JSONType{}
 	for _, query := range req.Queries {
 		if query.Name == "" {
 			continue
@@ -269,7 +273,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 			}
 		}
 
-		if len(query.Columns) == 1 && query.Columns[0].EmbedTable == nil {
+		if len(query.Columns) == 1 && query.Columns[0].EmbedTable == nil && len(query.Columns[0].JsonFields) == 0 {
 			c := query.Columns[0]
 			name := columnName(c, 0)
 			name = strings.Replace(name, "$", "_", -1)
@@ -325,11 +329,21 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 			if gs == nil {
 				var columns []goColumn
 				for i, c := range query.Columns {
-					columns = append(columns, goColumn{
+					col := goColumn{
 						id:     i,
 						Column: c,
 						embed:  newGoEmbed(c.EmbedTable, structs, req.Catalog.DefaultSchema),
-					})
+					}
+					if len(c.JsonFields) > 0 {
+						var jsonTypes []JSONType
+						col.jsonType, jsonTypes = newGoJSONColumn(req, options, c, models, qualifier)
+						toEmit, err := internJSONTypes(seenJSONTypes, models, jsonTypes)
+						if err != nil {
+							return nil, err
+						}
+						gq.JSONTypes = append(gq.JSONTypes, toEmit...)
+					}
+					columns = append(columns, col)
 				}
 				var err error
 				gs, err = columnsToStruct(req, options, gq.MethodName+"Row", columns, true, models, qualifier)
@@ -419,11 +433,14 @@ func columnsToStruct(req *plugin.GenerateRequest, options *opts.Options, name st
 			Tags:   tags,
 			Column: c.Column,
 		}
-		if c.embed == nil {
-			f.Type = qualifyType(goType(req, options, c.Column), models, qualifier)
-		} else {
+		switch {
+		case c.embed != nil:
 			f.Type = qualifyType(c.embed.modelType, models, qualifier)
 			f.EmbedFields = c.embed.fields
+		case c.jsonType != "":
+			f.Type = c.jsonType
+		default:
+			f.Type = qualifyType(goType(req, options, c.Column), models, qualifier)
 		}
 
 		gs.Fields = append(gs.Fields, f)

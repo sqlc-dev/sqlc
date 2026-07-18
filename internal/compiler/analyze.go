@@ -79,6 +79,11 @@ func combineAnalysis(prev *analysis, a *analyzer.Analysis) *analysis {
 	}
 	if len(prev.Columns) == len(cols) {
 		for i := range prev.Columns {
+			// Embed and JSON columns are synthesized and table-less; the
+			// analyzer has no notion of them and would clobber their types.
+			if prev.Columns[i].EmbedTable != nil || prev.Columns[i].JSONFields != nil {
+				continue
+			}
 			// Only override column types if the analyzer provides a specific type
 			// (not "any"), since the catalog-based inference may have better info
 			if cols[i].DataType != "any" {
@@ -90,7 +95,7 @@ func combineAnalysis(prev *analysis, a *analyzer.Analysis) *analysis {
 	} else {
 		embedding := false
 		for i := range prev.Columns {
-			if prev.Columns[i].EmbedTable != nil {
+			if prev.Columns[i].EmbedTable != nil || prev.Columns[i].JSONFields != nil {
 				embedding = true
 			}
 		}
@@ -195,6 +200,13 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 		return nil, err
 	}
 	edits = append(edits, expandEdits...)
+
+	jsonEdits, err := c.expandJSON(raw, query)
+	if check(err); err != nil {
+		return nil, err
+	}
+	edits = append(edits, jsonEdits...)
+
 	expanded, err := source.Mutate(query, edits)
 	if err != nil {
 		return nil, err

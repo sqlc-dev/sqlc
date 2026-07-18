@@ -1,0 +1,22 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "engine": "postgresql",
+      "gen": {
+        "go": {
+          "package": "querytest",
+          "out": "go",
+          "sql_package": "pgx/v5",
+          "emit_json_tags": true,
+          "emit_db_tags": true,
+          "rename": {
+            "ChildPoint.x": "XCoord"
+          }
+        }
+      }
+    }
+  ]
+}

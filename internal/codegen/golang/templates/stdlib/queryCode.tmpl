@@ -19,6 +19,8 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
 }
 {{end}}
 
+{{template "jsonTypesCode" .}}
+
 {{if eq .Cmd ":one"}}
 {{range .Comments}}//{{.}}
 {{end -}}

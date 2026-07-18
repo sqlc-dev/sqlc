@@ -1,0 +1,2 @@
+# package querytest
+error generating code: sqlc.jsonb_build_object(...) and sqlc.embed.jsonb(...) are only supported by pgx/v5

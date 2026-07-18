@@ -1,0 +1,17 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "engine": "postgresql",
+      "gen": {
+        "go": {
+          "package": "querytest",
+          "out": "go",
+          "sql_package": "pgx/v4"
+        }
+      }
+    }
+  ]
+}

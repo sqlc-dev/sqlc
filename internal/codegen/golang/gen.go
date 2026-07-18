@@ -212,6 +212,10 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		return nil, errors.New(":batch* commands are only supported by pgx")
 	}
 
+	if usesJSON(queries) && tctx.SQLDriver != opts.SQLDriverPGXV5 {
+		return nil, errors.New("sqlc.jsonb_build_object(...) and sqlc.embed.jsonb(...) are only supported by pgx/v5")
+	}
+
 	funcMap := template.FuncMap{
 		"lowerTitle": sdk.LowerTitle,
 		"comment":    sdk.DoubleSlashComment,
@@ -350,6 +354,15 @@ func usesCopyFrom(queries []Query) bool {
 func usesBatch(queries []Query) bool {
 	for _, q := range queries {
 		if slices.Contains([]string{metadata.CmdBatchExec, metadata.CmdBatchMany, metadata.CmdBatchOne}, q.Cmd) {
+			return true
+		}
+	}
+	return false
+}
+
+func usesJSON(queries []Query) bool {
+	for _, q := range queries {
+		if len(q.JSONTypes) > 0 {
 			return true
 		}
 	}

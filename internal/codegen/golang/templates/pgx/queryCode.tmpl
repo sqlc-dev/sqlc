@@ -21,6 +21,8 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
   {{- end}}
 }
 {{end}}
+
+{{template "jsonTypesCode" .}}
 {{end}}
 
 {{if eq .Cmd ":one"}}
