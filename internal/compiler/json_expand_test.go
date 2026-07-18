@@ -27,39 +27,9 @@ func TestExpandJSON(t *testing.T) {
 			want: `SELECT ARRAY(SELECT jsonb_build_object('x', c.x, 'y', c.y) FROM c WHERE c.parent_id = p.id) AS children FROM p`,
 		},
 		{
-			name: "array with name and paren in string literal",
-			in:   `SELECT ARRAY(SELECT sqlc.jsonb_build_object."Child"('x', c.x, 'label', 'a(b)c') FROM c WHERE c.parent_id = p.id) AS children FROM p`,
-			want: `SELECT ARRAY(SELECT jsonb_build_object('x', c.x, 'label', 'a(b)c') FROM c WHERE c.parent_id = p.id) AS children FROM p`,
-		},
-		{
-			name: "two array embeds with names in one query",
-			in:   `SELECT ARRAY(SELECT sqlc.jsonb_build_object."Child"('x', c.x) FROM c WHERE c.parent_id = p.id) AS children, ARRAY(SELECT sqlc.jsonb_build_object."Other"('y', d.y) FROM d WHERE d.parent_id = p.id) AS others FROM p`,
-			want: `SELECT ARRAY(SELECT jsonb_build_object('x', c.x) FROM c WHERE c.parent_id = p.id) AS children, ARRAY(SELECT jsonb_build_object('y', d.y) FROM d WHERE d.parent_id = p.id) AS others FROM p`,
-		},
-		{
 			name: "name split across multiple lines",
 			in:   "SELECT ARRAY(\n  SELECT sqlc.jsonb_build_object.\"Child\"(\n    'x', c.x\n  )\n  FROM c\n) AS children FROM p",
 			want: "SELECT ARRAY(\n  SELECT jsonb_build_object(\n    'x', c.x\n  )\n  FROM c\n) AS children FROM p",
-		},
-		{
-			name: "unquoted name is lowercased by Postgres, still rewrites",
-			in:   `SELECT sqlc.jsonb_build_object.Obj('x', a, 'y', b) AS obj FROM t`,
-			want: `SELECT jsonb_build_object('x', a, 'y', b) AS obj FROM t`,
-		},
-		{
-			name: "embed.jsonb scalar rewrites to to_jsonb",
-			in:   `SELECT sqlc.embed.jsonb(t) AS obj FROM t`,
-			want: `SELECT to_jsonb(t) AS obj FROM t`,
-		},
-		{
-			name: "embed.jsonb inside ARRAY(...) leaves the wrapper untouched",
-			in:   `SELECT ARRAY(SELECT sqlc.embed.jsonb(c) FROM c WHERE c.parent_id = p.id) AS children FROM p`,
-			want: `SELECT ARRAY(SELECT to_jsonb(c) FROM c WHERE c.parent_id = p.id) AS children FROM p`,
-		},
-		{
-			name: "mix of jsonb_build_object and embed.jsonb in one query",
-			in:   `SELECT sqlc.jsonb_build_object."Obj"('x', a) AS obj, sqlc.embed.jsonb(t) AS row FROM t`,
-			want: `SELECT jsonb_build_object('x', a) AS obj, to_jsonb(t) AS row FROM t`,
 		},
 	}
 

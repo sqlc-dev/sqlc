@@ -213,7 +213,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 	}
 
 	if usesJSON(queries) && tctx.SQLDriver != opts.SQLDriverPGXV5 {
-		return nil, errors.New("sqlc.jsonb_build_object(...) and sqlc.embed.jsonb(...) are only supported by pgx/v5")
+		return nil, errors.New("sqlc.jsonb_build_object(...) is only supported by pgx/v5")
 	}
 
 	funcMap := template.FuncMap{
