@@ -3,7 +3,7 @@ Jinja2==3.1.6
 MarkupSafe==3.0.3
 Pygments==2.20.0
 Sphinx==8.2.3
-certifi==2026.6.17
+certifi==2026.7.22
 chardet==7.4.3
 commonmark==0.9.2
 docutils==0.20.1
