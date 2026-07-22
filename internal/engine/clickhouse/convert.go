@@ -1,6 +1,7 @@
 package clickhouse
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -825,15 +826,14 @@ func (c *cc) convertColumnDeclaration(n *chast.ColumnDeclaration) *ast.ColumnDef
 	}
 
 	if n.Type != nil {
+		// Render the full type text (including nested type parameters such
+		// as the inner type of Nullable(T) / Array(T) and the precision of
+		// Decimal(P, S)) into Name so downstream consumers can recover the
+		// complete declaration. Nested type parameters are themselves
+		// *chast.DataType nodes, which the generic expression converter
+		// cannot represent, so they are rendered here instead.
 		colDef.TypeName = &ast.TypeName{
-			Name: n.Type.Name,
-		}
-		// Handle type parameters (e.g., Decimal(10, 2))
-		if len(n.Type.Parameters) > 0 {
-			colDef.TypeName.Typmods = &ast.List{}
-			for _, param := range n.Type.Parameters {
-				colDef.TypeName.Typmods.Items = append(colDef.TypeName.Typmods.Items, c.convertExpr(param))
-			}
+			Name: renderDataType(n.Type),
 		}
 	}
 
@@ -853,6 +853,42 @@ func (c *cc) convertColumnDeclaration(n *chast.ColumnDeclaration) *ast.ColumnDef
 	}
 
 	return colDef
+}
+
+// renderDataType renders a ClickHouse type node back to its canonical
+// textual form, e.g. Nullable(String), Array(UInt64), Decimal(18, 4), or
+// Map(String, Array(Nullable(UInt32))). Nested type parameters recurse.
+func renderDataType(dt *chast.DataType) string {
+	if dt == nil {
+		return ""
+	}
+	if len(dt.Parameters) == 0 {
+		return dt.Name
+	}
+	parts := make([]string, 0, len(dt.Parameters))
+	for _, p := range dt.Parameters {
+		parts = append(parts, renderTypeParam(p))
+	}
+	return dt.Name + "(" + strings.Join(parts, ", ") + ")"
+}
+
+// renderTypeParam renders a single type parameter: a nested type, a
+// numeric/string literal (Decimal precision, FixedString length, Enum
+// value), or an identifier.
+func renderTypeParam(e chast.Expression) string {
+	switch v := e.(type) {
+	case *chast.DataType:
+		return renderDataType(v)
+	case *chast.Literal:
+		if v.Source != "" {
+			return v.Source
+		}
+		return fmt.Sprintf("%v", v.Value)
+	case *chast.Identifier:
+		return strings.Join(v.Parts, ".")
+	default:
+		return ""
+	}
 }
 
 func (c *cc) convertUpdateQuery(n *chast.UpdateQuery) *ast.UpdateStmt {
