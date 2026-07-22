@@ -31,14 +31,14 @@ func TestCastAllowed(t *testing.T) {
 		ctx      string
 		want     bool
 	}{
-		{intOID, intOID, "i", true},      // identity always OK
-		{intOID, bigintOID, "i", true},   // declared implicit
-		{intOID, bigintOID, "a", true},   // implicit subsumes assignment
-		{intOID, bigintOID, "e", true},   // implicit subsumes explicit
-		{intOID, textOID, "i", false},    // explicit-only blocked from implicit
-		{intOID, textOID, "a", false},    // and from assignment
-		{intOID, textOID, "e", true},     // but works for explicit
-		{textOID, intOID, "e", false},    // no rule defined
+		{intOID, intOID, "i", true},    // identity always OK
+		{intOID, bigintOID, "i", true}, // declared implicit
+		{intOID, bigintOID, "a", true}, // implicit subsumes assignment
+		{intOID, bigintOID, "e", true}, // implicit subsumes explicit
+		{intOID, textOID, "i", false},  // explicit-only blocked from implicit
+		{intOID, textOID, "a", false},  // and from assignment
+		{intOID, textOID, "e", true},   // but works for explicit
+		{textOID, intOID, "e", false},  // no rule defined
 	}
 	for _, c := range cases {
 		got, err := cat.CastAllowed(c.src, c.tgt, c.ctx)

@@ -24,8 +24,8 @@ type scopeRel struct {
 
 // scopeCol is a single column visible through a scopeRel.
 type scopeCol struct {
-	name   string
-	attOID int64
+	name    string
+	attOID  int64
 	typeOID int64
 	notNull bool
 }

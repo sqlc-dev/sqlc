@@ -4,6 +4,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/compiler"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/config/convert"
+	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/info"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
@@ -224,10 +225,90 @@ func pluginQueryParam(p compiler.Parameter) *plugin.Parameter {
 }
 
 func codeGenRequest(r *compiler.Result, settings config.CombinedSettings) *plugin.GenerateRequest {
+	// Engines on the xqlc core (ClickHouse) project the codegen catalog
+	// from the core catalog rather than the in-memory sql/catalog, which is
+	// nil on that path.
+	var cat *plugin.Catalog
+	if r.CoreCatalog != nil {
+		cat = pluginCatalogFromCore(r.CoreCatalog)
+	} else {
+		cat = pluginCatalog(r.Catalog)
+	}
 	return &plugin.GenerateRequest{
 		Settings:    pluginSettings(r, settings),
-		Catalog:     pluginCatalog(r.Catalog),
+		Catalog:     cat,
 		Queries:     pluginQueries(r),
 		SqlcVersion: info.Version,
+	}
+}
+
+// pluginCatalogFromCore projects a core.Catalog (the xqlc SQLite-backed
+// catalog) into the plugin.Catalog that codegen consumes to emit models
+// and enums. It reads the namespace / class / attribute / type tables
+// directly. Projection is best-effort: an unexpected query error against
+// the in-memory catalog yields a partial catalog rather than aborting
+// generation.
+func pluginCatalogFromCore(cc *core.Catalog) *plugin.Catalog {
+	db := cc.DB()
+	var schemas []*plugin.Schema
+
+	type row struct {
+		oid  int64
+		name string
+	}
+	readRows := func(query string, args ...any) []row {
+		rows, err := db.Query(query, args...)
+		if err != nil {
+			return nil
+		}
+		defer rows.Close()
+		var out []row
+		for rows.Next() {
+			var r row
+			if err := rows.Scan(&r.oid, &r.name); err != nil {
+				return out
+			}
+			out = append(out, r)
+		}
+		return out
+	}
+
+	for _, ns := range readRows(`SELECT oid, name FROM sql_namespace ORDER BY oid`) {
+		var tables []*plugin.Table
+		for _, cl := range readRows(
+			`SELECT oid, name FROM sql_class WHERE namespace_oid = ? AND kind = 'r' ORDER BY oid`, ns.oid,
+		) {
+			rel := &plugin.Identifier{Schema: ns.name, Name: cl.name}
+			var columns []*plugin.Column
+			crows, err := db.Query(
+				`SELECT a.name, t.name, a.not_null
+				 FROM sql_attribute a JOIN sql_type t ON t.oid = a.type_oid
+				 WHERE a.class_oid = ? ORDER BY a.num`, cl.oid,
+			)
+			if err != nil {
+				continue
+			}
+			for crows.Next() {
+				var name, typeName string
+				var notNull int
+				if err := crows.Scan(&name, &typeName, &notNull); err != nil {
+					break
+				}
+				columns = append(columns, &plugin.Column{
+					Name:    name,
+					Type:    &plugin.Identifier{Name: typeName},
+					NotNull: notNull != 0,
+					Table:   rel,
+				})
+			}
+			crows.Close()
+			tables = append(tables, &plugin.Table{Rel: rel, Columns: columns})
+		}
+		schemas = append(schemas, &plugin.Schema{Name: ns.name, Tables: tables})
+	}
+
+	return &plugin.Catalog{
+		DefaultSchema: "public",
+		Schemas:       schemas,
 	}
 }

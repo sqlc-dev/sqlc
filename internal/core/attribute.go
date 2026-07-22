@@ -10,18 +10,18 @@ import (
 // which is kept as a thin wrapper for callers that don't need to set
 // any of the "extra" metadata.
 type AttributeSpec struct {
-	ClassOID       int64
-	Name           string
-	TypeOID        int64
-	Num            int // 1-based ordinal position
-	NotNull        bool
-	HasDefault     bool
-	DeclType       string // original declared type, before normalization
-	TypeLength     int    // varchar(N), numeric(p,s).p, etc.
-	TypeScale      int    // numeric(p,s).s
-	AutoIncrement  bool
-	IsPrimaryKey   bool
-	IsUnique       bool
+	ClassOID      int64
+	Name          string
+	TypeOID       int64
+	Num           int // 1-based ordinal position
+	NotNull       bool
+	HasDefault    bool
+	DeclType      string // original declared type, before normalization
+	TypeLength    int    // varchar(N), numeric(p,s).p, etc.
+	TypeScale     int    // numeric(p,s).s
+	AutoIncrement bool
+	IsPrimaryKey  bool
+	IsUnique      bool
 }
 
 // CreateAttributeSpec inserts a column with the full set of attribute
@@ -94,18 +94,18 @@ func (c *Catalog) SetAttributeUnique(classOID int64, columns []string) error {
 
 // ColumnInfo describes a resolved column.
 type ColumnInfo struct {
-	Name            string
-	TypeName        string
-	TypeOID         int64
-	NotNull         bool
-	DeclType        string
-	TypeLength      int
-	TypeScale       int
-	AutoIncrement   bool
-	IsPrimaryKey    bool
-	IsUnique        bool
-	AttributeOID    int64
-	ClassOID        int64
+	Name          string
+	TypeName      string
+	TypeOID       int64
+	NotNull       bool
+	DeclType      string
+	TypeLength    int
+	TypeScale     int
+	AutoIncrement bool
+	IsPrimaryKey  bool
+	IsUnique      bool
+	AttributeOID  int64
+	ClassOID      int64
 }
 
 // ResolveColumn looks up a column by table name and column name.
@@ -174,17 +174,17 @@ func (c *Catalog) TableColumns(table string) ([]ColumnInfo, error) {
 // from sql_attribute joined back to sql_class / sql_namespace, so the
 // caller doesn't have to re-resolve names from raw OIDs.
 type AttributeDetails struct {
-	Schema          string
-	Table           string
-	Column          string
-	Num             int
-	DeclType        string
-	TypeLength      int
-	TypeScale       int
-	AutoIncrement   bool
-	IsPrimaryKey    bool
-	IsUnique        bool
-	NotNull         bool
+	Schema        string
+	Table         string
+	Column        string
+	Num           int
+	DeclType      string
+	TypeLength    int
+	TypeScale     int
+	AutoIncrement bool
+	IsPrimaryKey  bool
+	IsUnique      bool
+	NotNull       bool
 }
 
 // LookupAttribute returns the full source-side metadata for a column,
