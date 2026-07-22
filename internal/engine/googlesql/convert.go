@@ -750,7 +750,8 @@ func (c *cc) convertInsertStatement(n *zjast.InsertStatement) ast.Node {
 		return todo(n)
 	}
 	stmt := &ast.InsertStmt{
-		Relation: parseRangeVar(path),
+		Relation:      parseRangeVar(path),
+		ReturningList: &ast.List{},
 	}
 
 	if n.Columns != nil {
@@ -770,6 +771,10 @@ func (c *cc) convertInsertStatement(n *zjast.InsertStatement) ast.Node {
 	switch {
 	case n.Rows != nil:
 		selectStmt := &ast.SelectStmt{
+			// A non-nil TargetList matches the shape the other engines produce
+			// for INSERT ... VALUES; the compiler's parameter search iterates it
+			// unconditionally.
+			TargetList:  &ast.List{},
 			ValuesLists: &ast.List{},
 		}
 		for _, row := range n.Rows.Rows {
@@ -816,8 +821,10 @@ func (c *cc) convertUpdateStatement(n *zjast.UpdateStatement) ast.Node {
 	rv := parseRangeVar(path)
 	rv.Alias = convertAlias(n.Alias)
 	stmt := &ast.UpdateStmt{
-		Relations:  &ast.List{Items: []ast.Node{rv}},
-		TargetList: &ast.List{},
+		Relations:     &ast.List{Items: []ast.Node{rv}},
+		TargetList:    &ast.List{},
+		FromClause:    &ast.List{},
+		ReturningList: &ast.List{},
 	}
 
 	if n.UpdateItemList != nil {
@@ -869,7 +876,8 @@ func (c *cc) convertDeleteStatement(n *zjast.DeleteStatement) ast.Node {
 	rv := parseRangeVar(path)
 	rv.Alias = convertAlias(n.Alias)
 	stmt := &ast.DeleteStmt{
-		Relations: &ast.List{Items: []ast.Node{rv}},
+		Relations:     &ast.List{Items: []ast.Node{rv}},
+		ReturningList: &ast.List{},
 	}
 
 	if n.Where != nil {

@@ -37,6 +37,9 @@ Examples:
   # Analyze a SQLite query
   sqlc analyze --dialect sqlite --schema schema.sql query.sql
 
+  # Analyze a GoogleSQL (BigQuery, Spanner) query
+  sqlc analyze --dialect googlesql --schema schema.sql query.sql
+
   # Analyze a query piped via stdin
   echo "-- name: GetAuthor :one
   SELECT * FROM authors WHERE id = $1;" | sqlc analyze --dialect postgresql --schema schema.sql
@@ -50,7 +53,7 @@ Examples:
 				return err
 			}
 			if dialect == "" {
-				return fmt.Errorf("--dialect flag is required (postgresql, mysql, or sqlite)")
+				return fmt.Errorf("--dialect flag is required (postgresql, mysql, sqlite, or googlesql)")
 			}
 
 			schemaPath, err := cmd.Flags().GetString("schema")
@@ -107,8 +110,10 @@ Examples:
 				engine = config.EngineMySQL
 			case "sqlite":
 				engine = config.EngineSQLite
+			case "googlesql":
+				engine = config.EngineGoogleSQL
 			default:
-				return fmt.Errorf("unsupported dialect: %s (use postgresql, mysql, or sqlite)", dialect)
+				return fmt.Errorf("unsupported dialect: %s (use postgresql, mysql, sqlite, or googlesql)", dialect)
 			}
 
 			sql := config.SQL{
@@ -150,7 +155,7 @@ Examples:
 			return nil
 		},
 	}
-	cmd.Flags().StringP("dialect", "d", "", "SQL dialect to use (postgresql, mysql, or sqlite)")
+	cmd.Flags().StringP("dialect", "d", "", "SQL dialect to use (postgresql, mysql, sqlite, or googlesql)")
 	cmd.Flags().StringP("schema", "s", "", "path to the schema file")
 	cmd.Flags().BoolP("ast", "", false, "include the statement AST in the output")
 	return cmd
