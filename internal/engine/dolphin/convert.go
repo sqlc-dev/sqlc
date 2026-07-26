@@ -397,12 +397,21 @@ func (c *cc) convertRenameTableStmt(n *pcast.RenameTableStmt) ast.Node {
 	return list
 }
 
-func (c *cc) convertExistsSubqueryExpr(n *pcast.ExistsSubqueryExpr) *ast.SubLink {
+func (c *cc) convertExistsSubqueryExpr(n *pcast.ExistsSubqueryExpr) ast.Node {
 	sublink := &ast.SubLink{
 		SubLinkType: ast.EXISTS_SUBLINK,
 	}
 	if n.Sel != nil {
 		sublink.Subselect = c.convert(n.Sel)
+	}
+	if n.Not {
+		return &ast.BoolExpr{
+			Boolop: ast.BoolExprTypeNot,
+			Args: &ast.List{
+				Items: []ast.Node{sublink},
+			},
+			Location: n.OriginTextPosition(),
+		}
 	}
 	return sublink
 }
@@ -1556,6 +1565,15 @@ func (c *cc) convertTruncateTableStmt(n *pcast.TruncateTableStmt) *ast.TruncateS
 }
 
 func (c *cc) convertUnaryOperationExpr(n *pcast.UnaryOperationExpr) ast.Node {
+	if n.Op == opcode.Not {
+		return &ast.BoolExpr{
+			Boolop: ast.BoolExprTypeNot,
+			Args: &ast.List{
+				Items: []ast.Node{c.convert(n.V)},
+			},
+			Location: n.OriginTextPosition(),
+		}
+	}
 	return todo(n)
 }
 
