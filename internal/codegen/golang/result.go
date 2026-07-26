@@ -219,7 +219,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 
 		gq := Query{
 			Cmd:          query.Cmd,
-			ConstantName: constantName,
+			ConstantName: escape(constantName),
 			FieldName:    sdk.LowerTitle(query.Name) + "Stmt",
 			MethodName:   query.Name,
 			SourceName:   query.Filename,

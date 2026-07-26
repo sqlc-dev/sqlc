@@ -11,14 +11,14 @@ import (
 	"github.com/lib/pq"
 )
 
-const any = `-- name: Any :many
+const any_ = `-- name: Any :many
 SELECT id
 FROM bar
 WHERE id = ANY($1::bigint[])
 `
 
 func (q *Queries) Any(ctx context.Context, dollar_1 []int64) ([]int64, error) {
-	rows, err := q.db.QueryContext(ctx, any, pq.Array(dollar_1))
+	rows, err := q.db.QueryContext(ctx, any_, pq.Array(dollar_1))
 	if err != nil {
 		return nil, err
 	}
