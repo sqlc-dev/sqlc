@@ -1,0 +1,16 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "engine": "sqlite",
+      "schema": "schema.sql",
+      "queries": "catalogdb/query.sql",
+      "gen": {
+        "go": {
+          "package": "catalogdb",
+          "out": "catalogdb"
+        }
+      }
+    }
+  ]
+}

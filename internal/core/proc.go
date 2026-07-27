@@ -1,9 +1,12 @@
 package core
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"strings"
+
+	"github.com/sqlc-dev/sqlc/internal/core/catalogdb"
 )
 
 // ProcSpec describes a function/aggregate/window/procedure for insertion
@@ -85,33 +88,47 @@ type ProcOverload struct {
 // any of the supplied namespaces. Pass an empty namespace list to search
 // every namespace. Argument lists are populated in declaration order.
 func (c *Catalog) FindProcs(name string, namespaceOIDs []int64) ([]ProcOverload, error) {
-	q := `SELECT oid, name, kind, return_type_oid, return_nullable
-	      FROM sql_proc WHERE name = ?`
-	args := []any{strings.ToLower(name)}
-	if len(namespaceOIDs) > 0 {
-		q += " AND namespace_oid IN (" + placeholders(len(namespaceOIDs)) + ")"
-		for _, ns := range namespaceOIDs {
-			args = append(args, ns)
-		}
-	}
-	rows, err := c.db.Query(q, args...)
-	if err != nil {
-		return nil, fmt.Errorf("find procs %q: %w", name, err)
-	}
-	defer rows.Close()
+	ctx := context.Background()
+	lname := strings.ToLower(name)
+
 	var out []ProcOverload
-	for rows.Next() {
-		var o ProcOverload
-		var rn int
-		if err := rows.Scan(&o.OID, &o.Name, &o.Kind, &o.ReturnTypeOID, &rn); err != nil {
-			return nil, err
+	if len(namespaceOIDs) == 0 {
+		rows, err := c.q.FindProcsAnyNamespace(ctx, lname)
+		if err != nil {
+			return nil, fmt.Errorf("find procs %q: %w", name, err)
 		}
-		o.ReturnNullable = rn != 0
-		out = append(out, o)
+		for _, r := range rows {
+			out = append(out, ProcOverload{
+				OID:            r.Oid,
+				Name:           r.Name,
+				Kind:           r.Kind,
+				ReturnTypeOID:  r.ReturnTypeOid,
+				ReturnNullable: r.ReturnNullable != 0,
+			})
+		}
+	} else {
+		nss := make([]sql.NullInt64, len(namespaceOIDs))
+		for i, ns := range namespaceOIDs {
+			nss[i] = sql.NullInt64{Int64: ns, Valid: true}
+		}
+		rows, err := c.q.FindProcsInNamespaces(ctx, catalogdb.FindProcsInNamespacesParams{
+			Name:          lname,
+			NamespaceOids: nss,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("find procs %q: %w", name, err)
+		}
+		for _, r := range rows {
+			out = append(out, ProcOverload{
+				OID:            r.Oid,
+				Name:           r.Name,
+				Kind:           r.Kind,
+				ReturnTypeOID:  r.ReturnTypeOid,
+				ReturnNullable: r.ReturnNullable != 0,
+			})
+		}
 	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
+
 	for i := range out {
 		argTypes, err := c.procArgTypes(out[i].OID)
 		if err != nil {
@@ -142,13 +159,3 @@ func (c *Catalog) procArgTypes(procOID int64) ([]int64, error) {
 	}
 	return out, rows.Err()
 }
-
-func placeholders(n int) string {
-	if n <= 0 {
-		return ""
-	}
-	return strings.Repeat("?,", n-1) + "?"
-}
-
-// silence unused-import warning if we drop the sql.Null* usages
-var _ sql.NullString

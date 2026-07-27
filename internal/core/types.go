@@ -1,9 +1,12 @@
 package core
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"strings"
+
+	"github.com/sqlc-dev/sqlc/internal/core/catalogdb"
 )
 
 // TypeSpec describes a SQL type for insertion into the catalog.
@@ -39,18 +42,20 @@ func (c *Catalog) CreateTypeSpec(t TypeSpec) (int64, error) {
 		}
 		t.NamespaceOID = oid
 	}
-	res, err := c.db.Exec(
-		`INSERT INTO sql_type
-		   (name, size, typtype, category, preferred, namespace_oid, dialect_oid, element_oid)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-		strings.ToLower(t.Name), t.Size, t.Typtype,
-		nullableString(t.Category), boolToInt(t.Preferred),
-		t.NamespaceOID, nullableOID(t.DialectOID), nullableOID(t.ElementOID),
-	)
+	oid, err := c.q.CreateType(context.Background(), catalogdb.CreateTypeParams{
+		Name:         strings.ToLower(t.Name),
+		Size:         int64(t.Size),
+		Typtype:      t.Typtype,
+		Category:     nullString(t.Category),
+		Preferred:    boolToInt64(t.Preferred),
+		NamespaceOid: t.NamespaceOID,
+		DialectOid:   nullInt64(t.DialectOID),
+		ElementOid:   nullInt64(t.ElementOID),
+	})
 	if err != nil {
 		return 0, fmt.Errorf("create type %q: %w", t.Name, err)
 	}
-	return res.LastInsertId()
+	return oid, nil
 }
 
 // TypeOID returns the OID for the given (unqualified) type name. When
@@ -58,19 +63,7 @@ func (c *Catalog) CreateTypeSpec(t TypeSpec) (int64, error) {
 // duplicate in information_schema and pg_catalog), the lookup prefers
 // pg_catalog, then public, then any other namespace by name.
 func (c *Catalog) TypeOID(name string) (int64, error) {
-	var oid int64
-	err := c.db.QueryRow(
-		`SELECT t.oid FROM sql_type t
-		 JOIN sql_namespace ns ON ns.oid = t.namespace_oid
-		 WHERE t.name = ?
-		 ORDER BY CASE ns.name
-		   WHEN 'pg_catalog' THEN 0
-		   WHEN 'public'     THEN 1
-		   ELSE 2 END,
-		   ns.name
-		 LIMIT 1`,
-		strings.ToLower(name),
-	).Scan(&oid)
+	oid, err := c.q.TypeOIDByName(context.Background(), strings.ToLower(name))
 	if err != nil {
 		return 0, fmt.Errorf("type %q: %w", name, err)
 	}
@@ -79,8 +72,7 @@ func (c *Catalog) TypeOID(name string) (int64, error) {
 
 // TypeName returns the name for the given type OID.
 func (c *Catalog) TypeName(oid int64) (string, error) {
-	var name string
-	err := c.db.QueryRow(`SELECT name FROM sql_type WHERE oid = ?`, oid).Scan(&name)
+	name, err := c.q.TypeNameByOID(context.Background(), oid)
 	if err != nil {
 		return "", fmt.Errorf("type oid %d: %w", oid, err)
 	}
@@ -98,23 +90,21 @@ type TypeInfo struct {
 
 // LookupType returns metadata for the given type OID.
 func (c *Catalog) LookupType(oid int64) (TypeInfo, error) {
-	var (
-		ti       TypeInfo
-		category sql.NullString
-		pref     int
-	)
-	err := c.db.QueryRow(
-		`SELECT oid, name, COALESCE(category, ''), typtype, preferred FROM sql_type WHERE oid = ?`,
-		oid,
-	).Scan(&ti.OID, &ti.Name, &category, &ti.Typtype, &pref)
+	row, err := c.q.LookupType(context.Background(), oid)
 	if err != nil {
-		return ti, fmt.Errorf("lookup type oid %d: %w", oid, err)
+		return TypeInfo{}, fmt.Errorf("lookup type oid %d: %w", oid, err)
 	}
-	ti.Category = category.String
-	ti.Preferred = pref != 0
-	return ti, nil
+	return TypeInfo{
+		OID:       row.Oid,
+		Name:      row.Name,
+		Category:  row.Category.String,
+		Typtype:   row.Typtype,
+		Preferred: row.Preferred != 0,
+	}, nil
 }
 
+// nullableOID / nullableString / boolToInt build the loosely-typed
+// arguments the not-yet-migrated raw-SQL call sites pass to database/sql.
 func nullableOID(oid int64) any {
 	if oid == 0 {
 		return nil
@@ -130,6 +120,23 @@ func nullableString(s string) any {
 }
 
 func boolToInt(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
+}
+
+// nullInt64 / nullString / boolToInt64 build the sql.Null* and int64
+// arguments the sqlc-generated catalogdb queries expect.
+func nullInt64(oid int64) sql.NullInt64 {
+	return sql.NullInt64{Int64: oid, Valid: oid != 0}
+}
+
+func nullString(s string) sql.NullString {
+	return sql.NullString{String: s, Valid: s != ""}
+}
+
+func boolToInt64(b bool) int64 {
 	if b {
 		return 1
 	}
