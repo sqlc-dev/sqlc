@@ -142,3 +142,12 @@ func boolToInt64(b bool) int64 {
 	}
 	return 0
 }
+
+// orZero unwraps a nullable OID column, mapping NULL to the 0 sentinel
+// the catalog's Go API uses for "unset".
+func orZero(n sql.NullInt64) int64 {
+	if n.Valid {
+		return n.Int64
+	}
+	return 0
+}

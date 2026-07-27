@@ -244,67 +244,41 @@ func codeGenRequest(r *compiler.Result, settings config.CombinedSettings) *plugi
 
 // pluginCatalogFromCore projects a core.Catalog (the xqlc SQLite-backed
 // catalog) into the plugin.Catalog that codegen consumes to emit models
-// and enums. It reads the namespace / class / attribute / type tables
-// directly. Projection is best-effort: an unexpected query error against
-// the in-memory catalog yields a partial catalog rather than aborting
-// generation.
+// and enums. It reads through the catalog's typed accessors, which are
+// backed by sqlc-generated queries. Projection is best-effort: an
+// unexpected error against the in-memory catalog yields a partial catalog
+// rather than aborting generation.
 func pluginCatalogFromCore(cc *core.Catalog) *plugin.Catalog {
-	db := cc.DB()
 	var schemas []*plugin.Schema
 
-	type row struct {
-		oid  int64
-		name string
+	namespaces, err := cc.Namespaces()
+	if err != nil {
+		return &plugin.Catalog{DefaultSchema: "public"}
 	}
-	readRows := func(query string, args ...any) []row {
-		rows, err := db.Query(query, args...)
+	for _, ns := range namespaces {
+		tables, err := cc.TablesInNamespace(ns.OID)
 		if err != nil {
-			return nil
+			continue
 		}
-		defer rows.Close()
-		var out []row
-		for rows.Next() {
-			var r row
-			if err := rows.Scan(&r.oid, &r.name); err != nil {
-				return out
-			}
-			out = append(out, r)
-		}
-		return out
-	}
-
-	for _, ns := range readRows(`SELECT oid, name FROM sql_namespace ORDER BY oid`) {
-		var tables []*plugin.Table
-		for _, cl := range readRows(
-			`SELECT oid, name FROM sql_class WHERE namespace_oid = ? AND kind = 'r' ORDER BY oid`, ns.oid,
-		) {
-			rel := &plugin.Identifier{Schema: ns.name, Name: cl.name}
-			var columns []*plugin.Column
-			crows, err := db.Query(
-				`SELECT a.name, t.name, a.not_null
-				 FROM sql_attribute a JOIN sql_type t ON t.oid = a.type_oid
-				 WHERE a.class_oid = ? ORDER BY a.num`, cl.oid,
-			)
+		var ptables []*plugin.Table
+		for _, cl := range tables {
+			rel := &plugin.Identifier{Schema: ns.Name, Name: cl.Name}
+			cols, err := cc.ClassCodegenColumns(cl.OID)
 			if err != nil {
 				continue
 			}
-			for crows.Next() {
-				var name, typeName string
-				var notNull int
-				if err := crows.Scan(&name, &typeName, &notNull); err != nil {
-					break
-				}
+			var columns []*plugin.Column
+			for _, col := range cols {
 				columns = append(columns, &plugin.Column{
-					Name:    name,
-					Type:    &plugin.Identifier{Name: typeName},
-					NotNull: notNull != 0,
+					Name:    col.Name,
+					Type:    &plugin.Identifier{Name: col.TypeName},
+					NotNull: col.NotNull,
 					Table:   rel,
 				})
 			}
-			crows.Close()
-			tables = append(tables, &plugin.Table{Rel: rel, Columns: columns})
+			ptables = append(ptables, &plugin.Table{Rel: rel, Columns: columns})
 		}
-		schemas = append(schemas, &plugin.Schema{Name: ns.name, Tables: tables})
+		schemas = append(schemas, &plugin.Schema{Name: ns.Name, Tables: ptables})
 	}
 
 	return &plugin.Catalog{

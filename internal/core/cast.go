@@ -1,6 +1,11 @@
 package core
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+
+	"github.com/sqlc-dev/sqlc/internal/core/catalogdb"
+)
 
 // CastSpec describes a type-coercion rule.
 //
@@ -24,12 +29,13 @@ func (c *Catalog) CreateCast(cs CastSpec) error {
 	if cs.Context == "" {
 		cs.Context = "e"
 	}
-	_, err := c.db.Exec(
-		`INSERT INTO sql_cast (source_type_oid, target_type_oid, proc_oid, context, dialect_oid)
-		 VALUES (?, ?, ?, ?, ?)`,
-		cs.SourceTypeOID, cs.TargetTypeOID,
-		nullableOID(cs.ProcOID), cs.Context, nullableOID(cs.DialectOID),
-	)
+	err := c.q.CreateCast(context.Background(), catalogdb.CreateCastParams{
+		SourceTypeOid: cs.SourceTypeOID,
+		TargetTypeOid: cs.TargetTypeOID,
+		ProcOid:       nullInt64(cs.ProcOID),
+		Context:       cs.Context,
+		DialectOid:    nullInt64(cs.DialectOID),
+	})
 	if err != nil {
 		return fmt.Errorf("create cast %d->%d: %w", cs.SourceTypeOID, cs.TargetTypeOID, err)
 	}
@@ -39,20 +45,20 @@ func (c *Catalog) CreateCast(cs CastSpec) error {
 // FindCast returns the cast rule from src to tgt, if one exists, plus
 // whether it was found.
 func (c *Catalog) FindCast(src, tgt int64) (CastSpec, bool, error) {
-	var cs CastSpec
-	var procOID, dialectOID int64
-	err := c.db.QueryRow(
-		`SELECT source_type_oid, target_type_oid,
-		        COALESCE(proc_oid, 0), context, COALESCE(dialect_oid, 0)
-		 FROM sql_cast WHERE source_type_oid = ? AND target_type_oid = ?`,
-		src, tgt,
-	).Scan(&cs.SourceTypeOID, &cs.TargetTypeOID, &procOID, &cs.Context, &dialectOID)
+	row, err := c.q.FindCast(context.Background(), catalogdb.FindCastParams{
+		SourceTypeOid: src,
+		TargetTypeOid: tgt,
+	})
 	if err != nil {
-		return cs, false, nil
+		return CastSpec{}, false, nil
 	}
-	cs.ProcOID = procOID
-	cs.DialectOID = dialectOID
-	return cs, true, nil
+	return CastSpec{
+		SourceTypeOID: row.SourceTypeOid,
+		TargetTypeOID: row.TargetTypeOid,
+		ProcOID:       orZero(row.ProcOid),
+		Context:       row.Context,
+		DialectOID:    orZero(row.DialectOid),
+	}, true, nil
 }
 
 // CastAllowed reports whether src can be coerced to tgt in the given context.

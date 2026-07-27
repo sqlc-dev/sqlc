@@ -1,8 +1,10 @@
 package core
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
+
+	"github.com/sqlc-dev/sqlc/internal/core/catalogdb"
 )
 
 // AttributeSpec carries the data needed to register a column on a
@@ -27,19 +29,20 @@ type AttributeSpec struct {
 // CreateAttributeSpec inserts a column with the full set of attribute
 // metadata.
 func (c *Catalog) CreateAttributeSpec(s AttributeSpec) error {
-	_, err := c.db.Exec(`
-		INSERT INTO sql_attribute (
-			class_oid, name, type_oid, not_null, has_default, num,
-			decl_type, type_length, type_scale,
-			auto_increment, is_primary_key, is_unique
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		s.ClassOID, s.Name, s.TypeOID,
-		boolToInt(s.NotNull), boolToInt(s.HasDefault), s.Num,
-		s.DeclType, s.TypeLength, s.TypeScale,
-		boolToInt(s.AutoIncrement),
-		boolToInt(s.IsPrimaryKey),
-		boolToInt(s.IsUnique),
-	)
+	err := c.q.CreateAttribute(context.Background(), catalogdb.CreateAttributeParams{
+		ClassOid:      s.ClassOID,
+		Name:          s.Name,
+		TypeOid:       s.TypeOID,
+		NotNull:       boolToInt64(s.NotNull),
+		HasDefault:    boolToInt64(s.HasDefault),
+		Num:           int64(s.Num),
+		DeclType:      s.DeclType,
+		TypeLength:    int64(s.TypeLength),
+		TypeScale:     int64(s.TypeScale),
+		AutoIncrement: boolToInt64(s.AutoIncrement),
+		IsPrimaryKey:  boolToInt64(s.IsPrimaryKey),
+		IsUnique:      boolToInt64(s.IsUnique),
+	})
 	if err != nil {
 		return fmt.Errorf("create attribute %q on class %d: %w", s.Name, s.ClassOID, err)
 	}
@@ -63,12 +66,12 @@ func (c *Catalog) CreateAttribute(classOID int64, name string, typeOID int64, no
 // on every named column of a relation. Used when a table-level PRIMARY
 // KEY constraint is processed after the columns have been registered.
 func (c *Catalog) SetAttributePrimaryKey(classOID int64, columns []string) error {
+	ctx := context.Background()
 	for _, name := range columns {
-		_, err := c.db.Exec(
-			`UPDATE sql_attribute SET is_primary_key = 1, not_null = 1
-			 WHERE class_oid = ? AND name = ?`,
-			classOID, name,
-		)
+		err := c.q.SetAttributePrimaryKey(ctx, catalogdb.SetAttributePrimaryKeyParams{
+			ClassOid: classOID,
+			Name:     name,
+		})
 		if err != nil {
 			return fmt.Errorf("mark pk %s on class %d: %w", name, classOID, err)
 		}
@@ -80,11 +83,12 @@ func (c *Catalog) SetAttributePrimaryKey(classOID int64, columns []string) error
 // UNIQUE constraints don't make individual columns unique, so callers
 // should pass length-1 column lists only.
 func (c *Catalog) SetAttributeUnique(classOID int64, columns []string) error {
+	ctx := context.Background()
 	for _, name := range columns {
-		_, err := c.db.Exec(
-			`UPDATE sql_attribute SET is_unique = 1 WHERE class_oid = ? AND name = ?`,
-			classOID, name,
-		)
+		err := c.q.SetAttributeUnique(ctx, catalogdb.SetAttributeUniqueParams{
+			ClassOid: classOID,
+			Name:     name,
+		})
 		if err != nil {
 			return fmt.Errorf("mark unique %s on class %d: %w", name, classOID, err)
 		}
@@ -110,64 +114,108 @@ type ColumnInfo struct {
 
 // ResolveColumn looks up a column by table name and column name.
 func (c *Catalog) ResolveColumn(table, column string) (*ColumnInfo, error) {
-	var info ColumnInfo
-	var ai, ipk, iu int
-	err := c.db.QueryRow(`
-		SELECT a.oid, a.class_oid, a.name, t.name, a.type_oid, a.not_null,
-		       a.decl_type, a.type_length, a.type_scale,
-		       a.auto_increment, a.is_primary_key, a.is_unique
-		FROM sql_attribute a
-		JOIN sql_class c ON c.oid = a.class_oid
-		JOIN sql_type t ON t.oid = a.type_oid
-		WHERE c.name = ? AND a.name = ?
-	`, table, column).Scan(
-		&info.AttributeOID, &info.ClassOID, &info.Name, &info.TypeName, &info.TypeOID, &info.NotNull,
-		&info.DeclType, &info.TypeLength, &info.TypeScale,
-		&ai, &ipk, &iu,
-	)
+	r, err := c.q.ResolveColumn(context.Background(), catalogdb.ResolveColumnParams{
+		TableName:  table,
+		ColumnName: column,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("resolve %s.%s: %w", table, column, err)
 	}
-	info.AutoIncrement = ai != 0
-	info.IsPrimaryKey = ipk != 0
-	info.IsUnique = iu != 0
+	info := ColumnInfo{
+		AttributeOID:  r.Oid,
+		ClassOID:      r.ClassOid,
+		Name:          r.Name,
+		TypeName:      r.TypeName,
+		TypeOID:       r.TypeOid,
+		NotNull:       r.NotNull != 0,
+		DeclType:      r.DeclType,
+		TypeLength:    int(r.TypeLength),
+		TypeScale:     int(r.TypeScale),
+		AutoIncrement: r.AutoIncrement != 0,
+		IsPrimaryKey:  r.IsPrimaryKey != 0,
+		IsUnique:      r.IsUnique != 0,
+	}
 	return &info, nil
 }
 
 // TableColumns returns all columns for a given table name, ordered by position.
 func (c *Catalog) TableColumns(table string) ([]ColumnInfo, error) {
-	rows, err := c.db.Query(`
-		SELECT a.oid, a.class_oid, a.name, t.name, a.type_oid, a.not_null,
-		       a.decl_type, a.type_length, a.type_scale,
-		       a.auto_increment, a.is_primary_key, a.is_unique
-		FROM sql_attribute a
-		JOIN sql_class c ON c.oid = a.class_oid
-		JOIN sql_type t ON t.oid = a.type_oid
-		WHERE c.name = ?
-		ORDER BY a.num
-	`, table)
+	rows, err := c.q.TableColumns(context.Background(), table)
 	if err != nil {
 		return nil, fmt.Errorf("table columns %q: %w", table, err)
 	}
-	defer rows.Close()
-
-	var cols []ColumnInfo
-	for rows.Next() {
-		var ci ColumnInfo
-		var ai, ipk, iu int
-		if err := rows.Scan(
-			&ci.AttributeOID, &ci.ClassOID, &ci.Name, &ci.TypeName, &ci.TypeOID, &ci.NotNull,
-			&ci.DeclType, &ci.TypeLength, &ci.TypeScale,
-			&ai, &ipk, &iu,
-		); err != nil {
-			return nil, err
-		}
-		ci.AutoIncrement = ai != 0
-		ci.IsPrimaryKey = ipk != 0
-		ci.IsUnique = iu != 0
-		cols = append(cols, ci)
+	cols := make([]ColumnInfo, 0, len(rows))
+	for _, r := range rows {
+		cols = append(cols, ColumnInfo{
+			AttributeOID:  r.Oid,
+			ClassOID:      r.ClassOid,
+			Name:          r.Name,
+			TypeName:      r.TypeName,
+			TypeOID:       r.TypeOid,
+			NotNull:       r.NotNull != 0,
+			DeclType:      r.DeclType,
+			TypeLength:    int(r.TypeLength),
+			TypeScale:     int(r.TypeScale),
+			AutoIncrement: r.AutoIncrement != 0,
+			IsPrimaryKey:  r.IsPrimaryKey != 0,
+			IsUnique:      r.IsUnique != 0,
+		})
 	}
-	return cols, rows.Err()
+	return cols, nil
+}
+
+// ClassColumn is a column of a relation identified by class OID, used by
+// the analyzer to build its per-relation scope.
+type ClassColumn struct {
+	AttOID  int64
+	Name    string
+	TypeOID int64
+	NotNull bool
+}
+
+// ClassColumns returns the columns of a relation by class OID, ordered by
+// position.
+func (c *Catalog) ClassColumns(classOID int64) ([]ClassColumn, error) {
+	rows, err := c.q.ClassAttributes(context.Background(), classOID)
+	if err != nil {
+		return nil, fmt.Errorf("class columns %d: %w", classOID, err)
+	}
+	out := make([]ClassColumn, 0, len(rows))
+	for _, r := range rows {
+		out = append(out, ClassColumn{
+			AttOID:  r.Oid,
+			Name:    r.Name,
+			TypeOID: r.TypeOid,
+			NotNull: r.NotNull != 0,
+		})
+	}
+	return out, nil
+}
+
+// CodegenColumn is the minimal column shape codegen needs to emit a model
+// field: the column name, its resolved type name, and nullability.
+type CodegenColumn struct {
+	Name     string
+	TypeName string
+	NotNull  bool
+}
+
+// ClassCodegenColumns returns the columns of a relation by class OID in the
+// shape the codegen catalog projection consumes.
+func (c *Catalog) ClassCodegenColumns(classOID int64) ([]CodegenColumn, error) {
+	rows, err := c.q.ListClassColumns(context.Background(), classOID)
+	if err != nil {
+		return nil, fmt.Errorf("class codegen columns %d: %w", classOID, err)
+	}
+	out := make([]CodegenColumn, 0, len(rows))
+	for _, r := range rows {
+		out = append(out, CodegenColumn{
+			Name:     r.ColumnName,
+			TypeName: r.TypeName,
+			NotNull:  r.NotNull != 0,
+		})
+	}
+	return out, nil
 }
 
 // AttributeDetails describes a column resolved by its OID. Populated
@@ -192,29 +240,21 @@ type AttributeDetails struct {
 // (and the per-column flag fields) once they've resolved an
 // expression to a sql_attribute row.
 func (c *Catalog) LookupAttribute(attOID int64) (AttributeDetails, error) {
-	var ad AttributeDetails
-	var schema sql.NullString
-	var ai, ipk, iu, nn int
-	err := c.db.QueryRow(`
-		SELECT ns.name, cls.name, a.name, a.num,
-		       a.decl_type, a.type_length, a.type_scale,
-		       a.auto_increment, a.is_primary_key, a.is_unique, a.not_null
-		FROM sql_attribute a
-		JOIN sql_class cls ON cls.oid = a.class_oid
-		JOIN sql_namespace ns ON ns.oid = cls.namespace_oid
-		WHERE a.oid = ?
-	`, attOID).Scan(
-		&schema, &ad.Table, &ad.Column, &ad.Num,
-		&ad.DeclType, &ad.TypeLength, &ad.TypeScale,
-		&ai, &ipk, &iu, &nn,
-	)
+	r, err := c.q.LookupAttribute(context.Background(), attOID)
 	if err != nil {
-		return ad, fmt.Errorf("lookup attribute %d: %w", attOID, err)
+		return AttributeDetails{}, fmt.Errorf("lookup attribute %d: %w", attOID, err)
 	}
-	ad.Schema = schema.String
-	ad.AutoIncrement = ai != 0
-	ad.IsPrimaryKey = ipk != 0
-	ad.IsUnique = iu != 0
-	ad.NotNull = nn != 0
-	return ad, nil
+	return AttributeDetails{
+		Schema:        r.SchemaName,
+		Table:         r.TableName,
+		Column:        r.ColumnName,
+		Num:           int(r.Num),
+		DeclType:      r.DeclType,
+		TypeLength:    int(r.TypeLength),
+		TypeScale:     int(r.TypeScale),
+		AutoIncrement: r.AutoIncrement != 0,
+		IsPrimaryKey:  r.IsPrimaryKey != 0,
+		IsUnique:      r.IsUnique != 0,
+		NotNull:       r.NotNull != 0,
+	}, nil
 }

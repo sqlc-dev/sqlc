@@ -1,20 +1,24 @@
 package core
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+
+	"github.com/sqlc-dev/sqlc/internal/core/catalogdb"
+)
 
 // CreateDialect inserts a SQL dialect and returns its OID.
 func (c *Catalog) CreateDialect(name string) (int64, error) {
-	res, err := c.db.Exec(`INSERT INTO sql_dialect (name) VALUES (?)`, name)
+	oid, err := c.q.CreateDialect(context.Background(), name)
 	if err != nil {
 		return 0, fmt.Errorf("create dialect %q: %w", name, err)
 	}
-	return res.LastInsertId()
+	return oid, nil
 }
 
 // DialectOID returns the OID for a registered dialect.
 func (c *Catalog) DialectOID(name string) (int64, error) {
-	var oid int64
-	err := c.db.QueryRow(`SELECT oid FROM sql_dialect WHERE name = ?`, name).Scan(&oid)
+	oid, err := c.q.DialectOID(context.Background(), name)
 	if err != nil {
 		return 0, fmt.Errorf("dialect %q: %w", name, err)
 	}
@@ -24,11 +28,11 @@ func (c *Catalog) DialectOID(name string) (int64, error) {
 // SetDialectFlag stores a per-dialect configuration value.
 // If the key already exists, the value is replaced.
 func (c *Catalog) SetDialectFlag(dialectOID int64, key, value string) error {
-	_, err := c.db.Exec(
-		`INSERT INTO sql_dialect_flag (dialect_oid, key, value) VALUES (?, ?, ?)
-		 ON CONFLICT(dialect_oid, key) DO UPDATE SET value = excluded.value`,
-		dialectOID, key, value,
-	)
+	err := c.q.SetDialectFlag(context.Background(), catalogdb.SetDialectFlagParams{
+		DialectOid: dialectOID,
+		Key:        key,
+		Value:      value,
+	})
 	if err != nil {
 		return fmt.Errorf("set dialect flag %s.%s: %w", key, value, err)
 	}
@@ -37,11 +41,10 @@ func (c *Catalog) SetDialectFlag(dialectOID int64, key, value string) error {
 
 // DialectFlag returns the value of a dialect flag, or "" if not set.
 func (c *Catalog) DialectFlag(dialectOID int64, key string) (string, error) {
-	var value string
-	err := c.db.QueryRow(
-		`SELECT value FROM sql_dialect_flag WHERE dialect_oid = ? AND key = ?`,
-		dialectOID, key,
-	).Scan(&value)
+	value, err := c.q.DialectFlag(context.Background(), catalogdb.DialectFlagParams{
+		DialectOid: dialectOID,
+		Key:        key,
+	})
 	if err != nil {
 		return "", nil // missing flag = empty string, not an error
 	}

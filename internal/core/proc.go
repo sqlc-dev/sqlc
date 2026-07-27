@@ -40,33 +40,34 @@ func (c *Catalog) CreateProc(p ProcSpec) (int64, error) {
 	if p.VariadicKind == "" {
 		p.VariadicKind = "n"
 	}
-	res, err := c.db.Exec(
-		`INSERT INTO sql_proc
-		   (namespace_oid, dialect_oid, name, kind,
-		    return_type_oid, return_set, return_nullable, strict, variadic_kind)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		nullableOID(p.NamespaceOID), nullableOID(p.DialectOID),
-		strings.ToLower(p.Name), p.Kind,
-		p.ReturnTypeOID, boolToInt(p.ReturnSet), boolToInt(p.ReturnNullable),
-		boolToInt(p.Strict), p.VariadicKind,
-	)
+	ctx := context.Background()
+	procOID, err := c.q.CreateProc(ctx, catalogdb.CreateProcParams{
+		NamespaceOid:   nullInt64(p.NamespaceOID),
+		DialectOid:     nullInt64(p.DialectOID),
+		Name:           strings.ToLower(p.Name),
+		Kind:           p.Kind,
+		ReturnTypeOid:  p.ReturnTypeOID,
+		ReturnSet:      boolToInt64(p.ReturnSet),
+		ReturnNullable: boolToInt64(p.ReturnNullable),
+		Strict:         boolToInt64(p.Strict),
+		VariadicKind:   p.VariadicKind,
+	})
 	if err != nil {
 		return 0, fmt.Errorf("create proc %q: %w", p.Name, err)
-	}
-	procOID, err := res.LastInsertId()
-	if err != nil {
-		return 0, err
 	}
 	for i, a := range p.Args {
 		mode := a.Mode
 		if mode == "" {
 			mode = "i"
 		}
-		_, err := c.db.Exec(
-			`INSERT INTO sql_proc_arg (proc_oid, ord, name, type_oid, mode, has_default)
-			 VALUES (?, ?, ?, ?, ?, ?)`,
-			procOID, i+1, a.Name, a.TypeOID, mode, boolToInt(a.HasDefault),
-		)
+		err := c.q.CreateProcArg(ctx, catalogdb.CreateProcArgParams{
+			ProcOid:    procOID,
+			Ord:        int64(i + 1),
+			Name:       a.Name,
+			TypeOid:    a.TypeOID,
+			Mode:       mode,
+			HasDefault: boolToInt64(a.HasDefault),
+		})
 		if err != nil {
 			return 0, fmt.Errorf("create proc %q arg %d: %w", p.Name, i+1, err)
 		}
@@ -140,22 +141,5 @@ func (c *Catalog) FindProcs(name string, namespaceOIDs []int64) ([]ProcOverload,
 }
 
 func (c *Catalog) procArgTypes(procOID int64) ([]int64, error) {
-	rows, err := c.db.Query(
-		`SELECT type_oid FROM sql_proc_arg
-		 WHERE proc_oid = ? AND mode IN ('i','b','v')
-		 ORDER BY ord`, procOID,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var out []int64
-	for rows.Next() {
-		var t int64
-		if err := rows.Scan(&t); err != nil {
-			return nil, err
-		}
-		out = append(out, t)
-	}
-	return out, rows.Err()
+	return c.q.ProcArgTypes(context.Background(), procOID)
 }

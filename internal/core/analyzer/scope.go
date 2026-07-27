@@ -102,30 +102,25 @@ func (a *analyzer) bindRangeVar(rv *ast.RangeVar) (scopeRel, error) {
 	return rel, nil
 }
 
-// classColumns reads the column layout of a relation directly from
-// sql_attribute. We can't go through TableColumns because that resolves
-// by name and doesn't return attribute OIDs.
+// classColumns reads the column layout of a relation by class OID. It
+// goes through the catalog's ClassColumns accessor (backed by a
+// sqlc-generated query) rather than TableColumns, because it needs the
+// attribute OIDs and resolves by OID rather than by name.
 func (a *analyzer) classColumns(classOID int64) ([]scopeCol, error) {
-	rows, err := a.cat.DB().Query(
-		`SELECT a.oid, a.name, a.type_oid, a.not_null
-		 FROM sql_attribute a WHERE a.class_oid = ? ORDER BY a.num`,
-		classOID,
-	)
+	cols, err := a.cat.ClassColumns(classOID)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	var out []scopeCol
-	for rows.Next() {
-		var c scopeCol
-		var nn int
-		if err := rows.Scan(&c.attOID, &c.name, &c.typeOID, &nn); err != nil {
-			return nil, err
-		}
-		c.notNull = nn != 0
-		out = append(out, c)
+	out := make([]scopeCol, 0, len(cols))
+	for _, c := range cols {
+		out = append(out, scopeCol{
+			name:    c.Name,
+			attOID:  c.AttOID,
+			typeOID: c.TypeOID,
+			notNull: c.NotNull,
+		})
 	}
-	return out, rows.Err()
+	return out, nil
 }
 
 // resolveColumn locates a (relation, column) pair in the scope.

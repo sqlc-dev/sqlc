@@ -113,12 +113,8 @@ func applyDropTable(cat *core.Catalog, stmt *ast.DropTableStmt) error {
 			}
 			return fmt.Errorf("clickhouse: drop table %q: %w", tn.Name, err)
 		}
-		db := cat.DB()
-		if _, err := db.Exec(`DELETE FROM sql_attribute WHERE class_oid = ?`, classOID); err != nil {
-			return err
-		}
-		if _, err := db.Exec(`DELETE FROM sql_class WHERE oid = ?`, classOID); err != nil {
-			return err
+		if err := cat.DropClass(classOID); err != nil {
+			return fmt.Errorf("clickhouse: drop table %q: %w", tn.Name, err)
 		}
 	}
 	return nil

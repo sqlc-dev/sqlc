@@ -1,6 +1,11 @@
 package core
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+
+	"github.com/sqlc-dev/sqlc/internal/core/catalogdb"
+)
 
 // OperatorSpec describes an operator overload for insertion into the catalog.
 // A NULL left_type_oid encodes a prefix unary operator; NULL right_type_oid
@@ -17,19 +22,19 @@ type OperatorSpec struct {
 
 // CreateOperator inserts an operator overload and returns its OID.
 func (c *Catalog) CreateOperator(o OperatorSpec) (int64, error) {
-	res, err := c.db.Exec(
-		`INSERT INTO sql_operator
-		   (namespace_oid, dialect_oid, name,
-		    left_type_oid, right_type_oid, result_type_oid, proc_oid)
-		 VALUES (?, ?, ?, ?, ?, ?, ?)`,
-		nullableOID(o.NamespaceOID), nullableOID(o.DialectOID), o.Name,
-		nullableOID(o.LeftTypeOID), nullableOID(o.RightTypeOID),
-		o.ResultTypeOID, nullableOID(o.ProcOID),
-	)
+	oid, err := c.q.CreateOperator(context.Background(), catalogdb.CreateOperatorParams{
+		NamespaceOid:  nullInt64(o.NamespaceOID),
+		DialectOid:    nullInt64(o.DialectOID),
+		Name:          o.Name,
+		LeftTypeOid:   nullInt64(o.LeftTypeOID),
+		RightTypeOid:  nullInt64(o.RightTypeOID),
+		ResultTypeOid: o.ResultTypeOID,
+		ProcOid:       nullInt64(o.ProcOID),
+	})
 	if err != nil {
 		return 0, fmt.Errorf("create operator %q: %w", o.Name, err)
 	}
-	return res.LastInsertId()
+	return oid, nil
 }
 
 // OperatorOverload is a resolved candidate from FindOperators.
@@ -46,31 +51,24 @@ type OperatorOverload struct {
 // (left,right) operand types. A 0 type means "any" and skips the filter on
 // that side; useful for listing all overloads of a name.
 func (c *Catalog) FindOperators(name string, leftTypeOID, rightTypeOID int64) ([]OperatorOverload, error) {
-	q := `SELECT oid, name,
-	             COALESCE(left_type_oid, 0), COALESCE(right_type_oid, 0),
-	             result_type_oid, COALESCE(proc_oid, 0)
-	      FROM sql_operator WHERE name = ?`
-	args := []any{name}
-	if leftTypeOID != 0 {
-		q += ` AND left_type_oid = ?`
-		args = append(args, leftTypeOID)
-	}
-	if rightTypeOID != 0 {
-		q += ` AND right_type_oid = ?`
-		args = append(args, rightTypeOID)
-	}
-	rows, err := c.db.Query(q, args...)
+	rows, err := c.q.FindOperators(context.Background(), catalogdb.FindOperatorsParams{
+		Name:         name,
+		LeftTypeOid:  leftTypeOID,
+		RightTypeOid: rightTypeOID,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("find operators %q: %w", name, err)
 	}
-	defer rows.Close()
-	var out []OperatorOverload
-	for rows.Next() {
-		var o OperatorOverload
-		if err := rows.Scan(&o.OID, &o.Name, &o.LeftTypeOID, &o.RightTypeOID, &o.ResultTypeOID, &o.ProcOID); err != nil {
-			return nil, err
-		}
-		out = append(out, o)
+	out := make([]OperatorOverload, 0, len(rows))
+	for _, r := range rows {
+		out = append(out, OperatorOverload{
+			OID:           r.Oid,
+			Name:          r.Name,
+			LeftTypeOID:   orZero(r.LeftTypeOid),
+			RightTypeOID:  orZero(r.RightTypeOid),
+			ResultTypeOID: r.ResultTypeOid,
+			ProcOID:       orZero(r.ProcOid),
+		})
 	}
-	return out, rows.Err()
+	return out, nil
 }
