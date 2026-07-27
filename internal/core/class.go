@@ -7,8 +7,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/core/catalogdb"
 )
 
-// CreateClass inserts a relation (table, view, etc.) and returns its OID.
-// Kind should be 'r' (table), 'v' (view), or 'i' (index).
 func (c *Catalog) CreateClass(namespaceOID int64, name string, kind string) (int64, error) {
 	oid, err := c.q.CreateClass(context.Background(), catalogdb.CreateClassParams{
 		NamespaceOid: namespaceOID,
@@ -21,7 +19,6 @@ func (c *Catalog) CreateClass(namespaceOID int64, name string, kind string) (int
 	return oid, nil
 }
 
-// ClassOID returns the OID for the given relation in the given namespace.
 func (c *Catalog) ClassOID(namespaceOID int64, name string) (int64, error) {
 	oid, err := c.q.ClassOID(context.Background(), catalogdb.ClassOIDParams{
 		NamespaceOid: namespaceOID,
@@ -33,8 +30,6 @@ func (c *Catalog) ClassOID(namespaceOID int64, name string) (int64, error) {
 	return oid, nil
 }
 
-// ClassOIDByName looks up a relation by name across all namespaces.
-// If multiple matches exist, it returns the first found.
 func (c *Catalog) ClassOIDByName(name string) (int64, error) {
 	oid, err := c.q.ClassOIDByName(context.Background(), name)
 	if err != nil {
@@ -43,7 +38,6 @@ func (c *Catalog) ClassOIDByName(name string) (int64, error) {
 	return oid, nil
 }
 
-// DropClass removes a relation and all of its columns from the catalog.
 func (c *Catalog) DropClass(classOID int64) error {
 	ctx := context.Background()
 	if err := c.q.DeleteAttributesByClass(ctx, classOID); err != nil {
@@ -55,13 +49,11 @@ func (c *Catalog) DropClass(classOID int64) error {
 	return nil
 }
 
-// ClassInfo is a relation row exposed for codegen catalog projection.
 type ClassInfo struct {
 	OID  int64
 	Name string
 }
 
-// TablesInNamespace returns the tables (kind 'r') in a namespace, by OID.
 func (c *Catalog) TablesInNamespace(namespaceOID int64) ([]ClassInfo, error) {
 	rows, err := c.q.ListTablesInNamespace(context.Background(), namespaceOID)
 	if err != nil {

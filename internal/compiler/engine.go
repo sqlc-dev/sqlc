@@ -29,9 +29,6 @@ type Compiler struct {
 	client   dbmanager.Client
 	selector selector
 
-	// coreCatalog is the xqlc-derived catalog used by engines whose
-	// analysis runs on the core analyzer (currently ClickHouse) instead of
-	// the legacy compiler analyze step. It is nil for other engines.
 	coreCatalog *core.Catalog
 
 	schema []string
@@ -119,9 +116,6 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 			}
 		}
 	case config.EngineClickHouse:
-		// ClickHouse runs on the xqlc analysis core: its schema and queries
-		// are resolved against a core.Catalog by the core analyzer, not the
-		// legacy compiler analyze step or the in-memory sql/catalog.
 		c.parser = clickhouse.NewParser()
 		c.selector = newDefaultSelector()
 		cat, err := core.New(clickhouse.Dialect())

@@ -9,30 +9,26 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/core/catalogdb"
 )
 
-// ProcSpec describes a function/aggregate/window/procedure for insertion
-// into the catalog.
 type ProcSpec struct {
 	Name           string
-	NamespaceOID   int64  // 0 = NULL
-	DialectOID     int64  // 0 = NULL (shared)
-	Kind           string // 'f'unc | 'a'gg | 'w'in | 'p'roc; default 'f'
+	NamespaceOID   int64
+	DialectOID     int64
+	Kind           string
 	ReturnTypeOID  int64
 	ReturnSet      bool
 	ReturnNullable bool
 	Strict         bool
-	VariadicKind   string // 'n'one | 'a'rray | 'v'ariadic-any; default 'n'
+	VariadicKind   string
 	Args           []ProcArg
 }
 
-// ProcArg is a single argument in a proc signature.
 type ProcArg struct {
 	Name       string
 	TypeOID    int64
-	Mode       string // 'i'n | 'o'ut | 'b'oth | 't'able | 'v'ariadic; default 'i'
+	Mode       string
 	HasDefault bool
 }
 
-// CreateProc inserts a proc and its arguments, returning the proc OID.
 func (c *Catalog) CreateProc(p ProcSpec) (int64, error) {
 	if p.Kind == "" {
 		p.Kind = "f"
@@ -75,7 +71,6 @@ func (c *Catalog) CreateProc(p ProcSpec) (int64, error) {
 	return procOID, nil
 }
 
-// ProcOverload describes one resolved candidate from FindProcs.
 type ProcOverload struct {
 	OID            int64
 	Name           string
@@ -85,9 +80,6 @@ type ProcOverload struct {
 	ArgTypes       []int64
 }
 
-// FindProcs returns all procs matching the given (case-insensitive) name in
-// any of the supplied namespaces. Pass an empty namespace list to search
-// every namespace. Argument lists are populated in declaration order.
 func (c *Catalog) FindProcs(name string, namespaceOIDs []int64) ([]ProcOverload, error) {
 	ctx := context.Background()
 	lname := strings.ToLower(name)

@@ -13,13 +13,11 @@ func TestCastAllowed(t *testing.T) {
 	bigintOID, _ := cat.CreateType("bigint", 8)
 	textOID, _ := cat.CreateType("text", 0)
 
-	// integer -> bigint is implicit
 	if err := cat.CreateCast(CastSpec{
 		SourceTypeOID: intOID, TargetTypeOID: bigintOID, Context: "i",
 	}); err != nil {
 		t.Fatal(err)
 	}
-	// integer -> text is explicit only
 	if err := cat.CreateCast(CastSpec{
 		SourceTypeOID: intOID, TargetTypeOID: textOID, Context: "e",
 	}); err != nil {
@@ -31,14 +29,14 @@ func TestCastAllowed(t *testing.T) {
 		ctx      string
 		want     bool
 	}{
-		{intOID, intOID, "i", true},    // identity always OK
-		{intOID, bigintOID, "i", true}, // declared implicit
-		{intOID, bigintOID, "a", true}, // implicit subsumes assignment
-		{intOID, bigintOID, "e", true}, // implicit subsumes explicit
-		{intOID, textOID, "i", false},  // explicit-only blocked from implicit
-		{intOID, textOID, "a", false},  // and from assignment
-		{intOID, textOID, "e", true},   // but works for explicit
-		{textOID, intOID, "e", false},  // no rule defined
+		{intOID, intOID, "i", true},
+		{intOID, bigintOID, "i", true},
+		{intOID, bigintOID, "a", true},
+		{intOID, bigintOID, "e", true},
+		{intOID, textOID, "i", false},
+		{intOID, textOID, "a", false},
+		{intOID, textOID, "e", true},
+		{textOID, intOID, "e", false},
 	}
 	for _, c := range cases {
 		got, err := cat.CastAllowed(c.src, c.tgt, c.ctx)

@@ -7,20 +7,16 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/core/catalogdb"
 )
 
-// OperatorSpec describes an operator overload for insertion into the catalog.
-// A NULL left_type_oid encodes a prefix unary operator; NULL right_type_oid
-// encodes a postfix unary.
 type OperatorSpec struct {
 	Name          string
-	NamespaceOID  int64 // 0 = NULL
-	DialectOID    int64 // 0 = NULL (shared)
-	LeftTypeOID   int64 // 0 = NULL
-	RightTypeOID  int64 // 0 = NULL
+	NamespaceOID  int64
+	DialectOID    int64
+	LeftTypeOID   int64
+	RightTypeOID  int64
 	ResultTypeOID int64
-	ProcOID       int64 // 0 = NULL
+	ProcOID       int64
 }
 
-// CreateOperator inserts an operator overload and returns its OID.
 func (c *Catalog) CreateOperator(o OperatorSpec) (int64, error) {
 	oid, err := c.q.CreateOperator(context.Background(), catalogdb.CreateOperatorParams{
 		NamespaceOid:  nullInt64(o.NamespaceOID),
@@ -37,19 +33,15 @@ func (c *Catalog) CreateOperator(o OperatorSpec) (int64, error) {
 	return oid, nil
 }
 
-// OperatorOverload is a resolved candidate from FindOperators.
 type OperatorOverload struct {
 	OID           int64
 	Name          string
-	LeftTypeOID   int64 // 0 = NULL (prefix unary)
-	RightTypeOID  int64 // 0 = NULL (postfix unary)
+	LeftTypeOID   int64
+	RightTypeOID  int64
 	ResultTypeOID int64
-	ProcOID       int64 // 0 = NULL (binary-compatible)
+	ProcOID       int64
 }
 
-// FindOperators returns all operator overloads matching the given name and
-// (left,right) operand types. A 0 type means "any" and skips the filter on
-// that side; useful for listing all overloads of a name.
 func (c *Catalog) FindOperators(name string, leftTypeOID, rightTypeOID int64) ([]OperatorOverload, error) {
 	rows, err := c.q.FindOperators(context.Background(), catalogdb.FindOperatorsParams{
 		Name:         name,

@@ -9,10 +9,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 )
 
-// seedUsers builds a minimal catalog with a single "users" table so the
-// analyzer has something to resolve against. It deliberately avoids any
-// per-dialect seed: the point is to exercise the dialect-neutral
-// analyzer directly on sqlc's ast.
 func seedUsers(t *testing.T) *core.Catalog {
 	t.Helper()
 	cat, err := core.New()
@@ -46,9 +42,6 @@ func seedUsers(t *testing.T) *core.Catalog {
 	return cat
 }
 
-// prepare parses query with sqlc's own PostgreSQL parser — which emits
-// exactly the internal/sql/ast the analyzer was repointed onto — and
-// runs the analyzer against cat.
 func prepare(t *testing.T, cat *core.Catalog, query string) core.PrepareResult {
 	t.Helper()
 	stmts, err := postgresql.NewParser().Parse(strings.NewReader(query))

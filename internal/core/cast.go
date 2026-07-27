@@ -7,24 +7,14 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/core/catalogdb"
 )
 
-// CastSpec describes a type-coercion rule.
-//
-// Context:
-//   - 'i' implicit  — applied automatically by the analyzer
-//   - 'a' assignment — applied for INSERT/UPDATE assignments
-//   - 'e' explicit  — only when the user writes CAST or ::
-//
-// ProcOID == 0 means binary-coercible (no function call required).
 type CastSpec struct {
 	SourceTypeOID int64
 	TargetTypeOID int64
 	ProcOID       int64
-	Context       string // 'i' | 'a' | 'e'; default 'e'
+	Context       string
 	DialectOID    int64
 }
 
-// CreateCast inserts a cast rule. (source, target) is the primary key, so
-// re-inserting the same pair will fail; use ReplaceCast to overwrite.
 func (c *Catalog) CreateCast(cs CastSpec) error {
 	if cs.Context == "" {
 		cs.Context = "e"
@@ -42,8 +32,6 @@ func (c *Catalog) CreateCast(cs CastSpec) error {
 	return nil
 }
 
-// FindCast returns the cast rule from src to tgt, if one exists, plus
-// whether it was found.
 func (c *Catalog) FindCast(src, tgt int64) (CastSpec, bool, error) {
 	row, err := c.q.FindCast(context.Background(), catalogdb.FindCastParams{
 		SourceTypeOid: src,
@@ -61,8 +49,6 @@ func (c *Catalog) FindCast(src, tgt int64) (CastSpec, bool, error) {
 	}, true, nil
 }
 
-// CastAllowed reports whether src can be coerced to tgt in the given context.
-// Same-type pairs always succeed.
 func (c *Catalog) CastAllowed(src, tgt int64, ctx string) (bool, error) {
 	if src == tgt {
 		return true, nil

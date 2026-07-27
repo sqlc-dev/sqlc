@@ -225,9 +225,6 @@ func pluginQueryParam(p compiler.Parameter) *plugin.Parameter {
 }
 
 func codeGenRequest(r *compiler.Result, settings config.CombinedSettings) *plugin.GenerateRequest {
-	// Engines on the xqlc core (ClickHouse) project the codegen catalog
-	// from the core catalog rather than the in-memory sql/catalog, which is
-	// nil on that path.
 	var cat *plugin.Catalog
 	if r.CoreCatalog != nil {
 		cat = pluginCatalogFromCore(r.CoreCatalog)
@@ -242,12 +239,6 @@ func codeGenRequest(r *compiler.Result, settings config.CombinedSettings) *plugi
 	}
 }
 
-// pluginCatalogFromCore projects a core.Catalog (the xqlc SQLite-backed
-// catalog) into the plugin.Catalog that codegen consumes to emit models
-// and enums. It reads through the catalog's typed accessors, which are
-// backed by sqlc-generated queries. Projection is best-effort: an
-// unexpected error against the in-memory catalog yields a partial catalog
-// rather than aborting generation.
 func pluginCatalogFromCore(cc *core.Catalog) *plugin.Catalog {
 	var schemas []*plugin.Schema
 

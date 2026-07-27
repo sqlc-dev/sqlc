@@ -12,7 +12,6 @@ func TestOperatorCreateAndFind(t *testing.T) {
 	intOID, _ := cat.CreateType("integer", 4)
 	boolOID, _ := cat.CreateType("boolean", 1)
 
-	// > (int, int) -> bool
 	gtOID, err := cat.CreateOperator(OperatorSpec{
 		Name:          ">",
 		LeftTypeOID:   intOID,
@@ -37,7 +36,6 @@ func TestOperatorCreateAndFind(t *testing.T) {
 		t.Errorf("result type: got %d, want %d", got[0].ResultTypeOID, boolOID)
 	}
 
-	// listing all overloads of >
 	all, err := cat.FindOperators(">", 0, 0)
 	if err != nil {
 		t.Fatal(err)

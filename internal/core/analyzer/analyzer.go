@@ -1,10 +1,3 @@
-// Package analyzer implements a dialect-neutral SQL query analyzer that
-// resolves names, types, operators, and parameters by querying the
-// catalog (core.Catalog). It produces a core.PrepareResult.
-//
-// Scope is intentionally narrow in this iteration: single-relation SELECT
-// queries, simple WHERE / GROUP BY / projection. JOINs, subqueries,
-// CTEs, set ops, and DML RETURNING are intended follow-ups.
 package analyzer
 
 import (
@@ -14,10 +7,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
-// Prepare walks a parsed statement and produces a PrepareResult by
-// querying the catalog for relations, types, operators, and casts.
-// stmt can be a *ast.RawStmt (typical parser output) or an unwrapped
-// statement node.
 func Prepare(cat *core.Catalog, stmt ast.Node) (core.PrepareResult, error) {
 	if rs, ok := stmt.(*ast.RawStmt); ok {
 		stmt = rs.Stmt
@@ -80,8 +69,6 @@ func (a *analyzer) analyzeSelect(s *ast.SelectStmt) error {
 	}
 	a.scope = sc
 
-	// Join ON conditions get typed against the (already-assembled)
-	// scope so they can reference columns from either side.
 	for _, item := range listItems(s.FromClause) {
 		if err := a.typeJoinConditions(item); err != nil {
 			return fmt.Errorf("join: %w", err)
@@ -129,9 +116,6 @@ func listItems(l *ast.List) []ast.Node {
 	return l.Items
 }
 
-// typeJoinConditions walks a FROM-list item and types every join's ON
-// expression. USING clauses are skipped — the columns they reference
-// already exist in scope, no expression to type.
 func (a *analyzer) typeJoinConditions(item ast.Node) error {
 	je, ok := item.(*ast.JoinExpr)
 	if !ok {

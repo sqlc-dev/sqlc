@@ -8,9 +8,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
-// LoadSchema parses ClickHouse DDL and applies every schema-altering
-// statement to the core catalog. It is the ClickHouse entry point for
-// populating a catalog from migration files.
 func LoadSchema(cat *core.Catalog, ddl string) error {
 	stmts, err := NewParser().Parse(strings.NewReader(ddl))
 	if err != nil {
@@ -24,10 +21,6 @@ func LoadSchema(cat *core.Catalog, ddl string) error {
 	return nil
 }
 
-// Apply walks one parsed ClickHouse statement and applies it to the
-// catalog when it is schema-altering (CREATE TABLE, DROP TABLE).
-// Non-DDL and unsupported DDL forms are ignored so a mixed DDL/DML
-// stream can be handed to the catalog without pre-filtering.
 func Apply(cat *core.Catalog, n ast.Node) error {
 	switch v := n.(type) {
 	case nil:
@@ -71,9 +64,6 @@ func applyCreateTable(cat *core.Catalog, stmt *ast.CreateTableStmt) error {
 		if col == nil || col.TypeName == nil {
 			return fmt.Errorf("clickhouse: column %d on %q: missing type", i+1, stmt.Name.Name)
 		}
-		// TODO: the core catalog does not yet model array-ness on an
-		// attribute; for now an Array(T) column is stored as its element
-		// type T. Preserving the array wrapper is a follow-up.
 		typeName, _, _ := unwrapType(col.TypeName)
 		typeOID, err := resolveOrCreateType(cat, typeName)
 		if err != nil {
@@ -120,10 +110,6 @@ func applyDropTable(cat *core.Catalog, stmt *ast.DropTableStmt) error {
 	return nil
 }
 
-// nsName maps an empty schema to the catalog's default namespace. The
-// analyzer resolves unqualified table references against "public", so
-// ClickHouse's "default" database is mapped onto it for now. Wiring a
-// per-dialect default namespace is a follow-up.
 func nsName(schema string) string {
 	if schema == "" {
 		return "public"
@@ -139,9 +125,6 @@ func resolveOrCreateNamespace(cat *core.Catalog, schema string) (int64, error) {
 	return cat.CreateNamespace(name)
 }
 
-// resolveOrCreateType looks a type up by name, registering it as an
-// unknown user type if the seed did not provide it (e.g. an Enum with
-// inline variants, or a type name we have not catalogued yet).
 func resolveOrCreateType(cat *core.Catalog, name string) (int64, error) {
 	canonical := strings.ToLower(strings.TrimSpace(name))
 	if canonical == "" {
@@ -153,13 +136,6 @@ func resolveOrCreateType(cat *core.Catalog, name string) (int64, error) {
 	return cat.CreateType(canonical, 0)
 }
 
-// unwrapType reduces a ClickHouse column type to the effective scalar
-// type used for storage, reporting whether it is an array and whether it
-// is nullable. The ClickHouse converter renders the full type text into
-// TypeName.Name (e.g. "Nullable(Array(UInt64))"), which is parsed here.
-// It unwraps any nesting of Nullable / LowCardinality / Array; the
-// remaining scalar (String, UInt64, Decimal(18, 4), ...) is returned as
-// its bare type name, lower-cased.
 func unwrapType(tn *ast.TypeName) (name string, isArray, nullable bool) {
 	return unwrapTypeString(tn.Name)
 }
@@ -185,15 +161,10 @@ func unwrapTypeString(s string) (name string, isArray, nullable bool) {
 		}
 		return strings.ToLower(base), true, false
 	default:
-		// Scalar type. Drop any (length/precision) modifiers for the stored
-		// type name; capturing them into TypeLength/TypeScale is a follow-up.
 		return strings.ToLower(base), false, false
 	}
 }
 
-// splitType breaks "Name(arg1, arg2, ...)" into its base name and
-// top-level arguments, respecting nested parentheses. A type with no
-// parentheses returns (name, nil).
 func splitType(s string) (base string, args []string) {
 	s = strings.TrimSpace(s)
 	open := strings.IndexByte(s, '(')

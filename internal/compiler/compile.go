@@ -56,8 +56,6 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 			continue
 		}
 
-		// ClickHouse populates the core catalog instead of the in-memory
-		// sql/catalog.
 		if c.coreCatalog != nil {
 			for i := range stmts {
 				if err := clickhouse.Apply(c.coreCatalog, stmts[i].Raw); err != nil {

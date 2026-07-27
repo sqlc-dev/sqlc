@@ -8,10 +8,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
-// clickhouseType maps a ClickHouse column type to a Go type. Type names
-// arrive lower-cased from the core catalog (e.g. "uint64", "string",
-// "datetime"). Nullable columns (NotNull == false) map to a pointer, which
-// is how the clickhouse-go driver represents Nullable(T).
 func clickhouseType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Column) string {
 	dt := strings.ToLower(sdk.DataType(col.Type))
 	notNull := col.NotNull
@@ -34,7 +30,6 @@ func clickhouseType(req *plugin.GenerateRequest, options *opts.Options, col *plu
 	case "int64":
 		return nullable(notNull, "int64")
 	case "uint128", "uint256", "int128", "int256":
-		// Big integers are represented as *big.Int by clickhouse-go.
 		return "*big.Int"
 	case "float32", "bfloat16":
 		return nullable(notNull, "float32")
@@ -47,9 +42,6 @@ func clickhouseType(req *plugin.GenerateRequest, options *opts.Options, col *plu
 	case "date", "date32", "datetime", "datetime64":
 		return nullable(notNull, "time.Time")
 
-	// The following resolve to string for now; richer mappings
-	// (decimal.Decimal, uuid.UUID, netip.Addr, json.RawMessage) require
-	// wiring their imports into the Go importer and are a follow-up.
 	case "decimal", "decimal32", "decimal64", "decimal128", "decimal256",
 		"uuid", "ipv4", "ipv6", "json", "enum8", "enum16":
 		return nullable(notNull, "string")
@@ -59,7 +51,6 @@ func clickhouseType(req *plugin.GenerateRequest, options *opts.Options, col *plu
 	}
 }
 
-// nullable wraps a base Go type in a pointer when the column is nullable.
 func nullable(notNull bool, base string) string {
 	if notNull {
 		return base

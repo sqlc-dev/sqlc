@@ -5,11 +5,8 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
-// projectTarget evaluates one entry in the SELECT list and records an
-// output Column. Star expansions emit one column per source column.
 func (a *analyzer) projectTarget(rt *ast.ResTarget) error {
 	if cr, ok := rt.Val.(*ast.ColumnRef); ok {
-		// "* " or "t.*" expansion
 		if isStarRef(cr) {
 			a.emitStar(cr)
 			return nil
@@ -37,9 +34,6 @@ func (a *analyzer) projectTarget(rt *ast.ResTarget) error {
 	return nil
 }
 
-// decorateSource fills in the resolved Source struct and per-column
-// flag fields for a Column whose value came from a real table column.
-// Computed expressions (zero attOID) are left untouched.
 func (a *analyzer) decorateSource(col *core.Column, attOID int64, tableAlias string) {
 	if attOID == 0 {
 		return
@@ -62,9 +56,6 @@ func (a *analyzer) decorateSource(col *core.Column, attOID int64, tableAlias str
 	col.IsAutoIncrement = ad.AutoIncrement
 }
 
-// targetName picks the user-visible name for a SELECT-list entry: the
-// alias if one was given, the source column name for direct refs, or
-// the conventional "?column?" placeholder for computed expressions.
 func targetName(rt *ast.ResTarget) string {
 	if rt.Name != nil && *rt.Name != "" {
 		return *rt.Name
@@ -88,7 +79,6 @@ func isStarRef(c *ast.ColumnRef) bool {
 	return len(parts) > 0 && parts[len(parts)-1] == "*"
 }
 
-// emitStar expands * (or t.*) into one Column per source attribute.
 func (a *analyzer) emitStar(cr *ast.ColumnRef) {
 	parts := flattenFields(cr.Fields)
 	relName := ""

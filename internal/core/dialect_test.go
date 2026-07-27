@@ -27,7 +27,6 @@ func TestDialectAndFlags(t *testing.T) {
 		t.Errorf("DialectFlag: got %q (err=%v), want fold_lower", v, err)
 	}
 
-	// upsert
 	if err := cat.SetDialectFlag(pgOID, "identifier_case", "fold_upper"); err != nil {
 		t.Fatal(err)
 	}
@@ -36,7 +35,6 @@ func TestDialectAndFlags(t *testing.T) {
 		t.Errorf("upsert: got %q, want fold_upper", v)
 	}
 
-	// missing flag returns ""
 	v, err = cat.DialectFlag(pgOID, "nonexistent")
 	if err != nil || v != "" {
 		t.Errorf("missing flag: got %q (err=%v), want empty", v, err)

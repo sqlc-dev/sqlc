@@ -12,12 +12,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/validate"
 )
 
-// parseQueryCore is the analysis path for engines backed by the xqlc core
-// catalog and analyzer (currently ClickHouse). It reuses the shared,
-// engine-agnostic query-metadata parsing but resolves columns and
-// parameters through core/analyzer, never touching the legacy compiler
-// analyze step (inferQuery/outputColumns/parameters) or the
-// analyzer.Analyzer seam.
 func (c *Compiler) parseQueryCore(stmt ast.Node, src string) (*Query, error) {
 	raw, ok := stmt.(*ast.RawStmt)
 	if !ok {
@@ -54,9 +48,6 @@ func (c *Compiler) parseQueryCore(stmt ast.Node, src string) (*Query, error) {
 
 	var cols []*Column
 	var params []Parameter
-	// Only result-shaped statements produce columns/parameters. Non-SELECT
-	// statements (:exec, DDL) currently yield an empty shape; growing the
-	// core analyzer to cover INSERT/UPDATE/DELETE is a follow-up.
 	if _, ok := raw.Stmt.(*ast.SelectStmt); ok {
 		res, err := coreanalyzer.Prepare(c.coreCatalog, raw)
 		if err != nil {
@@ -91,9 +82,6 @@ func (c *Compiler) parseQueryCore(stmt ast.Node, src string) (*Query, error) {
 	}, nil
 }
 
-// coreColumn maps a core.Column (analyzer output) onto the compiler's
-// Column. The type name is carried in DataType; Type is left nil so the
-// codegen shim uses DataType directly.
 func coreColumn(c core.Column) *Column {
 	col := &Column{
 		Name:     c.Name,

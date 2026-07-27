@@ -9,11 +9,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/engine/clickhouse"
 )
 
-// analyzeOne seeds a ClickHouse-dialect catalog, applies ddl, then runs
-// the dialect-neutral core analyzer over the trailing query. It proves
-// the full ClickHouse vertical path: ClickHouse SQL -> sqlc's ClickHouse
-// parser -> internal/sql/ast -> core catalog + analyzer -> PrepareResult,
-// with no legacy compiler analyze step involved.
 func analyzeOne(t *testing.T, ddl, query string) core.PrepareResult {
 	t.Helper()
 	cat, err := core.New(clickhouse.Dialect())
@@ -73,7 +68,6 @@ func TestClickHouseSelectColumns(t *testing.T) {
 	if !ok || name.DataType != "string" || !name.NotNull {
 		t.Errorf("name: %+v (ok=%v)", name, ok)
 	}
-	// Nullable(String) must resolve to the inner scalar and be nullable.
 	tag, ok := colByName(res, "tag")
 	if !ok || tag.DataType != "string" || tag.NotNull {
 		t.Errorf("tag: want string/nullable, got %+v (ok=%v)", tag, ok)

@@ -5,7 +5,6 @@ import (
 	"fmt"
 )
 
-// CreateNamespace inserts a namespace and returns its OID.
 func (c *Catalog) CreateNamespace(name string) (int64, error) {
 	oid, err := c.q.CreateNamespace(context.Background(), name)
 	if err != nil {
@@ -14,7 +13,6 @@ func (c *Catalog) CreateNamespace(name string) (int64, error) {
 	return oid, nil
 }
 
-// NamespaceOID returns the OID for the given namespace name.
 func (c *Catalog) NamespaceOID(name string) (int64, error) {
 	oid, err := c.q.NamespaceOID(context.Background(), name)
 	if err != nil {
@@ -23,13 +21,11 @@ func (c *Catalog) NamespaceOID(name string) (int64, error) {
 	return oid, nil
 }
 
-// NamespaceInfo is a namespace row exposed for codegen catalog projection.
 type NamespaceInfo struct {
 	OID  int64
 	Name string
 }
 
-// Namespaces returns every namespace, ordered by OID.
 func (c *Catalog) Namespaces() ([]NamespaceInfo, error) {
 	rows, err := c.q.ListNamespaces(context.Background())
 	if err != nil {

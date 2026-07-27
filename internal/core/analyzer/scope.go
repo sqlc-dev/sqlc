@@ -7,22 +7,16 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
-// scope is the set of relations available to expression resolution at a
-// given point in a query. For now it holds at most one parent (FROM
-// list) — subquery / CTE / lateral parents are a follow-up.
 type scope struct {
 	rels []scopeRel
 }
 
-// scopeRel binds a FROM-list relation (table or aliased table) to the
-// columns it contributes.
 type scopeRel struct {
-	alias    string // user-visible name for resolution; defaults to relation name
+	alias    string
 	classOID int64
 	cols     []scopeCol
 }
 
-// scopeCol is a single column visible through a scopeRel.
 type scopeCol struct {
 	name    string
 	attOID  int64
@@ -30,9 +24,6 @@ type scopeCol struct {
 	notNull bool
 }
 
-// buildScope walks a FROM clause (currently: RangeVar plus JoinExpr
-// trees, which we flatten into the rels slice) and produces a flat
-// scope. Subqueries and table-valued functions are still TODO.
 func (a *analyzer) buildScope(from *ast.List) (*scope, error) {
 	sc := &scope{}
 	for _, item := range listItems(from) {
@@ -53,10 +44,6 @@ func (a *analyzer) appendFromItem(sc *scope, item ast.Node) error {
 		sc.rels = append(sc.rels, rel)
 		return nil
 	case *ast.JoinExpr:
-		// Flatten both sides into the same scope. The join condition
-		// (Quals / USING) is type-checked against the assembled scope
-		// in analyzeSelect after buildScope returns; we don't enforce
-		// it here. Outer-join nullability is also a follow-up.
 		if err := a.appendFromItem(sc, v.Larg); err != nil {
 			return err
 		}
@@ -102,10 +89,6 @@ func (a *analyzer) bindRangeVar(rv *ast.RangeVar) (scopeRel, error) {
 	return rel, nil
 }
 
-// classColumns reads the column layout of a relation by class OID. It
-// goes through the catalog's ClassColumns accessor (backed by a
-// sqlc-generated query) rather than TableColumns, because it needs the
-// attribute OIDs and resolves by OID rather than by name.
 func (a *analyzer) classColumns(classOID int64) ([]scopeCol, error) {
 	cols, err := a.cat.ClassColumns(classOID)
 	if err != nil {
@@ -123,9 +106,6 @@ func (a *analyzer) classColumns(classOID int64) ([]scopeCol, error) {
 	return out, nil
 }
 
-// resolveColumn locates a (relation, column) pair in the scope.
-// relation may be empty for an unqualified reference; in that case we
-// search every relation and error on ambiguity.
 func (s *scope) resolveColumn(relation, column string) (rel scopeRel, col scopeCol, ok bool, err error) {
 	var matches []struct {
 		rel scopeRel
@@ -153,5 +133,4 @@ func (s *scope) resolveColumn(relation, column string) (rel scopeRel, col scopeC
 	return matches[0].rel, matches[0].col, true, nil
 }
 
-// silence unused-import warning if core not referenced here directly
 var _ = core.Column{}

@@ -29,16 +29,10 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		return nil, err
 	}
 
-	// doubleclick exposes each statement's start (Pos, 1-based) but not its
-	// end (End == Pos). Reconstruct byte spans the way the other engines do:
-	// StmtLocation is a running offset that starts at the end of the
-	// previous statement, so leading comments (including the sqlc "-- name:"
-	// annotation) fall inside the statement's span, and StmtLen runs through
-	// the terminating semicolon.
 	var stmts []ast.Statement
 	loc := 0
 	for _, stmt := range stmtNodes {
-		start := stmt.Pos().Offset - 1 // Pos is 1-based; convert to a byte index
+		start := stmt.Pos().Offset - 1
 		if start < loc {
 			start = loc
 		}
@@ -64,10 +58,6 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	return stmts, nil
 }
 
-// statementEnd returns the byte index just past the terminating semicolon
-// of the statement beginning at start, or len(blob) if there is none. It
-// skips over string / quoted-identifier literals and comments so that a
-// semicolon inside them does not end the statement early.
 func statementEnd(blob []byte, start int) int {
 	for i := start; i < len(blob); i++ {
 		switch blob[i] {
@@ -90,18 +80,15 @@ func statementEnd(blob []byte, start int) int {
 	return len(blob)
 }
 
-// skipQuoted returns the index of the closing quote of the literal that
-// opens at i (blob[i] is the opening quote). Backslash escapes and doubled
-// quotes are honored.
 func skipQuoted(blob []byte, i int) int {
 	q := blob[i]
 	for j := i + 1; j < len(blob); j++ {
 		switch blob[j] {
 		case '\\':
-			j++ // skip the escaped byte
+			j++
 		case q:
 			if j+1 < len(blob) && blob[j+1] == q {
-				j++ // doubled quote is an escaped quote
+				j++
 				continue
 			}
 			return j

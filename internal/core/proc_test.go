@@ -18,7 +18,6 @@ func TestProcCreateAndFind(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// length(text) -> integer
 	procOID, err := cat.CreateProc(ProcSpec{
 		Name:           "length",
 		Kind:           "f",
@@ -33,7 +32,6 @@ func TestProcCreateAndFind(t *testing.T) {
 		t.Fatal("expected non-zero proc oid")
 	}
 
-	// concat(text, text) -> text
 	if _, err := cat.CreateProc(ProcSpec{
 		Name:          "concat",
 		ReturnTypeOID: textOID,

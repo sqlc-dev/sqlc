@@ -9,28 +9,21 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/core/catalogdb"
 )
 
-// TypeSpec describes a SQL type for insertion into the catalog.
-// All fields are optional; Name is required.
 type TypeSpec struct {
 	Name         string
 	Size         int
-	Typtype      string // 'b'ase | 'c'omposite | 'd'omain | 'e'num | 'p'seudo | 'r'ange
-	Category     string // 'N'umeric | 'S'tring | 'B'oolean | 'D'atetime | 'A'rray | ...
+	Typtype      string
+	Category     string
 	Preferred    bool
-	NamespaceOID int64 // 0 = NULL
-	DialectOID   int64 // 0 = NULL (shared)
-	ElementOID   int64 // for arrays; 0 = NULL
+	NamespaceOID int64
+	DialectOID   int64
+	ElementOID   int64
 }
 
-// CreateType inserts a base type (typtype='b') and returns its OID.
-// For full control, use CreateTypeSpec.
 func (c *Catalog) CreateType(name string, size int) (int64, error) {
 	return c.CreateTypeSpec(TypeSpec{Name: name, Size: size, Typtype: "b"})
 }
 
-// CreateTypeSpec inserts a type with full metadata. NamespaceOID defaults
-// to the "public" namespace when zero so the simpler CreateType API and
-// engines that don't track namespaces (sqlite) continue to work.
 func (c *Catalog) CreateTypeSpec(t TypeSpec) (int64, error) {
 	if t.Typtype == "" {
 		t.Typtype = "b"
@@ -58,10 +51,6 @@ func (c *Catalog) CreateTypeSpec(t TypeSpec) (int64, error) {
 	return oid, nil
 }
 
-// TypeOID returns the OID for the given (unqualified) type name. When
-// the same name lives in multiple namespaces (e.g. a system-internal
-// duplicate in information_schema and pg_catalog), the lookup prefers
-// pg_catalog, then public, then any other namespace by name.
 func (c *Catalog) TypeOID(name string) (int64, error) {
 	oid, err := c.q.TypeOIDByName(context.Background(), strings.ToLower(name))
 	if err != nil {
@@ -70,7 +59,6 @@ func (c *Catalog) TypeOID(name string) (int64, error) {
 	return oid, nil
 }
 
-// TypeName returns the name for the given type OID.
 func (c *Catalog) TypeName(oid int64) (string, error) {
 	name, err := c.q.TypeNameByOID(context.Background(), oid)
 	if err != nil {
@@ -79,7 +67,6 @@ func (c *Catalog) TypeName(oid int64) (string, error) {
 	return name, nil
 }
 
-// TypeInfo bundles the metadata returned by LookupType.
 type TypeInfo struct {
 	OID       int64
 	Name      string
@@ -88,7 +75,6 @@ type TypeInfo struct {
 	Preferred bool
 }
 
-// LookupType returns metadata for the given type OID.
 func (c *Catalog) LookupType(oid int64) (TypeInfo, error) {
 	row, err := c.q.LookupType(context.Background(), oid)
 	if err != nil {
@@ -103,8 +89,6 @@ func (c *Catalog) LookupType(oid int64) (TypeInfo, error) {
 	}, nil
 }
 
-// nullableOID / nullableString / boolToInt build the loosely-typed
-// arguments the not-yet-migrated raw-SQL call sites pass to database/sql.
 func nullableOID(oid int64) any {
 	if oid == 0 {
 		return nil
@@ -126,8 +110,6 @@ func boolToInt(b bool) int {
 	return 0
 }
 
-// nullInt64 / nullString / boolToInt64 build the sql.Null* and int64
-// arguments the sqlc-generated catalogdb queries expect.
 func nullInt64(oid int64) sql.NullInt64 {
 	return sql.NullInt64{Int64: oid, Valid: oid != 0}
 }
@@ -143,8 +125,6 @@ func boolToInt64(b bool) int64 {
 	return 0
 }
 
-// orZero unwraps a nullable OID column, mapping NULL to the 0 sentinel
-// the catalog's Go API uses for "unset".
 func orZero(n sql.NullInt64) int64 {
 	if n.Valid {
 		return n.Int64
