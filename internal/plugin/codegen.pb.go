@@ -816,6 +816,14 @@ type Query struct {
 	Comments        []string     `protobuf:"bytes,6,rep,name=comments,proto3" json:"comments,omitempty"`
 	Filename        string       `protobuf:"bytes,7,opt,name=filename,proto3" json:"filename,omitempty"`
 	InsertIntoTable *Identifier  `protobuf:"bytes,8,opt,name=insert_into_table,proto3" json:"insert_into_table,omitempty"`
+	SwitchGroup     string       `protobuf:"bytes,9,opt,name=switch_group,json=switchGroup,proto3" json:"switch_group,omitempty"`
+}
+
+func (x *Query) GetSwitchGroup() string {
+	if x != nil {
+		return x.SwitchGroup
+	}
+	return ""
 }
 
 func (x *Query) Reset() {

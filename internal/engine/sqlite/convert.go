@@ -514,6 +514,13 @@ func (c *cc) convertMultiSelect_stmtContext(n *parser.Select_stmtContext) ast.No
 	limitCount, limitOffset := c.convertLimit_stmtContext(n.Limit_stmt())
 	selectStmt.LimitCount = limitCount
 	selectStmt.LimitOffset = limitOffset
+
+	if n.Order_by_stmt() != nil {
+		if sortClause, ok := c.convert(n.Order_by_stmt()).(*ast.List); ok {
+			selectStmt.SortClause = sortClause
+		}
+	}
+
 	// Only set WithClause if there are CTEs
 	if len(ctes.Items) > 0 {
 		selectStmt.WithClause = &ast.WithClause{Ctes: &ctes}
@@ -622,21 +629,48 @@ func (c *cc) convertWildCardField(n *parser.Result_columnContext) *ast.ColumnRef
 }
 
 func (c *cc) convertOrderby_stmtContext(n parser.IOrder_by_stmtContext) ast.Node {
-	if orderBy, ok := n.(*parser.Order_by_stmtContext); ok {
-		list := &ast.List{Items: []ast.Node{}}
-		for _, o := range orderBy.AllOrdering_term() {
-			term, ok := o.(*parser.Ordering_termContext)
-			if !ok {
-				continue
-			}
-			list.Items = append(list.Items, &ast.CaseExpr{
-				Xpr:      c.convert(term.Expr()),
-				Location: term.Expr().GetStart().GetStart(),
-			})
-		}
-		return list
+	orderBy, ok := n.(*parser.Order_by_stmtContext)
+	if !ok || orderBy == nil {
+		return &ast.List{}
 	}
-	return todo("convertOrderby_stmtContext", n)
+
+	list := &ast.List{Items: []ast.Node{}}
+	for _, o := range orderBy.AllOrdering_term() {
+		term, ok := o.(*parser.Ordering_termContext)
+		if !ok {
+			continue
+		}
+		list.Items = append(list.Items, c.convertOrderingTerm(term))
+	}
+
+	return list
+}
+
+func (c *cc) convertOrderingTerm(term *parser.Ordering_termContext) *ast.SortBy {
+	sortByDir := ast.SortByDirDefault
+	if ad := term.Asc_desc(); ad != nil {
+		if ad.ASC_() != nil {
+			sortByDir = ast.SortByDirAsc
+		} else {
+			sortByDir = ast.SortByDirDesc
+		}
+	}
+
+	sortByNulls := ast.SortByNullsDefault
+	if term.NULLS_() != nil {
+		if term.FIRST_() != nil {
+			sortByNulls = ast.SortByNullsFirst
+		} else {
+			sortByNulls = ast.SortByNullsLast
+		}
+	}
+
+	return &ast.SortBy{
+		Node:        c.convert(term.Expr()),
+		SortbyDir:   sortByDir,
+		SortbyNulls: sortByNulls,
+		UseOp:       &ast.List{},
+	}
 }
 
 func (c *cc) convertLimit_stmtContext(n parser.ILimit_stmtContext) (ast.Node, ast.Node) {
@@ -826,7 +860,7 @@ func (c *cc) convertUnaryExpr(n *parser.Expr_unaryContext) ast.Node {
 		if opCtx.MINUS() != nil {
 			// Negative number: -expr
 			return &ast.A_Expr{
-				Name: &ast.List{Items: []ast.Node{&ast.String{Str: "-"}}},
+				Name:  &ast.List{Items: []ast.Node{&ast.String{Str: "-"}}},
 				Rexpr: expr,
 			}
 		}
@@ -837,7 +871,7 @@ func (c *cc) convertUnaryExpr(n *parser.Expr_unaryContext) ast.Node {
 		if opCtx.TILDE() != nil {
 			// Bitwise NOT: ~expr
 			return &ast.A_Expr{
-				Name: &ast.List{Items: []ast.Node{&ast.String{Str: "~"}}},
+				Name:  &ast.List{Items: []ast.Node{&ast.String{Str: "~"}}},
 				Rexpr: expr,
 			}
 		}
