@@ -42,7 +42,15 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	if err != nil {
 		return nil, err
 	}
-	input := antlr.NewInputStream(string(blob))
+	// antlr reads the input as a slice of runes and reports all token
+	// positions as rune indices. The rest of sqlc treats query offsets as byte
+	// offsets into the original source (see source.Pluck / source.Mutate), so
+	// any multi-byte rune in the source would otherwise shift every later
+	// offset and corrupt the generated SQL. Build a rune-index -> byte-offset
+	// table so we can translate antlr's positions back to byte offsets.
+	src := string(blob)
+	runeToByte := runeOffsets(src)
+	input := antlr.NewInputStream(src)
 	lexer := parser.NewSQLiteLexer(input)
 	stream := antlr.NewCommonTokenStream(lexer, 0)
 	pp := parser.NewSQLiteParser(stream)
@@ -66,24 +74,49 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		loc := 0
 
 		for _, stmt := range list.AllSql_stmt() {
-			converter := &cc{}
+			converter := &cc{convertPos: runeToByte}
 			out := converter.convert(stmt)
 			if _, ok := out.(*ast.TODO); ok {
 				loc = stmt.GetStop().GetStop() + 2
 				continue
 			}
-			len := (stmt.GetStop().GetStop() + 1) - loc
+			end := stmt.GetStop().GetStop() + 1
+			// antlr reports rune-based offsets; translate them to byte offsets
+			// before they reach the byte-oriented compiler.
+			byteLoc := runeToByte(loc)
+			byteLen := runeToByte(end) - byteLoc
 			stmts = append(stmts, ast.Statement{
 				Raw: &ast.RawStmt{
 					Stmt:         out,
-					StmtLocation: loc,
-					StmtLen:      len,
+					StmtLocation: byteLoc,
+					StmtLen:      byteLen,
 				},
 			})
 			loc = stmt.GetStop().GetStop() + 2
 		}
 	}
 	return stmts, nil
+}
+
+// runeOffsets returns a function that maps a rune index in src (as reported by
+// antlr) to the corresponding byte offset. Indices at or past the end of the
+// input map to len(src) so that end-exclusive bounds keep working.
+func runeOffsets(src string) func(int) int {
+	// table[i] is the byte offset of the i-th rune; the final entry is len(src).
+	table := make([]int, 0, len(src)+1)
+	for i := range src {
+		table = append(table, i)
+	}
+	table = append(table, len(src))
+	return func(runeIdx int) int {
+		if runeIdx < 0 {
+			return runeIdx
+		}
+		if runeIdx >= len(table) {
+			return len(src)
+		}
+		return table[runeIdx]
+	}
 }
 
 func (p *Parser) CommentSyntax() source.CommentSyntax {

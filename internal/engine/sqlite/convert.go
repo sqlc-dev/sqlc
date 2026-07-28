@@ -14,6 +14,25 @@ import (
 
 type cc struct {
 	paramCount int
+
+	// convertPos maps a rune index (as reported by antlr) to a byte offset in
+	// the original source. The compiler treats all node locations as byte
+	// offsets, so every Location must be routed through pos. May be nil in
+	// tests, in which case offsets are passed through unchanged.
+	convertPos func(int) int
+}
+
+// pos translates an antlr rune offset into the byte offset the rest of sqlc
+// expects when slicing the source SQL (see source.Pluck / source.Mutate).
+func (c *cc) pos(tok antlr.Token) int {
+	if tok == nil {
+		return 0
+	}
+	start := tok.GetStart()
+	if c.convertPos == nil {
+		return start
+	}
+	return c.convertPos(start)
 }
 
 type node interface {
@@ -286,7 +305,7 @@ func (c *cc) convertFuncContext(n *parser.Expr_functionContext) ast.Node {
 		if funcName == "coalesce" {
 			return &ast.CoalesceExpr{
 				Args:     args,
-				Location: name.GetStart().GetStart(),
+				Location: c.pos(name.GetStart()),
 			}
 		} else {
 			return &ast.FuncCall{
@@ -303,7 +322,7 @@ func (c *cc) convertFuncContext(n *parser.Expr_functionContext) ast.Node {
 				Args:        args,
 				AggOrder:    &ast.List{},
 				AggDistinct: n.DISTINCT_() != nil,
-				Location:    name.GetStart().GetStart(),
+				Location:    c.pos(name.GetStart()),
 			}
 		}
 	}
@@ -334,7 +353,7 @@ func (c *cc) convertColumnNameExpr(n *parser.Expr_qualified_column_nameContext) 
 		Fields: &ast.List{
 			Items: items,
 		},
-		Location: n.GetStart().GetStart(),
+		Location: c.pos(n.GetStart()),
 	}
 }
 
@@ -358,7 +377,7 @@ func (c *cc) convertComparison(n *parser.Expr_comparisonContext) ast.Node {
 			List:     rexprs,
 			Not:      false,
 			Sel:      nil,
-			Location: n.GetStart().GetStart(),
+			Location: c.pos(n.GetStart()),
 		}
 	}
 
@@ -386,7 +405,7 @@ func (c *cc) convertMultiSelect_stmtContext(n *parser.Select_stmtContext) ast.No
 			ctes.Items = append(ctes.Items, &ast.CommonTableExpr{
 				Ctename:      &tableName,
 				Ctequery:     c.convert(cte.Select_stmt()),
-				Location:     cte.GetStart().GetStart(),
+				Location:     c.pos(cte.GetStart()),
 				Cterecursive: recursive,
 				Ctecolnames:  &cteCols,
 			})
@@ -472,7 +491,7 @@ func (c *cc) convertMultiSelect_stmtContext(n *parser.Select_stmtContext) ast.No
 					FrameOptions:    0, // todo
 					StartOffset:     &ast.TODO{},
 					EndOffset:       &ast.TODO{},
-					Location:        windowNameCtx.GetStart().GetStart(),
+					Location:        c.pos(windowNameCtx.GetStart()),
 				})
 			}
 		}
@@ -580,7 +599,7 @@ func (c *cc) getCols(core *parser.Select_coreContext) []ast.Node {
 			continue
 		}
 		target := &ast.ResTarget{
-			Location: col.GetStart().GetStart(),
+			Location: c.pos(col.GetStart()),
 		}
 		var val ast.Node
 		iexpr := col.Expr()
@@ -617,7 +636,7 @@ func (c *cc) convertWildCardField(n *parser.Result_columnContext) *ast.ColumnRef
 		Fields: &ast.List{
 			Items: items,
 		},
-		Location: n.GetStart().GetStart(),
+		Location: c.pos(n.GetStart()),
 	}
 }
 
@@ -631,7 +650,7 @@ func (c *cc) convertOrderby_stmtContext(n parser.IOrder_by_stmtContext) ast.Node
 			}
 			list.Items = append(list.Items, &ast.CaseExpr{
 				Xpr:      c.convert(term.Expr()),
-				Location: term.Expr().GetStart().GetStart(),
+				Location: c.pos(term.Expr().GetStart()),
 			})
 		}
 		return list
@@ -738,7 +757,7 @@ func (c *cc) convertLiteral(n *parser.Expr_literalContext) ast.Node {
 			i, _ := strconv.ParseInt(literal.GetText(), 10, 64)
 			return &ast.A_Const{
 				Val:      &ast.Integer{Ival: i},
-				Location: n.GetStart().GetStart(),
+				Location: c.pos(n.GetStart()),
 			}
 		}
 
@@ -747,7 +766,7 @@ func (c *cc) convertLiteral(n *parser.Expr_literalContext) ast.Node {
 			text := literal.GetText()
 			return &ast.A_Const{
 				Val:      &ast.String{Str: text[1 : len(text)-1]},
-				Location: n.GetStart().GetStart(),
+				Location: c.pos(n.GetStart()),
 			}
 		}
 
@@ -759,14 +778,14 @@ func (c *cc) convertLiteral(n *parser.Expr_literalContext) ast.Node {
 
 			return &ast.A_Const{
 				Val:      &ast.Integer{Ival: i},
-				Location: n.GetStart().GetStart(),
+				Location: c.pos(n.GetStart()),
 			}
 		}
 
 		if literal.NULL_() != nil {
 			return &ast.A_Const{
 				Val:      &ast.Null{},
-				Location: n.GetStart().GetStart(),
+				Location: c.pos(n.GetStart()),
 			}
 		}
 	}
@@ -858,7 +877,7 @@ func (c *cc) convertParam(n *parser.Expr_bindContext) ast.Node {
 		}
 		return &ast.ParamRef{
 			Number:   number,
-			Location: n.GetStart().GetStart(),
+			Location: c.pos(n.GetStart()),
 			Dollar:   len(text) > 1,
 		}
 	}
@@ -867,7 +886,7 @@ func (c *cc) convertParam(n *parser.Expr_bindContext) ast.Node {
 		return &ast.A_Expr{
 			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: "@"}}},
 			Rexpr:    &ast.String{Str: n.GetText()[1:]},
-			Location: n.GetStart().GetStart(),
+			Location: c.pos(n.GetStart()),
 		}
 	}
 
@@ -948,9 +967,9 @@ func (c *cc) convertReturning_caluseContext(n parser.IReturning_clauseContext) *
 				Fields: &ast.List{
 					Items: []ast.Node{&ast.A_Star{}},
 				},
-				Location: star.GetSymbol().GetStart(),
+				Location: c.pos(star.GetSymbol()),
 			},
-			Location: star.GetSymbol().GetStart(),
+			Location: c.pos(star.GetSymbol()),
 		})
 	}
 
@@ -1057,7 +1076,7 @@ func (c *cc) convertTablesOrSubquery(n []parser.ITable_or_subqueryContext) []ast
 			rel := identifier(from.Table_name().GetText())
 			rv := &ast.RangeVar{
 				Relname:  &rel,
-				Location: from.GetStart().GetStart(),
+				Location: c.pos(from.GetStart()),
 			}
 
 			if from.Schema_name() != nil {
@@ -1096,7 +1115,7 @@ func (c *cc) convertTablesOrSubquery(n []parser.ITable_or_subqueryContext) []ast
 							Args: &ast.List{
 								Items: args,
 							},
-							Location: from.GetStart().GetStart(),
+							Location: c.pos(from.GetStart()),
 						},
 					},
 				},
@@ -1143,7 +1162,7 @@ func (c *cc) convertUpdate_stmtContext(n Update_stmt) ast.Node {
 	tableName := identifier(n.Qualified_table_name().GetText())
 	rel := ast.RangeVar{
 		Relname:  &tableName,
-		Location: n.GetStart().GetStart(),
+		Location: c.pos(n.GetStart()),
 	}
 	relations.Items = append(relations.Items, &rel)
 
@@ -1190,7 +1209,7 @@ func (c *cc) convertBetweenExpr(n *parser.Expr_betweenContext) ast.Node {
 		Expr:     c.convert(n.Expr(0)),
 		Left:     c.convert(n.Expr(1)),
 		Right:    c.convert(n.Expr(2)),
-		Location: n.GetStart().GetStart(),
+		Location: c.pos(n.GetStart()),
 		Not:      n.NOT_() != nil,
 	}
 }
@@ -1206,7 +1225,7 @@ func (c *cc) convertCastExpr(n *parser.Expr_castContext) ast.Node {
 			}},
 			ArrayBounds: &ast.List{},
 		},
-		Location: n.GetStart().GetStart(),
+		Location: c.pos(n.GetStart()),
 	}
 }
 
@@ -1214,7 +1233,7 @@ func (c *cc) convertCollateExpr(n *parser.Expr_collateContext) ast.Node {
 	return &ast.CollateExpr{
 		Xpr:      c.convert(n.Expr()),
 		Arg:      NewIdentifier(n.Collation_name().GetText()),
-		Location: n.GetStart().GetStart(),
+		Location: c.pos(n.GetStart()),
 	}
 }
 
