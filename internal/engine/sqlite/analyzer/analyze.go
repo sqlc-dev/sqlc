@@ -16,6 +16,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 	"github.com/sqlc-dev/sqlc/internal/sqlcdebug"
+	_ "github.com/sqlc-dev/sqlc/internal/sqlite3ext"
 )
 
 var debugDatabases = sqlcdebug.New("databases")

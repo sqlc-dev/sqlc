@@ -9,6 +9,7 @@ import (
 	_ "github.com/ncruces/go-sqlite3/driver"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
+	_ "github.com/sqlc-dev/sqlc/internal/sqlite3ext"
 )
 
 func SQLite(t *testing.T, migrations []string) (*sql.DB, func()) {
