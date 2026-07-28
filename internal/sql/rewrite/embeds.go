@@ -2,6 +2,7 @@ package rewrite
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
@@ -9,14 +10,15 @@ import (
 
 // Embed is an instance of `sqlc.embed(param)`
 type Embed struct {
-	Table *ast.TableName
-	param string
-	Node  *ast.ColumnRef
+	Table  *ast.TableName
+	param  string
+	origin string
+	Node   *ast.ColumnRef
 }
 
 // Orig string to replace
 func (e Embed) Orig() string {
-	return fmt.Sprintf("sqlc.embed(%s)", e.param)
+	return e.origin
 }
 
 // EmbedSet is a set of Embed instances
@@ -60,10 +62,16 @@ func Embeds(raw *ast.RawStmt) (*ast.RawStmt, EmbedSet) {
 				},
 			}
 
+			// Get the origin string
+			const noSpaceLen = 11
+			spaceCount := fun.Args.Items[0].Pos() - fun.Pos() - noSpaceLen
+			origin := fmt.Sprintf("sqlc.embed%s(%s)", strings.Repeat(" ", spaceCount), param)
+
 			embeds = append(embeds, &Embed{
-				Table: &ast.TableName{Name: param},
-				param: param,
-				Node:  node,
+				Table:  &ast.TableName{Name: param},
+				param:  param,
+				origin: origin,
+				Node:   node,
 			})
 
 			cr.Replace(node)
