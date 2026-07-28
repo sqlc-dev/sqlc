@@ -35,6 +35,13 @@ func identifier(id string) string {
 	return strings.ToLower(id)
 }
 
+func getTypeName(t parser.IType_nameContext) string {
+	if t == nil {
+		return "any"
+	}
+	return t.GetText()
+}
+
 func NewIdentifier(t string) *ast.String {
 	return &ast.String{Str: identifier(t)}
 }
@@ -72,10 +79,8 @@ func (c *cc) convertAlter_table_stmtContext(n *parser.Alter_table_stmtContext) a
 				Name:    &name,
 				Subtype: ast.AT_AddColumn,
 				Def: &ast.ColumnDef{
-					Colname: name,
-					TypeName: &ast.TypeName{
-						Name: def.Type_name().GetText(),
-					},
+					Colname:   name,
+					TypeName:  &ast.TypeName{Name: getTypeName(def.Type_name())},
 					IsNotNull: hasNotNullConstraint(def.AllColumn_constraint()),
 				},
 			})
@@ -113,14 +118,10 @@ func (c *cc) convertCreate_table_stmtContext(n *parser.Create_table_stmtContext)
 	}
 	for _, idef := range n.AllColumn_def() {
 		if def, ok := idef.(*parser.Column_defContext); ok {
-			typeName := "any"
-			if def.Type_name() != nil {
-				typeName = def.Type_name().GetText()
-			}
 			stmt.Cols = append(stmt.Cols, &ast.ColumnDef{
 				Colname:   identifier(def.Column_name().GetText()),
 				IsNotNull: hasNotNullConstraint(def.AllColumn_constraint()),
-				TypeName:  &ast.TypeName{Name: typeName},
+				TypeName:  &ast.TypeName{Name: getTypeName(def.Type_name())},
 			})
 		}
 	}

@@ -85,6 +85,30 @@ func TestUpdate(t *testing.T) {
 		{
 			`
 			CREATE TABLE foo (bar text);
+			ALTER TABLE foo ADD COLUMN baz;
+			`,
+			&catalog.Schema{
+				Name: "main",
+				Tables: []*catalog.Table{
+					{
+						Rel: &ast.TableName{Name: "foo"},
+						Columns: []*catalog.Column{
+							{
+								Name: "bar",
+								Type: ast.TypeName{Name: "text"},
+							},
+							{
+								Name: "baz",
+								Type: ast.TypeName{Name: "any"},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			`
+			CREATE TABLE foo (bar text);
 			ALTER TABLE foo RENAME COLUMN bar TO baz;
 			`,
 			&catalog.Schema{
