@@ -4,7 +4,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/compiler"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/config/convert"
-	"github.com/sqlc-dev/sqlc/internal/core"
+	coreshim "github.com/sqlc-dev/sqlc/internal/core/shim"
 	"github.com/sqlc-dev/sqlc/internal/info"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
@@ -227,7 +227,7 @@ func pluginQueryParam(p compiler.Parameter) *plugin.Parameter {
 func codeGenRequest(r *compiler.Result, settings config.CombinedSettings) *plugin.GenerateRequest {
 	var cat *plugin.Catalog
 	if r.CoreCatalog != nil {
-		cat = pluginCatalogFromCore(r.CoreCatalog)
+		cat = coreshim.PluginCatalog(r.CoreCatalog)
 	} else {
 		cat = pluginCatalog(r.Catalog)
 	}
@@ -236,44 +236,5 @@ func codeGenRequest(r *compiler.Result, settings config.CombinedSettings) *plugi
 		Catalog:     cat,
 		Queries:     pluginQueries(r),
 		SqlcVersion: info.Version,
-	}
-}
-
-func pluginCatalogFromCore(cc *core.Catalog) *plugin.Catalog {
-	var schemas []*plugin.Schema
-
-	namespaces, err := cc.Namespaces()
-	if err != nil {
-		return &plugin.Catalog{DefaultSchema: "public"}
-	}
-	for _, ns := range namespaces {
-		tables, err := cc.TablesInNamespace(ns.OID)
-		if err != nil {
-			continue
-		}
-		var ptables []*plugin.Table
-		for _, cl := range tables {
-			rel := &plugin.Identifier{Schema: ns.Name, Name: cl.Name}
-			cols, err := cc.ClassCodegenColumns(cl.OID)
-			if err != nil {
-				continue
-			}
-			var columns []*plugin.Column
-			for _, col := range cols {
-				columns = append(columns, &plugin.Column{
-					Name:    col.Name,
-					Type:    &plugin.Identifier{Name: col.TypeName},
-					NotNull: col.NotNull,
-					Table:   rel,
-				})
-			}
-			ptables = append(ptables, &plugin.Table{Rel: rel, Columns: columns})
-		}
-		schemas = append(schemas, &plugin.Schema{Name: ns.Name, Tables: ptables})
-	}
-
-	return &plugin.Catalog{
-		DefaultSchema: "public",
-		Schemas:       schemas,
 	}
 }

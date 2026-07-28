@@ -826,8 +826,11 @@ func (c *cc) convertColumnDeclaration(n *chast.ColumnDeclaration) *ast.ColumnDef
 	}
 
 	if n.Type != nil {
-		colDef.TypeName = &ast.TypeName{
-			Name: renderDataType(n.Type),
+		base, isArray, nullable := unwrapTypeString(renderDataType(n.Type))
+		colDef.TypeName = &ast.TypeName{Name: base}
+		colDef.IsArray = isArray
+		if nullable {
+			colDef.IsNotNull = false
 		}
 	}
 
@@ -877,6 +880,62 @@ func renderTypeParam(e chast.Expression) string {
 	default:
 		return ""
 	}
+}
+
+func unwrapTypeString(s string) (name string, isArray, nullable bool) {
+	base, args := splitType(s)
+	switch strings.ToLower(base) {
+	case "nullable":
+		if len(args) == 1 {
+			inner, arr, _ := unwrapTypeString(args[0])
+			return inner, arr, true
+		}
+		return strings.ToLower(base), false, true
+	case "lowcardinality":
+		if len(args) == 1 {
+			return unwrapTypeString(args[0])
+		}
+		return strings.ToLower(base), false, false
+	case "array":
+		if len(args) == 1 {
+			inner, _, nul := unwrapTypeString(args[0])
+			return inner, true, nul
+		}
+		return strings.ToLower(base), true, false
+	default:
+		if strings.TrimSpace(base) == "" {
+			return "nothing", false, false
+		}
+		return strings.ToLower(base), false, false
+	}
+}
+
+func splitType(s string) (base string, args []string) {
+	s = strings.TrimSpace(s)
+	open := strings.IndexByte(s, '(')
+	if open < 0 || !strings.HasSuffix(s, ")") {
+		return s, nil
+	}
+	base = strings.TrimSpace(s[:open])
+	inner := s[open+1 : len(s)-1]
+	depth, start := 0, 0
+	for i := 0; i < len(inner); i++ {
+		switch inner[i] {
+		case '(':
+			depth++
+		case ')':
+			depth--
+		case ',':
+			if depth == 0 {
+				args = append(args, strings.TrimSpace(inner[start:i]))
+				start = i + 1
+			}
+		}
+	}
+	if last := strings.TrimSpace(inner[start:]); last != "" {
+		args = append(args, last)
+	}
+	return base, args
 }
 
 func (c *cc) convertUpdateQuery(n *chast.UpdateQuery) *ast.UpdateStmt {
