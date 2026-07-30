@@ -113,10 +113,10 @@ func (a *analyzer) typeColumnRef(c *ast.ColumnRef) (exprType, error) {
 		return exprType{}, fmt.Errorf("unknown column %q", column)
 	}
 	return exprType{
-		typeOID:            col.typeOID,
-		nullable:           !col.notNull,
+		typeOID:            col.TypeOID,
+		nullable:           !col.NotNull,
 		sourceClassOID:     rel.classOID,
-		sourceAttributeOID: col.attOID,
+		sourceAttributeOID: col.AttOID,
 		sourceTableAlias:   rel.alias,
 	}, nil
 }
@@ -141,7 +141,7 @@ func flattenFields(fields *ast.List) []string {
 func (a *analyzer) typeParamRef(p *ast.ParamRef) (exprType, error) {
 	cur, ok := a.params[p.Number]
 	if !ok {
-		cur = &core.Parameter{Number: p.Number}
+		cur = core.Parameter{Number: p.Number}
 		a.params[p.Number] = cur
 	}
 	return exprType{typeOID: cur.TypeOID, nullable: !cur.NotNull}, nil
@@ -150,8 +150,7 @@ func (a *analyzer) typeParamRef(p *ast.ParamRef) (exprType, error) {
 func (a *analyzer) inferParam(number int, t exprType) {
 	cur, ok := a.params[number]
 	if !ok {
-		cur = &core.Parameter{Number: number}
-		a.params[number] = cur
+		cur = core.Parameter{Number: number}
 	}
 	if cur.TypeOID == 0 && t.typeOID != 0 {
 		cur.TypeOID = t.typeOID
@@ -171,6 +170,7 @@ func (a *analyzer) inferParam(number int, t exprType) {
 			}
 		}
 	}
+	a.params[number] = cur
 }
 
 func (a *analyzer) typeAExpr(e *ast.A_Expr) (exprType, error) {

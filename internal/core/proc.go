@@ -80,6 +80,8 @@ type ProcOverload struct {
 	ArgTypes       []int64
 }
 
+// FindProcs returns the overloads of name, optionally restricted to the given
+// namespaces.
 func (c *Catalog) FindProcs(name string, namespaceOIDs []int64) ([]ProcOverload, error) {
 	ctx := context.Background()
 	lname := strings.ToLower(name)
@@ -90,6 +92,7 @@ func (c *Catalog) FindProcs(name string, namespaceOIDs []int64) ([]ProcOverload,
 		if err != nil {
 			return nil, fmt.Errorf("find procs %q: %w", name, err)
 		}
+		out = make([]ProcOverload, 0, len(rows))
 		for _, r := range rows {
 			out = append(out, ProcOverload{
 				OID:            r.Oid,
@@ -111,6 +114,7 @@ func (c *Catalog) FindProcs(name string, namespaceOIDs []int64) ([]ProcOverload,
 		if err != nil {
 			return nil, fmt.Errorf("find procs %q: %w", name, err)
 		}
+		out = make([]ProcOverload, 0, len(rows))
 		for _, r := range rows {
 			out = append(out, ProcOverload{
 				OID:            r.Oid,

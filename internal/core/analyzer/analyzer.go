@@ -13,7 +13,7 @@ func Prepare(cat *core.Catalog, stmt ast.Node) (core.PrepareResult, error) {
 	}
 	a := &analyzer{
 		cat:    cat,
-		params: map[int]*core.Parameter{},
+		params: map[int]core.Parameter{},
 	}
 	switch s := stmt.(type) {
 	case *ast.SelectStmt:
@@ -46,7 +46,7 @@ type analyzer struct {
 	cat     *core.Catalog
 	scope   *scope
 	columns []core.Column
-	params  map[int]*core.Parameter
+	params  map[int]core.Parameter
 	command core.Command
 }
 
@@ -58,7 +58,7 @@ func (a *analyzer) result() core.PrepareResult {
 	}
 }
 
-func orderedParams(m map[int]*core.Parameter) []core.Parameter {
+func orderedParams(m map[int]core.Parameter) []core.Parameter {
 	if len(m) == 0 {
 		return nil
 	}
@@ -71,7 +71,7 @@ func orderedParams(m map[int]*core.Parameter) []core.Parameter {
 	out := make([]core.Parameter, 0, len(m))
 	for i := 1; i <= maxN; i++ {
 		if p, ok := m[i]; ok {
-			out = append(out, *p)
+			out = append(out, p)
 		}
 	}
 	return out
@@ -112,6 +112,7 @@ func (a *analyzer) analyzeSelect(s *ast.SelectStmt) error {
 	if targets == nil {
 		return fmt.Errorf("select: empty target list")
 	}
+	a.columns = make([]core.Column, 0, len(targets))
 	for _, t := range targets {
 		rt, ok := t.(*ast.ResTarget)
 		if !ok {

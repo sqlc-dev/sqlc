@@ -1,14 +1,20 @@
 package analyzer
 
 import (
+	"slices"
+
 	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
 func (a *analyzer) projectTarget(rt *ast.ResTarget) error {
+	// A column reference's field list is flattened once here and threaded
+	// through the star check, the star expansion and the output name.
+	var fields []string
 	if cr, ok := rt.Val.(*ast.ColumnRef); ok {
-		if isStarRef(cr) {
-			a.emitStar(cr)
+		fields = flattenFields(cr.Fields)
+		if isStar(fields) {
+			a.emitStar(fields)
 			return nil
 		}
 	}
@@ -18,7 +24,7 @@ func (a *analyzer) projectTarget(rt *ast.ResTarget) error {
 		return err
 	}
 	col := core.Column{
-		Name:               targetName(rt),
+		Name:               targetName(rt, fields),
 		TypeOID:            t.typeOID,
 		NotNull:            !t.nullable,
 		SourceClassOID:     t.sourceClassOID,
@@ -56,15 +62,14 @@ func (a *analyzer) decorateSource(col *core.Column, attOID int64, tableAlias str
 	col.IsAutoIncrement = ad.AutoIncrement
 }
 
-func targetName(rt *ast.ResTarget) string {
+// targetName picks the output name for a target. fields is the already
+// flattened field list when rt.Val is a column reference, and nil otherwise.
+func targetName(rt *ast.ResTarget, fields []string) string {
 	if rt.Name != nil && *rt.Name != "" {
 		return *rt.Name
 	}
-	if cr, ok := rt.Val.(*ast.ColumnRef); ok {
-		parts := flattenFields(cr.Fields)
-		if len(parts) > 0 {
-			return parts[len(parts)-1]
-		}
+	if len(fields) > 0 {
+		return fields[len(fields)-1]
 	}
 	if fc, ok := rt.Val.(*ast.FuncCall); ok {
 		if name := funcCallName(fc); name != "" {
@@ -74,33 +79,32 @@ func targetName(rt *ast.ResTarget) string {
 	return "?column?"
 }
 
-func isStarRef(c *ast.ColumnRef) bool {
-	parts := flattenFields(c.Fields)
-	return len(parts) > 0 && parts[len(parts)-1] == "*"
+func isStar(fields []string) bool {
+	return len(fields) > 0 && fields[len(fields)-1] == "*"
 }
 
-func (a *analyzer) emitStar(cr *ast.ColumnRef) {
-	parts := flattenFields(cr.Fields)
+func (a *analyzer) emitStar(fields []string) {
 	relName := ""
-	if len(parts) > 1 {
-		relName = parts[0]
+	if len(fields) > 1 {
+		relName = fields[0]
 	}
 	for _, rel := range a.scope.rels {
 		if relName != "" && rel.alias != relName {
 			continue
 		}
+		a.columns = slices.Grow(a.columns, len(rel.cols))
 		for _, c := range rel.cols {
 			col := core.Column{
-				Name:               c.name,
-				TypeOID:            c.typeOID,
-				NotNull:            c.notNull,
+				Name:               c.Name,
+				TypeOID:            c.TypeOID,
+				NotNull:            c.NotNull,
 				SourceClassOID:     rel.classOID,
-				SourceAttributeOID: c.attOID,
+				SourceAttributeOID: c.AttOID,
 			}
-			if name, err := a.cat.TypeName(c.typeOID); err == nil {
+			if name, err := a.cat.TypeName(c.TypeOID); err == nil {
 				col.DataType = name
 			}
-			a.decorateSource(&col, c.attOID, rel.alias)
+			a.decorateSource(&col, c.AttOID, rel.alias)
 			a.columns = append(a.columns, col)
 		}
 	}

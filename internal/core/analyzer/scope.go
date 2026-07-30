@@ -14,19 +14,15 @@ type scope struct {
 type scopeRel struct {
 	alias    string
 	classOID int64
-	cols     []scopeCol
-}
-
-type scopeCol struct {
-	name    string
-	attOID  int64
-	typeOID int64
-	notNull bool
+	// cols is the catalog's column list, held as-is rather than copied into a
+	// scope-local column type.
+	cols []core.ClassColumn
 }
 
 func (a *analyzer) buildScope(from *ast.List) (*scope, error) {
-	sc := &scope{}
-	for _, item := range listItems(from) {
+	items := listItems(from)
+	sc := &scope{rels: make([]scopeRel, 0, len(items))}
+	for _, item := range items {
 		if err := a.appendFromItem(sc, item); err != nil {
 			return nil, err
 		}
@@ -81,7 +77,7 @@ func (a *analyzer) bindRangeVar(rv *ast.RangeVar) (scopeRel, error) {
 		rel.alias = *rv.Alias.Aliasname
 	}
 
-	cols, err := a.classColumns(classOID)
+	cols, err := a.cat.ClassColumns(classOID)
 	if err != nil {
 		return scopeRel{}, err
 	}
@@ -89,48 +85,28 @@ func (a *analyzer) bindRangeVar(rv *ast.RangeVar) (scopeRel, error) {
 	return rel, nil
 }
 
-func (a *analyzer) classColumns(classOID int64) ([]scopeCol, error) {
-	cols, err := a.cat.ClassColumns(classOID)
-	if err != nil {
-		return nil, err
-	}
-	out := make([]scopeCol, 0, len(cols))
-	for _, c := range cols {
-		out = append(out, scopeCol{
-			name:    c.Name,
-			attOID:  c.AttOID,
-			typeOID: c.TypeOID,
-			notNull: c.NotNull,
-		})
-	}
-	return out, nil
-}
-
-func (s *scope) resolveColumn(relation, column string) (rel scopeRel, col scopeCol, ok bool, err error) {
-	var matches []struct {
-		rel scopeRel
-		col scopeCol
-	}
+// resolveColumn finds the single column named column, optionally qualified by
+// relation. It reports an error when more than one relation in scope offers
+// that name.
+func (s *scope) resolveColumn(relation, column string) (rel scopeRel, col core.ClassColumn, ok bool, err error) {
+	found := 0
 	for _, r := range s.rels {
 		if relation != "" && r.alias != relation {
 			continue
 		}
 		for _, c := range r.cols {
-			if c.name == column {
-				matches = append(matches, struct {
-					rel scopeRel
-					col scopeCol
-				}{r, c})
+			if c.Name != column {
+				continue
 			}
+			found++
+			if found > 1 {
+				return scopeRel{}, core.ClassColumn{}, false, fmt.Errorf("ambiguous column reference %q", column)
+			}
+			rel, col = r, c
 		}
 	}
-	if len(matches) == 0 {
-		return scopeRel{}, scopeCol{}, false, nil
+	if found == 0 {
+		return scopeRel{}, core.ClassColumn{}, false, nil
 	}
-	if len(matches) > 1 {
-		return scopeRel{}, scopeCol{}, false, fmt.Errorf("ambiguous column reference %q", column)
-	}
-	return matches[0].rel, matches[0].col, true, nil
+	return rel, col, true, nil
 }
-
-var _ = core.Column{}
