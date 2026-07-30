@@ -276,6 +276,9 @@ func (a *analyzer) typeFuncCall(f *ast.FuncCall) (exprType, error) {
 	}
 
 	if f.AggStar && (name == "count" || name == "count.*") {
+		if overloads, err := a.cat.FindProcs("count", nil); err == nil && len(overloads) > 0 {
+			return exprType{typeOID: overloads[0].ReturnTypeOID, nullable: overloads[0].ReturnNullable}, nil
+		}
 		oid, err := a.cat.TypeOID("int8")
 		if err != nil {
 			return exprType{}, err

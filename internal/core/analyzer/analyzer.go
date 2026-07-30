@@ -21,6 +21,21 @@ func Prepare(cat *core.Catalog, stmt ast.Node) (core.PrepareResult, error) {
 			return core.PrepareResult{}, err
 		}
 		a.command = core.CommandSelect
+	case *ast.InsertStmt:
+		if err := a.analyzeInsert(s); err != nil {
+			return core.PrepareResult{}, err
+		}
+		a.command = core.CommandInsert
+	case *ast.UpdateStmt:
+		if err := a.analyzeUpdate(s); err != nil {
+			return core.PrepareResult{}, err
+		}
+		a.command = core.CommandUpdate
+	case *ast.DeleteStmt:
+		if err := a.analyzeDelete(s); err != nil {
+			return core.PrepareResult{}, err
+		}
+		a.command = core.CommandDelete
 	default:
 		return core.PrepareResult{}, fmt.Errorf("analyzer: unsupported statement %T", stmt)
 	}

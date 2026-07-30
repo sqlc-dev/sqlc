@@ -1,5 +1,7 @@
 [
   {
+    "name": "GetValue",
+    "cmd": ":one",
     "ast": {
       "Stmt": {
         "DistinctClause": null,
@@ -35,8 +37,8 @@
         "Larg": null,
         "Rarg": null
       },
-      "StmtLocation": 23,
-      "StmtLen": 8
+      "StmtLocation": 0,
+      "StmtLen": 31
     }
   }
 ]
