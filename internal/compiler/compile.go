@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	coreschema "github.com/sqlc-dev/sqlc/internal/core/schema"
 	"github.com/sqlc-dev/sqlc/internal/migrations"
 	"github.com/sqlc-dev/sqlc/internal/multierr"
 	"github.com/sqlc-dev/sqlc/internal/opts"
@@ -52,6 +53,16 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 
 		// Skip catalog updates in database-only mode
 		if c.databaseOnlyMode {
+			continue
+		}
+
+		if c.coreCatalog != nil {
+			for i := range stmts {
+				if err := coreschema.Apply(c.coreCatalog, stmts[i].Raw); err != nil {
+					merr.Add(filename, contents, stmts[i].Pos(), err)
+					continue
+				}
+			}
 			continue
 		}
 

@@ -19,6 +19,10 @@ import (
 var debugDumpAST = sqlcdebug.New("dumpast")
 
 func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query, error) {
+	if c.coreCatalog != nil {
+		return c.parseQueryCore(stmt, src)
+	}
+
 	ctx := context.Background()
 
 	if debugDumpAST.Value() == "1" {
