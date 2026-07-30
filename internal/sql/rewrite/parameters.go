@@ -102,7 +102,16 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 			})
 
 			var replace string
-			if engine == config.EngineMySQL || engine == config.EngineSQLite || !dollar {
+			if engine == config.EngineGoogleSQL {
+				// GoogleSQL supports named parameters natively (and Spanner
+				// requires them), so keep the "@name" form rather than
+				// rewriting to a positional placeholder.
+				if param.IsSqlcSlice() {
+					replace = fmt.Sprintf(`/*SLICE:%s*/@%s`, param.Name(), param.Name())
+				} else {
+					replace = fmt.Sprintf("@%s", param.Name())
+				}
+			} else if engine == config.EngineMySQL || engine == config.EngineSQLite || !dollar {
 				if param.IsSqlcSlice() {
 					// This sequence is also replicated in internal/codegen/golang.Field
 					// since it's needed during template generation for replacement
@@ -140,7 +149,9 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 
 			// TODO: This code assumes that @foo::bool is on a single line
 			var replace string
-			if engine == config.EngineMySQL || !dollar {
+			if engine == config.EngineGoogleSQL {
+				replace = fmt.Sprintf("@%s", paramName)
+			} else if engine == config.EngineMySQL || !dollar {
 				replace = "?"
 			} else if engine == config.EngineSQLite {
 				replace = fmt.Sprintf("?%d", argn)
@@ -168,7 +179,9 @@ func NamedParameters(engine config.Engine, raw *ast.RawStmt, numbs map[int]bool,
 
 			// TODO: This code assumes that @foo is on a single line
 			var replace string
-			if engine == config.EngineMySQL || !dollar {
+			if engine == config.EngineGoogleSQL {
+				replace = fmt.Sprintf("@%s", paramName)
+			} else if engine == config.EngineMySQL || !dollar {
 				replace = "?"
 			} else if engine == config.EngineSQLite {
 				replace = fmt.Sprintf("?%d", argn)

@@ -9,6 +9,8 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/named"
+	"github.com/sqlc-dev/sqlc/internal/sql/rewrite"
 	"github.com/sqlc-dev/sqlc/internal/sql/validate"
 )
 
@@ -46,10 +48,21 @@ func (c *Compiler) parseQueryCore(stmt ast.Node, src string) (*Query, error) {
 		return nil, err
 	}
 
+	numbers, dollar, err := validate.ParamRef(raw)
+	if err != nil {
+		return nil, err
+	}
+	rewritten, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw, numbers, dollar)
+	expanded, err := source.Mutate(rawSQL, edits)
+	if err != nil {
+		return nil, err
+	}
+
 	var cols []*Column
 	var params []Parameter
-	if _, ok := raw.Stmt.(*ast.SelectStmt); ok {
-		res, err := coreanalyzer.Prepare(c.coreCatalog, raw)
+	switch rewritten.Stmt.(type) {
+	case *ast.SelectStmt, *ast.InsertStmt, *ast.UpdateStmt, *ast.DeleteStmt:
+		res, err := coreanalyzer.Prepare(c.coreCatalog, rewritten)
 		if err != nil {
 			return nil, err
 		}
@@ -57,11 +70,11 @@ func (c *Compiler) parseQueryCore(stmt ast.Node, src string) (*Query, error) {
 			cols = append(cols, coreColumn(col))
 		}
 		for _, p := range res.Parameters {
-			params = append(params, Parameter{Number: p.Number, Column: coreParamColumn(p)})
+			params = append(params, Parameter{Number: p.Number, Column: coreParamColumn(p, namedParams)})
 		}
 	}
 
-	trimmed, comments, err := source.StripComments(rawSQL)
+	trimmed, comments, err := source.StripComments(expanded)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +113,7 @@ func coreColumn(c core.Column) *Column {
 	return col
 }
 
-func coreParamColumn(p core.Parameter) *Column {
+func coreParamColumn(p core.Parameter, params *named.ParamSet) *Column {
 	col := &Column{
 		Name:     p.Name,
 		DataType: p.DataType,
@@ -109,6 +122,13 @@ func coreParamColumn(p core.Parameter) *Column {
 	if p.Source != nil && p.Source.Table != "" {
 		col.Table = &ast.TableName{Schema: p.Source.Schema, Name: p.Source.Table}
 		col.OriginalName = p.Source.Column
+	}
+	if col.Name == "" {
+		if name, ok := params.NameFor(p.Number); ok && name != "" {
+			col.Name = name
+		} else if p.Source != nil {
+			col.Name = p.Source.Column
+		}
 	}
 	return col
 }

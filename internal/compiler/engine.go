@@ -10,6 +10,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/dbmanager"
 	"github.com/sqlc-dev/sqlc/internal/engine/clickhouse"
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
+	"github.com/sqlc-dev/sqlc/internal/engine/googlesql"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	pganalyze "github.com/sqlc-dev/sqlc/internal/engine/postgresql/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
@@ -121,6 +122,14 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 		cat, err := core.New(clickhouse.Dialect())
 		if err != nil {
 			return nil, fmt.Errorf("clickhouse: init catalog: %w", err)
+		}
+		c.coreCatalog = cat
+	case config.EngineGoogleSQL:
+		c.parser = googlesql.NewParser()
+		c.selector = newDefaultSelector()
+		cat, err := core.New(googlesql.Dialect())
+		if err != nil {
+			return nil, fmt.Errorf("googlesql: init catalog: %w", err)
 		}
 		c.coreCatalog = cat
 	default:

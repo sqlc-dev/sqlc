@@ -419,6 +419,7 @@ func (c *cc) convertExpr(node zjast.Node) ast.Node {
 			op = "<<"
 		}
 		return &ast.A_Expr{
+			Kind:     ast.A_Expr_Kind_OP,
 			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: op}}},
 			Lexpr:    c.convertExpr(n.Lhs),
 			Rexpr:    c.convertExpr(n.Rhs),
@@ -546,6 +547,7 @@ func (c *cc) convertUnaryExpression(n *zjast.UnaryExpression) ast.Node {
 		}
 	}
 	return &ast.A_Expr{
+		Kind:     ast.A_Expr_Kind_OP,
 		Name:     &ast.List{Items: []ast.Node{&ast.String{Str: n.Op}}},
 		Rexpr:    c.convertExpr(n.Operand),
 		Location: n.Pos(),
@@ -570,6 +572,7 @@ func (c *cc) convertBinaryExpression(n *zjast.BinaryExpression) ast.Node {
 	}
 
 	var expr ast.Node = &ast.A_Expr{
+		Kind:     ast.A_Expr_Kind_OP,
 		Name:     &ast.List{Items: []ast.Node{&ast.String{Str: n.Op}}},
 		Lexpr:    c.convertExpr(n.Left),
 		Rexpr:    c.convertExpr(n.Right),
