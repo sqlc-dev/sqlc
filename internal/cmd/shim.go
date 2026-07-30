@@ -4,7 +4,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/compiler"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/config/convert"
-	coreshim "github.com/sqlc-dev/sqlc/internal/core/shim"
 	"github.com/sqlc-dev/sqlc/internal/info"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
@@ -225,15 +224,9 @@ func pluginQueryParam(p compiler.Parameter) *plugin.Parameter {
 }
 
 func codeGenRequest(r *compiler.Result, settings config.CombinedSettings) *plugin.GenerateRequest {
-	var cat *plugin.Catalog
-	if r.CoreCatalog != nil {
-		cat = coreshim.PluginCatalog(r.CoreCatalog)
-	} else {
-		cat = pluginCatalog(r.Catalog)
-	}
 	return &plugin.GenerateRequest{
 		Settings:    pluginSettings(r, settings),
-		Catalog:     cat,
+		Catalog:     pluginCatalog(r.Catalog),
 		Queries:     pluginQueries(r),
 		SqlcVersion: info.Version,
 	}

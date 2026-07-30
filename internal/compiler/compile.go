@@ -146,8 +146,7 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 	}
 
 	return &Result{
-		Catalog:     c.catalog,
-		CoreCatalog: c.coreCatalog,
-		Queries:     q,
+		Catalog: c.catalog,
+		Queries: q,
 	}, nil
 }
