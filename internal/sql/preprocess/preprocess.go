@@ -165,16 +165,21 @@ type occurrence struct {
 }
 
 // File rewrites every sqlc construct in src to native SQL for the given engine.
-func File(engine config.Engine, src string) (*Result, error) {
+//
+// Engines that are not preprocessed — GoogleSQL and ClickHouse, which handle
+// their own parameter syntax — get the source back unchanged, with an empty
+// side table. sqlc.arg() and friends are not rewritten for them, so they reach
+// the parser as the function calls they look like.
+func File(engine config.Engine, src string) *Result {
 	d, ok := DialectFor(engine)
 	if !ok {
-		return nil, fmt.Errorf("preprocess: unknown engine: %s", engine)
+		return &Result{Text: src}
 	}
 	return Dialected(d, src)
 }
 
 // Dialected rewrites src using an explicit dialect.
-func Dialected(d Dialect, src string) (*Result, error) {
+func Dialected(d Dialect, src string) *Result {
 	l := &lexer{d: d, src: src}
 	res := &Result{}
 
@@ -257,7 +262,7 @@ func Dialected(d Dialect, src string) (*Result, error) {
 	}
 
 	res.Text = b.String()
-	return res, nil
+	return res
 }
 
 func firstError(occs []occurrence) *sqlerr.Error {
@@ -372,13 +377,6 @@ func (d Dialect) replacement(occ *occurrence) string {
 		return occ.ident
 	}
 	switch d.Style {
-	case StyleAtName:
-		// GoogleSQL names its parameters, so "@name" is already native and a
-		// user-written one is rewritten to itself.
-		if occ.kind == kindSlice {
-			return fmt.Sprintf("/*SLICE:%s*/@%s", occ.name, occ.name)
-		}
-		return "@" + occ.name
 	case StyleDollar:
 		// PostgreSQL passes a slice as a single array parameter, so it needs no
 		// expansion marker.

@@ -20,8 +20,11 @@ Native placeholders by dialect:
 | postgresql | `$1` | sqlc syntax |
 | mysql | `?` | user variable, left alone |
 | sqlite | `?1` | sqlc syntax |
-| googlesql | `@name` | native, left in place |
-| clickhouse | `?` | not a parameter |
+
+GoogleSQL and ClickHouse are deliberately absent. They handle their own
+parameter syntax, so `File` returns their source unchanged and sqlc syntax is
+not available to them — `sqlc.arg()` reaches the parser as the function call it
+looks like.
 
 ## How it works
 
@@ -31,8 +34,9 @@ comments (`--`, `/* */`, `#`), string literals, quoted identifiers, backticks
 and PostgreSQL dollar-quoted strings. `Dialect` (dialect.go) is the single
 place those lexical rules live.
 
-`File(engine, src)` walks the whole file, splits it at top-level semicolons and,
-for each statement:
+`File(engine, src)` looks up the dialect; an engine with no entry gets its
+source back untouched. Otherwise it walks the whole file, splits it at
+top-level semicolons and, for each statement:
 
 1. `scan` collects every sqlc construct **and** every native placeholder, in
    source order.
@@ -96,13 +100,15 @@ go test ./internal/sql/preprocess -update
 ```
 
 The cases cover every shape of sqlc syntax that appears in
-`internal/endtoend`, per engine — each function against a bare reference, a
-string constant and a quoted identifier, the placeholder styles, and the
-constructs that must be left alone (comments, literals, MySQL user variables
-and `$1`, PostgreSQL's `@>` and `?` operators). When you add a shape to the
-corpus, add it here too.
+`internal/endtoend`, per preprocessed engine — each function against a bare
+reference, a string constant and a quoted identifier, the placeholder styles,
+and the constructs that must be left alone (comments, literals, MySQL user
+variables and `$1`, PostgreSQL's `@>` and `?` operators). When you add a shape
+to the corpus, add it here too.
 
 ## Adding a dialect
 
 Add an entry to `dialects` in dialect.go. Nothing else in the codebase needs to
-change for `sqlc.arg`/`narg`/`slice`/`embed` to work for a new engine.
+change for `sqlc.arg`/`narg`/`slice`/`embed` to work for a new engine — but only
+add one if the engine should support sqlc syntax at all. Leaving an engine out
+is a deliberate choice, not an oversight.

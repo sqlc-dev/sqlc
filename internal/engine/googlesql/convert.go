@@ -514,11 +514,11 @@ func (c *cc) convertIntLiteral(n *zjast.IntLiteral) ast.Node {
 
 // convertParameterExpr converts "@name" and "?" query parameters.
 //
-// Both become ParamRef nodes. GoogleSQL names its parameters, so repeated uses
-// of a name share a number; positional parameters are numbered by their 1-based
-// position in the statement. The compiler replaces these numbers with the ones
-// the preprocessor assigned in source order, so they only matter when a
-// statement is converted on its own.
+// Both become ParamRef nodes. "@name" is native GoogleSQL syntax rather than
+// sqlc syntax, so nothing rewrites it before the parser runs and the numbering
+// here is what the rest of the pipeline sees: repeated uses of a name share a
+// number, and positional parameters are numbered by their 1-based position in
+// the statement.
 func (c *cc) convertParameterExpr(n *zjast.ParameterExpr) ast.Node {
 	if n.Name != nil {
 		number, ok := c.namedParams[n.Name.Name]

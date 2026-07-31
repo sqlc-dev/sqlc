@@ -10,12 +10,10 @@ type Style int
 const (
 	// StyleDollar numbers parameters as $1, $2, ... (PostgreSQL)
 	StyleDollar Style = iota
-	// StyleQuestion uses an unnumbered ? for every parameter (MySQL, ClickHouse)
+	// StyleQuestion uses an unnumbered ? for every parameter (MySQL)
 	StyleQuestion
 	// StyleOrdinal numbers parameters as ?1, ?2, ... (SQLite)
 	StyleOrdinal
-	// StyleAtName keeps parameters named as @name (GoogleSQL)
-	StyleAtName
 )
 
 // Dialect describes the lexical rules the preprocessor needs to walk a query
@@ -90,31 +88,19 @@ var dialects = map[config.Engine]Dialect{
 		Backtick:  true,
 		Backslash: true,
 	},
-	config.EngineGoogleSQL: {
-		Style:     StyleAtName,
-		AtSign:    true,
-		Question:  true,
-		Backtick:  true,
-		Backslash: true,
-	},
-	config.EngineClickHouse: {
-		Style:       StyleQuestion,
-		Question:    true,
-		Backtick:    true,
-		HashComment: true,
-		Backslash:   true,
-	},
 }
 
-// DialectFor returns the lexical rules for an engine.
+// DialectFor returns the lexical rules for an engine, and whether the engine is
+// preprocessed at all. GoogleSQL and ClickHouse are not: they handle their own
+// parameter syntax, so their queries reach the parser unchanged.
 func DialectFor(engine config.Engine) (Dialect, bool) {
 	d, ok := dialects[engine]
 	return d, ok
 }
 
 // hasNamedSupport reports whether repeated uses of the same parameter name can
-// share a single placeholder. MySQL and ClickHouse send an argument per "?", so
-// every occurrence needs its own number.
+// share a single placeholder. MySQL sends an argument per "?", so every
+// occurrence needs its own number.
 func (d Dialect) hasNamedSupport() bool {
 	return d.Style != StyleQuestion
 }

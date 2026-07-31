@@ -37,10 +37,7 @@ func TestRewrite(t *testing.T) {
 			engine := config.Engine(filepath.Dir(dir))
 
 			input := readFile(t, filepath.Join(path, "input.sql"))
-			res, err := preprocess.File(engine, input)
-			if err != nil {
-				t.Fatalf("preprocess.File: %s", err)
-			}
+			res := preprocess.File(engine, input)
 
 			compare(t, filepath.Join(path, "output.sql"), res.Text)
 			compare(t, filepath.Join(path, "side_table.json"), sideTable(res))

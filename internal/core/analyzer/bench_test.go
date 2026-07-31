@@ -4,13 +4,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/core/analyzer"
 	coreschema "github.com/sqlc-dev/sqlc/internal/core/schema"
 	"github.com/sqlc-dev/sqlc/internal/engine/googlesql"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
-	"github.com/sqlc-dev/sqlc/internal/sql/preprocess"
 )
 
 const benchSchema = `
@@ -49,14 +47,11 @@ func parseAll(t testing.TB, src string) []ast.Node {
 	return out
 }
 
-// parseQueries mirrors the compiler pipeline: rewrite sqlc syntax to native SQL,
-// then parse.
+// parseQueries mirrors the compiler pipeline. GoogleSQL is not preprocessed —
+// "@name" is native syntax the converter turns into a ParamRef — so parsing is
+// all it takes.
 func parseQueries(t testing.TB, src string) []ast.Node {
-	res, err := preprocess.File(config.EngineGoogleSQL, src)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return parseAll(t, res.Text)
+	return parseAll(t, src)
 }
 
 func newBenchCatalog(t testing.TB) (*core.Catalog, []ast.Node) {

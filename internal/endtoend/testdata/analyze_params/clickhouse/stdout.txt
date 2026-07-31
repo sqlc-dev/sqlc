@@ -22,7 +22,7 @@
       {
         "number": 1,
         "column": {
-          "name": "event_id",
+          "name": "id",
           "data_type": "uint64",
           "not_null": true,
           "is_array": false,
@@ -64,9 +64,9 @@
       {
         "number": 2,
         "column": {
-          "name": "min_amount",
+          "name": "amount",
           "data_type": "float64",
-          "not_null": false,
+          "not_null": true,
           "is_array": false,
           "table": "events"
         }

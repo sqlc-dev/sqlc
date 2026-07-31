@@ -107,11 +107,7 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 
 		// sqlc syntax is not SQL. Rewrite it to native placeholders before the
 		// engine parser ever sees the query, so parsers only handle SQL.
-		pp, err := preprocess.File(c.conf.Engine, src)
-		if err != nil {
-			merr.Add(filename, src, 0, err)
-			continue
-		}
+		pp := preprocess.File(c.conf.Engine, src)
 
 		stmts, err := c.parser.Parse(strings.NewReader(pp.Text))
 		if err != nil {
