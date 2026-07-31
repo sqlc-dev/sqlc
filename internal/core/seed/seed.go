@@ -1,10 +1,16 @@
 // Package seed builds a core catalog for a SQL dialect from a declarative
 // description of its type system: the types it defines, the operators and
 // casts between them, and the functions it ships with.
+//
+// A dialect is described by a JSON document, which each engine package embeds
+// as its dialect.json and hands to Dialect. Load parses one.
 package seed
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/core"
@@ -16,66 +22,108 @@ import (
 // that a schema may use in a column definition; each becomes its own catalog
 // type, with implicit casts registered between them.
 type Type struct {
-	Name     string
-	Category string
-	Aliases  []string
+	Name     string   `json:"name"`
+	Category string   `json:"category"`
+	Aliases  []string `json:"aliases,omitempty"`
 }
 
 // Operator is a single operator overload.
 type Operator struct {
-	Name   string
-	Left   string
-	Right  string
-	Result string
+	Name   string `json:"name"`
+	Left   string `json:"left"`
+	Right  string `json:"right"`
+	Result string `json:"result"`
 }
 
 // Cast is a single cast between two types. Context is 'i'mplicit, 'a'ssignment
 // or 'e'xplicit.
 type Cast struct {
-	Source  string
-	Target  string
-	Context string
+	Source  string `json:"source"`
+	Target  string `json:"target"`
+	Context string `json:"context,omitempty"`
+}
+
+// Function is a function the dialect ships with. Kind is 'f'unction,
+// 'a'ggregate, 'w'indow or 'p'rocedure.
+type Function struct {
+	Name     string   `json:"name"`
+	Kind     string   `json:"kind,omitempty"`
+	Args     []string `json:"args,omitempty"`
+	Returns  string   `json:"returns"`
+	Nullable bool     `json:"nullable,omitempty"`
 }
 
 // Spec describes a dialect. Apply turns it into catalog rows.
 type Spec struct {
 	// Dialect is the name recorded in the catalog, e.g. "postgresql".
-	Dialect string
+	Dialect string `json:"dialect"`
 
 	// Types are the dialect's types.
-	Types []Type
+	Types []Type `json:"types"`
 
 	// Const names the type each kind of literal takes on, keyed by the
 	// core.Const* constants. Kinds left out fall back to PostgreSQL's names.
-	Const map[string]string
+	Const map[string]string `json:"const,omitempty"`
 
 	// Comparison operators are registered as (T, T) -> Bool for every type in
 	// ComparisonCategories.
-	Comparison           []string
-	ComparisonCategories string
+	Comparison           []string `json:"comparison,omitempty"`
+	ComparisonCategories string   `json:"comparison_categories,omitempty"`
 
 	// Arithmetic operators are registered as (T, T) -> T for every type in
 	// ArithmeticCategories.
-	Arithmetic           []string
-	ArithmeticCategories string
+	Arithmetic           []string `json:"arithmetic,omitempty"`
+	ArithmeticCategories string   `json:"arithmetic_categories,omitempty"`
 
 	// Bool names the type comparisons return.
-	Bool string
+	Bool string `json:"bool,omitempty"`
 
 	// Operators and Casts are registered as given, on top of the ones the
 	// category rules above generate.
-	Operators []Operator
-	Casts     []Cast
+	Operators []Operator `json:"operators,omitempty"`
+	Casts     []Cast     `json:"casts,omitempty"`
 
 	// CastCategories lists the categories whose types are all implicitly
 	// castable to one another, so that an operator on two spellings of the
 	// same kind of value resolves. "*" makes every seeded type implicitly
 	// castable to every other, for dialects that compare across categories.
-	CastCategories string
+	CastCategories string `json:"cast_categories,omitempty"`
 
-	// Funcs are the dialect's built-in functions, in the form the engine
-	// packages already describe them.
-	Funcs []*catalog.Function
+	// Functions are the dialect's built-in functions.
+	Functions []Function `json:"functions,omitempty"`
+
+	// Funcs are further built-in functions, in the form the engine packages
+	// already describe them. A dialect whose function catalog is generated
+	// passes it here rather than restating it as JSON.
+	Funcs []*catalog.Function `json:"-"`
+}
+
+// Load parses a dialect description. An unknown field is an error rather than
+// something to ignore, so that a misspelled key is caught where it is written.
+func Load(data []byte) (Spec, error) {
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.DisallowUnknownFields()
+	var s Spec
+	if err := dec.Decode(&s); err != nil {
+		return Spec{}, fmt.Errorf("seed: parse dialect: %w", err)
+	}
+	if s.Dialect == "" {
+		return Spec{}, fmt.Errorf("seed: dialect has no name")
+	}
+	return s, nil
+}
+
+// Dialect returns the catalog option that seeds the dialect the JSON
+// describes, together with any function catalog the engine generates.
+func Dialect(data []byte, funcs []*catalog.Function) core.Option {
+	return core.WithSeed(func(cat *core.Catalog) error {
+		spec, err := Load(data)
+		if err != nil {
+			return err
+		}
+		spec.Funcs = funcs
+		return spec.Apply(cat)
+	})
 }
 
 // Apply registers everything the spec describes on cat.
@@ -101,6 +149,9 @@ func (s Spec) Apply(cat *core.Catalog) error {
 		return err
 	}
 	if err := b.casts(s); err != nil {
+		return err
+	}
+	if err := b.functions(s); err != nil {
 		return err
 	}
 	return b.funcs(s)
@@ -175,8 +226,15 @@ func (b *builder) createType(name, category string) (int64, error) {
 	return oid, nil
 }
 
+// constKinds are the kinds of literal a dialect may name a type for.
+var constKinds = []string{core.ConstInteger, core.ConstFloat, core.ConstString, core.ConstBool}
+
 func (b *builder) consts(s Spec) error {
 	for kind, name := range s.Const {
+		if !slices.Contains(constKinds, kind) {
+			return fmt.Errorf("seed %s: unknown constant kind %q, want one of %s",
+				s.Dialect, kind, strings.Join(constKinds, ", "))
+		}
 		if _, ok := b.oids[strings.ToLower(name)]; !ok {
 			return fmt.Errorf("seed %s: constant %s names unknown type %q", s.Dialect, kind, name)
 		}
@@ -307,6 +365,34 @@ func (b *builder) cast(c Cast) error {
 	})
 }
 
+func (b *builder) functions(s Spec) error {
+	for _, fn := range s.Functions {
+		returnOID, err := b.funcTypeName(fn.Returns)
+		if err != nil {
+			return fmt.Errorf("seed %s function %q: %w", s.Dialect, fn.Name, err)
+		}
+		args := make([]core.ProcArg, 0, len(fn.Args))
+		for _, arg := range fn.Args {
+			argOID, err := b.funcTypeName(arg)
+			if err != nil {
+				return fmt.Errorf("seed %s function %q: %w", s.Dialect, fn.Name, err)
+			}
+			args = append(args, core.ProcArg{TypeOID: argOID})
+		}
+		if _, err := b.cat.CreateProc(core.ProcSpec{
+			Name:           fn.Name,
+			DialectOID:     b.dialectOID,
+			Kind:           fn.Kind,
+			ReturnTypeOID:  returnOID,
+			ReturnNullable: fn.Nullable,
+			Args:           args,
+		}); err != nil {
+			return fmt.Errorf("seed %s function %q: %w", s.Dialect, fn.Name, err)
+		}
+	}
+	return nil
+}
+
 func (b *builder) funcs(s Spec) error {
 	for _, fn := range s.Funcs {
 		returnOID, err := b.funcType(fn.ReturnType)
@@ -342,8 +428,15 @@ func (b *builder) funcs(s Spec) error {
 // pseudo types ("any", "record") and types no dialect spec bothers to list, so
 // an unknown name is registered rather than rejected.
 func (b *builder) funcType(tn *ast.TypeName) (int64, error) {
-	if tn == nil || tn.Name == "" {
+	if tn == nil {
 		return 0, nil
 	}
-	return b.createType(tn.Name, "U")
+	return b.funcTypeName(tn.Name)
+}
+
+func (b *builder) funcTypeName(name string) (int64, error) {
+	if name == "" {
+		return 0, nil
+	}
+	return b.createType(name, "U")
 }

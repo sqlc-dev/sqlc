@@ -1,0 +1,57 @@
+{
+  "dialect": "mysql",
+  "types": [
+    { "name": "bool", "category": "B", "aliases": ["boolean"] },
+
+    { "name": "tinyint", "category": "N" },
+    { "name": "smallint", "category": "N" },
+    { "name": "mediumint", "category": "N" },
+    { "name": "int", "category": "N", "aliases": ["integer"] },
+    { "name": "bigint", "category": "N", "aliases": ["signed", "unsigned"] },
+    { "name": "float", "category": "N" },
+    { "name": "double", "category": "N", "aliases": ["double precision", "real"] },
+    { "name": "decimal", "category": "N", "aliases": ["numeric", "dec", "fixed"] },
+    { "name": "bit", "category": "N" },
+
+    { "name": "char", "category": "S" },
+    { "name": "varchar", "category": "S" },
+    { "name": "tinytext", "category": "S" },
+    { "name": "text", "category": "S" },
+    { "name": "mediumtext", "category": "S" },
+    { "name": "longtext", "category": "S" },
+    { "name": "enum", "category": "S" },
+    { "name": "set", "category": "S" },
+
+    { "name": "binary", "category": "U" },
+    { "name": "varbinary", "category": "U" },
+    { "name": "tinyblob", "category": "U" },
+    { "name": "blob", "category": "U" },
+    { "name": "mediumblob", "category": "U" },
+    { "name": "longblob", "category": "U" },
+    { "name": "json", "category": "U" },
+    { "name": "geometry", "category": "U" },
+
+    { "name": "date", "category": "D" },
+    { "name": "datetime", "category": "D" },
+    { "name": "timestamp", "category": "D" },
+    { "name": "time", "category": "D" },
+    { "name": "year", "category": "D" }
+  ],
+  "const": {
+    "integer": "int",
+    "float": "decimal",
+    "string": "text",
+    "bool": "bool"
+  },
+  "bool": "bool",
+  "comparison": ["=", "<>", "!=", "<", "<=", ">", ">=", "<=>"],
+  "comparison_categories": "BNSDU",
+  "arithmetic": ["+", "-", "*", "/", "%", "DIV"],
+  "arithmetic_categories": "N",
+  "cast_categories": "NSD",
+  "operators": [
+    { "name": "~~", "left": "text", "right": "text", "result": "bool" },
+    { "name": "!~~", "left": "text", "right": "text", "result": "bool" },
+    { "name": "REGEXP", "left": "text", "right": "text", "result": "bool" }
+  ]
+}

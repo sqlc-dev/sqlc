@@ -1,0 +1,46 @@
+{
+  "dialect": "sqlite",
+  "types": [
+    {
+      "name": "integer",
+      "category": "N",
+      "aliases": [
+        "int", "tinyint", "smallint", "mediumint", "bigint",
+        "unsigned big int", "int2", "int8"
+      ]
+    },
+    { "name": "real", "category": "N", "aliases": ["double", "double precision", "float"] },
+    { "name": "numeric", "category": "N", "aliases": ["decimal"] },
+    { "name": "boolean", "category": "B", "aliases": ["bool"] },
+    {
+      "name": "text",
+      "category": "S",
+      "aliases": [
+        "character", "varchar", "varying character", "nchar",
+        "native character", "nvarchar", "clob"
+      ]
+    },
+    { "name": "blob", "category": "U" },
+    { "name": "any", "category": "U" },
+    { "name": "date", "category": "D" },
+    { "name": "datetime", "category": "D" },
+    { "name": "timestamp", "category": "D" }
+  ],
+  "const": {
+    "integer": "integer",
+    "float": "real",
+    "string": "text",
+    "bool": "boolean"
+  },
+  "bool": "boolean",
+  "comparison": ["=", "==", "<>", "!=", "<", "<=", ">", ">=", "IS", "IS NOT"],
+  "comparison_categories": "BNSDU",
+  "arithmetic": ["+", "-", "*", "/", "%"],
+  "arithmetic_categories": "N",
+  "cast_categories": "*",
+  "operators": [
+    { "name": "||", "left": "text", "right": "text", "result": "text" },
+    { "name": "~~", "left": "text", "right": "text", "result": "boolean" },
+    { "name": "!~~", "left": "text", "right": "text", "result": "boolean" }
+  ]
+}
