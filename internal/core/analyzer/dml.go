@@ -3,6 +3,7 @@ package analyzer
 import (
 	"fmt"
 
+	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
@@ -89,12 +90,12 @@ func (a *analyzer) relationScope(relations, extra *ast.List) (*scope, error) {
 	return sc, nil
 }
 
-func insertTargets(rel scopeRel, cols *ast.List) ([]scopeCol, error) {
+func insertTargets(rel scopeRel, cols *ast.List) ([]core.ClassColumn, error) {
 	items := listItems(cols)
 	if len(items) == 0 {
 		return rel.cols, nil
 	}
-	out := make([]scopeCol, 0, len(items))
+	out := make([]core.ClassColumn, 0, len(items))
 	for _, item := range items {
 		rt, ok := item.(*ast.ResTarget)
 		if !ok || rt.Name == nil {
@@ -109,7 +110,7 @@ func insertTargets(rel scopeRel, cols *ast.List) ([]scopeCol, error) {
 	return out, nil
 }
 
-func (a *analyzer) bindInsertValues(n ast.Node, rel scopeRel, targets []scopeCol) error {
+func (a *analyzer) bindInsertValues(n ast.Node, rel scopeRel, targets []core.ClassColumn) error {
 	if n == nil {
 		return nil
 	}
@@ -126,7 +127,7 @@ func (a *analyzer) bindInsertValues(n ast.Node, rel scopeRel, targets []scopeCol
 			continue
 		}
 		for i, v := range values.Items {
-			var target *scopeCol
+			var target *core.ClassColumn
 			if i < len(targets) {
 				target = &targets[i]
 			}
@@ -138,7 +139,7 @@ func (a *analyzer) bindInsertValues(n ast.Node, rel scopeRel, targets []scopeCol
 	return nil
 }
 
-func (a *analyzer) bindValue(rel scopeRel, target *scopeCol, v ast.Node) error {
+func (a *analyzer) bindValue(rel scopeRel, target *core.ClassColumn, v ast.Node) error {
 	if target != nil {
 		switch value := v.(type) {
 		case *ast.ParamRef:
@@ -165,21 +166,21 @@ func (a *analyzer) projectReturning(l *ast.List) error {
 	return nil
 }
 
-func findColumn(rel scopeRel, name string) (scopeCol, bool) {
+func findColumn(rel scopeRel, name string) (core.ClassColumn, bool) {
 	for _, col := range rel.cols {
-		if col.name == name {
+		if col.Name == name {
 			return col, true
 		}
 	}
-	return scopeCol{}, false
+	return core.ClassColumn{}, false
 }
 
-func columnType(rel scopeRel, col scopeCol) exprType {
+func columnType(rel scopeRel, col core.ClassColumn) exprType {
 	return exprType{
-		typeOID:            col.typeOID,
-		nullable:           !col.notNull,
+		typeOID:            col.TypeOID,
+		nullable:           !col.NotNull,
 		sourceClassOID:     rel.classOID,
-		sourceAttributeOID: col.attOID,
+		sourceAttributeOID: col.AttOID,
 		sourceTableAlias:   rel.alias,
 	}
 }

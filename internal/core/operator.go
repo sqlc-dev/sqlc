@@ -42,6 +42,8 @@ type OperatorOverload struct {
 	ProcOID       int64
 }
 
+// FindOperators returns the overloads of name matching the given operand types,
+// where a zero OID means "any".
 func (c *Catalog) FindOperators(name string, leftTypeOID, rightTypeOID int64) ([]OperatorOverload, error) {
 	rows, err := c.q.FindOperators(context.Background(), catalogdb.FindOperatorsParams{
 		Name:         name,

@@ -154,6 +154,7 @@ type ClassColumn struct {
 	NotNull bool
 }
 
+// ClassColumns returns a relation's columns in ordinal order.
 func (c *Catalog) ClassColumns(classOID int64) ([]ClassColumn, error) {
 	rows, err := c.q.ClassAttributes(context.Background(), classOID)
 	if err != nil {
