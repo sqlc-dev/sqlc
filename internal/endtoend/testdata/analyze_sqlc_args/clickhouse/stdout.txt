@@ -1,0 +1,76 @@
+[
+  {
+    "name": "GetEvent",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "data_type": "uint64",
+        "not_null": true,
+        "is_array": false,
+        "table": "events"
+      },
+      {
+        "name": "name",
+        "data_type": "string",
+        "not_null": true,
+        "is_array": false,
+        "table": "events"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "event_id",
+          "data_type": "uint64",
+          "not_null": true,
+          "is_array": false,
+          "table": "events"
+        }
+      }
+    ]
+  },
+  {
+    "name": "FilterEvents",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "data_type": "uint64",
+        "not_null": true,
+        "is_array": false,
+        "table": "events"
+      },
+      {
+        "name": "name",
+        "data_type": "string",
+        "not_null": true,
+        "is_array": false,
+        "table": "events"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "data_type": "string",
+          "not_null": true,
+          "is_array": false,
+          "table": "events"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "min_amount",
+          "data_type": "float64",
+          "not_null": false,
+          "is_array": false,
+          "table": "events"
+        }
+      }
+    ]
+  }
+]

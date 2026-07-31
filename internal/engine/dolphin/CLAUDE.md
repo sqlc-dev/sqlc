@@ -199,13 +199,10 @@ func (p *Parser) Param(n int) string {
 **Cause**: New AST node type not handled in `astutils/walk.go` or `astutils/rewrite.go`
 **Solution**: Add case for the node type in both files
 
-### Issue: sqlc.arg() not converted in ON DUPLICATE KEY UPDATE
-**Cause**: `InsertStmt` case in `rewrite.go` didn't traverse `OnDuplicateKeyUpdate`
-**Solution**: Add `a.apply(n, "OnDuplicateKeyUpdate", nil, n.OnDuplicateKeyUpdate)`
-
 ### Issue: MySQL @variable being treated as parameter
-**Cause**: Converting `VariableExpr` to `A_Expr` with `@` operator
-**Solution**: Use `ast.VariableExpr` instead, which is not detected by `named.IsParamSign()`
+**Cause**: The preprocessor's dialect said `@name` is sqlc syntax
+**Solution**: MySQL sets `AtSign: false` in `internal/sql/preprocess/dialect.go`, so
+`@user_id` is left alone before the parser ever sees it
 
 ### Issue: Type length appearing incorrectly (e.g., datetime(39))
 **Cause**: Using internal `flen` for all types

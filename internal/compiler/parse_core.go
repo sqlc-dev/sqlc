@@ -10,15 +10,11 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
-	"github.com/sqlc-dev/sqlc/internal/sql/rewrite"
+	"github.com/sqlc-dev/sqlc/internal/sql/preprocess"
 	"github.com/sqlc-dev/sqlc/internal/sql/validate"
 )
 
-func (c *Compiler) parseQueryCore(stmt ast.Node, src string) (*Query, error) {
-	raw, ok := stmt.(*ast.RawStmt)
-	if !ok {
-		return nil, errors.New("node is not a statement")
-	}
+func (c *Compiler) parseQueryCore(raw *ast.RawStmt, src string, pre *preprocess.Statement) (*Query, error) {
 	rawSQL, err := source.Pluck(src, raw.StmtLocation, raw.StmtLen)
 	if err != nil {
 		return nil, err
@@ -48,21 +44,17 @@ func (c *Compiler) parseQueryCore(stmt ast.Node, src string) (*Query, error) {
 		return nil, err
 	}
 
-	numbers, dollar, err := validate.ParamRef(raw)
-	if err != nil {
-		return nil, err
+	if pre.ParamErr != nil {
+		return nil, pre.ParamErr
 	}
-	rewritten, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw, numbers, dollar)
-	expanded, err := source.Mutate(rawSQL, edits)
-	if err != nil {
-		return nil, err
-	}
+	namedParams := pre.Params
+	expanded := rawSQL
 
 	var cols []*Column
 	var params []Parameter
-	switch rewritten.Stmt.(type) {
+	switch raw.Stmt.(type) {
 	case *ast.SelectStmt, *ast.InsertStmt, *ast.UpdateStmt, *ast.DeleteStmt:
-		res, err := coreanalyzer.Prepare(c.coreCatalog, rewritten)
+		res, err := coreanalyzer.Prepare(c.coreCatalog, raw)
 		if err != nil {
 			return nil, err
 		}
@@ -123,12 +115,17 @@ func coreParamColumn(p core.Parameter, params *named.ParamSet) *Column {
 		col.Table = &ast.TableName{Schema: p.Source.Schema, Name: p.Source.Table}
 		col.OriginalName = p.Source.Column
 	}
-	if col.Name == "" {
-		if name, ok := params.NameFor(p.Number); ok && name != "" {
-			col.Name = name
-		} else if p.Source != nil {
-			col.Name = p.Source.Column
-		}
+	if col.Name == "" && p.Source != nil {
+		col.Name = p.Source.Column
+	}
+	// Merge in what the user asked for: sqlc.narg() makes the parameter
+	// nullable and sqlc.slice() marks it as a slice, whichever way the
+	// analyzer typed it.
+	if param, isNamed := params.FetchMerge(p.Number, named.NewInferredParam(col.Name, p.NotNull)); isNamed {
+		col.Name = param.Name()
+		col.NotNull = param.NotNull()
+		col.IsSqlcSlice = param.IsSqlcSlice()
+		col.IsNamedParam = true
 	}
 	return col
 }

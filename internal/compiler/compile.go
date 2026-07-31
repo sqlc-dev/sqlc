@@ -16,6 +16,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/rpc"
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/preprocess"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 )
@@ -103,18 +104,33 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 			continue
 		}
 		src := string(blob)
-		stmts, err := c.parser.Parse(strings.NewReader(src))
+
+		// sqlc syntax is not SQL. Rewrite it to native placeholders before the
+		// engine parser ever sees the query, so parsers only handle SQL.
+		pp, err := preprocess.File(c.conf.Engine, src)
+		if err != nil {
+			merr.Add(filename, src, 0, err)
+			continue
+		}
+
+		stmts, err := c.parser.Parse(strings.NewReader(pp.Text))
 		if err != nil {
 			merr.Add(filename, src, 0, err)
 			continue
 		}
 		for _, stmt := range stmts {
-			query, err := c.parseQuery(stmt.Raw, src, o)
+			query, err := c.parseQuery(stmt.Raw, pp, o)
 			if err != nil {
 				var e *sqlerr.Error
 				loc := stmt.Raw.Pos()
 				if errors.As(err, &e) && e.Location != 0 {
 					loc = e.Location
+				}
+				// Locations are reported against the rewritten query; map them
+				// back so errors point at what the user wrote.
+				loc = pp.Origin(loc)
+				if e != nil && e.Location != 0 {
+					e.Location = loc
 				}
 				merr.Add(filename, src, loc, err)
 				// If this rpc unauthenticated error bubbles up, then all future parsing/analysis will fail
@@ -130,7 +146,7 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 			queryName := query.Metadata.Name
 			if queryName != "" {
 				if _, exists := set[queryName]; exists {
-					merr.Add(filename, src, stmt.Raw.Pos(), fmt.Errorf("duplicate query name: %s", queryName))
+					merr.Add(filename, src, pp.Origin(stmt.Raw.Pos()), fmt.Errorf("duplicate query name: %s", queryName))
 					continue
 				}
 				set[queryName] = struct{}{}

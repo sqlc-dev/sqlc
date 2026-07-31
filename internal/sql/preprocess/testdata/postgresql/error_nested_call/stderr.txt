@@ -1,0 +1,1 @@
+1:8: expected parameter to sqlc.arg to be string or reference; got "sqlc.arg(a)"

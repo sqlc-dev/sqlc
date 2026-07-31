@@ -10,8 +10,7 @@ import (
 	coreschema "github.com/sqlc-dev/sqlc/internal/core/schema"
 	"github.com/sqlc-dev/sqlc/internal/engine/googlesql"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
-	"github.com/sqlc-dev/sqlc/internal/sql/rewrite"
-	"github.com/sqlc-dev/sqlc/internal/sql/validate"
+	"github.com/sqlc-dev/sqlc/internal/sql/preprocess"
 )
 
 const benchSchema = `
@@ -50,23 +49,14 @@ func parseAll(t testing.TB, src string) []ast.Node {
 	return out
 }
 
-// parseQueries mirrors the compiler pipeline: parse, then rewrite named
-// parameters into ParamRef nodes before handing the statement to the analyzer.
+// parseQueries mirrors the compiler pipeline: rewrite sqlc syntax to native SQL,
+// then parse.
 func parseQueries(t testing.TB, src string) []ast.Node {
-	out := make([]ast.Node, 0)
-	for _, n := range parseAll(t, src) {
-		raw, ok := n.(*ast.RawStmt)
-		if !ok {
-			t.Fatalf("not a raw statement: %T", n)
-		}
-		numbers, dollar, err := validate.ParamRef(raw)
-		if err != nil {
-			t.Fatal(err)
-		}
-		rewritten, _, _ := rewrite.NamedParameters(config.EngineGoogleSQL, raw, numbers, dollar)
-		out = append(out, rewritten)
+	res, err := preprocess.File(config.EngineGoogleSQL, src)
+	if err != nil {
+		t.Fatal(err)
 	}
-	return out
+	return parseAll(t, res.Text)
 }
 
 func newBenchCatalog(t testing.TB) (*core.Catalog, []ast.Node) {

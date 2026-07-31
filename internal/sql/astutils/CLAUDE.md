@@ -88,16 +88,21 @@ astutils.Walk(&tv, stmt.FromClause)
 // tv.list now contains all RangeVar nodes
 ```
 
-### Replacing Named Parameters
-The `rewrite/parameters.go` uses Apply to replace `sqlc.arg()` calls with `ParamRef`:
+### Rewriting Nodes In Place
+Apply replaces a node with a new one as the tree is walked:
 ```go
 astutils.Apply(root, func(cr *astutils.Cursor) bool {
-    if named.IsParamFunc(cr.Node()) {
-        cr.Replace(&ast.ParamRef{Number: nextParam()})
+    if _, ok := cr.Node().(*ast.SomeType); ok {
+        cr.Replace(&ast.OtherType{})
     }
     return true
 }, nil)
 ```
+
+Note that sqlc syntax (`sqlc.arg()`, `@name`) is *not* handled here. It is
+rewritten to native SQL by `internal/sql/preprocess` before the engine parses a
+query, so a node type missing from walk.go/rewrite.go can no longer silently
+drop a parameter.
 
 ## Node Types That Must Be Handled
 
