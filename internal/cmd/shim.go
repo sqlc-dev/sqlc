@@ -183,6 +183,7 @@ func pluginQueryColumn(c *compiler.Column) *plugin.Column {
 		IsNamedParam: c.IsNamedParam,
 		IsFuncCall:   c.IsFuncCall,
 		IsSqlcSlice:  c.IsSqlcSlice,
+		JsonName:     c.JSONName,
 	}
 
 	if c.Type != nil {
@@ -211,6 +212,10 @@ func pluginQueryColumn(c *compiler.Column) *plugin.Column {
 			Schema:  c.EmbedTable.Schema,
 			Name:    c.EmbedTable.Name,
 		}
+	}
+
+	for _, field := range c.JSONFields {
+		out.JsonFields = append(out.JsonFields, pluginQueryColumn(field))
 	}
 
 	return out

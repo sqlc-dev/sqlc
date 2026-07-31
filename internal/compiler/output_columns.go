@@ -8,6 +8,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 	"github.com/sqlc-dev/sqlc/internal/sql/lang"
+	"github.com/sqlc-dev/sqlc/internal/sql/rewrite"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
@@ -303,6 +304,14 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 			cols = append(cols, columns...)
 
 		case *ast.FuncCall:
+			if rewrite.IsJSONCall(n) {
+				col, err := c.outputJSONColumn(qc, tables, res, n)
+				if err != nil {
+					return nil, err
+				}
+				cols = append(cols, col)
+				continue
+			}
 			rel := n.Func
 			name := rel.Name
 			if res.Name != nil {
@@ -342,6 +351,15 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 					first.Name = *res.Name
 				}
 				cols = append(cols, first)
+			case ast.ARRAY_SUBLINK:
+				col, err := c.arraySubLinkColumn(qc, tables, n)
+				if err != nil {
+					return nil, err
+				}
+				if res.Name != nil {
+					col.Name = *res.Name
+				}
+				cols = append(cols, col)
 			default:
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}

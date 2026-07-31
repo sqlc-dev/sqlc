@@ -350,6 +350,14 @@ func (i *importer) queryImports(filename string) fileImports {
 					return true
 				}
 			}
+			// JSONTypes live outside Ret/Arg, so check them separately.
+			for _, t := range q.JSONTypes {
+				for _, f := range t.Fields {
+					if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
+						return true
+					}
+				}
+			}
 		}
 		return false
 	})

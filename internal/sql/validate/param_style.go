@@ -26,6 +26,17 @@ func (v *sqlcFuncVisitor) Visit(node ast.Node) astutils.Visitor {
 		return v
 	}
 
+	// A 2-part sqlc.jsonb_build_object(...) call is always missing its
+	// required "Name" (see rewrite.IsJSONCall); catch it here instead of
+	// letting it fall through as an unrecognized function call.
+	if fn.Schema == "sqlc" && fn.Name == "jsonb_build_object" {
+		v.err = &sqlerr.Error{
+			Message:  `sqlc.jsonb_build_object(...) requires a name, e.g. sqlc.jsonb_build_object."Name"('key', value, ...)`,
+			Location: call.Pos(),
+		}
+		return nil
+	}
+
 	// Custom validation for sqlc.arg, sqlc.narg and sqlc.slice
 	// TODO: Replace this once type-checking is implemented
 	if fn.Schema == "sqlc" {

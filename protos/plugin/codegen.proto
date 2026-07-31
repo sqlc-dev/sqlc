@@ -100,6 +100,14 @@ message Column {
   string original_name = 15;
   bool unsigned = 16;
   int32 array_dims = 17;
+
+  // Set for columns produced by sqlc.jsonb_build_object."Name"(key, value, ...):
+  // one entry per key/value pair, using Column.name for the JSON key and the
+  // rest of the fields to describe the resolved type of the value expression.
+  repeated Column json_fields = 18;
+
+  // The struct name from sqlc.jsonb_build_object."Name"(...).
+  string json_name = 19;
 }
 
 message Query {

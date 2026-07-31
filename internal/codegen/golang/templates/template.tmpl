@@ -162,6 +162,17 @@ type {{.Name}} struct { {{- range .Fields}}
 {{end}}
 {{end}}
 
+{{/* Plain structs synthesized from JSON directives. Literal backticks for
+     tags since $.Q isn't in scope when invoked with a Query. */}}
+{{define "jsonTypesCode"}}
+{{range .JSONTypes}}
+type {{.Name}} struct { {{- range .Fields}}
+  {{.Name}} {{.Type}} {{if .Tag}}`{{.Tag}}`{{end}}
+  {{- end}}
+}
+{{end}}
+{{end}}
+
 {{define "queryFile"}}
 {{if .BuildTags}}
 //go:build {{.BuildTags}}

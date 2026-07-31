@@ -37,6 +37,11 @@ type Column struct {
 	Type       *ast.TypeName
 	EmbedTable *ast.TableName
 
+	// JSONFields is the shape of a JSON directive: one Column per field,
+	// Name being the JSON key. JSONName is the synthesized struct's name.
+	JSONFields []*Column
+	JSONName   string
+
 	IsSqlcSlice bool // is this sqlc.slice()
 
 	skipTableRequiredCheck bool

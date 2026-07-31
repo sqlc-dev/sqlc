@@ -16,11 +16,15 @@ func (n *FuncName) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
+	if n.Catalog != "" {
+		buf.WriteString(d.QuoteIdent(n.Catalog))
+		buf.WriteString(".")
+	}
 	if n.Schema != "" {
-		buf.WriteString(n.Schema)
+		buf.WriteString(d.QuoteIdent(n.Schema))
 		buf.WriteString(".")
 	}
 	if n.Name != "" {
-		buf.WriteString(n.Name)
+		buf.WriteString(d.QuoteIdent(n.Name))
 	}
 }

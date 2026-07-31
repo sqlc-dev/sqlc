@@ -279,6 +279,9 @@ type Query struct {
 	Arg          QueryValue
 	// Used for :copyfrom
 	Table *plugin.Identifier
+	// Go types synthesized from sqlc.jsonb_build_object(...) calls used by this query,
+	// emitted alongside the query's Arg/Ret structs.
+	JSONTypes []JSONType
 }
 
 func (q Query) hasRetType() bool {

@@ -47,6 +47,8 @@ func (n *SubLink) Format(buf *TrackedBuffer, d format.Dialect) {
 		} else {
 			buf.WriteString("IN (")
 		}
+	case ARRAY_SUBLINK:
+		buf.WriteString("ARRAY(")
 	default:
 		if hasTestExpr {
 			buf.WriteString(" (")
