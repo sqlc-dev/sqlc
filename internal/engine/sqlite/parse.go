@@ -3,12 +3,9 @@ package sqlite
 import (
 	"errors"
 	"io"
-	"strings"
 
 	meyer "github.com/sqlc-dev/meyer/ast"
-	"github.com/sqlc-dev/meyer/lexer"
 	"github.com/sqlc-dev/meyer/parser"
-	"github.com/sqlc-dev/meyer/token"
 
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -27,7 +24,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	if err != nil {
 		return nil, err
 	}
-	src, folded := foldSqlcCalls(string(blob))
+	src := string(blob)
 	parsed, err := parser.ParseString(src)
 	if err != nil {
 		return nil, normalizeErr(err)
@@ -39,7 +36,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	// reads the "-- name:" annotation out of that range.
 	loc := 0
 	for _, raw := range parsed {
-		converter := &cc{folded: folded}
+		converter := &cc{}
 		out := converter.convert(raw)
 		if _, ok := out.(*ast.TODO); !ok {
 			stmts = append(stmts, ast.Statement{
@@ -53,52 +50,6 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		loc = raw.End()
 	}
 	return stmts, nil
-}
-
-// sqlcSchema is the pseudo-schema sqlc's own functions are written under.
-const sqlcSchema = "sqlc"
-
-// foldSqlcCalls rewrites "sqlc.name(" to "sqlc_name(" and reports the offset
-// of every identifier it folded.
-//
-// SQLite has no schema-qualified function call, so sqlc.arg(), sqlc.narg(),
-// sqlc.slice() and sqlc.embed() are not SQL that meyer will parse. Folding
-// the dot into the name substitutes one byte for another, which leaves every
-// offset in the tree pointing at the same place in the original source;
-// convertFuncCall restores the schema for the calls listed here. Working from
-// the token stream rather than the raw text keeps the rewrite out of string
-// literals and comments.
-func foldSqlcCalls(src string) (string, map[int]bool) {
-	toks := lexer.Lex(src)
-	var out []byte
-	var folded map[int]bool
-	for i := 0; i+3 < len(toks); i++ {
-		if toks[i].Kind != token.ID || toks[i+1].Kind != token.DOT || toks[i+3].Kind != token.LP {
-			continue
-		}
-		if name := toks[i+2].Kind; name != token.ID && !token.CanFallback(name) {
-			continue
-		}
-		// The three tokens have to be written as one word for the fold to
-		// produce one. Anything else is left to fail as the syntax error it
-		// is, rather than silently reparsed as something else.
-		if toks[i].End != toks[i+1].Pos || toks[i+1].End != toks[i+2].Pos {
-			continue
-		}
-		if !strings.EqualFold(src[toks[i].Pos:toks[i].End], sqlcSchema) {
-			continue
-		}
-		if out == nil {
-			out = []byte(src)
-			folded = map[int]bool{}
-		}
-		out[toks[i+1].Pos] = '_'
-		folded[toks[i].Pos] = true
-	}
-	if out == nil {
-		return src, nil
-	}
-	return string(out), folded
 }
 
 // trimTerminator returns the end of stmt with its terminating semicolon, and

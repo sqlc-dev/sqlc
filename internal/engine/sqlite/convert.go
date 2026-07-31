@@ -17,9 +17,6 @@ import (
 // markers within it.
 type cc struct {
 	paramCount int
-	// folded holds the offset of every "sqlc.name(" call the parser rewrote
-	// so that meyer would accept it. See foldSqlcCalls.
-	folded map[int]bool
 }
 
 func todo(funcname string, n meyer.Node) *ast.TODO {
@@ -1050,13 +1047,7 @@ func (c *cc) convertFuncCall(n *meyer.FuncCall) ast.Node {
 	funcName := identifier(n.Name)
 	args := c.convertExprList(n.Args)
 
-	var schema string
-	if c.folded[n.Name.Pos()] {
-		schema = sqlcSchema
-		funcName = strings.TrimPrefix(funcName, sqlcSchema+"_")
-	}
-
-	if schema == "" && funcName == "coalesce" {
+	if funcName == "coalesce" {
 		return &ast.CoalesceExpr{
 			Args:     args,
 			Location: n.Pos(),
@@ -1065,8 +1056,7 @@ func (c *cc) convertFuncCall(n *meyer.FuncCall) ast.Node {
 
 	call := &ast.FuncCall{
 		Func: &ast.FuncName{
-			Schema: schema,
-			Name:   funcName,
+			Name: funcName,
 		},
 		Funcname: &ast.List{Items: []ast.Node{
 			&ast.String{Str: funcName},
