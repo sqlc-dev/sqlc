@@ -6,132 +6,297 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/antlr4-go/antlr/v4"
+	meyer "github.com/sqlc-dev/meyer/ast"
+
 	"github.com/sqlc-dev/sqlc/internal/debug"
-	"github.com/sqlc-dev/sqlc/internal/engine/sqlite/parser"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
+// cc converts a meyer syntax tree into sqlc's engine-independent AST. One
+// converter is used per statement; paramCount numbers the anonymous "?"
+// markers within it.
 type cc struct {
 	paramCount int
+	// folded holds the offset of every "sqlc.name(" call the parser rewrote
+	// so that meyer would accept it. See foldSqlcCalls.
+	folded map[int]bool
 }
 
-type node interface {
-	GetParser() antlr.Parser
-}
-
-func todo(funcname string, n node) *ast.TODO {
+func todo(funcname string, n meyer.Node) *ast.TODO {
 	if debug.Active {
 		log.Printf("sqlite.%s: Unknown node type %T\n", funcname, n)
 	}
 	return &ast.TODO{}
 }
 
-func identifier(id string) string {
-	if len(id) >= 2 && id[0] == '"' && id[len(id)-1] == '"' {
-		unquoted, _ := strconv.Unquote(id)
-		return unquoted
-	}
-	return strings.ToLower(id)
-}
+func (c *cc) convert(node meyer.Node) ast.Node {
+	switch n := node.(type) {
 
-func NewIdentifier(t string) *ast.String {
-	return &ast.String{Str: identifier(t)}
-}
+	// Statements
 
-func (c *cc) convertAlter_table_stmtContext(n *parser.Alter_table_stmtContext) ast.Node {
-	if n.RENAME_() != nil {
-		if newTable, ok := n.New_table_name().(*parser.New_table_nameContext); ok {
-			name := identifier(newTable.Any_name().GetText())
-			return &ast.RenameTableStmt{
-				Table:   parseTableName(n),
-				NewName: &name,
-			}
+	case *meyer.AlterTableStmt:
+		return c.convertAlterTableStmt(n)
+
+	case *meyer.AttachStmt:
+		return c.convertAttachStmt(n)
+
+	case *meyer.CreateTableStmt:
+		return c.convertCreateTableStmt(n)
+
+	case *meyer.CreateViewStmt:
+		return c.convertCreateViewStmt(n)
+
+	case *meyer.CreateVirtualTableStmt:
+		return c.convertCreateVirtualTableStmt(n)
+
+	case *meyer.DeleteStmt:
+		return c.convertDeleteStmt(n)
+
+	case *meyer.DropTableStmt:
+		return c.convertDropStmt(n.Name, n.IfExists)
+
+	case *meyer.DropViewStmt:
+		return c.convertDropStmt(n.Name, n.IfExists)
+
+	case *meyer.ExplainStmt:
+		return c.convert(n.Stmt)
+
+	case *meyer.InsertStmt:
+		return c.convertInsertStmt(n)
+
+	case *meyer.SelectStmt:
+		return c.convertSelectStmt(n)
+
+	case *meyer.UpdateStmt:
+		return c.convertUpdateStmt(n)
+
+	// Expressions
+
+	case *meyer.BetweenExpr:
+		return c.convertBetweenExpr(n)
+
+	case *meyer.BinaryExpr:
+		return c.convertBinaryExpr(n)
+
+	case *meyer.BindParam:
+		return c.convertBindParam(n)
+
+	case *meyer.CaseExpr:
+		return c.convertCaseExpr(n)
+
+	case *meyer.CastExpr:
+		return c.convertCastExpr(n)
+
+	case *meyer.CollateExpr:
+		return c.convertCollateExpr(n)
+
+	case *meyer.ExistsExpr:
+		return &ast.SubLink{
+			SubLinkType: ast.EXISTS_SUBLINK,
+			Subselect:   c.convert(n.Select),
+			Location:    n.Pos(),
 		}
 
-		if newCol, ok := n.GetNew_column_name().(*parser.Column_nameContext); ok {
-			name := identifier(newCol.Any_name().GetText())
-			return &ast.RenameColumnStmt{
-				Table: parseTableName(n),
-				Col: &ast.ColumnRef{
-					Name: identifier(n.GetOld_column_name().GetText()),
-				},
-				NewName: &name,
-			}
-		}
-	}
+	case *meyer.FuncCall:
+		return c.convertFuncCall(n)
 
-	if n.ADD_() != nil {
-		if def, ok := n.Column_def().(*parser.Column_defContext); ok {
-			stmt := &ast.AlterTableStmt{
-				Table: parseTableName(n),
-				Cmds:  &ast.List{},
-			}
-			name := def.Column_name().GetText()
-			stmt.Cmds.Items = append(stmt.Cmds.Items, &ast.AlterTableCmd{
-				Name:    &name,
-				Subtype: ast.AT_AddColumn,
-				Def: &ast.ColumnDef{
-					Colname: name,
-					TypeName: &ast.TypeName{
-						Name: def.Type_name().GetText(),
+	case *meyer.Ident:
+		return c.columnRef(n.Pos(), n)
+
+	case *meyer.InExpr:
+		return c.convertInExpr(n)
+
+	case *meyer.IsExpr:
+		return c.convertIsExpr(n)
+
+	case *meyer.LikeExpr:
+		return c.convertLikeExpr(n)
+
+	case *meyer.Literal:
+		return c.convertLiteral(n)
+
+	case *meyer.NullCheckExpr:
+		return c.convertNullCheckExpr(n)
+
+	case *meyer.ParenExpr:
+		return c.convert(n.X)
+
+	case *meyer.QualifiedRef:
+		return c.columnRef(n.Pos(), n.Parts...)
+
+	case *meyer.Star:
+		return c.convertStar(n)
+
+	case *meyer.SubqueryExpr:
+		return &ast.SubLink{
+			SubLinkType: ast.EXPR_SUBLINK,
+			Subselect:   c.convert(n.Select),
+			Location:    n.Pos(),
+		}
+
+	case *meyer.UnaryExpr:
+		return c.convertUnaryExpr(n)
+
+	case *meyer.VectorExpr:
+		return c.convertExprList(n.List)
+
+	default:
+		return todo("convert(case=default)", node)
+	}
+}
+
+// convertExpr converts an optional expression, mapping an absent one to a
+// nil node rather than to a TODO.
+func (c *cc) convertExpr(e meyer.Expr) ast.Node {
+	if e == nil {
+		return nil
+	}
+	return c.convert(e)
+}
+
+func (c *cc) convertExprList(exprs []meyer.Expr) *ast.List {
+	list := &ast.List{Items: []ast.Node{}}
+	for _, e := range exprs {
+		list.Items = append(list.Items, c.convert(e))
+	}
+	return list
+}
+
+// columnRef builds the dotted reference sqlc uses for a column: a one, two
+// or three part name of the form [[schema.]table.]column.
+func (c *cc) columnRef(loc int, parts ...*meyer.Ident) *ast.ColumnRef {
+	items := make([]ast.Node, 0, len(parts))
+	for _, p := range parts {
+		items = append(items, NewIdentifier(p))
+	}
+	return &ast.ColumnRef{
+		Fields:   &ast.List{Items: items},
+		Location: loc,
+	}
+}
+
+func (c *cc) convertStar(n *meyer.Star) *ast.ColumnRef {
+	items := []ast.Node{}
+	if n.Table != nil {
+		items = append(items, NewIdentifier(n.Table))
+	}
+	items = append(items, &ast.A_Star{})
+	return &ast.ColumnRef{
+		Fields:   &ast.List{Items: items},
+		Location: n.Pos(),
+	}
+}
+
+//
+// Statements
+//
+
+func (c *cc) convertAlterTableStmt(n *meyer.AlterTableStmt) ast.Node {
+	switch n.Action {
+	case meyer.AlterRenameTable:
+		name := identifier(n.NewName)
+		return &ast.RenameTableStmt{
+			Table:   parseTableName(n.Table),
+			NewName: &name,
+		}
+
+	case meyer.AlterRenameColumn:
+		name := identifier(n.NewName)
+		return &ast.RenameColumnStmt{
+			Table: parseTableName(n.Table),
+			Col: &ast.ColumnRef{
+				Name: identifier(n.Column),
+			},
+			NewName: &name,
+		}
+
+	case meyer.AlterAddColumn:
+		def := n.ColumnDef
+		if def == nil {
+			break
+		}
+		name := identifier(def.Name)
+		return &ast.AlterTableStmt{
+			Table: parseTableName(n.Table),
+			Cmds: &ast.List{Items: []ast.Node{
+				&ast.AlterTableCmd{
+					Name:    &name,
+					Subtype: ast.AT_AddColumn,
+					Def: &ast.ColumnDef{
+						Colname:   name,
+						TypeName:  &ast.TypeName{Name: columnTypeName(def.Type)},
+						IsNotNull: hasNotNullConstraint(def.Constraints),
 					},
-					IsNotNull: hasNotNullConstraint(def.AllColumn_constraint()),
 				},
-			})
-			return stmt
+			}},
+		}
+
+	case meyer.AlterDropColumn:
+		name := identifier(n.Column)
+		return &ast.AlterTableStmt{
+			Table: parseTableName(n.Table),
+			Cmds: &ast.List{Items: []ast.Node{
+				&ast.AlterTableCmd{
+					Name:    &name,
+					Subtype: ast.AT_DropColumn,
+				},
+			}},
 		}
 	}
-
-	if n.DROP_() != nil {
-		stmt := &ast.AlterTableStmt{
-			Table: parseTableName(n),
-			Cmds:  &ast.List{},
-		}
-		name := n.Column_name(0).GetText()
-		stmt.Cmds.Items = append(stmt.Cmds.Items, &ast.AlterTableCmd{
-			Name:    &name,
-			Subtype: ast.AT_DropColumn,
-		})
-		return stmt
-	}
-
-	return todo("convertAlter_table_stmtContext", n)
+	return todo("convertAlterTableStmt", n)
 }
 
-func (c *cc) convertAttach_stmtContext(n *parser.Attach_stmtContext) ast.Node {
-	name := n.Schema_name().GetText()
+// convertAttachStmt records an attached database as a schema. Only the name
+// matters to sqlc; the file expression is a runtime concern.
+func (c *cc) convertAttachStmt(n *meyer.AttachStmt) ast.Node {
+	name := schemaName(n.Name)
 	return &ast.CreateSchemaStmt{
 		Name: &name,
 	}
 }
 
-func (c *cc) convertCreate_table_stmtContext(n *parser.Create_table_stmtContext) ast.Node {
-	stmt := &ast.CreateTableStmt{
-		Name:        parseTableName(n),
-		IfNotExists: n.EXISTS_() != nil,
+// schemaName reads the schema out of the "AS <name>" operand of ATTACH,
+// which the grammar accepts as an arbitrary expression.
+func schemaName(e meyer.Expr) string {
+	switch n := e.(type) {
+	case *meyer.Ident:
+		return identifier(n)
+	case *meyer.Literal:
+		return n.Value
+	default:
+		return ""
 	}
-	for _, idef := range n.AllColumn_def() {
-		if def, ok := idef.(*parser.Column_defContext); ok {
-			typeName := "any"
-			if def.Type_name() != nil {
-				typeName = def.Type_name().GetText()
-			}
-			stmt.Cols = append(stmt.Cols, &ast.ColumnDef{
-				Colname:   identifier(def.Column_name().GetText()),
-				IsNotNull: hasNotNullConstraint(def.AllColumn_constraint()),
-				TypeName:  &ast.TypeName{Name: typeName},
-			})
-		}
+}
+
+// columnTypeName returns the declared type of a column, defaulting to
+// SQLite's untyped "any" when the declaration omits one.
+func columnTypeName(t *meyer.TypeName) string {
+	if t == nil {
+		return "any"
+	}
+	return typeName(t)
+}
+
+func (c *cc) convertCreateTableStmt(n *meyer.CreateTableStmt) ast.Node {
+	stmt := &ast.CreateTableStmt{
+		Name:        parseTableName(n.Name),
+		IfNotExists: n.IfNotExists,
+	}
+	for _, def := range n.Columns {
+		stmt.Cols = append(stmt.Cols, &ast.ColumnDef{
+			Colname:   identifier(def.Name),
+			IsNotNull: hasNotNullConstraint(def.Constraints),
+			TypeName:  &ast.TypeName{Name: columnTypeName(def.Type)},
+		})
 	}
 	return stmt
 }
 
-func (c *cc) convertCreate_virtual_table_stmtContext(n *parser.Create_virtual_table_stmtContext) ast.Node {
-	switch moduleName := n.Module_name().GetText(); moduleName {
+func (c *cc) convertCreateVirtualTableStmt(n *meyer.CreateVirtualTableStmt) ast.Node {
+	switch moduleName := identifier(n.Module); moduleName {
 	case "fts5":
 		// https://www.sqlite.org/fts5.html
-		return c.convertCreate_virtual_table_fts5(n)
+		return c.convertCreateVirtualTableFTS5(n)
 	default:
 		return todo(
 			fmt.Sprintf("create_virtual_table. unsupported module name: %q", moduleName),
@@ -140,904 +305,131 @@ func (c *cc) convertCreate_virtual_table_stmtContext(n *parser.Create_virtual_ta
 	}
 }
 
-func (c *cc) convertCreate_virtual_table_fts5(n *parser.Create_virtual_table_stmtContext) ast.Node {
+func (c *cc) convertCreateVirtualTableFTS5(n *meyer.CreateVirtualTableStmt) ast.Node {
 	stmt := &ast.CreateTableStmt{
-		Name:        parseTableName(n),
-		IfNotExists: n.EXISTS_() != nil,
+		Name:        parseTableName(n.Name),
+		IfNotExists: n.IfNotExists,
 	}
 
-	for _, arg := range n.AllModule_argument() {
-		var columnName string
-
-		// For example: CREATE VIRTUAL TABLE tbl_ft USING fts5(b, c UNINDEXED)
-		//   * the 'b' column is parsed like Expr_qualified_column_nameContext
-		//   * the 'c' column is parsed like Column_defContext
-		if columnExpr, ok := arg.Expr().(*parser.Expr_qualified_column_nameContext); ok {
-			columnName = columnExpr.Column_name().GetText()
-		} else if columnDef, ok := arg.Column_def().(*parser.Column_defContext); ok {
-			columnName = columnDef.Column_name().GetText()
+	// The module arguments of a virtual table are an arbitrary token
+	// sequence, so meyer hands them back as source text. For fts5 an
+	// argument is either a column ("b", or "c UNINDEXED") or one of the
+	// module's own options, which are always written as "key = value".
+	for _, arg := range n.Args {
+		name := fts5ColumnName(arg)
+		if name == "" {
+			continue
 		}
-
-		if columnName != "" {
-			stmt.Cols = append(stmt.Cols, &ast.ColumnDef{
-				Colname: identifier(columnName),
-				// you can not specify any column constraints in fts5, so we pass them manually
-				IsNotNull: true,
-				TypeName:  &ast.TypeName{Name: "text"},
-			})
-		}
+		stmt.Cols = append(stmt.Cols, &ast.ColumnDef{
+			Colname: name,
+			// fts5 accepts no column constraints, so we supply them here
+			IsNotNull: true,
+			TypeName:  &ast.TypeName{Name: "text"},
+		})
 	}
 
 	return stmt
 }
 
-func (c *cc) convertCreate_view_stmtContext(n *parser.Create_view_stmtContext) ast.Node {
-	viewName := n.View_name().GetText()
-	relation := &ast.RangeVar{
-		Relname: &viewName,
+// fts5ColumnName returns the column an fts5 module argument declares, or the
+// empty string when the argument configures the module instead.
+func fts5ColumnName(arg string) string {
+	if strings.ContainsRune(arg, '=') {
+		return ""
 	}
+	name, _, _ := strings.Cut(strings.TrimSpace(arg), " ")
+	return unquoteIdent(name)
+}
 
-	if n.Schema_name() != nil {
-		schemaName := n.Schema_name().GetText()
-		relation.Schemaname = &schemaName
+// unquoteIdent folds a name that has not been through the lexer, as happens
+// for the raw module arguments of a virtual table.
+func unquoteIdent(s string) string {
+	if len(s) >= 2 {
+		switch {
+		case s[0] == '"' && s[len(s)-1] == '"':
+			return strings.ReplaceAll(s[1:len(s)-1], `""`, `"`)
+		case s[0] == '`' && s[len(s)-1] == '`':
+			return strings.ReplaceAll(s[1:len(s)-1], "``", "`")
+		case s[0] == '[' && s[len(s)-1] == ']':
+			return s[1 : len(s)-1]
+		case s[0] == '\'' && s[len(s)-1] == '\'':
+			return strings.ReplaceAll(s[1:len(s)-1], `''`, `'`)
+		}
 	}
+	return strings.ToLower(s)
+}
 
+func (c *cc) convertCreateViewStmt(n *meyer.CreateViewStmt) ast.Node {
 	return &ast.ViewStmt{
-		View:            relation,
+		View:            parseRangeVar(n.Name, nil),
 		Aliases:         &ast.List{},
-		Query:           c.convert(n.Select_stmt()),
+		Query:           c.convert(n.Select),
 		Replace:         false,
 		Options:         &ast.List{},
 		WithCheckOption: ast.ViewCheckOption(0),
 	}
 }
 
-type Delete_stmt interface {
-	node
-
-	Qualified_table_name() parser.IQualified_table_nameContext
-	WHERE_() antlr.TerminalNode
-	Expr() parser.IExprContext
-}
-
-func (c *cc) convertDelete_stmtContext(n Delete_stmt) ast.Node {
-	if qualifiedName, ok := n.Qualified_table_name().(*parser.Qualified_table_nameContext); ok {
-
-		tableName := identifier(qualifiedName.Table_name().GetText())
-		relation := &ast.RangeVar{
-			Relname: &tableName,
-		}
-
-		if qualifiedName.Schema_name() != nil {
-			schemaName := qualifiedName.Schema_name().GetText()
-			relation.Schemaname = &schemaName
-		}
-
-		if qualifiedName.Alias() != nil {
-			alias := qualifiedName.Alias().GetText()
-			relation.Alias = &ast.Alias{Aliasname: &alias}
-		}
-
-		relations := &ast.List{}
-
-		relations.Items = append(relations.Items, relation)
-
-		delete := &ast.DeleteStmt{
-			Relations:  relations,
-			WithClause: nil,
-		}
-
-		if n.WHERE_() != nil && n.Expr() != nil {
-			delete.WhereClause = c.convert(n.Expr())
-		}
-
-		if n, ok := n.(interface {
-			Returning_clause() parser.IReturning_clauseContext
-		}); ok {
-			delete.ReturningList = c.convertReturning_caluseContext(n.Returning_clause())
-		} else {
-			delete.ReturningList = c.convertReturning_caluseContext(nil)
-		}
-		if n, ok := n.(interface {
-			Limit_stmt() parser.ILimit_stmtContext
-		}); ok {
-			limitCount, _ := c.convertLimit_stmtContext(n.Limit_stmt())
-			delete.LimitCount = limitCount
-		}
-
-		return delete
-	}
-
-	return todo("convertDelete_stmtContext", n)
-}
-
-func (c *cc) convertDrop_stmtContext(n *parser.Drop_stmtContext) ast.Node {
-	if n.TABLE_() != nil || n.VIEW_() != nil {
-		name := ast.TableName{
-			Name: identifier(n.Any_name().GetText()),
-		}
-		if n.Schema_name() != nil {
-			name.Schema = n.Schema_name().GetText()
-		}
-
-		return &ast.DropTableStmt{
-			IfExists: n.EXISTS_() != nil,
-			Tables:   []*ast.TableName{&name},
-		}
-	}
-	return todo("convertDrop_stmtContext", n)
-}
-
-func (c *cc) convertFuncContext(n *parser.Expr_functionContext) ast.Node {
-	if name, ok := n.Qualified_function_name().(*parser.Qualified_function_nameContext); ok {
-		funcName := strings.ToLower(name.Function_name().GetText())
-
-		schema := ""
-		if name.Schema_name() != nil {
-			schema = name.Schema_name().GetText()
-		}
-
-		var argNodes []ast.Node
-		for _, exp := range n.AllExpr() {
-			argNodes = append(argNodes, c.convert(exp))
-		}
-		args := &ast.List{Items: argNodes}
-
-		if funcName == "coalesce" {
-			return &ast.CoalesceExpr{
-				Args:     args,
-				Location: name.GetStart().GetStart(),
-			}
-		} else {
-			return &ast.FuncCall{
-				Func: &ast.FuncName{
-					Schema: schema,
-					Name:   funcName,
-				},
-				Funcname: &ast.List{
-					Items: []ast.Node{
-						NewIdentifier(funcName),
-					},
-				},
-				AggStar:     n.STAR() != nil,
-				Args:        args,
-				AggOrder:    &ast.List{},
-				AggDistinct: n.DISTINCT_() != nil,
-				Location:    name.GetStart().GetStart(),
-			}
-		}
-	}
-
-	return todo("convertFuncContext", n)
-}
-
-func (c *cc) convertExprContext(n *parser.ExprContext) ast.Node {
-	return &ast.Expr{}
-}
-
-func (c *cc) convertColumnNameExpr(n *parser.Expr_qualified_column_nameContext) *ast.ColumnRef {
-	var items []ast.Node
-	if schema, ok := n.Schema_name().(*parser.Schema_nameContext); ok {
-		schemaText := schema.GetText()
-		if schemaText != "" {
-			items = append(items, NewIdentifier(schemaText))
-		}
-	}
-	if table, ok := n.Table_name().(*parser.Table_nameContext); ok {
-		tableName := table.GetText()
-		if tableName != "" {
-			items = append(items, NewIdentifier(tableName))
-		}
-	}
-	items = append(items, NewIdentifier(n.Column_name().GetText()))
-	return &ast.ColumnRef{
-		Fields: &ast.List{
-			Items: items,
-		},
-		Location: n.GetStart().GetStart(),
+func (c *cc) convertDropStmt(name *meyer.QualifiedName, ifExists bool) ast.Node {
+	return &ast.DropTableStmt{
+		IfExists: ifExists,
+		Tables:   []*ast.TableName{parseTableName(name)},
 	}
 }
 
-func (c *cc) convertComparison(n *parser.Expr_comparisonContext) ast.Node {
-	lexpr := c.convert(n.Expr(0))
-
-	if n.IN_() != nil {
-		rexprs := []ast.Node{}
-		for _, expr := range n.AllExpr()[1:] {
-			e := c.convert(expr)
-			switch t := e.(type) {
-			case *ast.List:
-				rexprs = append(rexprs, t.Items...)
-			default:
-				rexprs = append(rexprs, t)
-			}
-		}
-
-		return &ast.In{
-			Expr:     lexpr,
-			List:     rexprs,
-			Not:      false,
-			Sel:      nil,
-			Location: n.GetStart().GetStart(),
-		}
+func (c *cc) convertDeleteStmt(n *meyer.DeleteStmt) ast.Node {
+	stmt := &ast.DeleteStmt{
+		Relations:     &ast.List{Items: []ast.Node{parseRangeVar(n.Table, n.Alias)}},
+		WhereClause:   c.convertExpr(n.Where),
+		ReturningList: c.convertReturning(n.Returning),
+		WithClause:    c.convertWith(n.With),
 	}
-
-	return &ast.A_Expr{
-		Name: &ast.List{
-			Items: []ast.Node{
-				&ast.String{Str: "="}, // TODO: add actual comparison
-			},
-		},
-		Lexpr: lexpr,
-		Rexpr: c.convert(n.Expr(1)),
-	}
+	return stmt
 }
 
-func (c *cc) convertMultiSelect_stmtContext(n *parser.Select_stmtContext) ast.Node {
-	var ctes ast.List
-	if ct := n.Common_table_stmt(); ct != nil {
-		recursive := ct.RECURSIVE_() != nil
-		for _, cte := range ct.AllCommon_table_expression() {
-			tableName := identifier(cte.Table_name().GetText())
-			var cteCols ast.List
-			for _, col := range cte.AllColumn_name() {
-				cteCols.Items = append(cteCols.Items, NewIdentifier(col.GetText()))
-			}
-			ctes.Items = append(ctes.Items, &ast.CommonTableExpr{
-				Ctename:      &tableName,
-				Ctequery:     c.convert(cte.Select_stmt()),
-				Location:     cte.GetStart().GetStart(),
-				Cterecursive: recursive,
-				Ctecolnames:  &cteCols,
-			})
-		}
-	}
-
-	var selectStmt *ast.SelectStmt
-	for s, icore := range n.AllSelect_core() {
-		core, ok := icore.(*parser.Select_coreContext)
-		if !ok {
-			continue
-		}
-		cols := c.getCols(core)
-		tables := c.getTables(core)
-
-		var where ast.Node
-		i := 0
-		if core.WHERE_() != nil {
-			where = c.convert(core.Expr(i))
-			i++
-		}
-
-		var groups ast.List
-		var having ast.Node
-		if core.GROUP_() != nil {
-			l := len(core.AllExpr()) - i
-			if core.HAVING_() != nil {
-				having = c.convert(core.Expr(l))
-				l--
-			}
-
-			for i < l {
-				groups.Items = append(groups.Items, c.convert(core.Expr(i)))
-				i++
-			}
-		}
-		var window ast.List
-		if core.WINDOW_() != nil {
-			for w, windowNameCtx := range core.AllWindow_name() {
-				windowName := identifier(windowNameCtx.GetText())
-				windowDef := core.Window_defn(w)
-
-				_ = windowDef.Base_window_name()
-				var partitionBy ast.List
-				if windowDef.PARTITION_() != nil {
-					for _, e := range windowDef.AllExpr() {
-						partitionBy.Items = append(partitionBy.Items, c.convert(e))
-					}
-				}
-				var orderBy ast.List
-				if windowDef.ORDER_() != nil {
-					for _, e := range windowDef.AllOrdering_term() {
-						oterm := e.(*parser.Ordering_termContext)
-						sortByDir := ast.SortByDirDefault
-						if ad := oterm.Asc_desc(); ad != nil {
-							if ad.ASC_() != nil {
-								sortByDir = ast.SortByDirAsc
-							} else {
-								sortByDir = ast.SortByDirDesc
-							}
-						}
-						sortByNulls := ast.SortByNullsDefault
-						if oterm.NULLS_() != nil {
-							if oterm.FIRST_() != nil {
-								sortByNulls = ast.SortByNullsFirst
-							} else {
-								sortByNulls = ast.SortByNullsLast
-							}
-						}
-
-						orderBy.Items = append(orderBy.Items, &ast.SortBy{
-							Node:        c.convert(oterm.Expr()),
-							SortbyDir:   sortByDir,
-							SortbyNulls: sortByNulls,
-							UseOp:       &ast.List{},
-						})
-					}
-				}
-				window.Items = append(window.Items, &ast.WindowDef{
-					Name:            &windowName,
-					PartitionClause: &partitionBy,
-					OrderClause:     &orderBy,
-					FrameOptions:    0, // todo
-					StartOffset:     &ast.TODO{},
-					EndOffset:       &ast.TODO{},
-					Location:        windowNameCtx.GetStart().GetStart(),
-				})
-			}
-		}
-		sel := &ast.SelectStmt{
-			FromClause:   &ast.List{Items: tables},
-			TargetList:   &ast.List{Items: cols},
-			WhereClause:  where,
-			GroupClause:  &groups,
-			HavingClause: having,
-			WindowClause: &window,
-			ValuesLists:  &ast.List{},
-		}
-		if selectStmt == nil {
-			selectStmt = sel
-		} else {
-			co := n.Compound_operator(s - 1)
-			so := ast.None
-			all := false
-			switch {
-			case co.UNION_() != nil:
-				so = ast.Union
-				all = co.ALL_() != nil
-			case co.INTERSECT_() != nil:
-				so = ast.Intersect
-			case co.EXCEPT_() != nil:
-				so = ast.Except
-			}
-			selectStmt = &ast.SelectStmt{
-				TargetList: &ast.List{},
-				FromClause: &ast.List{},
-				Op:         so,
-				All:        all,
-				Larg:       selectStmt,
-				Rarg:       sel,
-			}
-		}
-	}
-
-	limitCount, limitOffset := c.convertLimit_stmtContext(n.Limit_stmt())
-	selectStmt.LimitCount = limitCount
-	selectStmt.LimitOffset = limitOffset
-	// Only set WithClause if there are CTEs
-	if len(ctes.Items) > 0 {
-		selectStmt.WithClause = &ast.WithClause{Ctes: &ctes}
-	}
-	return selectStmt
-}
-
-func (c *cc) convertExprListContext(n *parser.Expr_listContext) ast.Node {
-	list := &ast.List{Items: []ast.Node{}}
-	for _, e := range n.AllExpr() {
-		list.Items = append(list.Items, c.convert(e))
-	}
-	return list
-}
-
-func (c *cc) getTables(core *parser.Select_coreContext) []ast.Node {
-	if core.Join_clause() != nil {
-		join := core.Join_clause().(*parser.Join_clauseContext)
-		tables := c.convertTablesOrSubquery(join.AllTable_or_subquery())
-		table := tables[0]
-		for i, t := range tables[1:] {
-			joinExpr := &ast.JoinExpr{
-				Larg: table,
-				Rarg: t,
-			}
-			jo := join.Join_operator(i)
-			if jo.NATURAL_() != nil {
-				joinExpr.IsNatural = true
-			}
-			switch {
-			case jo.CROSS_() != nil || jo.INNER_() != nil:
-				joinExpr.Jointype = ast.JoinTypeInner
-			case jo.LEFT_() != nil:
-				joinExpr.Jointype = ast.JoinTypeLeft
-			case jo.RIGHT_() != nil:
-				joinExpr.Jointype = ast.JoinTypeRight
-			case jo.FULL_() != nil:
-				joinExpr.Jointype = ast.JoinTypeFull
-			}
-			jc := join.Join_constraint(i)
-			switch {
-			case jc.ON_() != nil:
-				joinExpr.Quals = c.convert(jc.Expr())
-			case jc.USING_() != nil:
-				var using ast.List
-				for _, cn := range jc.AllColumn_name() {
-					using.Items = append(using.Items, NewIdentifier(cn.GetText()))
-				}
-				joinExpr.UsingClause = &using
-			}
-			table = joinExpr
-		}
-		return []ast.Node{table}
-	} else {
-		return c.convertTablesOrSubquery(core.AllTable_or_subquery())
-	}
-}
-
-func (c *cc) getCols(core *parser.Select_coreContext) []ast.Node {
-	var cols []ast.Node
-	for _, icol := range core.AllResult_column() {
-		col, ok := icol.(*parser.Result_columnContext)
-		if !ok {
-			continue
-		}
-		target := &ast.ResTarget{
-			Location: col.GetStart().GetStart(),
-		}
-		var val ast.Node
-		iexpr := col.Expr()
-		switch {
-		case col.STAR() != nil:
-			val = c.convertWildCardField(col)
-		case iexpr != nil:
-			val = c.convert(iexpr)
-		}
-
-		if val == nil {
-			continue
-		}
-
-		if col.Column_alias() != nil {
-			name := identifier(col.Column_alias().GetText())
-			target.Name = &name
-		}
-
-		target.Val = val
-		cols = append(cols, target)
-	}
-	return cols
-}
-
-func (c *cc) convertWildCardField(n *parser.Result_columnContext) *ast.ColumnRef {
-	items := []ast.Node{}
-	if n.Table_name() != nil {
-		items = append(items, NewIdentifier(n.Table_name().GetText()))
-	}
-	items = append(items, &ast.A_Star{})
-
-	return &ast.ColumnRef{
-		Fields: &ast.List{
-			Items: items,
-		},
-		Location: n.GetStart().GetStart(),
-	}
-}
-
-func (c *cc) convertOrderby_stmtContext(n parser.IOrder_by_stmtContext) ast.Node {
-	if orderBy, ok := n.(*parser.Order_by_stmtContext); ok {
-		list := &ast.List{Items: []ast.Node{}}
-		for _, o := range orderBy.AllOrdering_term() {
-			term, ok := o.(*parser.Ordering_termContext)
-			if !ok {
-				continue
-			}
-			list.Items = append(list.Items, &ast.CaseExpr{
-				Xpr:      c.convert(term.Expr()),
-				Location: term.Expr().GetStart().GetStart(),
-			})
-		}
-		return list
-	}
-	return todo("convertOrderby_stmtContext", n)
-}
-
-func (c *cc) convertLimit_stmtContext(n parser.ILimit_stmtContext) (ast.Node, ast.Node) {
-	if n == nil {
-		return nil, nil
-	}
-
-	var limitCount, limitOffset ast.Node
-	if limit, ok := n.(*parser.Limit_stmtContext); ok {
-		limitCount = c.convert(limit.Expr(0))
-		if limit.OFFSET_() != nil {
-			limitOffset = c.convert(limit.Expr(1))
-		}
-	}
-
-	return limitCount, limitOffset
-}
-
-func (c *cc) convertSql_stmtContext(n *parser.Sql_stmtContext) ast.Node {
-	if stmt := n.Alter_table_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Analyze_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Attach_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Begin_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Commit_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Create_index_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Create_table_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Create_trigger_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Create_view_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Create_virtual_table_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Delete_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Delete_stmt_limited(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Detach_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Drop_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Insert_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Pragma_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Reindex_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Release_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Rollback_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Savepoint_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Select_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Update_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Update_stmt_limited(); stmt != nil {
-		return c.convert(stmt)
-	}
-	if stmt := n.Vacuum_stmt(); stmt != nil {
-		return c.convert(stmt)
-	}
-	return nil
-}
-
-func (c *cc) convertLiteral(n *parser.Expr_literalContext) ast.Node {
-	if literal, ok := n.Literal_value().(*parser.Literal_valueContext); ok {
-
-		if literal.NUMERIC_LITERAL() != nil {
-			i, _ := strconv.ParseInt(literal.GetText(), 10, 64)
-			return &ast.A_Const{
-				Val:      &ast.Integer{Ival: i},
-				Location: n.GetStart().GetStart(),
-			}
-		}
-
-		if literal.STRING_LITERAL() != nil {
-			// remove surrounding single quote
-			text := literal.GetText()
-			return &ast.A_Const{
-				Val:      &ast.String{Str: text[1 : len(text)-1]},
-				Location: n.GetStart().GetStart(),
-			}
-		}
-
-		if literal.TRUE_() != nil || literal.FALSE_() != nil {
-			var i int64
-			if literal.TRUE_() != nil {
-				i = 1
-			}
-
-			return &ast.A_Const{
-				Val:      &ast.Integer{Ival: i},
-				Location: n.GetStart().GetStart(),
-			}
-		}
-
-		if literal.NULL_() != nil {
-			return &ast.A_Const{
-				Val:      &ast.Null{},
-				Location: n.GetStart().GetStart(),
-			}
-		}
-	}
-	return todo("convertLiteral", n)
-}
-
-func (c *cc) convertBinaryNode(n *parser.Expr_binaryContext) ast.Node {
-	return &ast.A_Expr{
-		Name: &ast.List{
-			Items: []ast.Node{
-				&ast.String{Str: n.GetChild(1).(antlr.TerminalNode).GetText()},
-			},
-		},
-		Lexpr: c.convert(n.Expr(0)),
-		Rexpr: c.convert(n.Expr(1)),
-	}
-}
-
-func (c *cc) convertBoolNode(n *parser.Expr_boolContext) ast.Node {
-	var op ast.BoolExprType
-	if n.AND_() != nil {
-		op = ast.BoolExprTypeAnd
-	} else if n.OR_() != nil {
-		op = ast.BoolExprTypeOr
-	}
-	return &ast.BoolExpr{
-		Boolop: op,
-		Args: &ast.List{
-			Items: []ast.Node{
-				c.convert(n.Expr(0)),
-				c.convert(n.Expr(1)),
-			},
-		},
-	}
-}
-
-func (c *cc) convertUnaryExpr(n *parser.Expr_unaryContext) ast.Node {
-	op := n.Unary_operator()
-	if op == nil {
-		return c.convert(n.Expr())
-	}
-
-	// Get the inner expression
-	expr := c.convert(n.Expr())
-
-	// Check the operator type
-	if opCtx, ok := op.(*parser.Unary_operatorContext); ok {
-		if opCtx.NOT_() != nil {
-			// NOT expression
-			return &ast.BoolExpr{
-				Boolop: ast.BoolExprTypeNot,
-				Args: &ast.List{
-					Items: []ast.Node{expr},
-				},
-			}
-		}
-		if opCtx.MINUS() != nil {
-			// Negative number: -expr
-			return &ast.A_Expr{
-				Name: &ast.List{Items: []ast.Node{&ast.String{Str: "-"}}},
-				Rexpr: expr,
-			}
-		}
-		if opCtx.PLUS() != nil {
-			// Positive number: +expr (just return expr)
-			return expr
-		}
-		if opCtx.TILDE() != nil {
-			// Bitwise NOT: ~expr
-			return &ast.A_Expr{
-				Name: &ast.List{Items: []ast.Node{&ast.String{Str: "~"}}},
-				Rexpr: expr,
-			}
-		}
-	}
-
-	return expr
-}
-
-func (c *cc) convertParam(n *parser.Expr_bindContext) ast.Node {
-	if n.NUMBERED_BIND_PARAMETER() != nil {
-		// Parameter numbers start at one
-		c.paramCount += 1
-
-		text := n.GetText()
-		number := c.paramCount
-		if len(text) > 1 {
-			number, _ = strconv.Atoi(text[1:])
-		}
-		return &ast.ParamRef{
-			Number:   number,
-			Location: n.GetStart().GetStart(),
-			Dollar:   len(text) > 1,
-		}
-	}
-
-	if n.NAMED_BIND_PARAMETER() != nil {
-		return &ast.A_Expr{
-			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: "@"}}},
-			Rexpr:    &ast.String{Str: n.GetText()[1:]},
-			Location: n.GetStart().GetStart(),
-		}
-	}
-
-	return todo("convertParam", n)
-}
-
-func (c *cc) convertInSelectNode(n *parser.Expr_in_selectContext) ast.Node {
-	// Check if this is EXISTS or NOT EXISTS
-	if n.EXISTS_() != nil {
-		linkType := ast.EXISTS_SUBLINK
-		sublink := &ast.SubLink{
-			SubLinkType: linkType,
-			Subselect:   c.convert(n.Select_stmt()),
-		}
-		if n.NOT_() != nil {
-			// NOT EXISTS is represented as a BoolExpr NOT wrapping the EXISTS
-			return &ast.BoolExpr{
-				Boolop: ast.BoolExprTypeNot,
-				Args: &ast.List{
-					Items: []ast.Node{sublink},
-				},
-			}
-		}
-		return sublink
-	}
-
-	// Check if this is an IN/NOT IN expression: expr IN (SELECT ...)
-	if n.IN_() != nil && len(n.AllExpr()) > 0 {
-		linkType := ast.ANY_SUBLINK
-		sublink := &ast.SubLink{
-			SubLinkType: linkType,
-			Testexpr:    c.convert(n.Expr(0)),
-			Subselect:   c.convert(n.Select_stmt()),
-		}
-		if n.NOT_() != nil {
-			return &ast.A_Expr{
-				Kind:  ast.A_Expr_Kind_OP,
-				Name:  &ast.List{Items: []ast.Node{&ast.String{Str: "NOT IN"}}},
-				Lexpr: c.convert(n.Expr(0)),
-				Rexpr: &ast.SubLink{
-					SubLinkType: ast.EXPR_SUBLINK,
-					Subselect:   c.convert(n.Select_stmt()),
-				},
-			}
-		}
-		return sublink
-	}
-
-	// Plain subquery in parentheses (SELECT ...)
-	return &ast.SubLink{
-		SubLinkType: ast.EXPR_SUBLINK,
-		Subselect:   c.convert(n.Select_stmt()),
-	}
-}
-
-func (c *cc) convertReturning_caluseContext(n parser.IReturning_clauseContext) *ast.List {
-	list := &ast.List{Items: []ast.Node{}}
-	if n == nil {
-		return list
-	}
-
-	r, ok := n.(*parser.Returning_clauseContext)
-	if !ok {
-		return list
-	}
-
-	for _, exp := range r.AllExpr() {
-		list.Items = append(list.Items, &ast.ResTarget{
-			Indirection: &ast.List{},
-			Val:         c.convert(exp),
-		})
-	}
-
-	for _, star := range r.AllSTAR() {
-		list.Items = append(list.Items, &ast.ResTarget{
-			Indirection: &ast.List{},
-			Val: &ast.ColumnRef{
-				Fields: &ast.List{
-					Items: []ast.Node{&ast.A_Star{}},
-				},
-				Location: star.GetSymbol().GetStart(),
-			},
-			Location: star.GetSymbol().GetStart(),
-		})
-	}
-
-	return list
-}
-
-func (c *cc) convertInsert_stmtContext(n *parser.Insert_stmtContext) ast.Node {
-	tableName := identifier(n.Table_name().GetText())
-	rel := &ast.RangeVar{
-		Relname: &tableName,
-	}
-	if n.Schema_name() != nil {
-		schemaName := n.Schema_name().GetText()
-		rel.Schemaname = &schemaName
-	}
-	if n.Table_alias() != nil {
-		tableAlias := identifier(n.Table_alias().GetText())
-		rel.Alias = &ast.Alias{
-			Aliasname: &tableAlias,
-		}
-	}
-
+func (c *cc) convertInsertStmt(n *meyer.InsertStmt) ast.Node {
 	insert := &ast.InsertStmt{
-		Relation:      rel,
-		Cols:          c.convertColumnNames(n.AllColumn_name()),
-		ReturningList: c.convertReturning_caluseContext(n.Returning_clause()),
+		Relation:      parseRangeVar(n.Table, n.Alias),
+		Cols:          c.convertColumnNames(n.Columns),
+		ReturningList: c.convertReturning(n.Returning),
+		WithClause:    c.convertWith(n.With),
+		DefaultValues: n.DefaultValues,
 	}
-
-	// Check if this is a DEFAULT VALUES insert
-	hasDefaultValues := false
-	for _, child := range n.GetChildren() {
-		if term, ok := child.(antlr.TerminalNode); ok {
-			if term.GetSymbol().GetTokenType() == parser.SQLiteParserDEFAULT_ {
-				hasDefaultValues = true
-				break
-			}
+	if n.Select != nil {
+		if sel, ok := c.convertSelectStmt(n.Select).(*ast.SelectStmt); ok {
+			insert.SelectStmt = sel
 		}
 	}
-
-	if hasDefaultValues {
-		// For DEFAULT VALUES, set the flag instead of creating an empty values list
-		insert.DefaultValues = true
-	} else if n.Select_stmt() != nil {
-		if ss, ok := c.convert(n.Select_stmt()).(*ast.SelectStmt); ok {
-			ss.ValuesLists = &ast.List{}
-			insert.SelectStmt = ss
-		}
-	} else {
-		var valuesLists ast.List
-		var values *ast.List
-		for _, cn := range n.GetChildren() {
-			switch cn := cn.(type) {
-			case antlr.TerminalNode:
-				switch cn.GetSymbol().GetTokenType() {
-				case parser.SQLiteParserVALUES_:
-					values = &ast.List{}
-				case parser.SQLiteParserOPEN_PAR:
-					if values != nil {
-						values = &ast.List{}
-					}
-				case parser.SQLiteParserCOMMA:
-				case parser.SQLiteParserCLOSE_PAR:
-					if values != nil {
-						valuesLists.Items = append(valuesLists.Items, values)
-					}
-				}
-			case parser.IExprContext:
-				if values != nil {
-					values.Items = append(values.Items, c.convert(cn))
-				}
-			}
-		}
-
-		insert.SelectStmt = &ast.SelectStmt{
-			FromClause:  &ast.List{},
-			TargetList:  &ast.List{},
-			ValuesLists: &valuesLists,
-		}
+	if len(n.Upserts) > 0 {
+		insert.OnConflictClause = c.convertUpsert(n.Upserts[0])
 	}
-
 	return insert
 }
 
-func (c *cc) convertColumnNames(cols []parser.IColumn_nameContext) *ast.List {
+func (c *cc) convertUpsert(n *meyer.Upsert) *ast.OnConflictClause {
+	clause := &ast.OnConflictClause{
+		Action:   ast.OnConflictActionNothing,
+		Location: n.Pos(),
+	}
+	if len(n.Target) > 0 || n.TargetWhere != nil {
+		clause.Infer = &ast.InferClause{
+			IndexElems:  &ast.List{Items: c.convertOrderBy(n.Target)},
+			WhereClause: c.convertExpr(n.TargetWhere),
+		}
+	}
+	if n.DoNothing {
+		return clause
+	}
+	clause.Action = ast.OnConflictActionUpdate
+	clause.TargetList = c.convertSetPairs(n.Set)
+	clause.WhereClause = c.convertExpr(n.Where)
+	return clause
+}
+
+func (c *cc) convertColumnNames(cols []*meyer.Ident) *ast.List {
 	list := &ast.List{Items: []ast.Node{}}
-	for _, c := range cols {
-		name := identifier(c.GetText())
+	for _, col := range cols {
+		name := identifier(col)
 		list.Items = append(list.Items, &ast.ResTarget{
 			Name: &name,
 		})
@@ -1045,296 +437,651 @@ func (c *cc) convertColumnNames(cols []parser.IColumn_nameContext) *ast.List {
 	return list
 }
 
-func (c *cc) convertTablesOrSubquery(n []parser.ITable_or_subqueryContext) []ast.Node {
-	var tables []ast.Node
-	for _, ifrom := range n {
-		from, ok := ifrom.(*parser.Table_or_subqueryContext)
-		if !ok {
+// convertSetPairs converts the assignment list of an UPDATE or of an upsert's
+// DO UPDATE. SQLite allows "(a, b) = expr"; sqlc has no node for a
+// multi-column assignment, so each name is given the same value expression.
+func (c *cc) convertSetPairs(pairs []*meyer.SetPair) *ast.List {
+	list := &ast.List{}
+	for _, pair := range pairs {
+		val := c.convertExpr(pair.Value)
+		for _, col := range pair.Columns {
+			name := identifier(col)
+			list.Items = append(list.Items, &ast.ResTarget{
+				Name:     &name,
+				Val:      val,
+				Location: col.Pos(),
+			})
+		}
+	}
+	return list
+}
+
+func (c *cc) convertUpdateStmt(n *meyer.UpdateStmt) ast.Node {
+	return &ast.UpdateStmt{
+		Relations:     &ast.List{Items: []ast.Node{parseRangeVar(n.Table, n.Alias)}},
+		TargetList:    c.convertSetPairs(n.Set),
+		FromClause:    &ast.List{Items: c.convertFrom(n.From)},
+		WhereClause:   c.convertExpr(n.Where),
+		ReturningList: c.convertReturning(n.Returning),
+		WithClause:    c.convertWith(n.With),
+	}
+}
+
+func (c *cc) convertReturning(cols []*meyer.ResultColumn) *ast.List {
+	list := &ast.List{Items: []ast.Node{}}
+	for _, col := range cols {
+		list.Items = append(list.Items, &ast.ResTarget{
+			Indirection: &ast.List{},
+			Val:         c.convertExpr(col.Expr),
+			Location:    col.Pos(),
+		})
+	}
+	return list
+}
+
+//
+// SELECT
+//
+
+func (c *cc) convertSelectStmt(n *meyer.SelectStmt) ast.Node {
+	var stmt *ast.SelectStmt
+	for i, core := range n.Cores {
+		sel := c.convertSelectCore(core)
+		if stmt == nil {
+			stmt = sel
 			continue
 		}
-
-		if from.Table_name() != nil {
-			rel := identifier(from.Table_name().GetText())
-			rv := &ast.RangeVar{
-				Relname:  &rel,
-				Location: from.GetStart().GetStart(),
+		op, all := ast.None, false
+		if i-1 < len(n.Ops) {
+			switch n.Ops[i-1].Op {
+			case "UNION":
+				op = ast.Union
+				all = n.Ops[i-1].All
+			case "INTERSECT":
+				op = ast.Intersect
+			case "EXCEPT":
+				op = ast.Except
 			}
-
-			if from.Schema_name() != nil {
-				schema := from.Schema_name().GetText()
-				rv.Schemaname = &schema
-			}
-			if from.Table_alias() != nil {
-				alias := identifier(from.Table_alias().GetText())
-				rv.Alias = &ast.Alias{Aliasname: &alias}
-			}
-			if from.Table_alias_fallback() != nil {
-				alias := identifier(from.Table_alias_fallback().GetText())
-				rv.Alias = &ast.Alias{Aliasname: &alias}
-			}
-
-			tables = append(tables, rv)
-		} else if from.Table_function_name() != nil {
-			rel := from.Table_function_name().GetText()
-			// Convert function arguments
-			var args []ast.Node
-			for _, expr := range from.AllExpr() {
-				args = append(args, c.convert(expr))
-			}
-			rf := &ast.RangeFunction{
-				Functions: &ast.List{
-					Items: []ast.Node{
-						&ast.FuncCall{
-							Func: &ast.FuncName{
-								Name: rel,
-							},
-							Funcname: &ast.List{
-								Items: []ast.Node{
-									NewIdentifier(rel),
-								},
-							},
-							Args: &ast.List{
-								Items: args,
-							},
-							Location: from.GetStart().GetStart(),
-						},
-					},
-				},
-			}
-
-			if from.Table_alias() != nil {
-				alias := identifier(from.Table_alias().GetText())
-				rf.Alias = &ast.Alias{Aliasname: &alias}
-			}
-
-			tables = append(tables, rf)
-		} else if from.Select_stmt() != nil {
-			rs := &ast.RangeSubselect{
-				Subquery: c.convert(from.Select_stmt()),
-			}
-
-			if from.Table_alias() != nil {
-				alias := identifier(from.Table_alias().GetText())
-				rs.Alias = &ast.Alias{Aliasname: &alias}
-			}
-
-			tables = append(tables, rs)
 		}
-	}
-
-	return tables
-}
-
-type Update_stmt interface {
-	Qualified_table_name() parser.IQualified_table_nameContext
-	GetStart() antlr.Token
-	AllColumn_name() []parser.IColumn_nameContext
-	WHERE_() antlr.TerminalNode
-	Expr(i int) parser.IExprContext
-	AllExpr() []parser.IExprContext
-}
-
-func (c *cc) convertUpdate_stmtContext(n Update_stmt) ast.Node {
-	if n == nil {
-		return nil
-	}
-
-	relations := &ast.List{}
-	tableName := identifier(n.Qualified_table_name().GetText())
-	rel := ast.RangeVar{
-		Relname:  &tableName,
-		Location: n.GetStart().GetStart(),
-	}
-	relations.Items = append(relations.Items, &rel)
-
-	list := &ast.List{}
-	for i, col := range n.AllColumn_name() {
-		colName := identifier(col.GetText())
-		target := &ast.ResTarget{
-			Name: &colName,
-			Val:  c.convert(n.Expr(i)),
+		stmt = &ast.SelectStmt{
+			TargetList: &ast.List{},
+			FromClause: &ast.List{},
+			Op:         op,
+			All:        all,
+			Larg:       stmt,
+			Rarg:       sel,
 		}
-		list.Items = append(list.Items, target)
+		// ORDER BY and LIMIT are written on the last core of a compound
+		// select but apply to the compound as a whole.
+		hoistTail(stmt, stmt.Rarg)
 	}
-
-	var where ast.Node = nil
-	if n.WHERE_() != nil {
-		where = c.convert(n.Expr(len(n.AllExpr()) - 1))
+	if stmt == nil {
+		return todo("convertSelectStmt", n)
 	}
-
-	stmt := &ast.UpdateStmt{
-		Relations:   relations,
-		TargetList:  list,
-		WhereClause: where,
-		FromClause:  &ast.List{},
-		WithClause:  nil, // TODO: support with clause
-	}
-	if n, ok := n.(interface {
-		Returning_clause() parser.IReturning_clauseContext
-	}); ok {
-		stmt.ReturningList = c.convertReturning_caluseContext(n.Returning_clause())
-	} else {
-		stmt.ReturningList = c.convertReturning_caluseContext(nil)
-	}
-	if n, ok := n.(interface {
-		Limit_stmt() parser.ILimit_stmtContext
-	}); ok {
-		limitCount, _ := c.convertLimit_stmtContext(n.Limit_stmt())
-		stmt.LimitCount = limitCount
-	}
+	stmt.WithClause = c.convertWith(n.With)
 	return stmt
 }
 
-func (c *cc) convertBetweenExpr(n *parser.Expr_betweenContext) ast.Node {
-	return &ast.BetweenExpr{
-		Expr:     c.convert(n.Expr(0)),
-		Left:     c.convert(n.Expr(1)),
-		Right:    c.convert(n.Expr(2)),
-		Location: n.GetStart().GetStart(),
-		Not:      n.NOT_() != nil,
-	}
+// hoistTail moves the sort and limit clauses of a compound select's final
+// core up onto the compound itself.
+func hoistTail(outer, inner *ast.SelectStmt) {
+	outer.SortClause, inner.SortClause = inner.SortClause, nil
+	outer.LimitCount, inner.LimitCount = inner.LimitCount, nil
+	outer.LimitOffset, inner.LimitOffset = inner.LimitOffset, nil
 }
 
-func (c *cc) convertCastExpr(n *parser.Expr_castContext) ast.Node {
-	name := n.Type_name().GetText()
-	return &ast.TypeCast{
-		Arg: c.convert(n.Expr()),
-		TypeName: &ast.TypeName{
-			Name: name,
-			Names: &ast.List{Items: []ast.Node{
-				NewIdentifier(name),
-			}},
-			ArrayBounds: &ast.List{},
-		},
-		Location: n.GetStart().GetStart(),
-	}
-}
+func (c *cc) convertSelectCore(core meyer.SelectCore) *ast.SelectStmt {
+	switch n := core.(type) {
+	case *meyer.SelectQuery:
+		stmt := &ast.SelectStmt{
+			TargetList:   &ast.List{Items: c.convertResultColumns(n.Columns)},
+			FromClause:   &ast.List{Items: c.convertFrom(n.From)},
+			WhereClause:  c.convertExpr(n.Where),
+			GroupClause:  &ast.List{},
+			HavingClause: c.convertExpr(n.Having),
+			WindowClause: &ast.List{},
+			ValuesLists:  &ast.List{},
+		}
+		for _, g := range n.GroupBy {
+			stmt.GroupClause.Items = append(stmt.GroupClause.Items, c.convert(g))
+		}
+		if n.Distinct == meyer.DistinctDistinct {
+			// SQLite has no DISTINCT ON, so the clause carries no columns.
+			stmt.DistinctClause = &ast.List{Items: []ast.Node{&ast.TODO{}}}
+		}
+		for _, w := range n.Windows {
+			stmt.WindowClause.Items = append(stmt.WindowClause.Items, c.convertWindowDef(w))
+		}
+		if len(n.OrderBy) > 0 {
+			stmt.SortClause = &ast.List{Items: c.convertOrderBy(n.OrderBy)}
+		}
+		if n.Limit != nil {
+			stmt.LimitCount = c.convertExpr(n.Limit.Count)
+			stmt.LimitOffset = c.convertExpr(n.Limit.Offset)
+		}
+		return stmt
 
-func (c *cc) convertCollateExpr(n *parser.Expr_collateContext) ast.Node {
-	return &ast.CollateExpr{
-		Xpr:      c.convert(n.Expr()),
-		Arg:      NewIdentifier(n.Collation_name().GetText()),
-		Location: n.GetStart().GetStart(),
-	}
-}
-
-func (c *cc) convertCase(n *parser.Expr_caseContext) ast.Node {
-	e := &ast.CaseExpr{
-		Args: &ast.List{},
-	}
-	es := n.AllExpr()
-	if n.ELSE_() != nil {
-		e.Defresult = c.convert(es[len(es)-1])
-		es = es[:len(es)-1]
-	}
-	if len(es)%2 == 1 {
-		e.Arg = c.convert(es[0])
-		es = es[1:]
-	}
-	for i := 0; i < len(es); i += 2 {
-		e.Args.Items = append(e.Args.Items, &ast.CaseWhen{
-			Expr:   c.convert(es[i+0]),
-			Result: c.convert(es[i+1]),
-		})
-	}
-	return e
-}
-
-func (c *cc) convert(node node) ast.Node {
-	switch n := node.(type) {
-
-	case *parser.Alter_table_stmtContext:
-		return c.convertAlter_table_stmtContext(n)
-
-	case *parser.Attach_stmtContext:
-		return c.convertAttach_stmtContext(n)
-
-	case *parser.Create_table_stmtContext:
-		return c.convertCreate_table_stmtContext(n)
-
-	case *parser.Create_virtual_table_stmtContext:
-		return c.convertCreate_virtual_table_stmtContext(n)
-
-	case *parser.Create_view_stmtContext:
-		return c.convertCreate_view_stmtContext(n)
-
-	case *parser.Drop_stmtContext:
-		return c.convertDrop_stmtContext(n)
-
-	case *parser.Delete_stmtContext:
-		return c.convertDelete_stmtContext(n)
-
-	case *parser.Delete_stmt_limitedContext:
-		return c.convertDelete_stmtContext(n)
-
-	case *parser.ExprContext:
-		return c.convertExprContext(n)
-
-	case *parser.Expr_functionContext:
-		return c.convertFuncContext(n)
-
-	case *parser.Expr_qualified_column_nameContext:
-		return c.convertColumnNameExpr(n)
-
-	case *parser.Expr_comparisonContext:
-		return c.convertComparison(n)
-
-	case *parser.Expr_bindContext:
-		return c.convertParam(n)
-
-	case *parser.Expr_literalContext:
-		return c.convertLiteral(n)
-
-	case *parser.Expr_boolContext:
-		return c.convertBoolNode(n)
-
-	case *parser.Expr_listContext:
-		return c.convertExprListContext(n)
-
-	case *parser.Expr_binaryContext:
-		return c.convertBinaryNode(n)
-
-	case *parser.Expr_unaryContext:
-		return c.convertUnaryExpr(n)
-
-	case *parser.Expr_in_selectContext:
-		return c.convertInSelectNode(n)
-
-	case *parser.Expr_betweenContext:
-		return c.convertBetweenExpr(n)
-
-	case *parser.Expr_collateContext:
-		return c.convertCollateExpr(n)
-
-	case *parser.Factored_select_stmtContext:
-		// TODO: need to handle this
-		return todo("convert(case=parser.Factored_select_stmtContext)", n)
-
-	case *parser.Insert_stmtContext:
-		return c.convertInsert_stmtContext(n)
-
-	case *parser.Order_by_stmtContext:
-		return c.convertOrderby_stmtContext(n)
-
-	case *parser.Select_stmtContext:
-		return c.convertMultiSelect_stmtContext(n)
-
-	case *parser.Sql_stmtContext:
-		return c.convertSql_stmtContext(n)
-
-	case *parser.Update_stmtContext:
-		return c.convertUpdate_stmtContext(n)
-
-	case *parser.Update_stmt_limitedContext:
-		return c.convertUpdate_stmtContext(n)
-
-	case *parser.Expr_castContext:
-		return c.convertCastExpr(n)
-
-	case *parser.Expr_caseContext:
-		return c.convertCase(n)
+	case *meyer.ValuesClause:
+		values := &ast.List{}
+		for _, row := range n.Rows {
+			values.Items = append(values.Items, c.convertExprList(row))
+		}
+		return &ast.SelectStmt{
+			TargetList:  &ast.List{},
+			FromClause:  &ast.List{},
+			ValuesLists: values,
+		}
 
 	default:
-		return todo("convert(case=default)", n)
+		return &ast.SelectStmt{
+			TargetList:  &ast.List{},
+			FromClause:  &ast.List{},
+			ValuesLists: &ast.List{},
+		}
 	}
+}
+
+func (c *cc) convertResultColumns(cols []*meyer.ResultColumn) []ast.Node {
+	var out []ast.Node
+	for _, col := range cols {
+		val := c.convertExpr(col.Expr)
+		if val == nil {
+			continue
+		}
+		target := &ast.ResTarget{
+			Val:      val,
+			Location: col.Pos(),
+		}
+		if col.Alias != nil {
+			name := identifier(col.Alias)
+			target.Name = &name
+		}
+		out = append(out, target)
+	}
+	return out
+}
+
+func (c *cc) convertOrderBy(terms []*meyer.OrderingTerm) []ast.Node {
+	var out []ast.Node
+	for _, term := range terms {
+		sortBy := &ast.SortBy{
+			Node:     c.convertExpr(term.Expr),
+			UseOp:    &ast.List{},
+			Location: term.Pos(),
+		}
+		switch term.Order {
+		case meyer.SortAsc:
+			sortBy.SortbyDir = ast.SortByDirAsc
+		case meyer.SortDesc:
+			sortBy.SortbyDir = ast.SortByDirDesc
+		default:
+			sortBy.SortbyDir = ast.SortByDirDefault
+		}
+		switch term.Nulls {
+		case meyer.NullsFirst:
+			sortBy.SortbyNulls = ast.SortByNullsFirst
+		case meyer.NullsLast:
+			sortBy.SortbyNulls = ast.SortByNullsLast
+		default:
+			sortBy.SortbyNulls = ast.SortByNullsDefault
+		}
+		out = append(out, sortBy)
+	}
+	return out
+}
+
+func (c *cc) convertWindowDef(n *meyer.WindowDef) ast.Node {
+	def := &ast.WindowDef{
+		PartitionClause: c.convertExprList(n.Partition),
+		OrderClause:     &ast.List{Items: c.convertOrderBy(n.OrderBy)},
+		Location:        n.Pos(),
+	}
+	if n.Name != nil {
+		name := identifier(n.Name)
+		def.Name = &name
+	}
+	if n.Base != nil {
+		base := identifier(n.Base)
+		def.Refname = &base
+	}
+	return def
+}
+
+func (c *cc) convertWith(n *meyer.With) *ast.WithClause {
+	if n == nil || len(n.CTEs) == 0 {
+		return nil
+	}
+	ctes := &ast.List{}
+	for _, cte := range n.CTEs {
+		name := identifier(cte.Name)
+		cols := &ast.List{}
+		for _, col := range cte.Columns {
+			cols.Items = append(cols.Items, NewIdentifier(col))
+		}
+		ctes.Items = append(ctes.Items, &ast.CommonTableExpr{
+			Ctename:      &name,
+			Ctequery:     c.convert(cte.Select),
+			Location:     cte.Pos(),
+			Cterecursive: n.Recursive,
+			Ctecolnames:  cols,
+		})
+	}
+	return &ast.WithClause{
+		Ctes:      ctes,
+		Recursive: n.Recursive,
+		Location:  n.Pos(),
+	}
+}
+
+// convertFrom converts a SQLite source list. The list is flat, with each
+// item recording how it attaches to the one before it, so a chain of joins
+// is rebuilt here as a left-leaning tree. A list joined only by commas has
+// no join conditions to carry and stays flat.
+func (c *cc) convertFrom(refs []*meyer.TableRef) []ast.Node {
+	if len(refs) == 0 {
+		return nil
+	}
+	if commaOnly(refs) {
+		out := make([]ast.Node, 0, len(refs))
+		for _, ref := range refs {
+			out = append(out, c.convertTableRef(ref))
+		}
+		return out
+	}
+	table := c.convertTableRef(refs[0])
+	for _, ref := range refs[1:] {
+		join := &ast.JoinExpr{
+			Larg: table,
+			Rarg: c.convertTableRef(ref),
+		}
+		if op := ref.Join; op != nil {
+			join.IsNatural = op.Type&meyer.JoinNatural != 0
+			left := op.Type&meyer.JoinLeft != 0
+			right := op.Type&meyer.JoinRight != 0
+			switch {
+			case left && right:
+				join.Jointype = ast.JoinTypeFull
+			case left:
+				join.Jointype = ast.JoinTypeLeft
+			case right:
+				join.Jointype = ast.JoinTypeRight
+			case op.Type&meyer.JoinComma == 0:
+				join.Jointype = ast.JoinTypeInner
+			}
+		}
+		if ref.On != nil {
+			join.Quals = c.convert(ref.On)
+		}
+		if len(ref.Using) > 0 {
+			using := &ast.List{}
+			for _, col := range ref.Using {
+				using.Items = append(using.Items, NewIdentifier(col))
+			}
+			join.UsingClause = using
+		}
+		table = join
+	}
+	return []ast.Node{table}
+}
+
+func commaOnly(refs []*meyer.TableRef) bool {
+	for _, ref := range refs[1:] {
+		if ref.Join == nil || ref.Join.Type&meyer.JoinComma == 0 {
+			return false
+		}
+	}
+	return true
+}
+
+func (c *cc) convertTableRef(n *meyer.TableRef) ast.Node {
+	switch {
+	case n.Name != nil && n.HasArgs:
+		// A table-valued function, such as generate_series(1, 10).
+		fn := &ast.FuncCall{
+			Func:     &ast.FuncName{Name: identifier(n.Name.Name)},
+			Funcname: &ast.List{Items: []ast.Node{NewIdentifier(n.Name.Name)}},
+			Args:     c.convertExprList(n.Args),
+			Location: n.Pos(),
+		}
+		if n.Name.Schema != nil {
+			fn.Func.Schema = identifier(n.Name.Schema)
+		}
+		rf := &ast.RangeFunction{
+			Functions: &ast.List{Items: []ast.Node{fn}},
+		}
+		if n.Alias != nil {
+			alias := identifier(n.Alias)
+			rf.Alias = &ast.Alias{Aliasname: &alias}
+		}
+		return rf
+
+	case n.Name != nil:
+		rv := parseRangeVar(n.Name, n.Alias)
+		rv.Location = n.Pos()
+		return rv
+
+	case n.Select != nil:
+		rs := &ast.RangeSubselect{
+			Subquery: c.convert(n.Select),
+		}
+		if n.Alias != nil {
+			alias := identifier(n.Alias)
+			rs.Alias = &ast.Alias{Aliasname: &alias}
+		}
+		return rs
+
+	case len(n.List) > 0:
+		// A parenthesized source list, as in "FROM (a JOIN b ON ...)".
+		nested := c.convertFrom(n.List)
+		if len(nested) == 1 {
+			return nested[0]
+		}
+		return &ast.List{Items: nested}
+	}
+	return todo("convertTableRef", n)
+}
+
+//
+// Expressions
+//
+
+func (c *cc) convertLiteral(n *meyer.Literal) ast.Node {
+	switch n.Kind {
+	case meyer.LitInteger:
+		if i, ok := parseInteger(n.Value); ok {
+			return &ast.A_Const{
+				Val:      &ast.Integer{Ival: i},
+				Location: n.Pos(),
+			}
+		}
+		// Too wide for an int64, or written with the digit separators
+		// SQLite accepts. Either way the value is still numeric.
+		return &ast.A_Const{
+			Val:      &ast.Float{Str: n.Value},
+			Location: n.Pos(),
+		}
+
+	case meyer.LitFloat:
+		return &ast.A_Const{
+			Val:      &ast.Float{Str: n.Value},
+			Location: n.Pos(),
+		}
+
+	case meyer.LitString, meyer.LitBlob:
+		return &ast.A_Const{
+			Val:      &ast.String{Str: n.Value},
+			Location: n.Pos(),
+		}
+
+	case meyer.LitNull:
+		return &ast.A_Const{
+			Val:      &ast.Null{},
+			Location: n.Pos(),
+		}
+	}
+	// CURRENT_DATE, CURRENT_TIME and CURRENT_TIMESTAMP are keywords rather
+	// than function calls, but behave like niladic functions.
+	name := strings.ToLower(n.Raw)
+	return &ast.FuncCall{
+		Func:     &ast.FuncName{Name: name},
+		Funcname: &ast.List{Items: []ast.Node{&ast.String{Str: name}}},
+		Args:     &ast.List{},
+		AggOrder: &ast.List{},
+		Location: n.Pos(),
+	}
+}
+
+// parseInteger reads an integer literal in either of the two forms SQLite
+// writes: decimal, where a leading zero is not an octal prefix, and
+// hexadecimal.
+func parseInteger(s string) (int64, bool) {
+	if len(s) > 2 && s[0] == '0' && (s[1] == 'x' || s[1] == 'X') {
+		i, err := strconv.ParseInt(s[2:], 16, 64)
+		return i, err == nil
+	}
+	i, err := strconv.ParseInt(s, 10, 64)
+	return i, err == nil
+}
+
+func (c *cc) convertBindParam(n *meyer.BindParam) ast.Node {
+	switch n.Kind {
+	case meyer.ParamAnon, meyer.ParamNumber:
+		// Parameter numbers start at one.
+		c.paramCount += 1
+		number := c.paramCount
+		if n.Kind == meyer.ParamNumber {
+			number = n.Number
+		}
+		return &ast.ParamRef{
+			Number:   number,
+			Location: n.Pos(),
+			Dollar:   n.Kind == meyer.ParamNumber,
+		}
+	default:
+		// A named parameter. sqlc carries the name through as the operand of
+		// a pseudo-operator and resolves it later.
+		return &ast.A_Expr{
+			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: "@"}}},
+			Rexpr:    &ast.String{Str: n.Name},
+			Location: n.Pos(),
+		}
+	}
+}
+
+func (c *cc) convertBinaryExpr(n *meyer.BinaryExpr) ast.Node {
+	switch n.Op {
+	case meyer.OpAnd, meyer.OpOr:
+		op := ast.BoolExprTypeAnd
+		if n.Op == meyer.OpOr {
+			op = ast.BoolExprTypeOr
+		}
+		return &ast.BoolExpr{
+			Boolop: op,
+			Args: &ast.List{Items: []ast.Node{
+				c.convert(n.X),
+				c.convert(n.Y),
+			}},
+			Location: n.Pos(),
+		}
+	}
+	return &ast.A_Expr{
+		Name:     &ast.List{Items: []ast.Node{&ast.String{Str: n.Op.String()}}},
+		Lexpr:    c.convert(n.X),
+		Rexpr:    c.convert(n.Y),
+		Location: n.Pos(),
+	}
+}
+
+func (c *cc) convertUnaryExpr(n *meyer.UnaryExpr) ast.Node {
+	expr := c.convert(n.X)
+	switch n.Op {
+	case meyer.OpNot:
+		return &ast.BoolExpr{
+			Boolop:   ast.BoolExprTypeNot,
+			Args:     &ast.List{Items: []ast.Node{expr}},
+			Location: n.Pos(),
+		}
+	case meyer.OpPlus:
+		// A unary plus is a no-op on every operand SQLite accepts.
+		return expr
+	default:
+		return &ast.A_Expr{
+			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: n.Op.String()}}},
+			Rexpr:    expr,
+			Location: n.Pos(),
+		}
+	}
+}
+
+func (c *cc) convertIsExpr(n *meyer.IsExpr) ast.Node {
+	expr := &ast.A_Expr{
+		Lexpr:    c.convert(n.X),
+		Rexpr:    c.convert(n.Y),
+		Location: n.Pos(),
+	}
+	var name string
+	switch {
+	case n.Distinct && n.Not:
+		expr.Kind = ast.A_Expr_Kind_NOT_DISTINCT
+		name = "IS NOT DISTINCT FROM"
+	case n.Distinct:
+		expr.Kind = ast.A_Expr_Kind_DISTINCT
+		name = "IS DISTINCT FROM"
+	case n.Not:
+		name = "IS NOT"
+	default:
+		name = "IS"
+	}
+	expr.Name = &ast.List{Items: []ast.Node{&ast.String{Str: name}}}
+	return expr
+}
+
+func (c *cc) convertNullCheckExpr(n *meyer.NullCheckExpr) ast.Node {
+	name := "NOT NULL"
+	switch n.Test {
+	case meyer.TestIsNull:
+		name = "ISNULL"
+	case meyer.TestNotNull:
+		name = "NOTNULL"
+	}
+	return &ast.A_Expr{
+		Name:     &ast.List{Items: []ast.Node{&ast.String{Str: name}}},
+		Lexpr:    c.convert(n.X),
+		Location: n.Pos(),
+	}
+}
+
+func (c *cc) convertLikeExpr(n *meyer.LikeExpr) ast.Node {
+	name := strings.ToUpper(n.Op.Name)
+	if n.Not {
+		name = "NOT " + name
+	}
+	return &ast.A_Expr{
+		Name:     &ast.List{Items: []ast.Node{&ast.String{Str: name}}},
+		Lexpr:    c.convert(n.X),
+		Rexpr:    c.convert(n.Y),
+		Location: n.Pos(),
+	}
+}
+
+func (c *cc) convertInExpr(n *meyer.InExpr) ast.Node {
+	if n.Select != nil {
+		sublink := &ast.SubLink{
+			SubLinkType: ast.ANY_SUBLINK,
+			Testexpr:    c.convert(n.X),
+			Subselect:   c.convertSelectStmt(n.Select),
+			Location:    n.Pos(),
+		}
+		if !n.Not {
+			return sublink
+		}
+		return &ast.BoolExpr{
+			Boolop:   ast.BoolExprTypeNot,
+			Args:     &ast.List{Items: []ast.Node{sublink}},
+			Location: n.Pos(),
+		}
+	}
+
+	in := &ast.In{
+		Expr:     c.convert(n.X),
+		Not:      n.Not,
+		Location: n.Pos(),
+	}
+	if n.Table != nil {
+		// "expr IN table" tests membership in the table's single column.
+		in.Sel = parseRangeVar(n.Table, nil)
+		return in
+	}
+	for _, e := range n.List {
+		in.List = append(in.List, c.convert(e))
+	}
+	return in
+}
+
+func (c *cc) convertBetweenExpr(n *meyer.BetweenExpr) ast.Node {
+	return &ast.BetweenExpr{
+		Expr:     c.convert(n.X),
+		Left:     c.convert(n.Lo),
+		Right:    c.convert(n.Hi),
+		Not:      n.Not,
+		Location: n.Pos(),
+	}
+}
+
+func (c *cc) convertCastExpr(n *meyer.CastExpr) ast.Node {
+	name := typeName(n.Type)
+	return &ast.TypeCast{
+		Arg: c.convert(n.X),
+		TypeName: &ast.TypeName{
+			Name:        name,
+			Names:       &ast.List{Items: []ast.Node{&ast.String{Str: strings.ToLower(name)}}},
+			ArrayBounds: &ast.List{},
+		},
+		Location: n.Pos(),
+	}
+}
+
+func (c *cc) convertCollateExpr(n *meyer.CollateExpr) ast.Node {
+	return &ast.CollateExpr{
+		Xpr:      c.convert(n.X),
+		Arg:      NewIdentifier(n.Name),
+		Location: n.Pos(),
+	}
+}
+
+func (c *cc) convertCaseExpr(n *meyer.CaseExpr) ast.Node {
+	expr := &ast.CaseExpr{
+		Arg:       c.convertExpr(n.Operand),
+		Args:      &ast.List{},
+		Defresult: c.convertExpr(n.Else),
+		Location:  n.Pos(),
+	}
+	for _, when := range n.Whens {
+		expr.Args.Items = append(expr.Args.Items, &ast.CaseWhen{
+			Expr:     c.convert(when.When),
+			Result:   c.convert(when.Then),
+			Location: when.Pos(),
+		})
+	}
+	return expr
+}
+
+func (c *cc) convertFuncCall(n *meyer.FuncCall) ast.Node {
+	funcName := identifier(n.Name)
+	args := c.convertExprList(n.Args)
+
+	var schema string
+	if c.folded[n.Name.Pos()] {
+		schema = sqlcSchema
+		funcName = strings.TrimPrefix(funcName, sqlcSchema+"_")
+	}
+
+	if schema == "" && funcName == "coalesce" {
+		return &ast.CoalesceExpr{
+			Args:     args,
+			Location: n.Pos(),
+		}
+	}
+
+	call := &ast.FuncCall{
+		Func: &ast.FuncName{
+			Schema: schema,
+			Name:   funcName,
+		},
+		Funcname: &ast.List{Items: []ast.Node{
+			&ast.String{Str: funcName},
+		}},
+		AggStar:     n.Star,
+		Args:        args,
+		AggOrder:    &ast.List{Items: c.convertOrderBy(n.OrderBy)},
+		AggDistinct: n.Distinct,
+		AggFilter:   c.convertExpr(n.Filter),
+		Location:    n.Pos(),
+	}
+	if n.Over != nil {
+		if over, ok := c.convertWindowDef(n.Over).(*ast.WindowDef); ok {
+			call.Over = over
+		}
+	}
+	return call
 }
