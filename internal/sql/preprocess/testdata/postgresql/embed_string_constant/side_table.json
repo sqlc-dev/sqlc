@@ -1,0 +1,15 @@
+[
+  {
+    "start": 0,
+    "end": 18,
+    "dollar": true,
+    "embeds": [
+      {
+        "table": "t",
+        "location": 7,
+        "origin": 7,
+        "orig": "sqlc.embed(t)"
+      }
+    ]
+  }
+]

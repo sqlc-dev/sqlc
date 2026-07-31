@@ -1,0 +1,1 @@
+1:8: expected 1 parameter to sqlc.arg; got 0

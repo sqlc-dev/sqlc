@@ -1,0 +1,23 @@
+[
+  {
+    "start": 0,
+    "end": 20,
+    "dollar": true,
+    "error": "function \"sqlc.argh\" does not exist",
+    "error_at": 7
+  },
+  {
+    "start": 20,
+    "end": 31,
+    "dollar": true,
+    "params": [
+      {
+        "number": 1,
+        "location": 28,
+        "origin": 28,
+        "name": "b",
+        "named": true
+      }
+    ]
+  }
+]

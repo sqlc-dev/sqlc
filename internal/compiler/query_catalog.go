@@ -5,16 +5,16 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
-	"github.com/sqlc-dev/sqlc/internal/sql/rewrite"
+	"github.com/sqlc-dev/sqlc/internal/sql/preprocess"
 )
 
 type QueryCatalog struct {
 	catalog *catalog.Catalog
 	ctes    map[string]*Table
-	embeds  rewrite.EmbedSet
+	embeds  preprocess.EmbedSet
 }
 
-func (comp *Compiler) buildQueryCatalog(c *catalog.Catalog, node ast.Node, embeds rewrite.EmbedSet) (*QueryCatalog, error) {
+func (comp *Compiler) buildQueryCatalog(c *catalog.Catalog, node ast.Node, embeds preprocess.EmbedSet) (*QueryCatalog, error) {
 	var with *ast.WithClause
 	switch n := node.(type) {
 	case *ast.DeleteStmt:

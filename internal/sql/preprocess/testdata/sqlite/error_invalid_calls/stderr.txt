@@ -1,0 +1,4 @@
+2:33: function "sqlc.argh" does not exist
+5:33: expected 1 parameter to sqlc.arg; got 2
+8:33: expected 1 parameter to sqlc.arg; got 0
+11:33: expected parameter to sqlc.arg to be string or reference; got "?"

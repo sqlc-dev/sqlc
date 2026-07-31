@@ -472,6 +472,7 @@ func (c *cc) convertBinaryExpr(n *chast.BinaryExpr) ast.Node {
 
 	// Handle other operators
 	return &ast.A_Expr{
+		Kind: ast.A_Expr_Kind_OP,
 		Name: &ast.List{
 			Items: []ast.Node{&ast.String{Str: n.Op}},
 		},
@@ -692,6 +693,7 @@ func (c *cc) convertUnaryExpr(n *chast.UnaryExpr) ast.Node {
 	}
 
 	return &ast.A_Expr{
+		Kind: ast.A_Expr_Kind_OP,
 		Name: &ast.List{
 			Items: []ast.Node{&ast.String{Str: n.Op}},
 		},

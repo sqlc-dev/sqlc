@@ -32,20 +32,60 @@ var clickhouseTypes = []chType{
 	{"Map", "U"}, {"Tuple", "U"}, {"Nested", "U"}, {"Nothing", "U"},
 }
 
+var comparisonOperators = []string{"=", "<>", "!=", "<", "<=", ">", ">="}
+
+var arithmeticOperators = []string{"+", "-", "*", "/"}
+
 func Seed(cat *core.Catalog) error {
 	dialectOID, err := cat.CreateDialect("clickhouse")
 	if err != nil {
 		return err
 	}
+	oids := make(map[string]int64, len(clickhouseTypes))
 	for _, t := range clickhouseTypes {
-		if _, err := cat.CreateTypeSpec(core.TypeSpec{
+		oid, err := cat.CreateTypeSpec(core.TypeSpec{
 			Name:       t.name,
 			Typtype:    "b",
 			Category:   t.category,
 			DialectOID: dialectOID,
-		}); err != nil {
+		})
+		if err != nil {
 			return fmt.Errorf("seed clickhouse type %q: %w", t.name, err)
 		}
+		oids[t.name] = oid
 	}
+
+	boolOID := oids["Bool"]
+	for _, t := range clickhouseTypes {
+		if t.category == "A" || t.category == "U" {
+			continue
+		}
+		for _, op := range comparisonOperators {
+			if _, err := cat.CreateOperator(core.OperatorSpec{
+				Name:          op,
+				DialectOID:    dialectOID,
+				LeftTypeOID:   oids[t.name],
+				RightTypeOID:  oids[t.name],
+				ResultTypeOID: boolOID,
+			}); err != nil {
+				return fmt.Errorf("seed clickhouse operator %q(%s): %w", op, t.name, err)
+			}
+		}
+		if t.category != "N" {
+			continue
+		}
+		for _, op := range arithmeticOperators {
+			if _, err := cat.CreateOperator(core.OperatorSpec{
+				Name:          op,
+				DialectOID:    dialectOID,
+				LeftTypeOID:   oids[t.name],
+				RightTypeOID:  oids[t.name],
+				ResultTypeOID: oids[t.name],
+			}); err != nil {
+				return fmt.Errorf("seed clickhouse operator %q(%s): %w", op, t.name, err)
+			}
+		}
+	}
+
 	return nil
 }

@@ -1,0 +1,17 @@
+[
+  {
+    "start": 0,
+    "end": 58,
+    "dollar": true,
+    "params": [
+      {
+        "number": 1,
+        "location": 55,
+        "origin": 36,
+        "name": "paramname",
+        "named": true,
+        "slice": true
+      }
+    ]
+  }
+]

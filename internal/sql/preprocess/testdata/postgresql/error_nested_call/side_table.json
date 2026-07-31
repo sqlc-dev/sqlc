@@ -1,0 +1,9 @@
+[
+  {
+    "start": 0,
+    "end": 29,
+    "dollar": true,
+    "error": "expected parameter to sqlc.arg to be string or reference; got \"sqlc.arg(a)\"",
+    "error_at": 7
+  }
+]
