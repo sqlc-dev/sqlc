@@ -1,0 +1,23 @@
+[
+  {
+    "start": 0,
+    "end": 14,
+    "dollar": true,
+    "params": [
+      {
+        "number": 1,
+        "location": 7,
+        "origin": 7,
+        "name": "MixedCase",
+        "named": true
+      },
+      {
+        "number": 2,
+        "location": 11,
+        "origin": 30,
+        "name": "mixedcase",
+        "named": true
+      }
+    ]
+  }
+]

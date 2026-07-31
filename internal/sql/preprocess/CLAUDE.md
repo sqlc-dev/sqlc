@@ -95,6 +95,13 @@ Regenerate every golden with:
 go test ./internal/sql/preprocess -update
 ```
 
+The cases cover every shape of sqlc syntax that appears in
+`internal/endtoend`, per engine — each function against a bare reference, a
+string constant and a quoted identifier, the placeholder styles, and the
+constructs that must be left alone (comments, literals, MySQL user variables
+and `$1`, PostgreSQL's `@>` and `?` operators). When you add a shape to the
+corpus, add it here too.
+
 ## Adding a dialect
 
 Add an entry to `dialects` in dialect.go. Nothing else in the codebase needs to
