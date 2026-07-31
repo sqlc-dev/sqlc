@@ -1,0 +1,5 @@
+{
+  "command": "analyze",
+  "args": ["--dialect", "mysql", "--schema", "schema.sql", "query.sql"],
+  "contexts": ["base"]
+}

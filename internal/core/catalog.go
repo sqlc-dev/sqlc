@@ -17,6 +17,10 @@ type Catalog struct {
 	db    *sql.DB
 	stmts *stmtCache
 	q     *catalogdb.Queries
+
+	// dialectOID is the dialect this catalog was seeded with. A catalog is
+	// built for one dialect, so dialect-wide lookups need no other input.
+	dialectOID int64
 }
 
 type Option func(*Catalog) error

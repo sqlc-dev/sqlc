@@ -54,6 +54,67 @@ func (c *Catalog) CreateAttribute(classOID int64, name string, typeOID int64, no
 	})
 }
 
+// DropAttribute removes a column from a relation.
+func (c *Catalog) DropAttribute(classOID int64, name string) error {
+	err := c.q.DeleteAttribute(context.Background(), catalogdb.DeleteAttributeParams{
+		ClassOid: classOID,
+		Name:     name,
+	})
+	if err != nil {
+		return fmt.Errorf("drop attribute %q on class %d: %w", name, classOID, err)
+	}
+	return nil
+}
+
+// RenameAttribute renames a column.
+func (c *Catalog) RenameAttribute(classOID int64, name, newName string) error {
+	err := c.q.RenameAttribute(context.Background(), catalogdb.RenameAttributeParams{
+		ClassOid: classOID,
+		Name:     name,
+		NewName:  newName,
+	})
+	if err != nil {
+		return fmt.Errorf("rename attribute %q on class %d: %w", name, classOID, err)
+	}
+	return nil
+}
+
+// SetAttributeType changes a column's type.
+func (c *Catalog) SetAttributeType(classOID int64, name string, typeOID int64, declType string) error {
+	err := c.q.SetAttributeType(context.Background(), catalogdb.SetAttributeTypeParams{
+		ClassOid: classOID,
+		Name:     name,
+		TypeOid:  typeOID,
+		DeclType: declType,
+	})
+	if err != nil {
+		return fmt.Errorf("set type of attribute %q on class %d: %w", name, classOID, err)
+	}
+	return nil
+}
+
+// SetAttributeNotNull records whether a column accepts NULL.
+func (c *Catalog) SetAttributeNotNull(classOID int64, name string, notNull bool) error {
+	err := c.q.SetAttributeNotNull(context.Background(), catalogdb.SetAttributeNotNullParams{
+		ClassOid: classOID,
+		Name:     name,
+		NotNull:  boolToInt64(notNull),
+	})
+	if err != nil {
+		return fmt.Errorf("set null of attribute %q on class %d: %w", name, classOID, err)
+	}
+	return nil
+}
+
+// NextAttributeNum is the ordinal a column added to the relation takes.
+func (c *Catalog) NextAttributeNum(classOID int64) (int, error) {
+	num, err := c.q.MaxAttributeNum(context.Background(), classOID)
+	if err != nil {
+		return 0, fmt.Errorf("attribute count for class %d: %w", classOID, err)
+	}
+	return int(num) + 1, nil
+}
+
 func (c *Catalog) SetAttributePrimaryKey(classOID int64, columns []string) error {
 	ctx := context.Background()
 	for _, name := range columns {

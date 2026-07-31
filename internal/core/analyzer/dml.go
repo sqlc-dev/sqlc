@@ -28,7 +28,10 @@ func (a *analyzer) analyzeInsert(s *ast.InsertStmt) error {
 }
 
 func (a *analyzer) analyzeUpdate(s *ast.UpdateStmt) error {
-	sc, err := a.relationScope(s.Relations, s.FromClause)
+	if err := a.bindCTEs(s.WithClause); err != nil {
+		return err
+	}
+	sc, err := a.relationScope(s.Relations, s.FromClause, nil)
 	if err != nil {
 		return err
 	}
@@ -58,7 +61,10 @@ func (a *analyzer) analyzeUpdate(s *ast.UpdateStmt) error {
 }
 
 func (a *analyzer) analyzeDelete(s *ast.DeleteStmt) error {
-	sc, err := a.relationScope(s.Relations, s.UsingClause)
+	if err := a.bindCTEs(s.WithClause); err != nil {
+		return err
+	}
+	sc, err := a.relationScope(s.Relations, s.UsingClause, s.FromClause)
 	if err != nil {
 		return err
 	}
@@ -72,7 +78,10 @@ func (a *analyzer) analyzeDelete(s *ast.DeleteStmt) error {
 	return a.projectReturning(s.ReturningList)
 }
 
-func (a *analyzer) relationScope(relations, extra *ast.List) (*scope, error) {
+// relationScope builds the scope a DML statement operates on: the relations it
+// targets, whatever a USING or FROM clause joins in, and — for the engines that
+// report a multi-table DELETE that way — a single FROM node.
+func (a *analyzer) relationScope(relations, extra *ast.List, from ast.Node) (*scope, error) {
 	sc := &scope{}
 	for _, item := range listItems(relations) {
 		if err := a.appendFromItem(sc, item); err != nil {
@@ -81,6 +90,11 @@ func (a *analyzer) relationScope(relations, extra *ast.List) (*scope, error) {
 	}
 	for _, item := range listItems(extra) {
 		if err := a.appendFromItem(sc, item); err != nil {
+			return nil, err
+		}
+	}
+	if from != nil {
+		if err := a.appendFromItem(sc, from); err != nil {
 			return nil, err
 		}
 	}
@@ -118,8 +132,11 @@ func (a *analyzer) bindInsertValues(n ast.Node, rel scopeRel, targets []core.Cla
 	if !ok {
 		return fmt.Errorf("insert: unsupported source %T", n)
 	}
+	// INSERT ... SELECT inserts whatever the query returns. The rows are not
+	// the statement's result, but the query still holds placeholders.
 	if sel.ValuesLists == nil {
-		return fmt.Errorf("insert: INSERT ... SELECT is not supported")
+		_, err := a.subqueryColumns(sel)
+		return err
 	}
 	for _, row := range listItems(sel.ValuesLists) {
 		values, ok := row.(*ast.List)

@@ -359,6 +359,20 @@ func (q *Queries) CreateType(ctx context.Context, arg CreateTypeParams) (int64, 
 	return result.LastInsertId()
 }
 
+const deleteAttribute = `-- name: DeleteAttribute :exec
+DELETE FROM sql_attribute WHERE class_oid = ? AND name = ?
+`
+
+type DeleteAttributeParams struct {
+	ClassOid int64
+	Name     string
+}
+
+func (q *Queries) DeleteAttribute(ctx context.Context, arg DeleteAttributeParams) error {
+	_, err := q.db.ExecContext(ctx, deleteAttribute, arg.ClassOid, arg.Name)
+	return err
+}
+
 const deleteAttributesByClass = `-- name: DeleteAttributesByClass :exec
 DELETE FROM sql_attribute WHERE class_oid = ?
 `
@@ -752,6 +766,17 @@ func (q *Queries) LookupType(ctx context.Context, oid int64) (LookupTypeRow, err
 	return i, err
 }
 
+const maxAttributeNum = `-- name: MaxAttributeNum :one
+SELECT CAST(COALESCE(MAX(num), 0) AS INTEGER) AS num FROM sql_attribute WHERE class_oid = ?
+`
+
+func (q *Queries) MaxAttributeNum(ctx context.Context, classOid int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, maxAttributeNum, classOid)
+	var num int64
+	err := row.Scan(&num)
+	return num, err
+}
+
 const namespaceOID = `-- name: NamespaceOID :one
 SELECT oid FROM sql_namespace WHERE name = ?
 `
@@ -790,6 +815,36 @@ func (q *Queries) ProcArgTypes(ctx context.Context, procOid int64) ([]int64, err
 		return nil, err
 	}
 	return items, nil
+}
+
+const renameAttribute = `-- name: RenameAttribute :exec
+UPDATE sql_attribute SET name = ?1
+WHERE class_oid = ?2 AND name = ?3
+`
+
+type RenameAttributeParams struct {
+	NewName  string
+	ClassOid int64
+	Name     string
+}
+
+func (q *Queries) RenameAttribute(ctx context.Context, arg RenameAttributeParams) error {
+	_, err := q.db.ExecContext(ctx, renameAttribute, arg.NewName, arg.ClassOid, arg.Name)
+	return err
+}
+
+const renameClass = `-- name: RenameClass :exec
+UPDATE sql_class SET name = ?1 WHERE oid = ?2
+`
+
+type RenameClassParams struct {
+	NewName string
+	Oid     int64
+}
+
+func (q *Queries) RenameClass(ctx context.Context, arg RenameClassParams) error {
+	_, err := q.db.ExecContext(ctx, renameClass, arg.NewName, arg.Oid)
+	return err
 }
 
 const resolveColumn = `-- name: ResolveColumn :one
@@ -842,6 +897,22 @@ func (q *Queries) ResolveColumn(ctx context.Context, arg ResolveColumnParams) (R
 	return i, err
 }
 
+const setAttributeNotNull = `-- name: SetAttributeNotNull :exec
+UPDATE sql_attribute SET not_null = ?1
+WHERE class_oid = ?2 AND name = ?3
+`
+
+type SetAttributeNotNullParams struct {
+	NotNull  int64
+	ClassOid int64
+	Name     string
+}
+
+func (q *Queries) SetAttributeNotNull(ctx context.Context, arg SetAttributeNotNullParams) error {
+	_, err := q.db.ExecContext(ctx, setAttributeNotNull, arg.NotNull, arg.ClassOid, arg.Name)
+	return err
+}
+
 const setAttributePrimaryKey = `-- name: SetAttributePrimaryKey :exec
 UPDATE sql_attribute SET is_primary_key = 1, not_null = 1
 WHERE class_oid = ? AND name = ?
@@ -854,6 +925,28 @@ type SetAttributePrimaryKeyParams struct {
 
 func (q *Queries) SetAttributePrimaryKey(ctx context.Context, arg SetAttributePrimaryKeyParams) error {
 	_, err := q.db.ExecContext(ctx, setAttributePrimaryKey, arg.ClassOid, arg.Name)
+	return err
+}
+
+const setAttributeType = `-- name: SetAttributeType :exec
+UPDATE sql_attribute SET type_oid = ?1, decl_type = ?2
+WHERE class_oid = ?3 AND name = ?4
+`
+
+type SetAttributeTypeParams struct {
+	TypeOid  int64
+	DeclType string
+	ClassOid int64
+	Name     string
+}
+
+func (q *Queries) SetAttributeType(ctx context.Context, arg SetAttributeTypeParams) error {
+	_, err := q.db.ExecContext(ctx, setAttributeType,
+		arg.TypeOid,
+		arg.DeclType,
+		arg.ClassOid,
+		arg.Name,
+	)
 	return err
 }
 

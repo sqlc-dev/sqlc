@@ -49,6 +49,17 @@ func (c *Catalog) DropClass(classOID int64) error {
 	return nil
 }
 
+func (c *Catalog) RenameClass(classOID int64, name string) error {
+	err := c.q.RenameClass(context.Background(), catalogdb.RenameClassParams{
+		Oid:     classOID,
+		NewName: name,
+	})
+	if err != nil {
+		return fmt.Errorf("rename class %d: %w", classOID, err)
+	}
+	return nil
+}
+
 type ClassInfo struct {
 	OID  int64
 	Name string

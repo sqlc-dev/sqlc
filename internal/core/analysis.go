@@ -27,6 +27,7 @@ type Column struct {
 	DataType           string        `json:"data_type"`
 	TypeOID            int64         `json:"type_oid,omitempty"`
 	NotNull            bool          `json:"not_null"`
+	IsArray            bool          `json:"is_array,omitempty"`
 	SourceClassOID     int64         `json:"source_class_oid,omitempty"`
 	SourceAttributeOID int64         `json:"source_attribute_oid,omitempty"`
 	Source             *ColumnSource `json:"source,omitempty"`
@@ -44,5 +45,6 @@ type Parameter struct {
 	DataType string        `json:"data_type,omitempty"`
 	TypeOID  int64         `json:"type_oid,omitempty"`
 	NotNull  bool          `json:"not_null"`
+	IsArray  bool          `json:"is_array,omitempty"`
 	Source   *ColumnSource `json:"source,omitempty"`
 }

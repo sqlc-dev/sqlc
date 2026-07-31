@@ -76,6 +76,9 @@ ORDER BY oid;
 -- name: DeleteClass :exec
 DELETE FROM sql_class WHERE oid = ?;
 
+-- name: RenameClass :exec
+UPDATE sql_class SET name = sqlc.arg(new_name) WHERE oid = sqlc.arg(oid);
+
 -- ============================= sql_attribute ===========================
 
 -- name: CreateAttribute :exec
@@ -95,6 +98,24 @@ WHERE class_oid = ? AND name = ?;
 
 -- name: DeleteAttributesByClass :exec
 DELETE FROM sql_attribute WHERE class_oid = ?;
+
+-- name: DeleteAttribute :exec
+DELETE FROM sql_attribute WHERE class_oid = ? AND name = ?;
+
+-- name: RenameAttribute :exec
+UPDATE sql_attribute SET name = sqlc.arg(new_name)
+WHERE class_oid = sqlc.arg(class_oid) AND name = sqlc.arg(name);
+
+-- name: SetAttributeType :exec
+UPDATE sql_attribute SET type_oid = sqlc.arg(type_oid), decl_type = sqlc.arg(decl_type)
+WHERE class_oid = sqlc.arg(class_oid) AND name = sqlc.arg(name);
+
+-- name: SetAttributeNotNull :exec
+UPDATE sql_attribute SET not_null = sqlc.arg(not_null)
+WHERE class_oid = sqlc.arg(class_oid) AND name = sqlc.arg(name);
+
+-- name: MaxAttributeNum :one
+SELECT CAST(COALESCE(MAX(num), 0) AS INTEGER) AS num FROM sql_attribute WHERE class_oid = ?;
 
 -- name: ResolveColumn :one
 SELECT a.oid, a.class_oid, a.name, t.name AS type_name, a.type_oid, a.not_null,

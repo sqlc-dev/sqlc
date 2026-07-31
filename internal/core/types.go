@@ -51,6 +51,83 @@ func (c *Catalog) CreateTypeSpec(t TypeSpec) (int64, error) {
 	return oid, nil
 }
 
+// ArraySuffix marks the type of an array of the type it is appended to. The
+// catalog names an array type after its element, the way a schema spells it.
+const ArraySuffix = "[]"
+
+// CreateUserType registers a type a schema declared rather than the dialect,
+// such as an enum or a name the dialect's seed does not list. The type gains
+// the dialect's comparison operators, so a column of it can be compared.
+func (c *Catalog) CreateUserType(name, category string) (int64, error) {
+	typtype := "b"
+	if category == "E" {
+		typtype = "e"
+	}
+	oid, err := c.CreateTypeSpec(TypeSpec{
+		Name:       name,
+		Typtype:    typtype,
+		Category:   category,
+		DialectOID: c.dialectOID,
+	})
+	if err != nil {
+		return 0, err
+	}
+	if err := c.createComparisons(oid); err != nil {
+		return 0, err
+	}
+	return oid, nil
+}
+
+// CreateArrayType registers the array type over elementOID.
+func (c *Catalog) CreateArrayType(name string, elementOID int64) (int64, error) {
+	oid, err := c.CreateTypeSpec(TypeSpec{
+		Name:       name,
+		Typtype:    "b",
+		Category:   "A",
+		DialectOID: c.dialectOID,
+		ElementOID: elementOID,
+	})
+	if err != nil {
+		return 0, err
+	}
+	if err := c.createComparisons(oid); err != nil {
+		return 0, err
+	}
+	return oid, nil
+}
+
+// createComparisons gives a type the dialect's comparison operators, which the
+// seed registered for the types it knew about up front.
+func (c *Catalog) createComparisons(typeOID int64) error {
+	if c.dialectOID == 0 {
+		return nil
+	}
+	ops, _ := c.DialectFlag(c.dialectOID, FlagComparisonOperators)
+	boolName, _ := c.DialectFlag(c.dialectOID, "const."+ConstBool)
+	if ops == "" || boolName == "" {
+		return nil
+	}
+	boolOID, err := c.TypeOID(boolName)
+	if err != nil {
+		return nil
+	}
+	for _, op := range strings.Split(ops, ",") {
+		if op == "" {
+			continue
+		}
+		if _, err := c.CreateOperator(OperatorSpec{
+			Name:          op,
+			DialectOID:    c.dialectOID,
+			LeftTypeOID:   typeOID,
+			RightTypeOID:  typeOID,
+			ResultTypeOID: boolOID,
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (c *Catalog) TypeOID(name string) (int64, error) {
 	oid, err := c.q.TypeOIDByName(context.Background(), strings.ToLower(name))
 	if err != nil {
