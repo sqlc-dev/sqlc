@@ -375,13 +375,22 @@ func (c *cc) convertDropStmt(name *meyer.QualifiedName, ifExists bool) ast.Node 
 }
 
 func (c *cc) convertDeleteStmt(n *meyer.DeleteStmt) ast.Node {
-	stmt := &ast.DeleteStmt{
+	return &ast.DeleteStmt{
 		Relations:     &ast.List{Items: []ast.Node{parseRangeVar(n.Table, n.Alias)}},
 		WhereClause:   c.convertExpr(n.Where),
+		LimitCount:    c.limitCount(n.Limit),
 		ReturningList: c.convertReturning(n.Returning),
 		WithClause:    c.convertWith(n.With),
 	}
-	return stmt
+}
+
+// limitCount converts the LIMIT of an UPDATE or DELETE. sqlc has no place to
+// put the OFFSET or the ORDER BY that can accompany it, so they are dropped.
+func (c *cc) limitCount(n *meyer.Limit) ast.Node {
+	if n == nil {
+		return nil
+	}
+	return c.convertExpr(n.Count)
 }
 
 func (c *cc) convertInsertStmt(n *meyer.InsertStmt) ast.Node {
@@ -459,6 +468,7 @@ func (c *cc) convertUpdateStmt(n *meyer.UpdateStmt) ast.Node {
 		TargetList:    c.convertSetPairs(n.Set),
 		FromClause:    &ast.List{Items: c.convertFrom(n.From)},
 		WhereClause:   c.convertExpr(n.Where),
+		LimitCount:    c.limitCount(n.Limit),
 		ReturningList: c.convertReturning(n.Returning),
 		WithClause:    c.convertWith(n.With),
 	}

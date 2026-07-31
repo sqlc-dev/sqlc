@@ -19,13 +19,19 @@ func NewParser() *Parser {
 type Parser struct {
 }
 
+// parseOptions accepts ORDER BY and LIMIT on UPDATE and DELETE. SQLite has
+// them only when built with SQLITE_ENABLE_UPDATE_DELETE_LIMIT, which meyer
+// cannot tell from the SQL, so the caller has to ask. sqlc has always
+// accepted them.
+var parseOptions = parser.Options{UpdateDeleteLimit: true}
+
 func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	blob, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
 	src := string(blob)
-	parsed, err := parser.ParseString(src)
+	parsed, err := parseOptions.ParseString(src)
 	if err != nil {
 		return nil, normalizeErr(err)
 	}

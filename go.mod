@@ -21,7 +21,7 @@ require (
 	github.com/spf13/pflag v1.0.10
 	github.com/sqlc-dev/doubleclick v1.0.0
 	github.com/sqlc-dev/marino v0.1.0
-	github.com/sqlc-dev/meyer v0.1.0
+	github.com/sqlc-dev/meyer v0.1.1
 	github.com/sqlc-dev/zetajones v0.1.0
 	github.com/tetratelabs/wazero v1.12.0
 	github.com/wasilibs/go-pgquery v0.0.0-20250409022910-10ac41983c07
