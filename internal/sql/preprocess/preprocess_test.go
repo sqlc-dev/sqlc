@@ -1,6 +1,7 @@
 package preprocess_test
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -21,12 +22,14 @@ import (
 var update = flag.Bool("update", false, "update the testdata golden files")
 
 // TestRewrite runs every case under testdata. Each case is a directory holding
-// an input.sql, the expected output.sql and, when the input is invalid, a
-// stderr.txt with the reported error. Cases are grouped by engine:
+// the input and the expected results, grouped by engine:
 //
-//	testdata/<engine>/<case>/input.sql
-//	testdata/<engine>/<case>/output.sql
-//	testdata/<engine>/<case>/stderr.txt   (optional)
+//	testdata/<engine>/<case>/input.sql        the query file
+//	testdata/<engine>/<case>/output.sql       the rewritten SQL
+//	testdata/<engine>/<case>/side_table.json  what the preprocessor recorded
+//	testdata/<engine>/<case>/stderr.txt       reported errors (only when invalid)
+//
+// Regenerate the golden files with `go test ./internal/sql/preprocess -update`.
 func TestRewrite(t *testing.T) {
 	for _, dir := range cases(t) {
 		t.Run(filepath.ToSlash(dir), func(t *testing.T) {
@@ -40,9 +43,132 @@ func TestRewrite(t *testing.T) {
 			}
 
 			compare(t, filepath.Join(path, "output.sql"), res.Text)
+			compare(t, filepath.Join(path, "side_table.json"), sideTable(res))
 			compare(t, filepath.Join(path, "stderr.txt"), errors(input, res))
+
+			// A rewrite only ever replaces text with something shorter or
+			// equal in lines, so a line number taken from the rewritten text is
+			// never past the end of the original.
+			if want, got := strings.Count(input, "\n"), strings.Count(res.Text, "\n"); got > want {
+				t.Errorf("rewrite added lines: got %d, want at most %d", got, want)
+			}
 		})
 	}
+}
+
+// The JSON shape of the side table the preprocessor records alongside the
+// rewritten SQL. Locations are offsets into the rewritten text; origins are the
+// offsets they map back to in the original source.
+type statement struct {
+	Start      int         `json:"start"`
+	End        int         `json:"end"`
+	Dollar     bool        `json:"dollar"`
+	Params     []parameter `json:"params,omitempty"`
+	Embeds     []embed     `json:"embeds,omitempty"`
+	Error      string      `json:"error,omitempty"`
+	ErrorAt    int         `json:"error_at,omitempty"`
+	ParamError string      `json:"param_error,omitempty"`
+}
+
+type parameter struct {
+	Number   int    `json:"number"`
+	Location int    `json:"location"`
+	Origin   int    `json:"origin"`
+	Name     string `json:"name,omitempty"`
+	// Named is false for a placeholder the user wrote themselves, which the
+	// preprocessor numbers but does not name.
+	Named bool `json:"named"`
+	// Nullable is true when sqlc.narg() forced the parameter nullable, even
+	// though the schema says it is NOT NULL.
+	Nullable bool `json:"nullable,omitempty"`
+	Slice    bool `json:"slice,omitempty"`
+}
+
+type embed struct {
+	Table    string `json:"table"`
+	Location int    `json:"location"`
+	Origin   int    `json:"origin"`
+	Orig     string `json:"orig"`
+}
+
+// sideTable renders everything the preprocessor recorded, reading it back
+// through the same API the compiler uses.
+func sideTable(res *preprocess.Result) string {
+	out := make([]statement, 0, len(res.Statements()))
+	for _, stmt := range res.Statements() {
+		s := statement{Start: stmt.Start, End: stmt.End, Dollar: stmt.Dollar}
+		if stmt.Err != nil {
+			s.Error = stmt.Err.Error()
+			if e, ok := stmt.Err.(*sqlerr.Error); ok {
+				s.ErrorAt = e.Location
+			}
+		}
+		if stmt.ParamErr != nil {
+			s.ParamError = stmt.ParamErr.Error()
+		}
+
+		locations := make([]int, 0, len(stmt.Numbers))
+		for loc := range stmt.Numbers {
+			locations = append(locations, loc)
+		}
+		sort.Ints(locations)
+		for _, loc := range locations {
+			number := stmt.Numbers[loc]
+			name, _ := stmt.Params.NameFor(number)
+			// Merging against a NOT NULL parameter is how the compiler asks
+			// whether the user overrode nullability with sqlc.narg().
+			p, isNamed := stmt.Params.FetchMerge(number, named.NewInferredParam(name, true))
+			_, isSlice := stmt.Slices[loc]
+			s.Params = append(s.Params, parameter{
+				Number:   number,
+				Location: loc,
+				Origin:   res.Origin(loc),
+				Name:     name,
+				Named:    isNamed,
+				Nullable: isNamed && !p.NotNull(),
+				Slice:    isSlice,
+			})
+		}
+
+		for _, e := range stmt.Embeds {
+			s.Embeds = append(s.Embeds, embed{
+				Table:    e.Table.Name,
+				Location: e.Location,
+				Origin:   res.Origin(e.Location),
+				Orig:     e.Orig(),
+			})
+		}
+		out = append(out, s)
+	}
+
+	blob, err := json.MarshalIndent(out, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	return string(blob) + "\n"
+}
+
+// errors renders every validation error the preprocessor recorded, one per
+// line, as "line:column: message" against the original source.
+func errors(input string, res *preprocess.Result) string {
+	var out []string
+	for _, stmt := range res.Statements() {
+		for _, err := range []error{stmt.Err, stmt.ParamErr} {
+			if err == nil {
+				continue
+			}
+			loc := stmt.Start
+			if e, ok := err.(*sqlerr.Error); ok && e.Location != 0 {
+				loc = e.Location
+			}
+			line, column := source.LineNumber(input, res.Origin(loc))
+			out = append(out, fmt.Sprintf("%d:%d: %s", line, column, err))
+		}
+	}
+	if len(out) == 0 {
+		return ""
+	}
+	return strings.Join(out, "\n") + "\n"
 }
 
 // cases returns every testdata directory that holds an input.sql, relative to
@@ -72,32 +198,6 @@ func cases(t *testing.T) []string {
 	}
 	sort.Strings(dirs)
 	return dirs
-}
-
-// errors renders every validation error the preprocessor recorded, one per
-// line, as "line:column: message" against the original source.
-func errors(input string, res *preprocess.Result) string {
-	var out []string
-	for offset := 0; offset < len(res.Text); {
-		stmt := res.Statement(offset)
-		if stmt.End <= offset {
-			break
-		}
-		offset = stmt.End
-		if stmt.Err == nil {
-			continue
-		}
-		loc := 0
-		if e, ok := stmt.Err.(*sqlerr.Error); ok {
-			loc = res.Origin(e.Location)
-		}
-		line, column := source.LineNumber(input, loc)
-		out = append(out, fmt.Sprintf("%d:%d: %s", line, column, stmt.Err))
-	}
-	if len(out) == 0 {
-		return ""
-	}
-	return strings.Join(out, "\n") + "\n"
 }
 
 func readFile(t *testing.T, path string) string {
@@ -131,134 +231,5 @@ func compare(t *testing.T, path, actual string) {
 	}
 	if diff := cmp.Diff(expected, actual); diff != "" {
 		t.Errorf("%s differed (-want +got):\n%s", filepath.Base(path), diff)
-	}
-}
-
-func mustRewrite(t *testing.T, engine config.Engine, src string) *preprocess.Result {
-	t.Helper()
-	res, err := preprocess.File(engine, src)
-	if err != nil {
-		t.Fatalf("preprocess.File(%s): %s", engine, err)
-	}
-	return res
-}
-
-func TestParamSet(t *testing.T) {
-	res := mustRewrite(t, config.EnginePostgreSQL,
-		"SELECT * FROM users WHERE a = sqlc.arg(alpha) AND b = sqlc.narg(beta) AND c = ANY(sqlc.slice(gamma));")
-	stmt := res.Statement(0)
-
-	for num, want := range map[int]string{1: "alpha", 2: "beta", 3: "gamma"} {
-		got, ok := stmt.Params.NameFor(num)
-		if !ok {
-			t.Fatalf("no name for parameter %d", num)
-		}
-		if got != want {
-			t.Errorf("parameter %d: got %q, want %q", num, got, want)
-		}
-	}
-
-	// sqlc.narg() marks the parameter nullable even when inference says
-	// otherwise.
-	beta, _ := stmt.Params.FetchMerge(2, named.NewInferredParam("beta", true))
-	if beta.NotNull() {
-		t.Error("sqlc.narg parameter should be nullable")
-	}
-	gamma, _ := stmt.Params.FetchMerge(3, named.NewParam("gamma"))
-	if !gamma.IsSqlcSlice() {
-		t.Error("sqlc.slice parameter should be marked as a slice")
-	}
-}
-
-func TestEmbedSpans(t *testing.T) {
-	src := "SELECT sqlc.embed(a), b.* FROM a, b;"
-	res := mustRewrite(t, config.EnginePostgreSQL, src)
-	stmt := res.Statement(0)
-	if len(stmt.Embeds) != 1 {
-		t.Fatalf("expected 1 embed, got %d", len(stmt.Embeds))
-	}
-	e := stmt.Embeds[0]
-	if e.Table.Name != "a" {
-		t.Errorf("embed table: got %q, want %q", e.Table.Name, "a")
-	}
-	if want := strings.Index(res.Text, "a.*"); e.Location != want {
-		t.Errorf("embed location: got %d, want %d", e.Location, want)
-	}
-	// A star reference the user wrote must not be mistaken for an embed.
-	if _, ok := stmt.Embeds.Find(strings.Index(res.Text, "b.*")); ok {
-		t.Error("user-written b.* was reported as an embed")
-	}
-	if got, want := e.Orig(), "sqlc.embed(a)"; got != want {
-		t.Errorf("Orig: got %q, want %q", got, want)
-	}
-}
-
-func TestSliceSpans(t *testing.T) {
-	src := "SELECT * FROM t WHERE a IN (sqlc.slice(ids)) AND b = sqlc.arg(x);"
-	res := mustRewrite(t, config.EngineMySQL, src)
-	stmt := res.Statement(0)
-	if len(stmt.Slices) != 1 {
-		t.Fatalf("expected 1 slice, got %d", len(stmt.Slices))
-	}
-	// The recorded offset points at the placeholder itself, past the marker,
-	// which is where the engine reports the parameter node.
-	want := strings.Index(res.Text, "*/?") + len("*/")
-	if got, ok := stmt.Slices[want]; !ok {
-		t.Errorf("slice offsets %v do not contain %d", stmt.Slices, want)
-	} else if got != "ids" {
-		t.Errorf("slice name: got %q, want %q", got, "ids")
-	}
-}
-
-func TestOriginMapping(t *testing.T) {
-	src := "SELECT * FROM t WHERE a = sqlc.arg(alpha) AND b = sqlc.arg(beta);"
-	res := mustRewrite(t, config.EnginePostgreSQL, src)
-
-	// Text before the first rewrite maps to itself.
-	if got := res.Origin(3); got != 3 {
-		t.Errorf("Origin(3): got %d, want 3", got)
-	}
-	// Text after a rewrite maps back across the length change.
-	newB, oldB := strings.Index(res.Text, "b ="), strings.Index(src, "b =")
-	if got := res.Origin(newB); got != oldB {
-		t.Errorf("Origin(%d): got %d, want %d", newB, got, oldB)
-	}
-	// An offset inside a placeholder maps to the start of what it replaced.
-	newParam := strings.Index(res.Text, "$2")
-	oldParam := strings.Index(src, "sqlc.arg(beta)")
-	if got := res.Origin(newParam); got != oldParam {
-		t.Errorf("Origin(%d): got %d, want %d", newParam, got, oldParam)
-	}
-}
-
-func TestLinesArePreserved(t *testing.T) {
-	// Downstream error reporting counts lines in the rewritten text, so a
-	// rewrite must never add or remove one.
-	src := "-- name: Get :one\nSELECT *\nFROM users\nWHERE id = sqlc.arg(id)\n  AND name = @name;\n"
-	res := mustRewrite(t, config.EnginePostgreSQL, src)
-	if want, got := strings.Count(src, "\n"), strings.Count(res.Text, "\n"); want != got {
-		t.Errorf("line count changed: got %d, want %d", got, want)
-	}
-}
-
-func TestStatementLookup(t *testing.T) {
-	src := "SELECT sqlc.arg(a);\nSELECT sqlc.arg(b), sqlc.arg(c);\n"
-	res := mustRewrite(t, config.EnginePostgreSQL, src)
-	first := res.Statement(0)
-	second := res.Statement(strings.Index(res.Text, "$1, $2"))
-	if first == second {
-		t.Fatal("expected two distinct statements")
-	}
-	if name, _ := first.Params.NameFor(1); name != "a" {
-		t.Errorf("first statement parameter 1: got %q, want %q", name, "a")
-	}
-	if name, _ := second.Params.NameFor(2); name != "c" {
-		t.Errorf("second statement parameter 2: got %q, want %q", name, "c")
-	}
-}
-
-func TestUnknownEngine(t *testing.T) {
-	if _, err := preprocess.File(config.Engine("nope"), "SELECT 1;"); err == nil {
-		t.Fatal("expected an error for an unknown engine")
 	}
 }

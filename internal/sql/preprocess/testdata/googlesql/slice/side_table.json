@@ -1,0 +1,17 @@
+[
+  {
+    "start": 0,
+    "end": 53,
+    "dollar": true,
+    "params": [
+      {
+        "number": 1,
+        "location": 47,
+        "origin": 34,
+        "name": "ids",
+        "named": true,
+        "slice": true
+      }
+    ]
+  }
+]

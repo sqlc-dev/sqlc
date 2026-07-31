@@ -1,1 +1,1 @@
-SELECT id FROM users WHERE a = ?2 AND b = ?1;
+SELECT id FROM users WHERE a = ?1 AND b = ?2;

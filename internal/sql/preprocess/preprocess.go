@@ -106,6 +106,11 @@ type edit struct {
 	newStart, newEnd int
 }
 
+// Statements returns every statement in the rewritten text, in source order.
+func (r *Result) Statements() []*Statement {
+	return r.stmts
+}
+
 // Statement returns the preprocessing results for the statement covering the
 // given offset in the rewritten text. It never returns nil.
 func (r *Result) Statement(location int) *Statement {
@@ -176,8 +181,18 @@ func Dialected(d Dialect, src string) (*Result, error) {
 	var b strings.Builder
 	b.Grow(len(src))
 
-	for _, span := range l.statements() {
+	spans := l.statements()
+	for i, span := range spans {
 		start, end := span[0], span[1]
+
+		// Whatever trails the last semicolon is only whitespace in a
+		// well-formed file. It still belongs in the output, but it is not a
+		// statement.
+		if i == len(spans)-1 && strings.TrimSpace(src[start:end]) == "" {
+			b.WriteString(src[start:end])
+			continue
+		}
+
 		occs := l.scan(start, end)
 		stmt := &Statement{Start: b.Len()}
 

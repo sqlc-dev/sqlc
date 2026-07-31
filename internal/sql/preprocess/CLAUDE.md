@@ -63,8 +63,10 @@ original source, so errors point at what the user wrote.
 
 ## Invariants
 
-- **Line structure is preserved.** A rewrite never adds or removes a newline, so
-  line numbers survive even before `Origin` is applied.
+- **A rewrite never adds a line.** Replacements are single-line, so a line
+  number taken from the rewritten text is never past the end of the original. It
+  can *lose* lines, when the sqlc call itself spanned several — map offsets
+  through `Origin` rather than trusting line numbers.
 - **An invalid statement is copied through untouched.** The engine still parses
   what the user wrote and the error is reported per statement, not per file.
 - **Nothing inside a comment or literal is rewritten.** Query annotations like
@@ -72,9 +74,22 @@ original source, so errors point at what the user wrote.
 
 ## Tests
 
-`testdata/<engine>/<case>/` holds an `input.sql`, the expected `output.sql` and,
-for invalid input, a `stderr.txt`. `TestRewrite` runs one subtest per directory.
-Regenerate the goldens with:
+`testdata/<engine>/<case>/` holds the input and the expected results:
+
+| file | contents |
+| --- | --- |
+| `input.sql` | the query file |
+| `output.sql` | the rewritten SQL |
+| `side_table.json` | everything the preprocessor recorded |
+| `stderr.txt` | reported errors, only when the input is invalid |
+
+`TestRewrite` runs one subtest per directory. `side_table.json` is rendered by
+reading the result back through the same API the compiler uses, so it covers
+parameter names and nullability, embed and slice spans, placeholder numbering
+and the offset map — a parameter's `location` is its offset in the rewritten
+text and its `origin` is where it came from.
+
+Regenerate every golden with:
 
 ```bash
 go test ./internal/sql/preprocess -update
