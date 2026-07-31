@@ -37,12 +37,29 @@ func NewParser() *Parser {
 type Parser struct {
 }
 
+// runeToByteOffsets returns a slice mapping rune index i to the byte offset of
+// the i-th rune in s. A sentinel element equal to len(s) is appended so that
+// element numRunes is valid and equals the total byte length of s.
+//
+// This is needed because ANTLR4 stores the input as []rune and all token
+// positions (GetStart/GetStop) are rune indices, while Go string slicing is
+// byte-based.
+func runeToByteOffsets(s string) []int {
+	offsets := make([]int, 0, len(s)+1)
+	for i := range s {
+		offsets = append(offsets, i)
+	}
+	offsets = append(offsets, len(s))
+	return offsets
+}
+
 func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	blob, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
-	input := antlr.NewInputStream(string(blob))
+	src := string(blob)
+	input := antlr.NewInputStream(src)
 	lexer := parser.NewSQLiteLexer(input)
 	stream := antlr.NewCommonTokenStream(lexer, 0)
 	pp := parser.NewSQLiteParser(stream)
@@ -57,13 +74,17 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	if !ok {
 		return nil, fmt.Errorf("expected ParserContext; got %T\n", tree)
 	}
+	// ANTLR uses rune-based positions. Build a mapping from rune index to byte
+	// offset so we can store byte-based StmtLocation/StmtLen, which is what
+	// source.Pluck and the rest of the pipeline expect.
+	runeByteMap := runeToByteOffsets(src)
 	var stmts []ast.Statement
 	for _, istmt := range pctx.AllSql_stmt_list() {
 		list, ok := istmt.(*parser.Sql_stmt_listContext)
 		if !ok {
 			return nil, fmt.Errorf("expected Sql_stmt_listContext; got %T\n", istmt)
 		}
-		loc := 0
+		loc := 0 // rune offset of the current statement's start
 
 		for _, stmt := range list.AllSql_stmt() {
 			converter := &cc{}
@@ -72,12 +93,14 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 				loc = stmt.GetStop().GetStop() + 2
 				continue
 			}
-			len := (stmt.GetStop().GetStop() + 1) - loc
+			runeEnd := stmt.GetStop().GetStop() + 1
+			byteStart := runeByteMap[loc]
+			byteEnd := runeByteMap[runeEnd]
 			stmts = append(stmts, ast.Statement{
 				Raw: &ast.RawStmt{
 					Stmt:         out,
-					StmtLocation: loc,
-					StmtLen:      len,
+					StmtLocation: byteStart,
+					StmtLen:      byteEnd - byteStart,
 				},
 			})
 			loc = stmt.GetStop().GetStop() + 2
