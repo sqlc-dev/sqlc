@@ -13,7 +13,7 @@ const getRepro = `-- name: GetRepro :one
 select id, name, seq from repro where id = ? limit 1
 `
 
-func (q *Queries) GetRepro(ctx context.Context, id interface{}) (Repro, error) {
+func (q *Queries) GetRepro(ctx context.Context, id any) (Repro, error) {
 	row := q.db.QueryRowContext(ctx, getRepro, id)
 	var i Repro
 	err := row.Scan(&i.ID, &i.Name, &i.Seq)
