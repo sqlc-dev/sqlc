@@ -230,6 +230,23 @@ func TestUpdate(t *testing.T) {
 				},
 			},
 		},
+		{
+			"CREATE TABLE `foo` (`bar` text);",
+			&catalog.Schema{
+				Name: "main",
+				Tables: []*catalog.Table{
+					{
+						Rel: &ast.TableName{Name: "foo"},
+						Columns: []*catalog.Column{
+							{
+								Name: "bar",
+								Type: ast.TypeName{Name: "text"},
+							},
+						},
+					},
+				},
+			},
+		},
 	} {
 		test := tc
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
