@@ -141,7 +141,7 @@ func (r *Runner) loadAndCompileWASM(ctx context.Context, store *cache.Cache, exp
 	// which is an implicit input of every action. Compiled artifacts are
 	// materialized into an exec directory for wazero's compilation cache to
 	// find; the authoritative copies live in the CAS.
-	compileAction := cache.NewAction("CompileModule").
+	compileAction := store.NewAction("CompileModule").
 		AddInput("wasm", []byte(expected)).
 		Digest()
 

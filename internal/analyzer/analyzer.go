@@ -74,7 +74,7 @@ func (c *CachedAnalyzer) analyze(ctx context.Context, n ast.Node, q string, sche
 	// Analyzing a query is an action whose inputs are the configuration, the
 	// schema migrations, and the query itself. (The sqlc binary is an
 	// implicit input of every action.)
-	action := cache.NewAction("QueryAnalysis").
+	action := store.NewAction("QueryAnalysis").
 		AddInput("config", c.configBytes)
 	for _, m := range schema {
 		action.AddInput("schema", []byte(m))
