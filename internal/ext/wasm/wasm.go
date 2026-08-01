@@ -139,8 +139,9 @@ func (r *Runner) loadAndCompileWASM(ctx context.Context, store *cache.Cache, exp
 	// Its only declared input is the module's checksum: the embedded wazero
 	// version and the target platform are determined by the sqlc binary,
 	// which is an implicit input of every action. Compiled artifacts are
-	// materialized into an exec directory for wazero's compilation cache to
-	// find; the authoritative copies live in the CAS.
+	// materialized into a private exec directory for wazero's compilation
+	// cache to find; the authoritative copies live in the CAS. Once wazero
+	// has loaded the module into memory the directory is no longer needed.
 	compileAction := store.NewAction("CompileModule").
 		AddInput("wasm", []byte(expected)).
 		Digest()
@@ -149,6 +150,7 @@ func (r *Runner) loadAndCompileWASM(ctx context.Context, store *cache.Cache, exp
 	if err != nil {
 		return nil, err
 	}
+	defer os.RemoveAll(execDir)
 	compiled := true
 	if err := store.Actions.GetTree(compileAction, execDir); errors.Is(err, cache.ErrNotFound) {
 		compiled = false

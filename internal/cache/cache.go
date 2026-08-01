@@ -83,15 +83,21 @@ func (c *Cache) Close() error {
 	return c.root.Close()
 }
 
-// ExecDir returns a stable directory for materializing the output tree of
-// the given action, for tools that need their outputs on disk (like wazero's
-// compilation cache). It lives at exec/<action-hash> under the cache root
-// and, like everything else in the cache, is safe to delete at any time: the
-// authoritative copy of its contents is the CAS.
+// ExecDir creates a fresh, private scratch directory for materializing the
+// output tree of the given action, for tools that need their outputs on disk
+// (like wazero's compilation cache). Each call returns a new directory under
+// exec/, so two concurrent processes never share one — otherwise a tool
+// staging files there (wazero writes <key>.tmp files in place) could be swept
+// into the other's PutTree. The caller must remove it when done; its contents
+// are always reproducible from the CAS, so losing it is harmless.
 func (c *Cache) ExecDir(action Digest) (string, error) {
-	rel := filepath.Join("exec", action.Hash)
-	if err := c.root.MkdirAll(rel, 0755); err != nil {
-		return "", fmt.Errorf("failed to create %s directory: %w", rel, err)
+	base := filepath.Join(c.root.Name(), "exec")
+	if err := os.MkdirAll(base, 0755); err != nil {
+		return "", fmt.Errorf("failed to create %s directory: %w", base, err)
 	}
-	return filepath.Join(c.root.Name(), rel), nil
+	dir, err := os.MkdirTemp(base, action.Hash+"-")
+	if err != nil {
+		return "", fmt.Errorf("cache: %w", err)
+	}
+	return dir, nil
 }

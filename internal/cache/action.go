@@ -103,17 +103,30 @@ func (a *ActionCache) PutTree(action Digest, dir string) error {
 }
 
 // GetTree materializes a cached action's outputs as files under dir, or
-// returns ErrNotFound on a miss. Files already present with the right size
-// are left in place; missing ones are staged in their destination directory
-// and renamed so concurrent processes never observe partial files.
+// returns ErrNotFound on a miss. A file already present is reused only if its
+// contents still hash to the expected digest; otherwise it is rewritten from
+// the CAS. Writes are staged, fsynced, and renamed, so a crash cannot leave a
+// right-sized but torn file that later reads would trust.
 func (a *ActionCache) GetTree(action Digest, dir string) error {
 	result, err := a.Get(action)
 	if err != nil {
 		return err
 	}
 	for rel, d := range result.Outputs {
+		// Output names come from the action cache entry, which — unlike a CAS
+		// blob — is not self-validating, so a tampered entry could carry a
+		// name like "../../etc/x". Reject anything that isn't a relative path
+		// confined to dir; this is the confinement the os.Root gives the rest
+		// of the cache, which GetTree can't use because dir is a caller-owned
+		// path a tool must read by absolute name.
+		if !filepath.IsLocal(rel) {
+			return fmt.Errorf("cache: unsafe output path %q in action %s", rel, action)
+		}
 		path := filepath.Join(dir, filepath.FromSlash(rel))
-		if fi, err := os.Stat(path); err == nil && fi.Size() == d.SizeBytes {
+		// Trust an existing file only if it still hashes to the digest;
+		// size alone can mask in-place corruption that would make the
+		// consuming tool hard-fail with no way to repair (see wazero).
+		if existing, err := os.ReadFile(path); err == nil && DigestOf(existing) == d {
 			continue
 		}
 		data, err := a.cas.Get(d)
@@ -123,23 +136,39 @@ func (a *ActionCache) GetTree(action Digest, dir string) error {
 		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 			return fmt.Errorf("cache: %w", err)
 		}
-		f, err := os.CreateTemp(filepath.Dir(path), d.Hash[:8]+"-*")
-		if err != nil {
+		if err := writeFileAtomic(path, data); err != nil {
 			return fmt.Errorf("cache: %w", err)
 		}
-		if _, err := f.Write(data); err != nil {
-			f.Close()
-			os.Remove(f.Name())
-			return fmt.Errorf("cache: %w", err)
-		}
-		if err := f.Close(); err != nil {
-			os.Remove(f.Name())
-			return fmt.Errorf("cache: %w", err)
-		}
-		if err := os.Rename(f.Name(), path); err != nil {
-			os.Remove(f.Name())
-			return fmt.Errorf("cache: %w", err)
-		}
+	}
+	return nil
+}
+
+// writeFileAtomic writes data to path via a staged temp file in the same
+// directory, fsynced before an atomic rename, so a reader never observes a
+// partial or torn file even across a crash.
+func writeFileAtomic(path string, data []byte) error {
+	f, err := os.CreateTemp(filepath.Dir(path), "."+filepath.Base(path)+"-*")
+	if err != nil {
+		return err
+	}
+	tmp := f.Name()
+	if _, err := f.Write(data); err != nil {
+		f.Close()
+		os.Remove(tmp)
+		return err
+	}
+	if err := f.Sync(); err != nil {
+		f.Close()
+		os.Remove(tmp)
+		return err
+	}
+	if err := f.Close(); err != nil {
+		os.Remove(tmp)
+		return err
+	}
+	if err := os.Rename(tmp, path); err != nil {
+		os.Remove(tmp)
+		return err
 	}
 	return nil
 }
