@@ -196,6 +196,9 @@ MYSQL_SERVER_URI="root:mysecretpassword@tcp(127.0.0.1:3306)/mysql?multiStatement
   - `/postgresql/` - PostgreSQL parser and converter
   - `/dolphin/` - MySQL parser (uses TiDB parser)
   - `/sqlite/` - SQLite parser
+  - `<engine>/dialect/` - The engine's type system and standard library, as
+    JSONL read by `/internal/core/seed`
+- `/internal/core/` - The analysis core: catalog, analyzer and dialect seeds
 - `/internal/compiler/` - Query compilation logic
 - `/internal/codegen/` - Code generation for different languages
 - `/internal/config/` - Configuration file parsing

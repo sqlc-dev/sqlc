@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"go/format"
@@ -12,6 +13,8 @@ import (
 	"sort"
 	"strings"
 	"text/template"
+
+	"github.com/sqlc-dev/sqlc/internal/core/seed"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -52,7 +55,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 )
 
-var funcs{{.GenFnName}} = []*catalog.Function {
+{{if not .FuncsExpr}}var funcs{{.GenFnName}} = []*catalog.Function {
     {{- range .Procs}}
 	{
 		Name: "{{.Name}}",
@@ -75,10 +78,11 @@ var funcs{{.GenFnName}} = []*catalog.Function {
 	},
 	{{- end}}
 }
+{{end}}
 
 func {{.GenFnName}}() *catalog.Schema {
 	s := &catalog.Schema{Name: "{{ .SchemaName }}"}
-	s.Funcs = funcs{{.GenFnName}}
+	s.Funcs = {{if .FuncsExpr}}{{.FuncsExpr}}{{else}}funcs{{.GenFnName}}{{end}}
 	{{- if .Relations }}
 	s.Tables = []*catalog.Table {
 	    {{- range .Relations }}
@@ -140,6 +144,10 @@ type tmplCtx struct {
 	SchemaName string
 	Procs      []Proc
 	Relations  []Relation
+	// FuncsExpr is the expression the generated schema takes its functions
+	// from. It is set for a schema whose functions are written to JSONL
+	// instead of being compiled in.
+	FuncsExpr string
 }
 
 func main() {
@@ -154,6 +162,33 @@ func clean(arg string) string {
 	arg = strings.Replace(arg, "\"char\"", "char", -1)
 	arg = strings.Replace(arg, "\"timestamp\"", "char", -1)
 	return arg
+}
+
+// writeFunctions writes procs to destPath as JSONL, one function per line, in
+// the form the seed package reads. Both the analysis core and the catalog the
+// legacy compiler builds load the result.
+func writeFunctions(procs []Proc, destPath string) error {
+	out, err := os.Create(destPath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	enc := json.NewEncoder(out)
+	for _, proc := range procs {
+		fn := seed.Function{Name: proc.Name, Returns: proc.ReturnTypeName()}
+		for _, arg := range proc.Args() {
+			a := seed.Arg{Name: arg.Name, Type: arg.TypeName(), HasDefault: arg.HasDefault}
+			if arg.Mode != "" && arg.Mode != "i" {
+				a.Mode = arg.Mode
+			}
+			fn.Args = append(fn.Args, a)
+		}
+		if err := enc.Encode(fn); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // writeFormattedGo executes `tmpl` with `data` as its context to the file `destPath`
@@ -263,6 +298,8 @@ func run(ctx context.Context) error {
 			Name:      "pg_catalog",
 			GenFnName: "genPGCatalog",
 			DestPath:  filepath.Join(dir, "pg_catalog.go"),
+			FuncsPath: filepath.Join(dir, "dialect", seed.FunctionsFile),
+			FuncsExpr: "pgCatalogFuncs()",
 		},
 		{
 			Name:      "information_schema",
@@ -286,12 +323,19 @@ func run(ctx context.Context) error {
 			return err
 		}
 
+		if schema.FuncsPath != "" {
+			if err := writeFunctions(procs, schema.FuncsPath); err != nil {
+				return err
+			}
+		}
+
 		err = writeFormattedGo(tmpl, tmplCtx{
 			Pkg:        "postgresql",
 			SchemaName: schema.Name,
 			GenFnName:  schema.GenFnName,
 			Procs:      procs,
 			Relations:  relations,
+			FuncsExpr:  schema.FuncsExpr,
 		}, schema.DestPath)
 
 		if err != nil {
@@ -374,6 +418,11 @@ type schemaToLoad struct {
 	DestPath string
 	// The name of the function to generate for loading this schema
 	GenFnName string
+	// FuncsPath, when set, is the JSONL file this schema's functions are
+	// written to rather than being compiled into the generated Go, and
+	// FuncsExpr is what the generated schema reads them back with.
+	FuncsPath string
+	FuncsExpr string
 }
 
 type extensionPair struct {

@@ -1,0 +1,1 @@
+{"dialect": "postgresql", "const": {"integer": "int4", "float": "numeric", "string": "text", "bool": "bool"}, "bool": "bool", "comparison": ["=", "<>", "!=", "<", "<=", ">", ">=", "IS DISTINCT FROM", "IS NOT DISTINCT FROM"], "comparison_categories": "BNSDTU", "arithmetic": ["+", "-", "*", "/", "%"], "arithmetic_categories": "N", "cast_categories": "NSD"}

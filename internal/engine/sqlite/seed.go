@@ -1,23 +1,34 @@
 package sqlite
 
 import (
-	_ "embed"
+	"embed"
+	"sync"
 
 	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/core/seed"
+	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 )
 
-// SQLite has five storage classes and assigns a column one of them from the
-// declared type's affinity, but a schema may declare any name at all. The types
-// in dialect.json are the spellings the affinity rules call out, grouped by the
-// storage class they land in. They are all mutually castable, because SQLite
-// compares values whatever their declared type.
+// The dialect directory describes SQLite's type system, and functions.jsonl is
+// its standard library. Both the analysis core and the catalog the legacy
+// compiler builds read them.
 //
-//go:embed dialect.json
-var dialectJSON []byte
+//go:embed dialect
+var dialectFS embed.FS
 
-// Dialect returns the catalog option that seeds SQLite's type system, together
-// with the functions the engine's schema declares.
+// Dialect returns the catalog option that seeds SQLite's type system.
 func Dialect() core.Option {
-	return seed.Dialect(dialectJSON, defaultSchema("main").Funcs)
+	return seed.Dialect(dialectFS, "dialect")
 }
+
+// stdlib is SQLite's functions in the form the catalog uses. They are embedded
+// in the binary and never change within a run, so they are read once.
+var stdlib = sync.OnceValue(func() []*catalog.Function {
+	funcs, err := seed.Functions(dialectFS, "dialect")
+	if err != nil {
+		// A failure here means sqlc was built from a broken tree, which no
+		// caller can do anything about.
+		panic(err)
+	}
+	return funcs
+})

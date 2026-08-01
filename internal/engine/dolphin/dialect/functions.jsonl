@@ -1,0 +1,520 @@
+{"name":"ABS","args":[{"type":"tinyint"}],"returns":"tinyint"}
+{"name":"ABS","args":[{"type":"smallint"}],"returns":"smallint"}
+{"name":"ABS","args":[{"type":"mediumint"}],"returns":"mediumint"}
+{"name":"ABS","args":[{"type":"int"}],"returns":"int"}
+{"name":"ABS","args":[{"type":"bigint"}],"returns":"bigint"}
+{"name":"ABS","args":[{"type":"double"}],"returns":"double"}
+{"name":"ABS","args":[{"type":"double precision"}],"returns":"double precision"}
+{"name":"ACOS","args":[{"type":"double precision"}],"returns":"double precision"}
+{"name":"ADDDATE","args":[{"type":"date"},{"type":"int"}],"returns":"date"}
+{"name":"ADDTIME","args":[{"type":"time"},{"type":"time"}],"returns":"time"}
+{"name":"AES_DECRYPT","args":[{"type":"binary"},{"type":"text"}],"returns":"text"}
+{"name":"AES_DECRYPT","args":[{"type":"binary"},{"type":"text"},{"type":"binary"}],"returns":"text"}
+{"name":"AES_ENCRYPT","args":[{"type":"text"},{"type":"text"}],"returns":"binary"}
+{"name":"AES_ENCRYPT","args":[{"type":"text"},{"type":"text"},{"type":"binary"}],"returns":"binary"}
+{"name":"ANY_VALUE","args":[{"type":"any"}],"returns":"any"}
+{"name":"ASCII","args":[{"type":"text"}],"returns":"int"}
+{"name":"ASIN","args":[{"type":"double precision"}],"returns":"double precision"}
+{"name":"ATAN","args":[{"type":"double precision"}],"returns":"double precision"}
+{"name":"ATAN2","args":[{"type":"double precision"}],"returns":"double precision"}
+{"name":"AVG","args":[{"type":"any"}],"returns":"any"}
+{"name":"BENCHMARK","args":[{"type":"int"},{"type":"any"}],"returns":"int"}
+{"name":"BIN","args":[{"type":"int"}],"returns":"text"}
+{"name":"BIN_TO_UUID","args":[{"type":"binary"}],"returns":"text"}
+{"name":"BIN_TO_UUID","args":[{"type":"binary"},{"type":"tinyint"}],"returns":"text"}
+{"name":"BIT_AND","args":[{"type":"any"}],"returns":"any"}
+{"name":"BIT_COUNT","args":[{"type":"bigint"}],"returns":"bigint"}
+{"name":"BIT_LENGTH","args":[{"type":"text"}],"returns":"int"}
+{"name":"BIT_OR","args":[{"type":"any"}],"returns":"any"}
+{"name":"BIT_XOR","args":[{"type":"any"}],"returns":"any"}
+{"name":"CAST","args":[{"type":"any"}],"returns":"any"}
+{"name":"CEIL","args":[{"type":"int"}],"returns":"int"}
+{"name":"CEIL","args":[{"type":"double precision"}],"returns":"double precision"}
+{"name":"CEILING","args":[{"type":"int"}],"returns":"int"}
+{"name":"CEILING","args":[{"type":"double precision"}],"returns":"double precision"}
+{"name":"CHAR","args":[{"type":"int"},{"type":"int","mode":"v"}],"returns":"text"}
+{"name":"CHARACTER_LENGTH","args":[{"type":"text"}],"returns":"int"}
+{"name":"CHARSET","args":[{"type":"text"}],"returns":"text"}
+{"name":"CHAR_LENGTH","args":[{"type":"text"}],"returns":"int"}
+{"name":"COERCIBILITY","args":[{"type":"text"}],"returns":"int"}
+{"name":"COLLATION","args":[{"type":"text"}],"returns":"text"}
+{"name":"COMPRESS","args":[{"type":"text"}],"returns":"binary"}
+{"name":"CONCAT","args":[{"type":"any"},{"type":"any","mode":"v"}],"returns":"text"}
+{"name":"CONCAT_WS","args":[{"type":"text"},{"type":"any"},{"type":"any","mode":"v"}],"returns":"text"}
+{"name":"CONNECTION_ID","returns":"int"}
+{"name":"CONV","args":[{"type":"int"},{"type":"int"},{"type":"int"}],"returns":"text"}
+{"name":"CONVERT","args":[{"type":"any"},{"type":"any"}],"returns":"any"}
+{"name":"CONVERT_TZ","args":[{"type":"datetime"},{"type":"text"},{"type":"text"}],"returns":"datetime"}
+{"name":"COS","args":[{"type":"double precision"}],"returns":"double precision"}
+{"name":"COT","args":[{"type":"double precision"}],"returns":"double precision"}
+{"name":"COUNT","returns":"bigint"}
+{"name":"COUNT","args":[{"type":"any"}],"returns":"bigint"}
+{"name":"CRC32","args":[{"type":"text"}],"returns":"int"}
+{"name":"CUME_DIST","returns":"double precision"}
+{"name":"CURDATE","returns":"date"}
+{"name":"CURRENT_DATE","returns":"date"}
+{"name":"CURRENT_ROLE","returns":"text"}
+{"name":"CURRENT_TIME","returns":"time"}
+{"name":"CURRENT_TIME","args":[{"type":"int"}],"returns":"time"}
+{"name":"CURRENT_TIMESTAMP","returns":"datetime"}
+{"name":"CURRENT_TIMESTAMP","args":[{"type":"int"}],"returns":"datetime"}
+{"name":"CURRENT_USER","returns":"text"}
+{"name":"CURTIME","returns":"time"}
+{"name":"CURTIME","args":[{"type":"int"}],"returns":"time"}
+{"name":"DATABASE","returns":"text"}
+{"name":"DATE","args":[{"type":"datetime"}],"returns":"date"}
+{"name":"DATEDIFF","args":[{"type":"datetime"},{"type":"datetime"}],"returns":"int"}
+{"name":"DATE_ADD","args":[{"type":"date"},{"type":"any"},{"type":"any"}],"returns":"date"}
+{"name":"DATE_ADD","args":[{"type":"date"},{"type":"interval"}],"returns":"date"}
+{"name":"DATE_ADD_INTERVAL","args":[{"type":"date"},{"type":"any"}],"returns":"date"}
+{"name":"DATE_FORMAT","args":[{"type":"date"},{"type":"text"}],"returns":"text"}
+{"name":"DATE_SUB","args":[{"type":"date"},{"type":"any"},{"type":"any"}],"returns":"date"}
+{"name":"DATE_SUB","args":[{"type":"date"},{"type":"interval"}],"returns":"date"}
+{"name":"DATE_SUB_INTERVAL","args":[{"type":"date"},{"type":"any"}],"returns":"date"}
+{"name":"DAY","args":[{"type":"date"}],"returns":"int"}
+{"name":"DAYNAME","args":[{"type":"date"}],"returns":"text"}
+{"name":"DAYOFMONTH","args":[{"type":"date"}],"returns":"int"}
+{"name":"DAYOFWEEK","args":[{"type":"date"}],"returns":"int"}
+{"name":"DAYOFYEAR","args":[{"type":"date"}],"returns":"int"}
+{"name":"DEFAULT","args":[{"type":"any"}],"returns":"any"}
+{"name":"DEGREES","args":[{"type":"double precision"}],"returns":"int"}
+{"name":"DENSE_RANK","returns":"int"}
+{"name":"DISTINCT","args":[{"type":"any"}],"returns":"any"}
+{"name":"ELT","args":[{"type":"int"},{"type":"text","mode":"v"}],"returns":"text"}
+{"name":"EXP","args":[{"type":"int"}],"returns":"double precision"}
+{"name":"EXPORT_SET","args":[{"type":"int"},{"type":"text"},{"type":"text"}],"returns":"text"}
+{"name":"EXPORT_SET","args":[{"type":"int"},{"type":"text"},{"type":"text"},{"type":"text"}],"returns":"text"}
+{"name":"EXPORT_SET","args":[{"type":"int"},{"type":"text"},{"type":"text"},{"type":"text"},{"type":"int"}],"returns":"text"}
+{"name":"EXTRACT","args":[{"type":"date"},{"type":"any"}],"returns":"int"}
+{"name":"EXTRACTVALUE","args":[{"type":"text"},{"type":"text"}],"returns":"any"}
+{"name":"FIELD","args":[{"type":"text"},{"type":"text"},{"type":"text","mode":"v"}],"returns":"text"}
+{"name":"FIND_IN_SET","args":[{"type":"text"},{"type":"text"}],"returns":"int"}
+{"name":"FIRST_VALUE","args":[{"type":"any"}],"returns":"any"}
+{"name":"FLOOR","args":[{"type":"double precision"}],"returns":"int"}
+{"name":"FORMAT","args":[{"type":"int"},{"type":"int"}],"returns":"text"}
+{"name":"FORMAT_BYTES","args":[{"type":"int"}],"returns":"text"}
+{"name":"FORMAT_PICO_TIME","args":[{"type":"time"}],"returns":"text"}
+{"name":"FOUND_ROWS","returns":"int"}
+{"name":"FROM_BASE64","args":[{"type":"text"}],"returns":"text"}
+{"name":"FROM_DAYS","args":[{"type":"int"}],"returns":"date"}
+{"name":"FROM_UNIXTIME","args":[{"type":"bigint"}],"returns":"text"}
+{"name":"FROM_UNIXTIME","args":[{"type":"bigint"},{"type":"text"}],"returns":"text"}
+{"name":"GEOMCOLLECTION","args":[{"type":"any"},{"type":"any","mode":"v"}],"returns":"any"}
+{"name":"GEOMETRYCOLLECTION","args":[{"type":"any"},{"type":"any","mode":"v"}],"returns":"any"}
+{"name":"GET_FORMAT","args":[{"type":"any"},{"type":"text"}],"returns":"text"}
+{"name":"GET_LOCK","args":[{"type":"text"},{"type":"int"}],"returns":"bool"}
+{"name":"GREATEST","args":[{"type":"any"},{"type":"any"},{"type":"any","mode":"v"}],"returns":"any"}
+{"name":"GROUPING","args":[{"type":"any"},{"type":"any","mode":"v"}],"returns":"any"}
+{"name":"GROUP_CONCAT","args":[{"type":"any"},{"type":"any","mode":"v"}],"returns":"text","nullable":true}
+{"name":"GTID_SUBSET","args":[{"type":"text"},{"type":"text"}],"returns":"bool"}
+{"name":"GTID_SUBTRACT","args":[{"type":"text"},{"type":"text"}],"returns":"text"}
+{"name":"HEX","args":[{"type":"int"}],"returns":"text"}
+{"name":"HEX","args":[{"type":"text"}],"returns":"int"}
+{"name":"HOUR","args":[{"type":"time"}],"returns":"int"}
+{"name":"ICU_VERSION","returns":"text"}
+{"name":"IF","args":[{"type":"any"},{"type":"any"},{"type":"any"}],"returns":"any"}
+{"name":"IFNULL","args":[{"type":"any"},{"type":"any"}],"returns":"any"}
+{"name":"INET6_ATON","args":[{"type":"text"}],"returns":"binary"}
+{"name":"INET6_NTOA","args":[{"type":"binary"}],"returns":"text"}
+{"name":"INET_ATON","args":[{"type":"text"}],"returns":"int"}
+{"name":"INET_NTOA","args":[{"type":"int"}],"returns":"text"}
+{"name":"INSERT","args":[{"type":"text"},{"type":"int"},{"type":"int"},{"type":"text"}],"returns":"text"}
+{"name":"INSTR","args":[{"type":"text"},{"type":"text"}],"returns":"int"}
+{"name":"INTERVAL","args":[{"type":"any"},{"type":"any"},{"type":"any","mode":"v"}],"returns":"any"}
+{"name":"ISNULL","args":[{"type":"any"}],"returns":"bool"}
+{"name":"IS_FREE_LOCK","args":[{"type":"text"}],"returns":"bool"}
+{"name":"IS_IPV4","args":[{"type":"text"}],"returns":"bool"}
+{"name":"IS_IPV4_COMPAT","args":[{"type":"binary"}],"returns":"bool"}
+{"name":"IS_IPV4_MAPPED","args":[{"type":"binary"}],"returns":"bool"}
+{"name":"IS_IPV6","args":[{"type":"text"}],"returns":"bool"}
+{"name":"IS_USED_LOCK","args":[{"type":"text"}],"returns":"bool"}
+{"name":"IS_UUID","args":[{"type":"text"}],"returns":"bool"}
+{"name":"JSON_ARRAY","args":[{"type":"any","mode":"v"}],"returns":"json"}
+{"name":"JSON_ARRAYAGG","args":[{"type":"any"}],"returns":"json"}
+{"name":"JSON_ARRAY_APPEND","args":[{"type":"text"},{"type":"text"},{"type":"any"},{"type":"any","mode":"v"}],"returns":"json"}
+{"name":"JSON_ARRAY_INSERT","args":[{"type":"text"},{"type":"text"},{"type":"any"},{"type":"any","mode":"v"}],"returns":"json"}
+{"name":"JSON_CONTAINS","args":[{"type":"text"},{"type":"text"}],"returns":"bool"}
+{"name":"JSON_CONTAINS","args":[{"type":"text"},{"type":"text"},{"type":"text"}],"returns":"bool"}
+{"name":"JSON_CONTAINS_PATH","args":[{"type":"text"},{"type":"text"},{"type":"text"},{"type":"text","mode":"v"}],"returns":"bool"}
+{"name":"JSON_DEPTH","args":[{"type":"text"}],"returns":"int"}
+{"name":"JSON_EXTRACT","args":[{"type":"text"},{"type":"text"},{"type":"text","mode":"v"}],"returns":"any"}
+{"name":"JSON_INSERT","args":[{"type":"text"},{"type":"text"},{"type":"any"},{"type":"any","mode":"v"}],"returns":"json"}
+{"name":"JSON_KEYS","args":[{"type":"text"}],"returns":"json"}
+{"name":"JSON_KEYS","args":[{"type":"text"},{"type":"text"}],"returns":"json"}
+{"name":"JSON_LENGTH","args":[{"type":"text"}],"returns":"int"}
+{"name":"JSON_LENGTH","args":[{"type":"text"},{"type":"text"}],"returns":"int"}
+{"name":"JSON_MERGE","args":[{"type":"text"},{"type":"text"},{"type":"text","mode":"v"}],"returns":"json"}
+{"name":"JSON_MERGE_PATCH","args":[{"type":"text"},{"type":"text"},{"type":"text","mode":"v"}],"returns":"json"}
+{"name":"JSON_MERGE_PRESERVE","args":[{"type":"text"},{"type":"text"},{"type":"text","mode":"v"}],"returns":"json"}
+{"name":"JSON_OBJECT","args":[{"type":"any","mode":"v"}],"returns":"json"}
+{"name":"JSON_OBJECTAGG","args":[{"type":"any"},{"type":"any"}],"returns":"json"}
+{"name":"JSON_OVERLAPS","args":[{"type":"text"},{"type":"text"}],"returns":"bool"}
+{"name":"JSON_PRETTY","args":[{"type":"text"}],"returns":"any"}
+{"name":"JSON_QUOTE","args":[{"type":"text"}],"returns":"text"}
+{"name":"JSON_REMOVE","args":[{"type":"text"},{"type":"text"},{"type":"text","mode":"v"}],"returns":"json"}
+{"name":"JSON_REPLACE","args":[{"type":"text"},{"type":"text"},{"type":"any"},{"type":"any","mode":"v"}],"returns":"json"}
+{"name":"JSON_SCHEMA_VALID","args":[{"type":"text"},{"type":"text"}],"returns":"bool"}
+{"name":"JSON_SCHEMA_VALIDATION_REPORT","args":[{"type":"text"},{"type":"text"}],"returns":"json"}
+{"name":"JSON_SEARCH","args":[{"type":"text"},{"type":"text"},{"type":"text"}],"returns":"any"}
+{"name":"JSON_SEARCH","args":[{"type":"text"},{"type":"text"},{"type":"text"},{"type":"text"},{"type":"text","mode":"v"}],"returns":"any"}
+{"name":"JSON_SET","args":[{"type":"text"},{"type":"text"},{"type":"any"},{"type":"any","mode":"v"}],"returns":"json"}
+{"name":"JSON_STORAGE_FREE","args":[{"type":"text"}],"returns":"int"}
+{"name":"JSON_STORAGE_SIZE","args":[{"type":"text"}],"returns":"int"}
+{"name":"JSON_TYPE","args":[{"type":"text"}],"returns":"any"}
+{"name":"JSON_UNQUOTE","args":[{"type":"text"}],"returns":"json"}
+{"name":"JSON_VALID","args":[{"type":"text"}],"returns":"bool"}
+{"name":"JSON_VALUE","args":[{"type":"text"},{"type":"text"}],"returns":"any"}
+{"name":"LAG","args":[{"type":"any"},{"type":"int","has_default":true},{"type":"any","has_default":true}],"returns":"any"}
+{"name":"LAST_DAY","args":[{"type":"date"}],"returns":"date"}
+{"name":"LAST_INSERT_ID","returns":"bigint"}
+{"name":"LAST_INSERT_ID","args":[{"type":"any"}],"returns":"bigint"}
+{"name":"LAST_VALUE","args":[{"type":"any"}],"returns":"any"}
+{"name":"LCASE","args":[{"type":"text"}],"returns":"text"}
+{"name":"LEAD","args":[{"type":"any"},{"type":"int","has_default":true},{"type":"any","has_default":true}],"returns":"any"}
+{"name":"LEAST","args":[{"type":"any"},{"type":"any"},{"type":"any","mode":"v"}],"returns":"any"}
+{"name":"LEFT","args":[{"type":"text"},{"type":"int"}],"returns":"text"}
+{"name":"LENGTH","args":[{"type":"text"}],"returns":"int"}
+{"name":"LINESTRING","args":[{"type":"any"},{"type":"any","mode":"v"}],"returns":"any"}
+{"name":"LN","args":[{"type":"double precision"}],"returns":"double precision"}
+{"name":"LOAD_FILE","args":[{"type":"text"}],"returns":"text"}
+{"name":"LOCALTIME","returns":"datetime"}
+{"name":"LOCALTIME","args":[{"type":"int"}],"returns":"datetime"}
+{"name":"LOCALTIMESTAMP","returns":"datetime"}
+{"name":"LOCALTIMESTAMP","args":[{"type":"int"}],"returns":"datetime"}
+{"name":"LOCATE","args":[{"type":"text"},{"type":"text"}],"returns":"int"}
+{"name":"LOCATE","args":[{"type":"text"},{"type":"text"},{"type":"int"}],"returns":"int"}
+{"name":"LOG","args":[{"type":"double precision"}],"returns":"double precision"}
+{"name":"LOG","args":[{"type":"double precision"},{"type":"int"}],"returns":"int"}
+{"name":"LOG10","args":[{"type":"double precision"}],"returns":"int"}
+{"name":"LOG2","args":[{"type":"double precision"}],"returns":"int"}
+{"name":"LOWER","args":[{"type":"text"}],"returns":"text"}
+{"name":"LPAD","args":[{"type":"text"},{"type":"int"},{"type":"text"}],"returns":"text"}
+{"name":"LTRIM","args":[{"type":"text"}],"returns":"text"}
+{"name":"MAKEDATE","args":[{"type":"int"},{"type":"int"}],"returns":"date"}
+{"name":"MAKETIME","args":[{"type":"int"},{"type":"int"},{"type":"int"}],"returns":"time"}
+{"name":"MAKE_SET","args":[{"type":"int"},{"type":"text"},{"type":"text","mode":"v"}],"returns":"text"}
+{"name":"MASTER_POS_WAIT","args":[{"type":"text"},{"type":"int"}],"returns":"int"}
+{"name":"MASTER_POS_WAIT","args":[{"type":"text"},{"type":"int"},{"type":"int"}],"returns":"int"}
+{"name":"MASTER_POS_WAIT","args":[{"type":"text"},{"type":"int"},{"type":"int"},{"type":"text"}],"returns":"int"}
+{"name":"MAX","args":[{"type":"any"}],"returns":"any"}
+{"name":"MBRCONTAINS","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
+{"name":"MBRCOVEREDBY","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
+{"name":"MBRCOVERS","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
+{"name":"MBRDISJOINT","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
+{"name":"MBREQUALS","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
+{"name":"MBRINTERSECTS","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
+{"name":"MBROVERLAPS","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
+{"name":"MBRTOUCHES","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
+{"name":"MBRWITHIN","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
+{"name":"MD5","args":[{"type":"text"}],"returns":"text"}
+{"name":"MICROSECOND","args":[{"type":"time"}],"returns":"int"}
+{"name":"MID","args":[{"type":"text"},{"type":"int"},{"type":"int"}],"returns":"text"}
+{"name":"MIN","args":[{"type":"any"}],"returns":"any"}
+{"name":"MINUTE","args":[{"type":"time"}],"returns":"int"}
+{"name":"MOD","args":[{"type":"int"},{"type":"int"}],"returns":"int"}
+{"name":"MONTH","args":[{"type":"date"}],"returns":"int"}
+{"name":"MONTHNAME","args":[{"type":"date"}],"returns":"text"}
+{"name":"MULTILINESTRING","args":[{"type":"any"},{"type":"any","mode":"v"}],"returns":"any"}
+{"name":"MULTIPOINT","args":[{"type":"any"},{"type":"any","mode":"v"}],"returns":"any"}
+{"name":"MULTIPOLYGON","args":[{"type":"any"},{"type":"any","mode":"v"}],"returns":"any"}
+{"name":"NAME_CONST","args":[{"type":"any"},{"type":"any"}],"returns":"any"}
+{"name":"NOW","returns":"datetime"}
+{"name":"NEXTVAL","args":[{"type":"any"}],"returns":"int"}
+{"name":"NOW","args":[{"type":"int"}],"returns":"datetime"}
+{"name":"NTH_VALUE","args":[{"type":"any"},{"type":"int"}],"returns":"any"}
+{"name":"NTILE","args":[{"type":"int"}],"returns":"int"}
+{"name":"NULLIF","args":[{"type":"any"},{"type":"any"}],"returns":"any"}
+{"name":"OCT","args":[{"type":"bigint"}],"returns":"text"}
+{"name":"OCTET_LENGTH","args":[{"type":"text"}],"returns":"int"}
+{"name":"ORD","args":[{"type":"text"}],"returns":"int"}
+{"name":"PERCENT_RANK","returns":"double precision"}
+{"name":"PERIOD_ADD","args":[{"type":"int"},{"type":"int"}],"returns":"int"}
+{"name":"PERIOD_DIFF","args":[{"type":"int"},{"type":"int"}],"returns":"int"}
+{"name":"PI","returns":"double precision"}
+{"name":"POINT","args":[{"type":"double precision"},{"type":"double precision"}],"returns":"any"}
+{"name":"POLYGON","args":[{"type":"any"},{"type":"any","mode":"v"}],"returns":"any"}
+{"name":"POSITION","args":[{"type":"text"},{"type":"text"}],"returns":"int"}
+{"name":"POW","args":[{"type":"double precision"},{"type":"double precision"}],"returns":"double precision"}
+{"name":"POWER","args":[{"type":"double precision"},{"type":"double precision"}],"returns":"double precision"}
+{"name":"PS_CURRENT_THREAD_ID","returns":"int"}
+{"name":"PS_THREAD_ID","args":[{"type":"int"}],"returns":"int"}
+{"name":"QUARTER","args":[{"type":"date"}],"returns":"int"}
+{"name":"QUOTE","args":[{"type":"text"}],"returns":"text"}
+{"name":"RADIANS","args":[{"type":"int"}],"returns":"double precision"}
+{"name":"RAND","returns":"double precision"}
+{"name":"RAND","args":[{"type":"int"}],"returns":"double precision"}
+{"name":"RANDOM_BYTES","args":[{"type":"int"}],"returns":"binary"}
+{"name":"RANK","returns":"int"}
+{"name":"REGEXP_INSTR","args":[{"type":"text"},{"type":"text"},{"type":"int","has_default":true},{"type":"int","has_default":true},{"type":"int","has_default":true},{"type":"text","has_default":true}],"returns":"int"}
+{"name":"REGEXP_LIKE","args":[{"type":"text"},{"type":"text"},{"type":"text","has_default":true}],"returns":"bool"}
+{"name":"REGEXP_REPLACE","args":[{"type":"text"},{"type":"text"},{"type":"text"},{"type":"int","has_default":true},{"type":"int","has_default":true},{"type":"text","has_default":true}],"returns":"text"}
+{"name":"REGEXP_SUBSTR","args":[{"type":"text"},{"type":"text"},{"type":"int","has_default":true},{"type":"int","has_default":true},{"type":"text","has_default":true}],"returns":"text"}
+{"name":"RELEASE_ALL_LOCKS","returns":"int"}
+{"name":"RELEASE_LOCK","args":[{"type":"text"}],"returns":"bool"}
+{"name":"REPEAT","args":[{"type":"text"},{"type":"int"}],"returns":"text"}
+{"name":"REPLACE","args":[{"type":"text"},{"type":"text"},{"type":"text"}],"returns":"text"}
+{"name":"REVERSE","args":[{"type":"text"}],"returns":"text"}
+{"name":"RIGHT","args":[{"type":"text"},{"type":"int"}],"returns":"text"}
+{"name":"ROLES_GRAPHML","returns":"text"}
+{"name":"ROUND","args":[{"type":"double precision"}],"returns":"double precision"}
+{"name":"ROUND","args":[{"type":"double precision"},{"type":"double precision"}],"returns":"double precision"}
+{"name":"ROW_COUNT","returns":"bigint"}
+{"name":"ROW_NUMBER","returns":"int"}
+{"name":"RPAD","args":[{"type":"text"},{"type":"int"},{"type":"text"}],"returns":"text"}
+{"name":"RTRIM","args":[{"type":"text"}],"returns":"text"}
+{"name":"SCHEMA","returns":"text"}
+{"name":"SECOND","args":[{"type":"time"}],"returns":"int"}
+{"name":"SEC_TO_TIME","args":[{"type":"int"}],"returns":"time"}
+{"name":"SESSION_USER","returns":"text"}
+{"name":"SHA","args":[{"type":"text"}],"returns":"text"}
+{"name":"SHA1","args":[{"type":"text"}],"returns":"text"}
+{"name":"SHA2","args":[{"type":"text"},{"type":"int"}],"returns":"text"}
+{"name":"SIGN","args":[{"type":"double precision"}],"returns":"int"}
+{"name":"SIN","args":[{"type":"double precision"}],"returns":"double precision"}
+{"name":"SLEEP","args":[{"type":"int"}],"returns":"int"}
+{"name":"SOUNDEX","args":[{"type":"text"}],"returns":"text"}
+{"name":"SPACE","args":[{"type":"int"}],"returns":"text"}
+{"name":"SQRT","args":[{"type":"double precision"}],"returns":"double precision"}
+{"name":"STATEMENT_DIGEST","args":[{"type":"text"}],"returns":"text"}
+{"name":"STATEMENT_DIGEST_TEXT","args":[{"type":"text"}],"returns":"text"}
+{"name":"STD","args":[{"type":"any"}],"returns":"any"}
+{"name":"STDDEV","args":[{"type":"any"}],"returns":"any"}
+{"name":"STDDEV_POP","args":[{"type":"any"}],"returns":"any"}
+{"name":"STDDEV_SAMP","args":[{"type":"any"}],"returns":"any"}
+{"name":"STRCMP","args":[{"type":"text"},{"type":"text"}],"returns":"tinyint"}
+{"name":"STR_TO_DATE","args":[{"type":"text"},{"type":"text"}],"returns":"datetime"}
+{"name":"ST_AREA","args":[{"type":"any"}],"returns":"double precision"}
+{"name":"ST_ASBINARY","args":[{"type":"any"}],"returns":"binary"}
+{"name":"ST_ASBINARY","args":[{"type":"any"},{"type":"text"}],"returns":"binary"}
+{"name":"ST_ASGEOJSON","args":[{"type":"any"}],"returns":"json"}
+{"name":"ST_ASGEOJSON","args":[{"type":"any"},{"type":"int"}],"returns":"json"}
+{"name":"ST_ASGEOJSON","args":[{"type":"any"},{"type":"int"},{"type":"tinyint"}],"returns":"json"}
+{"name":"ST_ASTEXT","args":[{"type":"any"}],"returns":"text"}
+{"name":"ST_ASTEXT","args":[{"type":"any"},{"type":"text"}],"returns":"text"}
+{"name":"ST_ASWKB","args":[{"type":"any"}],"returns":"binary"}
+{"name":"ST_ASWKB","args":[{"type":"any"},{"type":"text"}],"returns":"binary"}
+{"name":"ST_ASWKT","args":[{"type":"any"}],"returns":"text"}
+{"name":"ST_ASWKT","args":[{"type":"any"},{"type":"text"}],"returns":"text"}
+{"name":"ST_BUFFER","args":[{"type":"any"},{"type":"double precision"}],"returns":"any"}
+{"name":"ST_BUFFER","args":[{"type":"any"},{"type":"double precision"},{"type":"binary"}],"returns":"any"}
+{"name":"ST_BUFFER","args":[{"type":"any"},{"type":"double precision"},{"type":"binary"},{"type":"binary"}],"returns":"any"}
+{"name":"ST_BUFFER","args":[{"type":"any"},{"type":"double precision"},{"type":"binary"},{"type":"binary"},{"type":"binary"}],"returns":"any"}
+{"name":"ST_BUFFER_STRATEGY","args":[{"type":"text"}],"returns":"binary"}
+{"name":"ST_BUFFER_STRATEGY","args":[{"type":"text"},{"type":"int"}],"returns":"binary"}
+{"name":"ST_CENTROID","args":[{"type":"any"}],"returns":"any"}
+{"name":"ST_CONTAINS","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
+{"name":"ST_CONVEXHULL","args":[{"type":"any"}],"returns":"any"}
+{"name":"ST_CROSSES","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
+{"name":"ST_DIFFERENCE","args":[{"type":"any"},{"type":"any"}],"returns":"any"}
+{"name":"ST_DIMENSION","args":[{"type":"any"}],"returns":"tinyint"}
+{"name":"ST_DISJOINT","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
+{"name":"ST_DISTANCE","args":[{"type":"any"},{"type":"any"}],"returns":"double precision"}
+{"name":"ST_DISTANCE","args":[{"type":"any"},{"type":"any"},{"type":"text"}],"returns":"double precision"}
+{"name":"ST_DISTANCE_SPHERE","args":[{"type":"any"},{"type":"any"}],"returns":"double precision"}
+{"name":"ST_DISTANCE_SPHERE","args":[{"type":"any"},{"type":"any"},{"type":"int"}],"returns":"double precision"}
+{"name":"ST_ENDPOINT","args":[{"type":"any"}],"returns":"any"}
+{"name":"ST_ENVELOPE","args":[{"type":"any"}],"returns":"any"}
+{"name":"ST_EQUALS","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
+{"name":"ST_EXTERIORRING","args":[{"type":"any"}],"returns":"any"}
+{"name":"ST_FRECHET_DISTANCE","args":[{"type":"any"},{"type":"any"}],"returns":"double precision"}
+{"name":"ST_FRECHET_DISTANCE","args":[{"type":"any"},{"type":"any"},{"type":"text"}],"returns":"double precision"}
+{"name":"ST_GEOHASH","args":[{"type":"double precision"},{"type":"double precision"},{"type":"int"}],"returns":"text"}
+{"name":"ST_GEOHASH","args":[{"type":"any"},{"type":"int"}],"returns":"text"}
+{"name":"ST_GEOMCOLLFROMTEXT","args":[{"type":"text"}],"returns":"any"}
+{"name":"ST_GEOMCOLLFROMTEXT","args":[{"type":"text"},{"type":"int"}],"returns":"any"}
+{"name":"ST_GEOMCOLLFROMTEXT","args":[{"type":"text"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_GEOMCOLLFROMTXT","args":[{"type":"text"}],"returns":"any"}
+{"name":"ST_GEOMCOLLFROMTXT","args":[{"type":"text"},{"type":"int"}],"returns":"any"}
+{"name":"ST_GEOMCOLLFROMTXT","args":[{"type":"text"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_GEOMCOLLFROMWKB","args":[{"type":"binary"}],"returns":"any"}
+{"name":"ST_GEOMCOLLFROMWKB","args":[{"type":"binary"},{"type":"int"}],"returns":"any"}
+{"name":"ST_GEOMCOLLFROMWKB","args":[{"type":"binary"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_GEOMETRYCOLLECTIONFROMTEXT","args":[{"type":"text"}],"returns":"any"}
+{"name":"ST_GEOMETRYCOLLECTIONFROMTEXT","args":[{"type":"text"},{"type":"int"}],"returns":"any"}
+{"name":"ST_GEOMETRYCOLLECTIONFROMTEXT","args":[{"type":"text"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_GEOMETRYCOLLECTIONFROMWKB","args":[{"type":"binary"}],"returns":"any"}
+{"name":"ST_GEOMETRYCOLLECTIONFROMWKB","args":[{"type":"binary"},{"type":"int"}],"returns":"any"}
+{"name":"ST_GEOMETRYCOLLECTIONFROMWKB","args":[{"type":"binary"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_GEOMETRYFROMTEXT","args":[{"type":"text"}],"returns":"any"}
+{"name":"ST_GEOMETRYFROMTEXT","args":[{"type":"text"},{"type":"int"}],"returns":"any"}
+{"name":"ST_GEOMETRYFROMTEXT","args":[{"type":"text"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_GEOMETRYFROMWKB","args":[{"type":"binary"}],"returns":"any"}
+{"name":"ST_GEOMETRYFROMWKB","args":[{"type":"binary"},{"type":"int"}],"returns":"any"}
+{"name":"ST_GEOMETRYFROMWKB","args":[{"type":"binary"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_GEOMETRYN","args":[{"type":"any"},{"type":"int"}],"returns":"any"}
+{"name":"ST_GEOMETRYTYPE","args":[{"type":"any"}],"returns":"text"}
+{"name":"ST_GEOMFROMGEOJSON","args":[{"type":"text"}],"returns":"any"}
+{"name":"ST_GEOMFROMGEOJSON","args":[{"type":"text"},{"type":"tinyint"}],"returns":"any"}
+{"name":"ST_GEOMFROMGEOJSON","args":[{"type":"text"},{"type":"tinyint"},{"type":"int"}],"returns":"any"}
+{"name":"ST_GEOMFROMTEXT","args":[{"type":"text"}],"returns":"any"}
+{"name":"ST_GEOMFROMTEXT","args":[{"type":"text"},{"type":"int"}],"returns":"any"}
+{"name":"ST_GEOMFROMTEXT","args":[{"type":"text"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_GEOMFROMWKB","args":[{"type":"binary"}],"returns":"any"}
+{"name":"ST_GEOMFROMWKB","args":[{"type":"binary"},{"type":"int"}],"returns":"any"}
+{"name":"ST_GEOMFROMWKB","args":[{"type":"binary"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_HAUSDORFF_DISTANCE","args":[{"type":"any"},{"type":"any"}],"returns":"double precision"}
+{"name":"ST_HAUSDORFF_DISTANCE","args":[{"type":"any"},{"type":"any"},{"type":"text"}],"returns":"double precision"}
+{"name":"ST_INTERIORRINGN","args":[{"type":"any"},{"type":"int"}],"returns":"any"}
+{"name":"ST_INTERSECTION","args":[{"type":"any"},{"type":"any"}],"returns":"any"}
+{"name":"ST_INTERSECTS","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
+{"name":"ST_ISCLOSED","args":[{"type":"any"}],"returns":"bool"}
+{"name":"ST_ISEMPTY","args":[{"type":"any"}],"returns":"bool"}
+{"name":"ST_ISSIMPLE","args":[{"type":"any"}],"returns":"bool"}
+{"name":"ST_ISVALID","args":[{"type":"any"}],"returns":"bool"}
+{"name":"ST_LATFROMGEOHASH","args":[{"type":"text"}],"returns":"double precision"}
+{"name":"ST_LATITUDE","args":[{"type":"any"}],"returns":"double precision"}
+{"name":"ST_LATITUDE","args":[{"type":"any"},{"type":"double precision"}],"returns":"any"}
+{"name":"ST_LENGTH","args":[{"type":"any"}],"returns":"double precision"}
+{"name":"ST_LENGTH","args":[{"type":"any"},{"type":"text"}],"returns":"double precision"}
+{"name":"ST_LINEFROMTEXT","args":[{"type":"text"}],"returns":"any"}
+{"name":"ST_LINEFROMTEXT","args":[{"type":"text"},{"type":"int"}],"returns":"any"}
+{"name":"ST_LINEFROMTEXT","args":[{"type":"text"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_LINEFROMWKB","args":[{"type":"binary"}],"returns":"any"}
+{"name":"ST_LINEFROMWKB","args":[{"type":"binary"},{"type":"int"}],"returns":"any"}
+{"name":"ST_LINEFROMWKB","args":[{"type":"binary"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_LINEINTERPOLATEPOINT","args":[{"type":"any"},{"type":"double precision"}],"returns":"any"}
+{"name":"ST_LINEINTERPOLATEPOINTS","args":[{"type":"any"},{"type":"double precision"}],"returns":"any"}
+{"name":"ST_LINESTRINGFROMTEXT","args":[{"type":"text"}],"returns":"any"}
+{"name":"ST_LINESTRINGFROMTEXT","args":[{"type":"text"},{"type":"int"}],"returns":"any"}
+{"name":"ST_LINESTRINGFROMTEXT","args":[{"type":"text"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_LINESTRINGFROMWKB","args":[{"type":"binary"}],"returns":"any"}
+{"name":"ST_LINESTRINGFROMWKB","args":[{"type":"binary"},{"type":"int"}],"returns":"any"}
+{"name":"ST_LINESTRINGFROMWKB","args":[{"type":"binary"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_LONGFROMGEOHASH","args":[{"type":"text"}],"returns":"double precision"}
+{"name":"ST_LONGITUDE","args":[{"type":"any"}],"returns":"double precision"}
+{"name":"ST_LONGITUDE","args":[{"type":"any"},{"type":"double precision"}],"returns":"any"}
+{"name":"ST_MAKEENVELOPE","args":[{"type":"any"},{"type":"any"}],"returns":"any"}
+{"name":"ST_MLINEFROMTEXT","args":[{"type":"text"}],"returns":"any"}
+{"name":"ST_MLINEFROMTEXT","args":[{"type":"text"},{"type":"int"}],"returns":"any"}
+{"name":"ST_MLINEFROMTEXT","args":[{"type":"text"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_MLINEFROMWKB","args":[{"type":"binary"}],"returns":"any"}
+{"name":"ST_MLINEFROMWKB","args":[{"type":"binary"},{"type":"int"}],"returns":"any"}
+{"name":"ST_MLINEFROMWKB","args":[{"type":"binary"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_MPOINTFROMTEXT","args":[{"type":"text"}],"returns":"any"}
+{"name":"ST_MPOINTFROMTEXT","args":[{"type":"text"},{"type":"int"}],"returns":"any"}
+{"name":"ST_MPOINTFROMTEXT","args":[{"type":"text"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_MPOINTFROMWKB","args":[{"type":"binary"}],"returns":"any"}
+{"name":"ST_MPOINTFROMWKB","args":[{"type":"binary"},{"type":"int"}],"returns":"any"}
+{"name":"ST_MPOINTFROMWKB","args":[{"type":"binary"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_MPOLYFROMTEXT","args":[{"type":"text"}],"returns":"any"}
+{"name":"ST_MPOLYFROMTEXT","args":[{"type":"text"},{"type":"int"}],"returns":"any"}
+{"name":"ST_MPOLYFROMTEXT","args":[{"type":"text"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_MPOLYFROMWKB","args":[{"type":"binary"}],"returns":"any"}
+{"name":"ST_MPOLYFROMWKB","args":[{"type":"binary"},{"type":"int"}],"returns":"any"}
+{"name":"ST_MPOLYFROMWKB","args":[{"type":"binary"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_MULTILINESTRINGFROMTEXT","args":[{"type":"text"}],"returns":"any"}
+{"name":"ST_MULTILINESTRINGFROMTEXT","args":[{"type":"text"},{"type":"int"}],"returns":"any"}
+{"name":"ST_MULTILINESTRINGFROMTEXT","args":[{"type":"text"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_MULTILINESTRINGFROMWKB","args":[{"type":"binary"}],"returns":"any"}
+{"name":"ST_MULTILINESTRINGFROMWKB","args":[{"type":"binary"},{"type":"int"}],"returns":"any"}
+{"name":"ST_MULTILINESTRINGFROMWKB","args":[{"type":"binary"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_MULTIPOINTFROMTEXT","args":[{"type":"text"}],"returns":"any"}
+{"name":"ST_MULTIPOINTFROMTEXT","args":[{"type":"text"},{"type":"int"}],"returns":"any"}
+{"name":"ST_MULTIPOINTFROMTEXT","args":[{"type":"text"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_MULTIPOINTFROMWKB","args":[{"type":"binary"}],"returns":"any"}
+{"name":"ST_MULTIPOINTFROMWKB","args":[{"type":"binary"},{"type":"int"}],"returns":"any"}
+{"name":"ST_MULTIPOINTFROMWKB","args":[{"type":"binary"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_MULTIPOLYGONFROMTEXT","args":[{"type":"text"}],"returns":"any"}
+{"name":"ST_MULTIPOLYGONFROMTEXT","args":[{"type":"text"},{"type":"int"}],"returns":"any"}
+{"name":"ST_MULTIPOLYGONFROMTEXT","args":[{"type":"text"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_MULTIPOLYGONFROMWKB","args":[{"type":"binary"}],"returns":"any"}
+{"name":"ST_MULTIPOLYGONFROMWKB","args":[{"type":"binary"},{"type":"int"}],"returns":"any"}
+{"name":"ST_MULTIPOLYGONFROMWKB","args":[{"type":"binary"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_NUMGEOMETRIES","args":[{"type":"any"}],"returns":"bigint"}
+{"name":"ST_NUMINTERIORRING","args":[{"type":"any"}],"returns":"int"}
+{"name":"ST_NUMINTERIORRINGS","args":[{"type":"any"}],"returns":"int"}
+{"name":"ST_NUMPOINTS","args":[{"type":"any"}],"returns":"bigint"}
+{"name":"ST_OVERLAPS","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
+{"name":"ST_POINTATDISTANCE","args":[{"type":"any"},{"type":"double precision"}],"returns":"any"}
+{"name":"ST_POINTFROMGEOHASH","args":[{"type":"text"},{"type":"int"}],"returns":"any"}
+{"name":"ST_POINTFROMTEXT","args":[{"type":"text"}],"returns":"any"}
+{"name":"ST_POINTFROMTEXT","args":[{"type":"text"},{"type":"int"}],"returns":"any"}
+{"name":"ST_POINTFROMTEXT","args":[{"type":"text"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_POINTFROMWKB","args":[{"type":"binary"}],"returns":"any"}
+{"name":"ST_POINTFROMWKB","args":[{"type":"binary"},{"type":"int"}],"returns":"any"}
+{"name":"ST_POINTFROMWKB","args":[{"type":"binary"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_POINTN","args":[{"type":"any"},{"type":"int"}],"returns":"any"}
+{"name":"ST_POLYFROMTEXT","args":[{"type":"text"}],"returns":"any"}
+{"name":"ST_POLYFROMTEXT","args":[{"type":"text"},{"type":"int"}],"returns":"any"}
+{"name":"ST_POLYFROMTEXT","args":[{"type":"text"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_POLYFROMWKB","args":[{"type":"binary"}],"returns":"any"}
+{"name":"ST_POLYFROMWKB","args":[{"type":"binary"},{"type":"int"}],"returns":"any"}
+{"name":"ST_POLYFROMWKB","args":[{"type":"binary"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_POLYGONFROMTEXT","args":[{"type":"text"}],"returns":"any"}
+{"name":"ST_POLYGONFROMTEXT","args":[{"type":"text"},{"type":"int"}],"returns":"any"}
+{"name":"ST_POLYGONFROMTEXT","args":[{"type":"text"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_POLYGONFROMWKB","args":[{"type":"binary"}],"returns":"any"}
+{"name":"ST_POLYGONFROMWKB","args":[{"type":"binary"},{"type":"int"}],"returns":"any"}
+{"name":"ST_POLYGONFROMWKB","args":[{"type":"binary"},{"type":"int"},{"type":"text"}],"returns":"any"}
+{"name":"ST_SIMPLIFY","args":[{"type":"any"},{"type":"double precision"}],"returns":"any"}
+{"name":"ST_SRID","args":[{"type":"any"}],"returns":"int"}
+{"name":"ST_SRID","args":[{"type":"any"},{"type":"int"}],"returns":"int"}
+{"name":"ST_STARTPOINT","args":[{"type":"any"}],"returns":"any"}
+{"name":"ST_SWAPXY","args":[{"type":"any"}],"returns":"any"}
+{"name":"ST_SYMDIFFERENCE","args":[{"type":"any"},{"type":"any"}],"returns":"any"}
+{"name":"ST_TOUCHES","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
+{"name":"ST_TRANSFORM","args":[{"type":"any"},{"type":"int"}],"returns":"any"}
+{"name":"ST_UNION","args":[{"type":"any"},{"type":"any"}],"returns":"any"}
+{"name":"ST_VALIDATE","args":[{"type":"any"}],"returns":"any"}
+{"name":"ST_WITHIN","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
+{"name":"ST_X","args":[{"type":"any"}],"returns":"double precision"}
+{"name":"ST_X","args":[{"type":"any"},{"type":"double precision"}],"returns":"any"}
+{"name":"ST_Y","args":[{"type":"any"}],"returns":"double precision"}
+{"name":"ST_Y","args":[{"type":"any"},{"type":"double precision"}],"returns":"any"}
+{"name":"SUBDATE","args":[{"type":"date"},{"type":"any"}],"returns":"date"}
+{"name":"SUBSTR","args":[{"type":"text"},{"type":"int"}],"returns":"text"}
+{"name":"SUBSTR","args":[{"type":"text"},{"type":"int"},{"type":"int"}],"returns":"text"}
+{"name":"SUBSTRING","args":[{"type":"text"},{"type":"int"}],"returns":"text"}
+{"name":"SUBSTRING","args":[{"type":"text"},{"type":"int"},{"type":"int"}],"returns":"text"}
+{"name":"SUBSTRING_INDEX","args":[{"type":"text"},{"type":"int"},{"type":"int"}],"returns":"text"}
+{"name":"SUBTIME","args":[{"type":"time"},{"type":"time"}],"returns":"time"}
+{"name":"SUM","args":[{"type":"any"}],"returns":"any"}
+{"name":"SYSDATE","returns":"datetime"}
+{"name":"SYSDATE","args":[{"type":"int"}],"returns":"datetime"}
+{"name":"SYSTEM_USER","returns":"text"}
+{"name":"TAN","args":[{"type":"double precision"}],"returns":"double precision"}
+{"name":"TIME","args":[{"type":"datetime"}],"returns":"time"}
+{"name":"TIMEDIFF","args":[{"type":"time"},{"type":"time"}],"returns":"time"}
+{"name":"TIMESTAMP","args":[{"type":"datetime"}],"returns":"datetime"}
+{"name":"TIMESTAMP","args":[{"type":"datetime"},{"type":"datetime"}],"returns":"datetime"}
+{"name":"TIMESTAMPADD","args":[{"type":"any"},{"type":"int"},{"type":"datetime"}],"returns":"datetime"}
+{"name":"TIMESTAMPDIFF","args":[{"type":"any"},{"type":"datetime"},{"type":"datetime"}],"returns":"int"}
+{"name":"TIME_FORMAT","args":[{"type":"time"},{"type":"text"}],"returns":"text"}
+{"name":"TIME_TO_SEC","args":[{"type":"time"}],"returns":"int"}
+{"name":"TO_BASE64","args":[{"type":"text"}],"returns":"text"}
+{"name":"TO_DAYS","args":[{"type":"date"}],"returns":"int"}
+{"name":"TO_SECONDS","args":[{"type":"datetime"}],"returns":"bigint"}
+{"name":"TRIM","args":[{"type":"text"}],"returns":"text"}
+{"name":"TRIM","args":[{"type":"text"},{"type":"text"}],"returns":"text"}
+{"name":"TRUNCATE","args":[{"type":"double precision"},{"type":"int"}],"returns":"int"}
+{"name":"UCASE","args":[{"type":"text"}],"returns":"text"}
+{"name":"UNCOMPRESS","args":[{"type":"binary"}],"returns":"text"}
+{"name":"UNCOMPRESSED_LENGTH","args":[{"type":"binary"}],"returns":"int"}
+{"name":"UNHEX","args":[{"type":"text"}],"returns":""}
+{"name":"UNIX_TIMESTAMP","returns":"bigint"}
+{"name":"UNIX_TIMESTAMP","args":[{"type":"datetime"}],"returns":"bigint"}
+{"name":"UPDATEXML","args":[{"type":"text"},{"type":"text"},{"type":"text"}],"returns":"text"}
+{"name":"UPPER","args":[{"type":"text"}],"returns":"text"}
+{"name":"USER","returns":"text"}
+{"name":"UTC_DATE","returns":"date"}
+{"name":"UTC_TIME","returns":"time"}
+{"name":"UTC_TIMESTAMP","returns":"datetime"}
+{"name":"UUID","returns":"text"}
+{"name":"UUID_SHORT","returns":"bigint"}
+{"name":"UUID_TO_BIN","args":[{"type":"text"}],"returns":"binary"}
+{"name":"UUID_TO_BIN","args":[{"type":"text"},{"type":"tinyint"}],"returns":"binary"}
+{"name":"VALIDATE_PASSWORD_STRENGTH","args":[{"type":"text"}],"returns":"int"}
+{"name":"VALUES","args":[{"type":"any"}],"returns":"any"}
+{"name":"VARIANCE","args":[{"type":"any"}],"returns":"any"}
+{"name":"VAR_POP","args":[{"type":"any"}],"returns":"any"}
+{"name":"VAR_SAMP","args":[{"type":"any"}],"returns":"any"}
+{"name":"VERSION","returns":"text"}
+{"name":"WAIT_FOR_EXECUTED_GTID_SET","args":[{"type":"text"},{"type":"int","has_default":true}],"returns":"bool"}
+{"name":"WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS","args":[{"type":"text"},{"type":"int","has_default":true},{"type":"text","has_default":true}],"returns":"bool"}
+{"name":"WEEK","args":[{"type":"date"}],"returns":"int"}
+{"name":"WEEK","args":[{"type":"date"},{"type":"int"}],"returns":"int"}
+{"name":"WEEKDAY","args":[{"type":"date"}],"returns":"int"}
+{"name":"WEEKOFYEAR","args":[{"type":"date"}],"returns":"int"}
+{"name":"WEIGHT_STRING","args":[{"type":"text"}],"returns":"any"}
+{"name":"YEAR","args":[{"type":"date"}],"returns":"int"}
+{"name":"YEARWEEK","args":[{"type":"date"}],"returns":"int"}

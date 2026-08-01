@@ -1,0 +1,1 @@
+{"dialect": "mysql", "const": {"integer": "int", "float": "decimal", "string": "text", "bool": "bool"}, "bool": "bool", "comparison": ["=", "<>", "!=", "<", "<=", ">", ">=", "<=>"], "comparison_categories": "BNSDU", "arithmetic": ["+", "-", "*", "/", "%", "DIV"], "arithmetic_categories": "N", "cast_categories": "NSD"}
