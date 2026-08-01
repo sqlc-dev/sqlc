@@ -3,9 +3,8 @@
 //
 // It has two halves:
 //
-//   - A content-addressable store (CAS) holding blobs keyed by the hash of
-//     their contents — BLAKE3 by default — laid out as
-//     cas/<function>/<xx>/<hash>.
+//   - A content-addressable store (CAS) holding blobs keyed by the SHA-256
+//     hash of their contents, laid out as cas/<xx>/<hash>.
 //   - An action cache (AC) mapping the digest of an action — a description of
 //     cacheable work and all of its inputs — to the digests of the outputs
 //     that work produced, laid out as ac/<xx>/<hash>.

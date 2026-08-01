@@ -25,10 +25,11 @@ Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-
 
 The cache is designed after Bazel's local disk cache and has three parts:
 
-- `cas/` — a content-addressable store holding blobs keyed by the hash of
-  their contents. Query analysis results are keyed by BLAKE3; remotely
-  fetched WASM plugins are keyed by the sha256 checksum declared in the
-  configuration file, so they are loaded directly by that address.
+- `cas/` — a content-addressable store holding blobs (query analysis
+  results, WASM plugin binaries) keyed by the SHA-256 hash of their
+  contents. A remotely fetched plugin's address is exactly the checksum
+  declared in the configuration file, so it is loaded directly by that
+  address.
 - `ac/` — an action cache mapping the digest of a unit of cacheable work and
   its inputs (for example, analyzing a query against a schema) to the CAS
   digests of its outputs.

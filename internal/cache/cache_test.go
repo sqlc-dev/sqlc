@@ -103,7 +103,7 @@ func TestCASPutRepairsCorruptEntry(t *testing.T) {
 	}
 }
 
-func TestCASSHA256DirectLoad(t *testing.T) {
+func TestCASDeclaredChecksumLoad(t *testing.T) {
 	c := testCache(t)
 	blob := []byte("fetched plugin binary")
 	s := sha256.Sum256(blob)
@@ -114,7 +114,7 @@ func TestCASSHA256DirectLoad(t *testing.T) {
 		t.Errorf("want ErrNotFound before Put, got %v", err)
 	}
 
-	d, err := c.CAS.PutSHA256(blob)
+	d, err := c.CAS.Put(blob)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -130,26 +130,6 @@ func TestCASSHA256DirectLoad(t *testing.T) {
 	}
 	if string(got) != string(blob) {
 		t.Errorf("got %q, want %q", got, blob)
-	}
-
-	// sha256- and blake3-keyed entries live in separate namespaces.
-	if c.CAS.Contains(DigestOf(blob)) {
-		t.Error("blob stored by sha256 must not be visible under its blake3 digest")
-	}
-}
-
-func TestCASSHA256CorruptionEvicted(t *testing.T) {
-	c := testCache(t)
-	blob := []byte("plugin contents")
-	d, err := c.CAS.PutSHA256(blob)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(c.CAS.path(d), []byte("tampered!contents"), 0644); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := c.CAS.Get(SHA256Digest(d.Hash)); !errors.Is(err, ErrNotFound) {
-		t.Errorf("want ErrNotFound for corrupt blob, got %v", err)
 	}
 }
 

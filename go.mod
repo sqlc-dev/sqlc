@@ -30,7 +30,6 @@ require (
 	google.golang.org/grpc v1.83.0
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1
-	lukechampine.com/blake3 v1.4.1
 	modernc.org/sqlite v1.55.0
 )
 
@@ -44,7 +43,6 @@ require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
-	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/ncruces/go-sqlite3-wasm/v3 v3.2.35303 // indirect

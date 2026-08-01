@@ -127,7 +127,7 @@ func (r *Runner) loadAndCompileWASM(ctx context.Context, store *cache.Cache, exp
 		if expected != actual {
 			return nil, fmt.Errorf("invalid checksum: expected %s, got %s", expected, actual)
 		}
-		if _, err := store.CAS.PutSHA256(wmod); err != nil {
+		if _, err := store.CAS.Put(wmod); err != nil {
 			return nil, fmt.Errorf("cache wasm: %w", err)
 		}
 	} else if err != nil {

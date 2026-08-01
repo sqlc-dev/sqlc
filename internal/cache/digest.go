@@ -5,64 +5,26 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-
-	"lukechampine.com/blake3"
+	"hash"
 )
 
-// HashFunc identifies the hash function that keys a blob in the CAS.
-//
-// BLAKE3 is the native digest function. SHA256 exists so that content with an
-// externally declared SHA-256 checksum — like a WASM plugin's checksum in
-// sqlc's configuration — can be addressed directly by that checksum without
-// any translation table.
-type HashFunc string
-
-const (
-	BLAKE3 HashFunc = "blake3"
-	SHA256 HashFunc = "sha256"
-)
-
-func sum(fn HashFunc, data []byte) (string, bool) {
-	switch fn {
-	case BLAKE3:
-		s := blake3.Sum256(data)
-		return hex.EncodeToString(s[:]), true
-	case SHA256:
-		s := sha256.Sum256(data)
-		return hex.EncodeToString(s[:]), true
-	}
-	return "", false
-}
-
-// Digest identifies a blob by hash function, hash, and size, mirroring the
+// Digest identifies a blob by its SHA-256 hash and size, mirroring the
 // Digest message from Bazel's remote execution API. The size is stored
 // alongside the hash so that entries can be validated without reading blob
 // contents; a negative size means the size is unknown, as with a checksum
 // declared in a configuration file.
 type Digest struct {
-	// Function is the hash function; an empty value means BLAKE3.
-	Function HashFunc `json:"function,omitempty"`
-	// Hash is the lowercase hex-encoded 256-bit hash of the blob.
+	// Hash is the lowercase hex-encoded SHA-256 hash of the blob.
 	Hash string `json:"hash"`
 	// SizeBytes is the length of the blob in bytes, or negative if unknown.
 	SizeBytes int64 `json:"size_bytes"`
 }
 
 func (d Digest) String() string {
-	return fmt.Sprintf("%s:%s/%d", d.function(), d.Hash, d.SizeBytes)
-}
-
-func (d Digest) function() HashFunc {
-	if d.Function == "" {
-		return BLAKE3
-	}
-	return d.Function
+	return fmt.Sprintf("sha256:%s/%d", d.Hash, d.SizeBytes)
 }
 
 func (d Digest) valid() bool {
-	if _, ok := sum(d.function(), nil); !ok {
-		return false
-	}
 	if len(d.Hash) != 64 {
 		return false
 	}
@@ -70,11 +32,11 @@ func (d Digest) valid() bool {
 	return err == nil
 }
 
-// DigestOf returns the BLAKE3 Digest of a blob.
+// DigestOf returns the Digest of a blob.
 func DigestOf(data []byte) Digest {
-	hash, _ := sum(BLAKE3, data)
+	sum := sha256.Sum256(data)
 	return Digest{
-		Hash:      hash,
+		Hash:      hex.EncodeToString(sum[:]),
 		SizeBytes: int64(len(data)),
 	}
 }
@@ -84,7 +46,6 @@ func DigestOf(data []byte) Digest {
 // content in the CAS.
 func SHA256Digest(hexhash string) Digest {
 	return Digest{
-		Function:  SHA256,
 		Hash:      hexhash,
 		SizeBytes: -1,
 	}
@@ -99,13 +60,13 @@ func SHA256Digest(hexhash string) Digest {
 // boundary between inputs is unambiguous ("ab"+"c" hashes differently from
 // "a"+"bc").
 type Action struct {
-	hasher *blake3.Hasher
+	hasher hash.Hash
 }
 
 // NewAction starts building an action key for the given mnemonic, e.g.
 // "QueryAnalysis".
 func NewAction(mnemonic string) *Action {
-	a := &Action{hasher: blake3.New(32, nil)}
+	a := &Action{hasher: sha256.New()}
 	a.write([]byte(mnemonic))
 	return a
 }
@@ -120,10 +81,8 @@ func (a *Action) AddInput(name string, data []byte) *Action {
 
 // Digest returns the action's digest, used as the action cache key.
 func (a *Action) Digest() Digest {
-	var sum [32]byte
-	a.hasher.Sum(sum[:0])
 	return Digest{
-		Hash:      hex.EncodeToString(sum[:]),
+		Hash:      hex.EncodeToString(a.hasher.Sum(nil)),
 		SizeBytes: 0,
 	}
 }
