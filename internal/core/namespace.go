@@ -15,20 +15,10 @@ func (c *Catalog) CreateNamespace(name string) (int64, error) {
 
 func (c *Catalog) NamespaceOID(name string) (int64, error) {
 	oid, err := c.q.NamespaceOID(context.Background(), name)
-	if err == nil {
-		return oid, nil
+	if err != nil {
+		return 0, fmt.Errorf("namespace %q: %w", name, err)
 	}
-	// A namespace the catalog does not have may be one a deferred seed brings
-	// in — a dialect's system catalogs, which most queries never name and
-	// which are therefore not loaded until one does.
-	if ran, derr := c.runDeferred(); derr != nil {
-		return 0, derr
-	} else if ran {
-		if oid, err := c.q.NamespaceOID(context.Background(), name); err == nil {
-			return oid, nil
-		}
-	}
-	return 0, fmt.Errorf("namespace %q: %w", name, err)
+	return oid, nil
 }
 
 type NamespaceInfo struct {

@@ -15,10 +15,6 @@
 // The lists are JSONL — one record per line — and are applied as they are
 // read, so a dialect whose function list runs to thousands of entries is never
 // held in memory as a whole. Any of the lists may be left out.
-//
-// Relations are the exception to "applied as they are read": they are loaded
-// the first time a query names a schema the catalog does not yet have, since
-// most queries never touch a system catalog.
 package seed
 
 import (
@@ -192,13 +188,7 @@ func apply(cat *core.Catalog, fsys fs.FS) error {
 	if err := stream(fsys, FunctionsFile, b.addFunction); err != nil {
 		return err
 	}
-
-	// A dialect's system catalogs are thousands of columns that a query only
-	// occasionally names, so they wait until one does.
-	cat.SeedLater(func(*core.Catalog) error {
-		return stream(fsys, RelationsFile, b.addRelation)
-	})
-	return nil
+	return stream(fsys, RelationsFile, b.addRelation)
 }
 
 func loadSettings(fsys fs.FS) (Settings, error) {

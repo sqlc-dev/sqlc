@@ -21,36 +21,6 @@ type Catalog struct {
 	// dialectOID is the dialect this catalog was seeded with. A catalog is
 	// built for one dialect, so dialect-wide lookups need no other input.
 	dialectOID int64
-
-	// deferred holds the parts of a seed that are only worth loading if a
-	// query asks for them. They run at most once, when a namespace lookup
-	// misses.
-	deferred     []func(*Catalog) error
-	deferredDone bool
-}
-
-// SeedLater registers a part of the seed to run the first time the catalog is
-// asked for a namespace it does not have. A dialect's system catalogs run to
-// thousands of columns that most queries never reference, so loading them is
-// left until one does.
-func (c *Catalog) SeedLater(fn func(*Catalog) error) {
-	c.deferred = append(c.deferred, fn)
-}
-
-// runDeferred runs the deferred seeds, reporting whether it had any to run.
-func (c *Catalog) runDeferred() (bool, error) {
-	if c.deferredDone || len(c.deferred) == 0 {
-		return false, nil
-	}
-	// Marked done up front: a deferred seed looks namespaces up itself, and
-	// must not set itself running again.
-	c.deferredDone = true
-	for _, fn := range c.deferred {
-		if err := fn(c); err != nil {
-			return false, err
-		}
-	}
-	return true, nil
 }
 
 type Option func(*Catalog) error
