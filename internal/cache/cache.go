@@ -3,16 +3,20 @@
 //
 // It has two halves:
 //
-//   - A content-addressable store (CAS) holding blobs keyed by the BLAKE3
-//     hash of their contents, laid out as cas/<xx>/<hash>.
+//   - A content-addressable store (CAS) holding blobs keyed by the hash of
+//     their contents — BLAKE3 by default — laid out as
+//     cas/<function>/<xx>/<hash>.
 //   - An action cache (AC) mapping the digest of an action — a description of
 //     cacheable work and all of its inputs — to the digests of the outputs
 //     that work produced, laid out as ac/<xx>/<hash>.
 //
-// Executing cached work therefore takes two steps, just like Bazel: hash the
-// action, look its digest up in the action cache, then fetch the referenced
-// output blobs from the CAS. Both the query analysis cache and the WASM
-// plugin cache are built on this pair.
+// Work whose output is not derivable from its inputs, like query analysis,
+// uses both halves, just like Bazel: hash the action, look its digest up in
+// the action cache, then fetch the referenced output blobs from the CAS.
+//
+// Remote fetches with a declared checksum, like WASM plugins, need no action
+// cache entry at all: the declared sha256 is itself a content address, so the
+// blob is stored and loaded directly from the CAS keyed by that checksum.
 package cache
 
 import (

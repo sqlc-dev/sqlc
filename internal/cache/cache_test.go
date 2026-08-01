@@ -1,9 +1,10 @@
 package cache
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"os"
-	"path/filepath"
 	"testing"
 )
 
@@ -63,7 +64,7 @@ func TestCASCorruptionEvicted(t *testing.T) {
 	}
 
 	// Corrupt the blob on disk while keeping its size.
-	path := filepath.Join(c.CAS.root, "cas", d.Hash[:2], d.Hash)
+	path := c.CAS.path(d)
 	if err := os.WriteFile(path, []byte("tampered contents"), 0644); err != nil {
 		t.Fatal(err)
 	}
@@ -86,7 +87,7 @@ func TestCASPutRepairsCorruptEntry(t *testing.T) {
 
 	// Corrupt the entry on disk with different-sized contents, then Put the
 	// correct blob again: the entry must be repaired, not trusted.
-	path := filepath.Join(c.CAS.root, "cas", d.Hash[:2], d.Hash)
+	path := c.CAS.path(d)
 	if err := os.WriteFile(path, append(blob, "tampered"...), 0644); err != nil {
 		t.Fatal(err)
 	}
@@ -99,6 +100,56 @@ func TestCASPutRepairsCorruptEntry(t *testing.T) {
 	}
 	if string(got) != string(blob) {
 		t.Errorf("got %q, want %q", got, blob)
+	}
+}
+
+func TestCASSHA256DirectLoad(t *testing.T) {
+	c := testCache(t)
+	blob := []byte("fetched plugin binary")
+	s := sha256.Sum256(blob)
+	declared := hex.EncodeToString(s[:])
+
+	// A declared checksum whose content was never fetched is a miss.
+	if _, err := c.CAS.Get(SHA256Digest(declared)); !errors.Is(err, ErrNotFound) {
+		t.Errorf("want ErrNotFound before Put, got %v", err)
+	}
+
+	d, err := c.CAS.PutSHA256(blob)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d.Hash != declared {
+		t.Errorf("stored under %s, want declared checksum %s", d.Hash, declared)
+	}
+
+	// Later runs load the blob using only the checksum from the config file,
+	// with no size and no action cache entry.
+	got, err := c.CAS.Get(SHA256Digest(declared))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != string(blob) {
+		t.Errorf("got %q, want %q", got, blob)
+	}
+
+	// sha256- and blake3-keyed entries live in separate namespaces.
+	if c.CAS.Contains(DigestOf(blob)) {
+		t.Error("blob stored by sha256 must not be visible under its blake3 digest")
+	}
+}
+
+func TestCASSHA256CorruptionEvicted(t *testing.T) {
+	c := testCache(t)
+	blob := []byte("plugin contents")
+	d, err := c.CAS.PutSHA256(blob)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(c.CAS.path(d), []byte("tampered!contents"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := c.CAS.Get(SHA256Digest(d.Hash)); !errors.Is(err, ErrNotFound) {
+		t.Errorf("want ErrNotFound for corrupt blob, got %v", err)
 	}
 }
 
@@ -157,7 +208,7 @@ func TestActionCacheMissingOutputIsMiss(t *testing.T) {
 	}
 
 	// Simulate the blob being garbage collected out from under the entry.
-	if err := os.Remove(filepath.Join(c.CAS.root, "cas", out.Hash[:2], out.Hash)); err != nil {
+	if err := os.Remove(c.CAS.path(out)); err != nil {
 		t.Fatal(err)
 	}
 

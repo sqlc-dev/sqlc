@@ -112,29 +112,14 @@ func (r *Runner) fetch(ctx context.Context, uri string) ([]byte, string, error) 
 	return wmod, actual, nil
 }
 
-// The name of the sole output blob a FetchPlugin action produces.
-const pluginOutput = "plugin.wasm"
-
 func (r *Runner) loadAndCompileWASM(ctx context.Context, store *cache.Cache, expected string) (*runtimeAndCode, error) {
-	// Fetching a plugin is an action whose inputs are the URL and the
-	// expected sha256 declared in sqlc's configuration. Its result points at
-	// the plugin binary in the CAS.
-	actionDigest := cache.NewAction("FetchPlugin").
-		AddInput("url", []byte(r.URL)).
-		AddInput("sha256", []byte(expected)).
-		Digest()
-
-	var wmod []byte
-	if cached, err := store.Actions.Get(actionDigest); err == nil {
-		wmod, err = store.CAS.Get(cached.Outputs[pluginOutput])
-		if err != nil && !errors.Is(err, cache.ErrNotFound) {
-			return nil, err
-		}
-	}
-
-	if wmod == nil {
+	// The sha256 declared in sqlc's configuration is a content address, so
+	// the plugin binary is looked up in the CAS directly by that checksum —
+	// no action cache entry is needed, and Get re-verifies the checksum on
+	// every hit.
+	wmod, err := store.CAS.Get(cache.SHA256Digest(expected))
+	if errors.Is(err, cache.ErrNotFound) {
 		var actual string
-		var err error
 		wmod, actual, err = r.fetch(ctx, r.URL)
 		if err != nil {
 			return nil, err
@@ -142,24 +127,11 @@ func (r *Runner) loadAndCompileWASM(ctx context.Context, store *cache.Cache, exp
 		if expected != actual {
 			return nil, fmt.Errorf("invalid checksum: expected %s, got %s", expected, actual)
 		}
-		blob, err := store.CAS.Put(wmod)
-		if err != nil {
+		if _, err := store.CAS.PutSHA256(wmod); err != nil {
 			return nil, fmt.Errorf("cache wasm: %w", err)
 		}
-		err = store.Actions.Put(actionDigest, &cache.ActionResult{
-			Outputs: map[string]cache.Digest{pluginOutput: blob},
-		})
-		if err != nil {
-			return nil, fmt.Errorf("cache wasm: %w", err)
-		}
-	} else {
-		// The CAS verified the blob against its BLAKE3 digest; re-check the
-		// user-declared sha256 as well so the supply-chain guarantee never
-		// depends on cache state.
-		sum := sha256.Sum256(wmod)
-		if actual := fmt.Sprintf("%x", sum); expected != actual {
-			return nil, fmt.Errorf("invalid checksum: expected %s, got %s", expected, actual)
-		}
+	} else if err != nil {
+		return nil, err
 	}
 
 	wazeroDir, err := cache.WazeroDir()
