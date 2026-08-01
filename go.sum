@@ -83,6 +83,8 @@ github.com/sqlc-dev/doubleclick v1.0.0 h1:2/OApfQ2eLgcfa/Fqs8WSMA6atH0G8j9hHbQIg
 github.com/sqlc-dev/doubleclick v1.0.0/go.mod h1:ODHRroSrk/rr5neRHlWMSRijqOak8YmNaO3VAZCNl5Y=
 github.com/sqlc-dev/marino v0.1.0 h1:8Fn13vFhx7OUcmDFfRZdf3zARAbNl04Lcy74211ZpIw=
 github.com/sqlc-dev/marino v0.1.0/go.mod h1:mQxC2dgDE0DWHMb2B5jZNk7KToJuS6wnxnffBfYnq08=
+github.com/sqlc-dev/meyer v0.1.1 h1:BAeZcfgLyTnk9f90DyGEKXPrHxtgvVD/DTM6awq2kUY=
+github.com/sqlc-dev/meyer v0.1.1/go.mod h1:pS4USCRf/SLjWtaMcnTo4YrEEFKBj8CyyqlxcVUJQH8=
 github.com/sqlc-dev/zetajones v0.1.0 h1:VeG0atx6lNABr9V2bSI5vL9DvOKTHX0XjMqWUE/rv40=
 github.com/sqlc-dev/zetajones v0.1.0/go.mod h1:dU1DxwqC6Cahbpnw16KpH1J2waWRDMdwyDSvovMZR4I=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
