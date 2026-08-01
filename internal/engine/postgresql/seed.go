@@ -16,8 +16,10 @@ import (
 // categories are listed as mutually castable, which is what an unadorned
 // "WHERE bigint_col = 1" depends on.
 //
-// functions.jsonl is pg_catalog's function list, written by sqlc-pg-gen. Both
-// the analysis core and the catalog the legacy compiler builds read it.
+// functions.jsonl and relations.jsonl are pg_catalog's functions and the
+// tables and views of pg_catalog and information_schema, all written by
+// sqlc-pg-gen. Both the analysis core and the catalog the legacy compiler
+// builds read them.
 //
 //go:embed dialect
 var dialectFS embed.FS

@@ -10,10 +10,15 @@
 //	operators.jsonl  operator overloads beyond the ones the rules generate
 //	casts.jsonl      casts beyond the ones the rules generate
 //	functions.jsonl  the functions it ships with
+//	relations.jsonl  the system tables and views it ships with
 //
 // The lists are JSONL — one record per line — and are applied as they are
 // read, so a dialect whose function list runs to thousands of entries is never
 // held in memory as a whole. Any of the lists may be left out.
+//
+// Relations are the exception to "applied as they are read": they are loaded
+// the first time a query names a schema the catalog does not yet have, since
+// most queries never touch a system catalog.
 package seed
 
 import (
@@ -38,6 +43,7 @@ const (
 	OperatorsFile = "operators.jsonl"
 	CastsFile     = "casts.jsonl"
 	FunctionsFile = "functions.jsonl"
+	RelationsFile = "relations.jsonl"
 )
 
 // Settings is dialect.json: what the dialect is called and the rules that
@@ -105,6 +111,28 @@ type Function struct {
 	Nullable bool   `json:"nullable,omitempty"`
 }
 
+// Relation is a table or view the dialect ships with, such as one of
+// PostgreSQL's system catalogs. Kind is 'r' for a table or 'v' for a view, and
+// defaults to a table.
+type Relation struct {
+	// Catalog is the database the relation belongs to, which PostgreSQL
+	// reports for its own schemas and which the legacy catalog carries.
+	Catalog string   `json:"catalog,omitempty"`
+	Schema  string   `json:"schema"`
+	Name    string   `json:"name"`
+	Kind    string   `json:"kind,omitempty"`
+	Columns []Column `json:"columns"`
+}
+
+// Column is one of a relation's columns.
+type Column struct {
+	Name    string `json:"name"`
+	Type    string `json:"type"`
+	NotNull bool   `json:"not_null,omitempty"`
+	Array   bool   `json:"array,omitempty"`
+	Length  int    `json:"length,omitempty"`
+}
+
 // Arg is one of a function's parameters. Mode is 'i'n, 'o'ut, 'b'oth, 't'able
 // or 'v'ariadic, and defaults to in.
 type Arg struct {
@@ -132,10 +160,11 @@ func apply(cat *core.Catalog, fsys fs.FS) error {
 		return err
 	}
 	b := &builder{
-		cat:       cat,
-		settings:  settings,
-		oids:      map[string]int64{},
-		seenCasts: map[[2]int64]bool{},
+		cat:        cat,
+		settings:   settings,
+		oids:       map[string]int64{},
+		namespaces: map[string]int64{},
+		seenCasts:  map[[2]int64]bool{},
 	}
 	if b.dialectOID, err = cat.CreateDialect(settings.Dialect); err != nil {
 		return err
@@ -160,7 +189,16 @@ func apply(cat *core.Catalog, fsys fs.FS) error {
 	if err := b.categoryCasts(); err != nil {
 		return err
 	}
-	return stream(fsys, FunctionsFile, b.addFunction)
+	if err := stream(fsys, FunctionsFile, b.addFunction); err != nil {
+		return err
+	}
+
+	// A dialect's system catalogs are thousands of columns that a query only
+	// occasionally names, so they wait until one does.
+	cat.SeedLater(func(*core.Catalog) error {
+		return stream(fsys, RelationsFile, b.addRelation)
+	})
+	return nil
 }
 
 func loadSettings(fsys fs.FS) (Settings, error) {
@@ -245,6 +283,44 @@ func Functions(fsys fs.FS, dir string) ([]*catalog.Function, error) {
 	return out, nil
 }
 
+// Relations streams the relations a dialect ships with in the named schema
+// into the form the engine catalogs use.
+func Relations(fsys fs.FS, dir, schema string) ([]*catalog.Table, error) {
+	sub, err := fs.Sub(fsys, dir)
+	if err != nil {
+		return nil, fmt.Errorf("seed: %s: %w", dir, err)
+	}
+	var out []*catalog.Table
+	err = stream(sub, RelationsFile, func(rel Relation) error {
+		if rel.Schema != schema {
+			return nil
+		}
+		table := &catalog.Table{
+			Rel:     &ast.TableName{Catalog: rel.Catalog, Schema: rel.Schema, Name: rel.Name},
+			Columns: make([]*catalog.Column, 0, len(rel.Columns)),
+		}
+		for _, col := range rel.Columns {
+			column := &catalog.Column{
+				Name:      col.Name,
+				Type:      ast.TypeName{Name: col.Type},
+				IsNotNull: col.NotNull,
+				IsArray:   col.Array,
+			}
+			if col.Length > 0 {
+				length := col.Length
+				column.Length = &length
+			}
+			table.Columns = append(table.Columns, column)
+		}
+		out = append(out, table)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // argModes maps the mode a record carries to the one the catalog uses. The
 // letters are PostgreSQL's, which is where the generated function lists come
 // from.
@@ -284,6 +360,10 @@ type builder struct {
 	// category each was seeded under, in the order they were read.
 	oids       map[string]int64
 	categories []categorized
+
+	// namespaces maps a schema name to its OID, so that a run of relations in
+	// the same schema resolves it once.
+	namespaces map[string]int64
 
 	// seenCasts records the pairs already registered. The alias rules and the
 	// category rules overlap, and a cast pair is unique in the catalog.
@@ -507,6 +587,80 @@ func (b *builder) addFunction(fn Function) error {
 		return fmt.Errorf("function %q: %w", fn.Name, err)
 	}
 	return nil
+}
+
+func (b *builder) addRelation(rel Relation) error {
+	if rel.Name == "" {
+		return errors.New("relation has no name")
+	}
+	nsOID, err := b.namespace(rel.Schema)
+	if err != nil {
+		return err
+	}
+	kind := rel.Kind
+	if kind == "" {
+		kind = "r"
+	}
+	classOID, err := b.cat.CreateClass(nsOID, rel.Name, kind)
+	if err != nil {
+		return err
+	}
+	for i, col := range rel.Columns {
+		name := col.Type
+		if col.Array {
+			name += core.ArraySuffix
+		}
+		typeOID, err := b.columnType(name)
+		if err != nil {
+			return fmt.Errorf("relation %q column %q: %w", rel.Name, col.Name, err)
+		}
+		if err := b.cat.CreateAttributeSpec(core.AttributeSpec{
+			ClassOID:   classOID,
+			Name:       col.Name,
+			TypeOID:    typeOID,
+			Num:        i + 1,
+			NotNull:    col.NotNull,
+			DeclType:   col.Type,
+			TypeLength: col.Length,
+		}); err != nil {
+			return fmt.Errorf("relation %q column %q: %w", rel.Name, col.Name, err)
+		}
+	}
+	return nil
+}
+
+// namespace resolves the schema a relation belongs to, creating it the first
+// time it is named. A relation with no schema belongs to the default one.
+func (b *builder) namespace(schema string) (int64, error) {
+	if schema == "" {
+		schema = "public"
+	}
+	if oid, ok := b.namespaces[schema]; ok {
+		return oid, nil
+	}
+	oid, err := b.cat.NamespaceOID(schema)
+	if err != nil {
+		if oid, err = b.cat.CreateNamespace(schema); err != nil {
+			return 0, err
+		}
+	}
+	b.namespaces[schema] = oid
+	return oid, nil
+}
+
+// columnType resolves a column's type, which unlike a function signature may
+// name an array.
+func (b *builder) columnType(name string) (int64, error) {
+	key := strings.ToLower(name)
+	if oid, ok := b.oids[key]; ok {
+		return oid, nil
+	}
+	oid, err := b.cat.ResolveTypeName(key)
+	if err != nil {
+		return 0, err
+	}
+	b.oids[key] = oid
+	return oid, nil
 }
 
 // funcType resolves the type a function signature names. Signatures reference
