@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"runtime/debug"
 	"strings"
 
 	"github.com/tetratelabs/wazero"
@@ -134,11 +135,30 @@ func (r *Runner) loadAndCompileWASM(ctx context.Context, store *cache.Cache, exp
 		return nil, err
 	}
 
-	wazeroDir, err := cache.WazeroDir()
+	// Compiling the module to machine code is itself a cacheable action,
+	// keyed by the module's checksum and everything else that determines the
+	// generated code. Compiled artifacts are materialized into an exec
+	// directory for wazero's compilation cache to find; the authoritative
+	// copies live in the CAS.
+	compileAction := cache.NewAction("CompileModule").
+		AddInput("wasm", []byte(expected)).
+		AddInput("wazero", []byte(wazeroVersion())).
+		AddInput("goos", []byte(runtime.GOOS)).
+		AddInput("goarch", []byte(runtime.GOARCH)).
+		Digest()
+
+	execDir, err := store.ExecDir(compileAction)
 	if err != nil {
 		return nil, err
 	}
-	wazeroCache, err := wazero.NewCompilationCacheWithDir(wazeroDir)
+	compiled := true
+	if err := store.Actions.GetTree(compileAction, execDir); errors.Is(err, cache.ErrNotFound) {
+		compiled = false
+	} else if err != nil {
+		return nil, err
+	}
+
+	wazeroCache, err := wazero.NewCompilationCacheWithDir(execDir)
 	if err != nil {
 		return nil, fmt.Errorf("wazero.NewCompilationCacheWithDir: %w", err)
 	}
@@ -151,13 +171,34 @@ func (r *Runner) loadAndCompileWASM(ctx context.Context, store *cache.Cache, exp
 	}
 
 	// Compile the Wasm binary once so that we can skip the entire compilation
-	// time during instantiation.
+	// time during instantiation. On an action cache hit this loads the
+	// materialized machine code instead of compiling.
 	code, err := rt.CompileModule(ctx, wmod)
 	if err != nil {
 		return nil, fmt.Errorf("compile module: %w", err)
 	}
 
+	if !compiled {
+		if err := store.Actions.PutTree(compileAction, execDir); err != nil {
+			slog.Warn("caching compiled module failed", "err", err)
+		}
+	}
+
 	return &runtimeAndCode{rt: rt, code: code}, nil
+}
+
+// wazeroVersion returns the version of the wazero dependency, an input to
+// the CompileModule action: its generated machine code changes between
+// wazero releases.
+func wazeroVersion() string {
+	if bi, ok := debug.ReadBuildInfo(); ok {
+		for _, dep := range bi.Deps {
+			if dep.Path == "github.com/tetratelabs/wazero" {
+				return dep.Version
+			}
+		}
+	}
+	return info.Version
 }
 
 // removePGCatalog removes the pg_catalog schema from the request. There is a

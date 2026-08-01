@@ -26,6 +26,7 @@ import (
 
 // Cache bundles the CAS and the action cache that shares it.
 type Cache struct {
+	root    string
 	CAS     *CAS
 	Actions *ActionCache
 }
@@ -61,20 +62,19 @@ func OpenAt(root string) (*Cache, error) {
 		return nil, err
 	}
 	return &Cache{
+		root:    root,
 		CAS:     cas,
 		Actions: newActionCache(root, cas),
 	}, nil
 }
 
-// WazeroDir returns the directory for wazero's compilation cache. Compiled
-// module machine code is managed by wazero in its own format, so it lives
-// beside the CAS rather than inside it.
-func WazeroDir() (string, error) {
-	root, err := Dir()
-	if err != nil {
-		return "", err
-	}
-	dir := filepath.Join(root, "wazero")
+// ExecDir returns a stable directory for materializing the output tree of
+// the given action, for tools that need their outputs on disk (like wazero's
+// compilation cache). It lives at exec/<action-hash> under the cache root
+// and, like everything else in the cache, is safe to delete at any time: the
+// authoritative copy of its contents is the CAS.
+func (c *Cache) ExecDir(action Digest) (string, error) {
+	dir := filepath.Join(c.root, "exec", action.Hash)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return "", fmt.Errorf("failed to create %s directory: %w", dir, err)
 	}

@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -194,6 +195,63 @@ func TestActionCacheMissingOutputIsMiss(t *testing.T) {
 
 	if _, err := c.Actions.Get(action); !errors.Is(err, ErrNotFound) {
 		t.Errorf("want ErrNotFound when output blob is gone, got %v", err)
+	}
+}
+
+func TestActionCacheTreeRoundTrip(t *testing.T) {
+	c := testCache(t)
+
+	// Simulate a tool writing an output directory, like wazero's
+	// compilation cache.
+	src := t.TempDir()
+	files := map[string]string{
+		"wazero-v1-amd64-linux/compiled": "machine code",
+		"manifest":                       "meta",
+	}
+	for rel, contents := range files {
+		path := filepath.Join(src, filepath.FromSlash(rel))
+		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(contents), 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	action := NewAction("CompileModule").AddInput("wasm", []byte("checksum")).Digest()
+	if err := c.Actions.GetTree(action, t.TempDir()); !errors.Is(err, ErrNotFound) {
+		t.Errorf("want ErrNotFound before PutTree, got %v", err)
+	}
+	if err := c.Actions.PutTree(action, src); err != nil {
+		t.Fatal(err)
+	}
+
+	// Materialize into a fresh directory and compare contents.
+	dst := t.TempDir()
+	if err := c.Actions.GetTree(action, dst); err != nil {
+		t.Fatal(err)
+	}
+	for rel, contents := range files {
+		got, err := os.ReadFile(filepath.Join(dst, filepath.FromSlash(rel)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if string(got) != contents {
+			t.Errorf("%s: got %q, want %q", rel, got, contents)
+		}
+	}
+
+	// Materializing again over the same directory is a no-op.
+	if err := c.Actions.GetTree(action, dst); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestActionCachePutTreeRejectsEmptyDir(t *testing.T) {
+	c := testCache(t)
+	action := NewAction("CompileModule").Digest()
+	if err := c.Actions.PutTree(action, t.TempDir()); err == nil {
+		t.Error("PutTree must reject a directory with no files")
 	}
 }
 
