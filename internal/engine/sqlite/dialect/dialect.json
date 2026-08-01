@@ -1,0 +1,15 @@
+{
+  "dialect": "sqlite",
+  "const": {
+    "integer": "integer",
+    "float": "real",
+    "string": "text",
+    "bool": "boolean"
+  },
+  "bool": "boolean",
+  "comparison": ["=", "==", "<>", "!=", "<", "<=", ">", ">=", "IS", "IS NOT"],
+  "comparison_categories": "BNSDU",
+  "arithmetic": ["+", "-", "*", "/", "%"],
+  "arithmetic_categories": "N",
+  "cast_categories": "*"
+}

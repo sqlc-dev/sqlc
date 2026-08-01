@@ -1,1 +1,0 @@
-{"dialect": "googlesql", "const": {"integer": "int64", "float": "float64", "string": "string", "bool": "bool"}, "bool": "bool", "comparison": ["=", "<>", "!=", "<", "<=", ">", ">="], "comparison_categories": "BNSDTU", "arithmetic": ["+", "-", "*", "/"], "arithmetic_categories": "N"}

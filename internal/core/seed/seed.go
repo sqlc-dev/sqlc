@@ -2,18 +2,18 @@
 // description of its type system: the types it defines, the operators and
 // casts between them, and the functions it ships with.
 //
-// A dialect is a directory of JSONL files — one record per line — which each
-// engine package embeds and hands to Dialect:
+// A dialect is a directory which each engine package embeds and hands to
+// Dialect:
 //
-//	dialect.jsonl    a single record naming the dialect and its rules
+//	dialect.json     what the dialect is called and the rules it is built by
 //	types.jsonl      the types it defines
 //	operators.jsonl  operator overloads beyond the ones the rules generate
 //	casts.jsonl      casts beyond the ones the rules generate
 //	functions.jsonl  the functions it ships with
 //
-// Records are applied as they are read, so a dialect whose function list runs
-// to thousands of entries is never held in memory as a whole. Any file may be
-// left out.
+// The lists are JSONL — one record per line — and are applied as they are
+// read, so a dialect whose function list runs to thousands of entries is never
+// held in memory as a whole. Any of the lists may be left out.
 package seed
 
 import (
@@ -33,15 +33,15 @@ import (
 
 // The files a dialect directory is made of.
 const (
-	SettingsFile  = "dialect.jsonl"
+	SettingsFile  = "dialect.json"
 	TypesFile     = "types.jsonl"
 	OperatorsFile = "operators.jsonl"
 	CastsFile     = "casts.jsonl"
 	FunctionsFile = "functions.jsonl"
 )
 
-// Settings is the single record in dialect.jsonl: what the dialect is called
-// and the rules that generate its operators and casts.
+// Settings is dialect.json: what the dialect is called and the rules that
+// generate its operators and casts.
 type Settings struct {
 	// Dialect is the name recorded in the catalog, e.g. "postgresql".
 	Dialect string `json:"dialect"`
@@ -164,20 +164,17 @@ func apply(cat *core.Catalog, fsys fs.FS) error {
 }
 
 func loadSettings(fsys fs.FS) (Settings, error) {
-	var settings Settings
-	found := false
-	err := stream(fsys, SettingsFile, func(s Settings) error {
-		if found {
-			return errors.New("more than one record")
-		}
-		settings, found = s, true
-		return nil
-	})
+	f, err := fsys.Open(SettingsFile)
 	if err != nil {
-		return Settings{}, err
+		return Settings{}, fmt.Errorf("seed: %w", err)
 	}
-	if !found {
-		return Settings{}, fmt.Errorf("seed: %s is missing or empty", SettingsFile)
+	defer f.Close()
+
+	dec := json.NewDecoder(bufio.NewReader(f))
+	dec.DisallowUnknownFields()
+	var settings Settings
+	if err := dec.Decode(&settings); err != nil {
+		return Settings{}, fmt.Errorf("seed: %s: %w", SettingsFile, err)
 	}
 	if settings.Dialect == "" {
 		return Settings{}, fmt.Errorf("seed: %s: dialect has no name", SettingsFile)
