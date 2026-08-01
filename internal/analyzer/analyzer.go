@@ -20,6 +20,7 @@ type CachedAnalyzer struct {
 	config      config.Config
 	configBytes []byte
 	db          config.Database
+	store       *cache.Cache
 }
 
 func Cached(a Analyzer, c config.Config, db config.Database) *CachedAnalyzer {
@@ -53,12 +54,17 @@ func (c *CachedAnalyzer) analyze(ctx context.Context, n ast.Node, q string, sche
 		return nil, true, nil
 	}
 
-	store, err := cache.Open()
-	if err != nil {
-		return nil, true, err
+	if c.store == nil {
+		var err error
+		c.store, err = cache.Open()
+		if err != nil {
+			return nil, true, err
+		}
 	}
+	store := c.store
 
 	if c.configBytes == nil {
+		var err error
 		c.configBytes, err = json.Marshal(c.config)
 		if err != nil {
 			return nil, true, err
@@ -113,6 +119,9 @@ func (c *CachedAnalyzer) analyze(ctx context.Context, n ast.Node, q string, sche
 }
 
 func (c *CachedAnalyzer) Close(ctx context.Context) error {
+	if c.store != nil {
+		c.store.Close()
+	}
 	return c.a.Close(ctx)
 }
 

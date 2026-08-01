@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -15,6 +16,7 @@ func testCache(t *testing.T) *Cache {
 	if err != nil {
 		t.Fatal(err)
 	}
+	t.Cleanup(func() { c.Close() })
 	return c
 }
 
@@ -66,14 +68,14 @@ func TestCASCorruptionEvicted(t *testing.T) {
 
 	// Corrupt the blob on disk while keeping its size.
 	path := c.CAS.path(d)
-	if err := os.WriteFile(path, []byte("tampered contents"), 0644); err != nil {
+	if err := c.CAS.root.WriteFile(path, []byte("tampered contents"), 0644); err != nil {
 		t.Fatal(err)
 	}
 
 	if _, err := c.CAS.Get(d); !errors.Is(err, ErrNotFound) {
 		t.Errorf("want ErrNotFound for corrupt blob, got %v", err)
 	}
-	if _, err := os.Stat(path); !os.IsNotExist(err) {
+	if _, err := c.CAS.root.Stat(path); !errors.Is(err, fs.ErrNotExist) {
 		t.Error("corrupt blob was not evicted")
 	}
 }
@@ -89,7 +91,7 @@ func TestCASPutRepairsCorruptEntry(t *testing.T) {
 	// Corrupt the entry on disk with different-sized contents, then Put the
 	// correct blob again: the entry must be repaired, not trusted.
 	path := c.CAS.path(d)
-	if err := os.WriteFile(path, append(blob, "tampered"...), 0644); err != nil {
+	if err := c.CAS.root.WriteFile(path, append(blob, "tampered"...), 0644); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := c.CAS.Put(blob); err != nil {
@@ -201,7 +203,7 @@ func TestActionCacheMissingOutputIsMiss(t *testing.T) {
 	}
 
 	// Simulate the blob being garbage collected out from under the entry.
-	if err := os.Remove(c.CAS.path(out)); err != nil {
+	if err := c.CAS.root.Remove(c.CAS.path(out)); err != nil {
 		t.Fatal(err)
 	}
 

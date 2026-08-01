@@ -58,6 +58,7 @@ func (r *Runner) loadAndCompile(ctx context.Context) (*runtimeAndCode, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer store.Close()
 	value, err, _ := flight.Do(expected, func() (any, error) {
 		return r.loadAndCompileWASM(ctx, store, expected)
 	})

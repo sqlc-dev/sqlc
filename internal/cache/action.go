@@ -2,6 +2,7 @@ package cache
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -22,17 +23,21 @@ type ActionResult struct {
 // entries are not self-validating — the value is not derivable from the key —
 // so Get additionally checks that every referenced output still exists in the
 // CAS before reporting a hit, exactly like Bazel's disk cache does.
+//
+// Entry I/O goes through the same os.Root as the CAS, confining every read
+// and write to the cache directory.
 type ActionCache struct {
-	root string
+	root *os.Root
 	cas  *CAS
 }
 
-func newActionCache(root string, cas *CAS) *ActionCache {
+func newActionCache(root *os.Root, cas *CAS) *ActionCache {
 	return &ActionCache{root: root, cas: cas}
 }
 
+// path returns an entry's path relative to the cache root.
 func (a *ActionCache) path(d Digest) string {
-	return filepath.Join(a.root, "ac", d.Hash[:2], d.Hash)
+	return filepath.Join("ac", d.Hash[:2], d.Hash)
 }
 
 // Get returns the cached result for an action, or ErrNotFound on a miss. An
@@ -43,21 +48,21 @@ func (a *ActionCache) Get(action Digest) (*ActionResult, error) {
 		return nil, ErrNotFound
 	}
 	path := a.path(action)
-	data, err := os.ReadFile(path)
+	data, err := a.root.ReadFile(path)
 	if err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, fs.ErrNotExist) {
 			return nil, ErrNotFound
 		}
 		return nil, fmt.Errorf("cache: %w", err)
 	}
 	var result ActionResult
 	if err := json.Unmarshal(data, &result); err != nil {
-		os.Remove(path)
+		a.root.Remove(path)
 		return nil, ErrNotFound
 	}
 	for _, d := range result.Outputs {
 		if !a.cas.Contains(d) {
-			os.Remove(path)
+			a.root.Remove(path)
 			return nil, ErrNotFound
 		}
 	}
@@ -99,8 +104,8 @@ func (a *ActionCache) PutTree(action Digest, dir string) error {
 
 // GetTree materializes a cached action's outputs as files under dir, or
 // returns ErrNotFound on a miss. Files already present with the right size
-// are left in place; missing ones are staged and renamed so concurrent
-// processes never observe partial files.
+// are left in place; missing ones are staged in their destination directory
+// and renamed so concurrent processes never observe partial files.
 func (a *ActionCache) GetTree(action Digest, dir string) error {
 	result, err := a.Get(action)
 	if err != nil {
@@ -118,7 +123,7 @@ func (a *ActionCache) GetTree(action Digest, dir string) error {
 		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 			return fmt.Errorf("cache: %w", err)
 		}
-		f, err := os.CreateTemp(a.cas.tmp, d.Hash[:8]+"-*")
+		f, err := os.CreateTemp(filepath.Dir(path), d.Hash[:8]+"-*")
 		if err != nil {
 			return fmt.Errorf("cache: %w", err)
 		}
@@ -153,14 +158,14 @@ func (a *ActionCache) Put(action Digest, result *ActionResult) error {
 		return fmt.Errorf("cache: %w", err)
 	}
 	path := a.path(action)
-	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+	if err := a.root.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return fmt.Errorf("cache: %w", err)
 	}
-	f, err := os.CreateTemp(a.cas.tmp, action.Hash[:8]+"-*")
+	f, name, err := a.cas.createTemp(action.Hash[:8] + "-")
 	if err != nil {
 		return fmt.Errorf("cache: %w", err)
 	}
-	defer os.Remove(f.Name())
+	defer a.root.Remove(name)
 	if _, err := f.Write(data); err != nil {
 		f.Close()
 		return fmt.Errorf("cache: %w", err)
@@ -168,7 +173,7 @@ func (a *ActionCache) Put(action Digest, result *ActionResult) error {
 	if err := f.Close(); err != nil {
 		return fmt.Errorf("cache: %w", err)
 	}
-	if err := os.Rename(f.Name(), path); err != nil {
+	if err := a.root.Rename(name, path); err != nil {
 		return fmt.Errorf("cache: %w", err)
 	}
 	return nil

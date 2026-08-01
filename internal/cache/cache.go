@@ -24,9 +24,11 @@ import (
 	"path/filepath"
 )
 
-// Cache bundles the CAS and the action cache that shares it.
+// Cache bundles the CAS and the action cache that shares it. All storage
+// I/O is confined to the cache directory through an os.Root; callers should
+// Close the cache when finished with it to release the root.
 type Cache struct {
-	root    string
+	root    *os.Root
 	CAS     *CAS
 	Actions *ActionCache
 }
@@ -56,9 +58,17 @@ func Open() (*Cache, error) {
 
 // OpenAt returns the cache rooted at the given directory, creating it if
 // necessary.
-func OpenAt(root string) (*Cache, error) {
+func OpenAt(dir string) (*Cache, error) {
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return nil, fmt.Errorf("failed to create %s directory: %w", dir, err)
+	}
+	root, err := os.OpenRoot(dir)
+	if err != nil {
+		return nil, fmt.Errorf("cache: %w", err)
+	}
 	cas, err := newCAS(root)
 	if err != nil {
+		root.Close()
 		return nil, err
 	}
 	return &Cache{
@@ -68,15 +78,20 @@ func OpenAt(root string) (*Cache, error) {
 	}, nil
 }
 
+// Close releases the cache's handle on its root directory.
+func (c *Cache) Close() error {
+	return c.root.Close()
+}
+
 // ExecDir returns a stable directory for materializing the output tree of
 // the given action, for tools that need their outputs on disk (like wazero's
 // compilation cache). It lives at exec/<action-hash> under the cache root
 // and, like everything else in the cache, is safe to delete at any time: the
 // authoritative copy of its contents is the CAS.
 func (c *Cache) ExecDir(action Digest) (string, error) {
-	dir := filepath.Join(c.root, "exec", action.Hash)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return "", fmt.Errorf("failed to create %s directory: %w", dir, err)
+	rel := filepath.Join("exec", action.Hash)
+	if err := c.root.MkdirAll(rel, 0755); err != nil {
+		return "", fmt.Errorf("failed to create %s directory: %w", rel, err)
 	}
-	return dir, nil
+	return filepath.Join(c.root.Name(), rel), nil
 }
