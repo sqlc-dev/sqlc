@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"runtime"
-	"runtime/debug"
 	"strings"
 
 	"github.com/tetratelabs/wazero"
@@ -135,16 +134,14 @@ func (r *Runner) loadAndCompileWASM(ctx context.Context, store *cache.Cache, exp
 		return nil, err
 	}
 
-	// Compiling the module to machine code is itself a cacheable action,
-	// keyed by the module's checksum and everything else that determines the
-	// generated code. Compiled artifacts are materialized into an exec
-	// directory for wazero's compilation cache to find; the authoritative
-	// copies live in the CAS.
+	// Compiling the module to machine code is itself a cacheable action.
+	// Its only declared input is the module's checksum: the embedded wazero
+	// version and the target platform are determined by the sqlc binary,
+	// which is an implicit input of every action. Compiled artifacts are
+	// materialized into an exec directory for wazero's compilation cache to
+	// find; the authoritative copies live in the CAS.
 	compileAction := cache.NewAction("CompileModule").
 		AddInput("wasm", []byte(expected)).
-		AddInput("wazero", []byte(wazeroVersion())).
-		AddInput("goos", []byte(runtime.GOOS)).
-		AddInput("goarch", []byte(runtime.GOARCH)).
 		Digest()
 
 	execDir, err := store.ExecDir(compileAction)
@@ -185,20 +182,6 @@ func (r *Runner) loadAndCompileWASM(ctx context.Context, store *cache.Cache, exp
 	}
 
 	return &runtimeAndCode{rt: rt, code: code}, nil
-}
-
-// wazeroVersion returns the version of the wazero dependency, an input to
-// the CompileModule action: its generated machine code changes between
-// wazero releases.
-func wazeroVersion() string {
-	if bi, ok := debug.ReadBuildInfo(); ok {
-		for _, dep := range bi.Deps {
-			if dep.Path == "github.com/tetratelabs/wazero" {
-				return dep.Version
-			}
-		}
-	}
-	return info.Version
 }
 
 // removePGCatalog removes the pg_catalog schema from the request. There is a

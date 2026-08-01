@@ -11,7 +11,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/cache"
 	"github.com/sqlc-dev/sqlc/internal/config"
-	"github.com/sqlc-dev/sqlc/internal/info"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
 )
@@ -66,10 +65,10 @@ func (c *CachedAnalyzer) analyze(ctx context.Context, n ast.Node, q string, sche
 		}
 	}
 
-	// Analyzing a query is an action whose inputs are the sqlc version, the
-	// configuration, the schema migrations, and the query itself.
+	// Analyzing a query is an action whose inputs are the configuration, the
+	// schema migrations, and the query itself. (The sqlc binary is an
+	// implicit input of every action.)
 	action := cache.NewAction("QueryAnalysis").
-		AddInput("version", []byte(info.Version)).
 		AddInput("config", c.configBytes)
 	for _, m := range schema {
 		action.AddInput("schema", []byte(m))

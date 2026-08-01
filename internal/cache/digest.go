@@ -64,10 +64,14 @@ type Action struct {
 }
 
 // NewAction starts building an action key for the given mnemonic, e.g.
-// "QueryAnalysis".
+// "QueryAnalysis". The sha256 of the sqlc binary itself is always the first
+// input: the tool that executes an action determines its outputs just as
+// much as the declared inputs do, so a rebuilt sqlc never reuses stale
+// entries.
 func NewAction(mnemonic string) *Action {
 	a := &Action{hasher: sha256.New()}
 	a.write([]byte(mnemonic))
+	a.AddInput("tool", toolDigest())
 	return a
 }
 

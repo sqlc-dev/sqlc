@@ -134,6 +134,18 @@ func TestCASDeclaredChecksumLoad(t *testing.T) {
 	}
 }
 
+func TestToolDigest(t *testing.T) {
+	d := toolDigest()
+	if len(d) == 0 {
+		t.Fatal("toolDigest returned no bytes")
+	}
+	// The digest is hashed once and must be stable within a process, or
+	// identical actions would stop matching.
+	if string(toolDigest()) != string(d) {
+		t.Error("toolDigest is not stable across calls")
+	}
+}
+
 func TestActionDigestFraming(t *testing.T) {
 	a := NewAction("Test").AddInput("query", []byte("ab")).AddInput("schema", []byte("c"))
 	b := NewAction("Test").AddInput("query", []byte("a")).AddInput("schema", []byte("bc"))
