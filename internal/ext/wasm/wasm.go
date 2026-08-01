@@ -10,7 +10,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -55,12 +54,12 @@ func (r *Runner) loadAndCompile(ctx context.Context) (*runtimeAndCode, error) {
 	if err != nil {
 		return nil, err
 	}
-	cacheDir, err := cache.PluginsDir()
+	store, err := cache.Open()
 	if err != nil {
 		return nil, err
 	}
 	value, err, _ := flight.Do(expected, func() (any, error) {
-		return r.loadAndCompileWASM(ctx, cacheDir, expected)
+		return r.loadAndCompileWASM(ctx, store, expected)
 	})
 	if err != nil {
 		return nil, err
@@ -113,36 +112,61 @@ func (r *Runner) fetch(ctx context.Context, uri string) ([]byte, string, error) 
 	return wmod, actual, nil
 }
 
-func (r *Runner) loadAndCompileWASM(ctx context.Context, cache string, expected string) (*runtimeAndCode, error) {
-	pluginDir := filepath.Join(cache, expected)
-	pluginPath := filepath.Join(pluginDir, "plugin.wasm")
-	_, staterr := os.Stat(pluginPath)
+// The name of the sole output blob a FetchPlugin action produces.
+const pluginOutput = "plugin.wasm"
 
-	uri := r.URL
-	if staterr == nil {
-		uri = "file://" + pluginPath
+func (r *Runner) loadAndCompileWASM(ctx context.Context, store *cache.Cache, expected string) (*runtimeAndCode, error) {
+	// Fetching a plugin is an action whose inputs are the URL and the
+	// expected sha256 declared in sqlc's configuration. Its result points at
+	// the plugin binary in the CAS.
+	actionDigest := cache.NewAction("FetchPlugin").
+		AddInput("url", []byte(r.URL)).
+		AddInput("sha256", []byte(expected)).
+		Digest()
+
+	var wmod []byte
+	if cached, err := store.Actions.Get(actionDigest); err == nil {
+		wmod, err = store.CAS.Get(cached.Outputs[pluginOutput])
+		if err != nil && !errors.Is(err, cache.ErrNotFound) {
+			return nil, err
+		}
 	}
 
-	wmod, actual, err := r.fetch(ctx, uri)
+	if wmod == nil {
+		var actual string
+		var err error
+		wmod, actual, err = r.fetch(ctx, r.URL)
+		if err != nil {
+			return nil, err
+		}
+		if expected != actual {
+			return nil, fmt.Errorf("invalid checksum: expected %s, got %s", expected, actual)
+		}
+		blob, err := store.CAS.Put(wmod)
+		if err != nil {
+			return nil, fmt.Errorf("cache wasm: %w", err)
+		}
+		err = store.Actions.Put(actionDigest, &cache.ActionResult{
+			Outputs: map[string]cache.Digest{pluginOutput: blob},
+		})
+		if err != nil {
+			return nil, fmt.Errorf("cache wasm: %w", err)
+		}
+	} else {
+		// The CAS verified the blob against its BLAKE3 digest; re-check the
+		// user-declared sha256 as well so the supply-chain guarantee never
+		// depends on cache state.
+		sum := sha256.Sum256(wmod)
+		if actual := fmt.Sprintf("%x", sum); expected != actual {
+			return nil, fmt.Errorf("invalid checksum: expected %s, got %s", expected, actual)
+		}
+	}
+
+	wazeroDir, err := cache.WazeroDir()
 	if err != nil {
 		return nil, err
 	}
-
-	if expected != actual {
-		return nil, fmt.Errorf("invalid checksum: expected %s, got %s", expected, actual)
-	}
-
-	if staterr != nil {
-		err := os.Mkdir(pluginDir, 0755)
-		if err != nil && !os.IsExist(err) {
-			return nil, fmt.Errorf("mkdirall: %w", err)
-		}
-		if err := os.WriteFile(pluginPath, wmod, 0444); err != nil {
-			return nil, fmt.Errorf("cache wasm: %w", err)
-		}
-	}
-
-	wazeroCache, err := wazero.NewCompilationCacheWithDir(filepath.Join(cache, "wazero"))
+	wazeroCache, err := wazero.NewCompilationCacheWithDir(wazeroDir)
 	if err != nil {
 		return nil, fmt.Errorf("wazero.NewCompilationCacheWithDir: %w", err)
 	}

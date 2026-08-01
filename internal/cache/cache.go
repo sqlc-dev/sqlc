@@ -1,3 +1,18 @@
+// Package cache implements sqlc's on-disk cache, designed after Bazel's
+// local disk cache.
+//
+// It has two halves:
+//
+//   - A content-addressable store (CAS) holding blobs keyed by the BLAKE3
+//     hash of their contents, laid out as cas/<xx>/<hash>.
+//   - An action cache (AC) mapping the digest of an action — a description of
+//     cacheable work and all of its inputs — to the digests of the outputs
+//     that work produced, laid out as ac/<xx>/<hash>.
+//
+// Executing cached work therefore takes two steps, just like Bazel: hash the
+// action, look its digest up in the action cache, then fetch the referenced
+// output blobs from the CAS. Both the query analysis cache and the WASM
+// plugin cache are built on this pair.
 package cache
 
 import (
@@ -6,10 +21,14 @@ import (
 	"path/filepath"
 )
 
-// The cache directory defaults to os.UserCacheDir(). This location can be
-// overridden by the SQLCCACHE environment variable.
-//
-// Currently the cache stores two types of data: plugins and query analysis
+// Cache bundles the CAS and the action cache that shares it.
+type Cache struct {
+	CAS     *CAS
+	Actions *ActionCache
+}
+
+// Dir returns the cache root, defaulting to os.UserCacheDir(). The location
+// can be overridden with the SQLCCACHE environment variable.
 func Dir() (string, error) {
 	cache := os.Getenv("SQLCCACHE")
 	if cache != "" {
@@ -22,25 +41,38 @@ func Dir() (string, error) {
 	return filepath.Join(cacheHome, "sqlc"), nil
 }
 
-func PluginsDir() (string, error) {
-	cacheRoot, err := Dir()
+// Open returns the cache rooted at Dir().
+func Open() (*Cache, error) {
+	root, err := Dir()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	dir := filepath.Join(cacheRoot, "plugins")
-	if err := os.MkdirAll(dir, 0755); err != nil && !os.IsExist(err) {
-		return "", fmt.Errorf("failed to create %s directory: %w", dir, err)
-	}
-	return dir, nil
+	return OpenAt(root)
 }
 
-func AnalysisDir() (string, error) {
-	cacheRoot, err := Dir()
+// OpenAt returns the cache rooted at the given directory, creating it if
+// necessary.
+func OpenAt(root string) (*Cache, error) {
+	cas, err := newCAS(root)
+	if err != nil {
+		return nil, err
+	}
+	return &Cache{
+		CAS:     cas,
+		Actions: newActionCache(root, cas),
+	}, nil
+}
+
+// WazeroDir returns the directory for wazero's compilation cache. Compiled
+// module machine code is managed by wazero in its own format, so it lives
+// beside the CAS rather than inside it.
+func WazeroDir() (string, error) {
+	root, err := Dir()
 	if err != nil {
 		return "", err
 	}
-	dir := filepath.Join(cacheRoot, "query_analysis")
-	if err := os.MkdirAll(dir, 0755); err != nil && !os.IsExist(err) {
+	dir := filepath.Join(root, "wazero")
+	if err := os.MkdirAll(dir, 0755); err != nil {
 		return "", fmt.Errorf("failed to create %s directory: %w", dir, err)
 	}
 	return dir, nil

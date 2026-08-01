@@ -3,11 +3,8 @@ package analyzer
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"hash/fnv"
+	"errors"
 	"log/slog"
-	"os"
-	"path/filepath"
 
 	"google.golang.org/protobuf/proto"
 
@@ -47,6 +44,9 @@ func (c *CachedAnalyzer) Analyze(ctx context.Context, n ast.Node, q string, sche
 	return result, err
 }
 
+// The name of the sole output blob a QueryAnalysis action produces.
+const analysisOutput = "analysis.pb"
+
 func (c *CachedAnalyzer) analyze(ctx context.Context, n ast.Node, q string, schema []string, np *named.ParamSet) (*analysis.Analysis, bool, error) {
 	// Only cache queries for managed databases. We can't be certain the
 	// database is in an unchanged state otherwise
@@ -54,7 +54,7 @@ func (c *CachedAnalyzer) analyze(ctx context.Context, n ast.Node, q string, sche
 		return nil, true, nil
 	}
 
-	dir, err := cache.AnalysisDir()
+	store, err := cache.Open()
 	if err != nil {
 		return nil, true, err
 	}
@@ -66,27 +66,27 @@ func (c *CachedAnalyzer) analyze(ctx context.Context, n ast.Node, q string, sche
 		}
 	}
 
-	// Calculate cache key
-	h := fnv.New64()
-	h.Write([]byte(info.Version))
-	h.Write(c.configBytes)
+	// Analyzing a query is an action whose inputs are the sqlc version, the
+	// configuration, the schema migrations, and the query itself.
+	action := cache.NewAction("QueryAnalysis").
+		AddInput("version", []byte(info.Version)).
+		AddInput("config", c.configBytes)
 	for _, m := range schema {
-		h.Write([]byte(m))
+		action.AddInput("schema", []byte(m))
 	}
-	h.Write([]byte(q))
+	actionDigest := action.AddInput("query", []byte(q)).Digest()
 
-	key := fmt.Sprintf("%x", h.Sum(nil))
-	path := filepath.Join(dir, key)
-	if _, err := os.Stat(path); err == nil {
-		contents, err := os.ReadFile(path)
-		if err != nil {
-			return nil, true, err
+	if cached, err := store.Actions.Get(actionDigest); err == nil {
+		contents, err := store.CAS.Get(cached.Outputs[analysisOutput])
+		if err == nil {
+			var a analysis.Analysis
+			if err := proto.Unmarshal(contents, &a); err == nil {
+				return &a, false, nil
+			}
 		}
-		var a analysis.Analysis
-		if err := proto.Unmarshal(contents, &a); err != nil {
-			return nil, true, err
+		if !errors.Is(err, cache.ErrNotFound) {
+			slog.Warn("reading analysis from cache failed", "err", err)
 		}
-		return &a, false, nil
 	}
 
 	result, err := c.a.Analyze(ctx, n, q, schema, np)
@@ -97,9 +97,16 @@ func (c *CachedAnalyzer) analyze(ctx context.Context, n ast.Node, q string, sche
 			slog.Warn("unable to marshal analysis", "err", err)
 			return result, false, nil
 		}
-		if err := os.WriteFile(path, contents, 0644); err != nil {
-			slog.Warn("saving analysis to disk failed", "err", err)
+		outDigest, err := store.CAS.Put(contents)
+		if err != nil {
+			slog.Warn("saving analysis to cache failed", "err", err)
 			return result, false, nil
+		}
+		err = store.Actions.Put(actionDigest, &cache.ActionResult{
+			Outputs: map[string]cache.Digest{analysisOutput: outDigest},
+		})
+		if err != nil {
+			slog.Warn("saving analysis action result failed", "err", err)
 		}
 	}
 
