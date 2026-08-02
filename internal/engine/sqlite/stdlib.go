@@ -670,12 +670,12 @@ func defaultSchema(name string) *catalog.Schema {
 			ReturnType: &ast.TypeName{Name: "text"},
 		},
 		{
-			Name:       "RAMDOM",
+			Name:       "RANDOM",
 			Args:       []*catalog.Argument{},
 			ReturnType: &ast.TypeName{Name: "integer"},
 		},
 		{
-			Name: "RAMDOMBLOB",
+			Name: "RANDOMBLOB",
 			Args: []*catalog.Argument{
 				{
 					Type: &ast.TypeName{Name: "integer"},

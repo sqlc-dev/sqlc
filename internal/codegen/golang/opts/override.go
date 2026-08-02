@@ -28,7 +28,7 @@ type Override struct {
 	// True if the GoType should override if the matching type is nullable
 	Nullable bool `json:"nullable" yaml:"nullable"`
 
-	// True if the GoType should override if the matching type is unsiged.
+	// True if the GoType should override if the matching type is unsigned.
 	Unsigned bool `json:"unsigned" yaml:"unsigned"`
 
 	// Deprecated. Use the `nullable` property instead
