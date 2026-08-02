@@ -64963,7 +64963,7 @@
   },
   "queries": [
     {
-      "text": "SELECT id, name, bio FROM authors\nWHERE id = $1 LIMIT 1",
+      "text": "/*sqlc_name:GetAuthor*/ SELECT id, name, bio FROM authors\nWHERE id = $1 LIMIT 1",
       "name": "GetAuthor",
       "cmd": ":one",
       "columns": [
@@ -65082,7 +65082,7 @@
       "insert_into_table": null
     },
     {
-      "text": "SELECT id, name, bio FROM authors\nORDER BY name",
+      "text": "/*sqlc_name:ListAuthors*/ SELECT id, name, bio FROM authors\nORDER BY name",
       "name": "ListAuthors",
       "cmd": ":many",
       "columns": [
@@ -65171,7 +65171,7 @@
       "insert_into_table": null
     },
     {
-      "text": "INSERT INTO authors (\n          name, bio\n) VALUES (\n  $1, $2\n)\nRETURNING id, name, bio",
+      "text": "/*sqlc_name:CreateAuthor*/ INSERT INTO authors (\n          name, bio\n) VALUES (\n  $1, $2\n)\nRETURNING id, name, bio",
       "name": "CreateAuthor",
       "cmd": ":one",
       "columns": [
@@ -65323,7 +65323,7 @@
       }
     },
     {
-      "text": "DELETE FROM authors\nWHERE id = $1",
+      "text": "/*sqlc_name:DeleteAuthor*/ DELETE FROM authors\nWHERE id = $1",
       "name": "DeleteAuthor",
       "cmd": ":exec",
       "columns": [],

@@ -2,7 +2,8 @@
 {{range .GoQueries}}
 {{if $.OutputQuery .SourceName}}
 {{if and (ne .Cmd ":copyfrom") (ne (hasPrefix .Cmd ":batch") true)}}
-const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
+const {{.ConstantName}} = {{$.Q}}{{if .SQLComment}}{{.SQLComment}}
+{{end}}-- name: {{.MethodName}} {{.Cmd}}
 {{escape .SQL}}
 {{$.Q}}
 {{end}}

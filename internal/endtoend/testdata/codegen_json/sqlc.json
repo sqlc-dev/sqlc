@@ -5,6 +5,10 @@
       "schema": "postgresql/schema.sql",
       "queries": "postgresql/query.sql",
       "engine": "postgresql",
+      "query_comments": {
+        "enabled": true,
+        "format": "marginalia"
+      },
       "gen": {
         "json": {
           "out": "gen",

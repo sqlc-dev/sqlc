@@ -89,3 +89,85 @@ func TestInvalidConfig(t *testing.T) {
 		t.Errorf("expected err; got nil")
 	}
 }
+
+func TestQueryCommentsConfig(t *testing.T) {
+	const raw = `{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "engine": "postgresql",
+      "query_comments": {
+        "enabled": true,
+        "format": "marginalia",
+        "tags": ["name", "cmd", "filename"]
+      },
+      "gen": {
+        "go": {
+          "out": "db"
+        }
+      }
+    }
+  ]
+}`
+	conf, err := ParseConfig(strings.NewReader(raw))
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := conf.SQL[0].QueryComments
+	want := QueryComments{
+		Enabled: true,
+		Format:  "marginalia",
+		Tags:    []string{"name", "cmd", "filename"},
+	}
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("query comments differed (-want +got):\n%s", diff)
+	}
+}
+
+func TestInvalidQueryCommentsConfig(t *testing.T) {
+	for _, test := range []struct {
+		name string
+		body string
+		err  string
+	}{
+		{
+			name: "invalid format",
+			body: `"query_comments": {"enabled": true, "format": "unknown"}`,
+			err:  "invalid query_comments format: unknown",
+		},
+		{
+			name: "invalid tag",
+			body: `"query_comments": {"enabled": true, "tags": ["name", "database"]}`,
+			err:  "invalid query_comments tag: database",
+		},
+	} {
+		tt := test
+		t.Run(tt.name, func(t *testing.T) {
+			raw := `{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "engine": "postgresql",
+      ` + tt.body + `,
+      "gen": {
+        "go": {
+          "out": "db"
+        }
+      }
+    }
+  ]
+}`
+			_, err := ParseConfig(strings.NewReader(raw))
+			if err == nil {
+				t.Fatalf("expected err; got nil")
+			}
+			if diff := cmp.Diff(tt.err, err.Error()); diff != "" {
+				t.Errorf("error differed (-want +got):\n%s", diff)
+			}
+		})
+	}
+}

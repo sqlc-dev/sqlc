@@ -59,6 +59,9 @@ func v2ParseConfig(rd io.Reader) (Config, error) {
 		if conf.SQL[j].Engine == "" {
 			return conf, ErrMissingEngine
 		}
+		if err := conf.SQL[j].QueryComments.Validate(); err != nil {
+			return conf, err
+		}
 		if conf.SQL[j].Gen.Go != nil {
 			if conf.SQL[j].Gen.Go.Out == "" {
 				return conf, ErrNoPackagePath
@@ -103,6 +106,25 @@ func (c *Config) validateGlobalOverrides() error {
 	for _, oride := range c.Overrides.Go.Overrides {
 		if usesMultipleEngines && oride.Engine == "" {
 			return fmt.Errorf(`the "engine" field is required for global type overrides because your configuration uses multiple database engines`)
+		}
+	}
+	return nil
+}
+
+func (q QueryComments) Validate() error {
+	if !q.Enabled {
+		return nil
+	}
+	switch q.Format {
+	case "", "sqlcommenter", "marginalia":
+	default:
+		return fmt.Errorf("%w: %s", ErrInvalidQueryCommentFormat, q.Format)
+	}
+	for _, tag := range q.Tags {
+		switch tag {
+		case "name", "cmd", "filename":
+		default:
+			return fmt.Errorf("%w: %s", ErrInvalidQueryCommentTag, tag)
 		}
 	}
 	return nil

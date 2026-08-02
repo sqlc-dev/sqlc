@@ -42,6 +42,13 @@ Each mapping in the `sql` collection has the following keys:
   - Directory of SQL migrations or path to single SQL file; or a list of paths.
 - `queries`:
   - Directory of SQL queries or path to single SQL file; or a list of paths.
+- `query_comments`:
+  - If enabled, prepend generated SQL text with a structured block comment using query metadata.
+    Built-in generators include the comment in generated query strings. Supported formats are
+    `sqlcommenter` and `marginalia`. Supported tags are `name`, `cmd`, and `filename`.
+    Defaults to `format: sqlcommenter` and `tags: ["name"]`. These comments make generated
+    queries easier to trace in database logs, APM tools, database monitoring products, and
+    distributed tracing systems.
 - `codegen`:
   - A collection of mappings to configure code generators. See [codegen](#codegen) for the supported keys.
 - `gen`:
@@ -115,6 +122,45 @@ sql:
       package: authors
       out: postgresql
 ```
+
+### query_comments
+
+The `query_comments` mapping supports the following keys:
+
+- `enabled`:
+  - If true, prepend generated SQL query text with a structured comment derived from query metadata.
+    Defaults to `false`.
+- `format`:
+  - Either `sqlcommenter` or `marginalia`. Defaults to `sqlcommenter`.
+- `tags`:
+  - Query metadata tags to include in the comment. Supported values are `name`, `cmd`, and
+    `filename`. Defaults to `["name"]`.
+
+```yaml
+version: '2'
+sql:
+- schema: schema.sql
+  queries: query.sql
+  engine: postgresql
+  query_comments:
+    enabled: true
+    format: sqlcommenter
+    tags:
+      - name
+      - cmd
+      - filename
+  gen:
+    go:
+      package: authors
+      out: postgresql
+```
+
+Query comments are useful when you need to connect an expensive query sample, slow query,
+or database log entry back to the generated query that produced it. Tools and ecosystems
+that understand or generate these SQL comment formats include Datadog Database Monitoring,
+OpenTelemetry sqlcommenter libraries, Prisma ORM sql comments, and Rails applications using
+Marginalia. Other observability products that consume OpenTelemetry data or preserve SQL
+comments in query logs can also use this metadata for correlation.
 
 ### analyzer
 

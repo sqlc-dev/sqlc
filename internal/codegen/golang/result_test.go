@@ -3,6 +3,8 @@ package golang
 import (
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
@@ -74,5 +76,25 @@ func TestPutOutColumns_AlwaysTrueWhenQueryHasColumns(t *testing.T) {
 	}
 	if putOutColumns(query) != true {
 		t.Error("should be true when we have columns")
+	}
+}
+
+func TestSplitSQLComment(t *testing.T) {
+	comment, sql := splitSQLComment("/*sqlc_name='GetAuthor'*/ SELECT 1")
+	if diff := cmp.Diff("/*sqlc_name='GetAuthor'*/", comment); diff != "" {
+		t.Errorf("comment differed (-want +got):\n%s", diff)
+	}
+	if diff := cmp.Diff("SELECT 1", sql); diff != "" {
+		t.Errorf("sql differed (-want +got):\n%s", diff)
+	}
+}
+
+func TestSplitSQLCommentIgnoresOtherComments(t *testing.T) {
+	comment, sql := splitSQLComment("/*application='api'*/ SELECT 1")
+	if comment != "" {
+		t.Errorf("expected empty comment, got %q", comment)
+	}
+	if diff := cmp.Diff("/*application='api'*/ SELECT 1", sql); diff != "" {
+		t.Errorf("sql differed (-want +got):\n%s", diff)
 	}
 }

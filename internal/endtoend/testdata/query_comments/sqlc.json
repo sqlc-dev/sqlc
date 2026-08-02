@@ -1,0 +1,55 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "engine": "postgresql",
+      "query_comments": {
+        "enabled": true
+      },
+      "gen": {
+        "go": {
+          "out": "stdlib",
+          "package": "querytest",
+          "sql_package": "database/sql",
+          "emit_sql_as_comment": true
+        }
+      }
+    },
+    {
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "engine": "postgresql",
+      "query_comments": {
+        "enabled": true,
+        "format": "sqlcommenter",
+        "tags": ["name", "cmd", "filename"]
+      },
+      "gen": {
+        "go": {
+          "out": "pgxv4",
+          "package": "querytest",
+          "sql_package": "pgx/v4"
+        }
+      }
+    },
+    {
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "engine": "postgresql",
+      "query_comments": {
+        "enabled": true,
+        "format": "marginalia",
+        "tags": ["name", "cmd", "filename"]
+      },
+      "gen": {
+        "go": {
+          "out": "pgxv5",
+          "package": "querytest",
+          "sql_package": "pgx/v5"
+        }
+      }
+    }
+  ]
+}
