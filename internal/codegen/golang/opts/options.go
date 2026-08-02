@@ -49,6 +49,7 @@ type Options struct {
 	QueryParameterLimit          *int32            `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
 	OmitSqlcVersion              bool              `json:"omit_sqlc_version,omitempty" yaml:"omit_sqlc_version"`
 	OmitUnusedStructs            bool              `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
+	OmitCatalogSchema            *bool             `json:"omit_catalog_schema,omitempty" yaml:"omit_catalog_schema"`
 	BuildTags                    string            `json:"build_tags,omitempty" yaml:"build_tags"`
 	Initialisms                  *[]string         `json:"initialisms,omitempty" yaml:"initialisms"`
 
@@ -183,6 +184,16 @@ func (o *Options) ModelsEmitEnabled() bool {
 		return true
 	}
 	return *o.OutputModelsEmit
+}
+
+// OmitCatalogSchemaEnabled reports whether the pg_catalog and
+// information_schema catalog schemas should be excluded when generating
+// models. Defaults to true when the option is unset.
+func (o *Options) OmitCatalogSchemaEnabled() bool {
+	if o.OmitCatalogSchema == nil {
+		return true
+	}
+	return *o.OmitCatalogSchema
 }
 
 // ModelsImportAlias is the fixed Go import alias used for the models
