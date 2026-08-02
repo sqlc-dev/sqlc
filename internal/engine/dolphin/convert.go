@@ -1556,6 +1556,12 @@ func (c *cc) convertTruncateTableStmt(n *pcast.TruncateTableStmt) *ast.TruncateS
 }
 
 func (c *cc) convertUnaryOperationExpr(n *pcast.UnaryOperationExpr) ast.Node {
+	if n.Op == opcode.Not || n.Op == opcode.Not2 {
+		return &ast.BoolExpr{
+			Boolop: ast.BoolExprTypeNot,
+			Args:   &ast.List{Items: []ast.Node{c.convert(n.V)}},
+		}
+	}
 	return todo(n)
 }
 
