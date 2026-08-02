@@ -3,6 +3,7 @@ package pattern
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"sync"
 )
 
@@ -42,16 +43,16 @@ func MatchCompile(pattern string) (*Match, error) {
 }
 
 func matchCompile(pattern string) (match *Match, err error) {
-	regex := ""
+	var regex strings.Builder
 	escaped := false
 	arr := []byte(pattern)
 
-	for i := 0; i < len(arr); i++ {
+	for i := range arr {
 		if escaped {
 			escaped = false
 			switch arr[i] {
 			case '*', '?', '\\':
-				regex += "\\" + string(arr[i])
+				regex.WriteString("\\" + string(arr[i]))
 			default:
 				return nil, fmt.Errorf("Invalid escaped character '%c'", arr[i])
 			}
@@ -60,13 +61,13 @@ func matchCompile(pattern string) (match *Match, err error) {
 			case '\\':
 				escaped = true
 			case '*':
-				regex += ".*"
+				regex.WriteString(".*")
 			case '?':
-				regex += "."
+				regex.WriteString(".")
 			case '.', '(', ')', '+', '|', '^', '$', '[', ']', '{', '}':
-				regex += "\\" + string(arr[i])
+				regex.WriteString("\\" + string(arr[i]))
 			default:
-				regex += string(arr[i])
+				regex.WriteString(string(arr[i]))
 			}
 		}
 	}
@@ -77,7 +78,7 @@ func matchCompile(pattern string) (match *Match, err error) {
 
 	var r *regexp.Regexp
 
-	if r, err = regexp.Compile("^" + regex + "$"); err != nil {
+	if r, err = regexp.Compile("^" + regex.String() + "$"); err != nil {
 		return nil, err
 	}
 

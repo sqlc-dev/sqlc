@@ -5,11 +5,10 @@ import (
 	"strconv"
 	"strings"
 
-	pcast "github.com/pingcap/tidb/pkg/parser/ast"
-	"github.com/pingcap/tidb/pkg/parser/mysql"
-	"github.com/pingcap/tidb/pkg/parser/opcode"
-	driver "github.com/pingcap/tidb/pkg/parser/test_driver"
-	"github.com/pingcap/tidb/pkg/parser/types"
+	pcast "github.com/sqlc-dev/marino/ast"
+	"github.com/sqlc-dev/marino/mysql"
+	"github.com/sqlc-dev/marino/opcode"
+	"github.com/sqlc-dev/marino/types"
 
 	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -251,7 +250,7 @@ func convertColumnDef(def *pcast.ColumnDef) *ast.ColumnDef {
 	for _, opt := range def.Options {
 		switch opt.Tp {
 		case pcast.ColumnOptionComment:
-			if value, ok := opt.Expr.(*driver.ValueExpr); ok {
+			if value, ok := opt.Expr.(*pcast.ValueExprBase); ok {
 				comment = value.GetString()
 			}
 		}
@@ -531,7 +530,7 @@ func (c *cc) convertLists(lists [][]pcast.ExprNode) *ast.List {
 	return list
 }
 
-func (c *cc) convertParamMarkerExpr(n *driver.ParamMarkerExpr) *ast.ParamRef {
+func (c *cc) convertParamMarkerExpr(n *pcast.ParamMarkerExprBase) *ast.ParamRef {
 	// Parameter numbers start at one
 	c.paramCount += 1
 	return &ast.ParamRef{
@@ -672,8 +671,8 @@ func (c *cc) convertUpdateStmt(n *pcast.UpdateStmt) *ast.UpdateStmt {
 	return stmt
 }
 
-func (c *cc) convertValueExpr(n *driver.ValueExpr) *ast.A_Const {
-	switch n.TexprNode.Type.GetType() {
+func (c *cc) convertValueExpr(n *pcast.ValueExprBase) *ast.A_Const {
+	switch n.Type.GetType() {
 	case mysql.TypeBit:
 	case mysql.TypeDate:
 	case mysql.TypeDatetime:
@@ -758,14 +757,14 @@ func (c *cc) convertAggregateFuncExpr(n *pcast.AggregateFuncExpr) *ast.FuncCall 
 	var separator string
 	if name == "group_concat" && len(args) >= 2 {
 		// The last arg is always the separator
-		if value, ok := args[len(args)-1].(*driver.ValueExpr); ok {
+		if value, ok := args[len(args)-1].(*pcast.ValueExprBase); ok {
 			separator = value.GetString()
 			args = args[:len(args)-1]
 		}
 	}
 
 	for _, a := range args {
-		if value, ok := a.(*driver.ValueExpr); ok {
+		if value, ok := a.(*pcast.ValueExprBase); ok {
 			if value.GetInt64() == int64(1) {
 				fn.AggStar = true
 				continue
@@ -1649,10 +1648,10 @@ func (c *cc) convertProcedureInfo(n *pcast.ProcedureInfo) ast.Node {
 func (c *cc) convert(node pcast.Node) ast.Node {
 	switch n := node.(type) {
 
-	case *driver.ParamMarkerExpr:
+	case *pcast.ParamMarkerExprBase:
 		return c.convertParamMarkerExpr(n)
 
-	case *driver.ValueExpr:
+	case *pcast.ValueExprBase:
 		return c.convertValueExpr(n)
 
 	case *pcast.AdminStmt:

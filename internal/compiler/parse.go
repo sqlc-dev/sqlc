@@ -12,28 +12,41 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
+	"github.com/sqlc-dev/sqlc/internal/sql/preprocess"
 	"github.com/sqlc-dev/sqlc/internal/sql/validate"
+	"github.com/sqlc-dev/sqlc/internal/sqlcdebug"
 )
 
-func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query, error) {
-	ctx := context.Background()
+var debugDumpAST = sqlcdebug.New("dumpast")
 
-	if o.Debug.DumpAST {
-		debug.Dump(stmt)
-	}
-
-	// validate sqlc-specific syntax
-	if err := validate.SqlcFunctions(stmt); err != nil {
-		return nil, err
-	}
-
-	// rewrite queries to remove sqlc.* functions
-
+func (c *Compiler) parseQuery(stmt ast.Node, pp *preprocess.Result, o opts.Parser) (*Query, error) {
 	raw, ok := stmt.(*ast.RawStmt)
 	if !ok {
 		return nil, errors.New("node is not a statement")
 	}
-	rawSQL, err := source.Pluck(src, raw.StmtLocation, raw.StmtLen)
+
+	// The preprocessor already replaced every sqlc.* construct with native SQL
+	// and recorded what it replaced.
+	pre := pp.Statement(raw.StmtLocation)
+	if pre.Err != nil {
+		return nil, pre.Err
+	}
+
+	// Engines number bind parameters in whatever order they convert the AST.
+	// Restore the numbering the preprocessor assigned in source order.
+	renumberParams(raw, pre.Numbers)
+
+	if c.coreCatalog != nil {
+		return c.parseQueryCore(raw, pp.Text, pre)
+	}
+
+	ctx := context.Background()
+
+	if debugDumpAST.Value() == "1" {
+		debug.Dump(stmt)
+	}
+
+	rawSQL, err := source.Pluck(pp.Text, raw.StmtLocation, raw.StmtLen)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +134,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 			Query:      expandedQuery,
 		}
 	} else if c.analyzer != nil {
-		inference, _ := c.inferQuery(raw, rawSQL)
+		inference, _ := c.inferQuery(raw, rawSQL, pre)
 		if inference == nil {
 			inference = &analysis{}
 		}
@@ -149,7 +162,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		// FOOTGUN: combineAnalysis mutates inference
 		anlys = combineAnalysis(inference, result)
 	} else {
-		anlys, err = c.analyzeQuery(raw, rawSQL)
+		anlys, err = c.analyzeQuery(raw, rawSQL, pre)
 		if err != nil {
 			return nil, err
 		}
@@ -179,6 +192,23 @@ func (c *Compiler) parseQuery(stmt ast.Node, src string, o opts.Parser) (*Query,
 		SQL:             trimmed,
 		InsertIntoTable: anlys.Table,
 	}, nil
+}
+
+// renumberParams applies the parameter numbers the preprocessor assigned,
+// matching each node by the location of its placeholder in the query text.
+func renumberParams(raw *ast.RawStmt, numbers map[int]int) {
+	if len(numbers) == 0 {
+		return
+	}
+	astutils.Walk(astutils.VisitorFunc(func(node ast.Node) {
+		ref, ok := node.(*ast.ParamRef)
+		if !ok {
+			return
+		}
+		if n, ok := numbers[ref.Location]; ok {
+			ref.Number = n
+		}
+	}), raw)
 }
 
 func rangeVars(root ast.Node) []*ast.RangeVar {

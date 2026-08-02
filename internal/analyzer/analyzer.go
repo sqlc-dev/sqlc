@@ -3,18 +3,14 @@ package analyzer
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"hash/fnv"
+	"errors"
 	"log/slog"
-	"os"
-	"path/filepath"
 
 	"google.golang.org/protobuf/proto"
 
 	"github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/cache"
 	"github.com/sqlc-dev/sqlc/internal/config"
-	"github.com/sqlc-dev/sqlc/internal/info"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
 )
@@ -24,6 +20,7 @@ type CachedAnalyzer struct {
 	config      config.Config
 	configBytes []byte
 	db          config.Database
+	store       *cache.Cache
 }
 
 func Cached(a Analyzer, c config.Config, db config.Database) *CachedAnalyzer {
@@ -47,6 +44,9 @@ func (c *CachedAnalyzer) Analyze(ctx context.Context, n ast.Node, q string, sche
 	return result, err
 }
 
+// The name of the sole output blob a QueryAnalysis action produces.
+const analysisOutput = "analysis.pb"
+
 func (c *CachedAnalyzer) analyze(ctx context.Context, n ast.Node, q string, schema []string, np *named.ParamSet) (*analysis.Analysis, bool, error) {
 	// Only cache queries for managed databases. We can't be certain the
 	// database is in an unchanged state otherwise
@@ -54,39 +54,44 @@ func (c *CachedAnalyzer) analyze(ctx context.Context, n ast.Node, q string, sche
 		return nil, true, nil
 	}
 
-	dir, err := cache.AnalysisDir()
-	if err != nil {
-		return nil, true, err
+	if c.store == nil {
+		var err error
+		c.store, err = cache.Open()
+		if err != nil {
+			return nil, true, err
+		}
 	}
+	store := c.store
 
 	if c.configBytes == nil {
+		var err error
 		c.configBytes, err = json.Marshal(c.config)
 		if err != nil {
 			return nil, true, err
 		}
 	}
 
-	// Calculate cache key
-	h := fnv.New64()
-	h.Write([]byte(info.Version))
-	h.Write(c.configBytes)
+	// Analyzing a query is an action whose inputs are the configuration, the
+	// schema migrations, and the query itself. (The sqlc binary is an
+	// implicit input of every action.)
+	action := store.NewAction("QueryAnalysis").
+		AddInput("config", c.configBytes)
 	for _, m := range schema {
-		h.Write([]byte(m))
+		action.AddInput("schema", []byte(m))
 	}
-	h.Write([]byte(q))
+	actionDigest := action.AddInput("query", []byte(q)).Digest()
 
-	key := fmt.Sprintf("%x", h.Sum(nil))
-	path := filepath.Join(dir, key)
-	if _, err := os.Stat(path); err == nil {
-		contents, err := os.ReadFile(path)
-		if err != nil {
-			return nil, true, err
+	if cached, err := store.Actions.Get(actionDigest); err == nil {
+		contents, err := store.CAS.Get(cached.Outputs[analysisOutput])
+		if err == nil {
+			var a analysis.Analysis
+			if err := proto.Unmarshal(contents, &a); err == nil {
+				return &a, false, nil
+			}
 		}
-		var a analysis.Analysis
-		if err := proto.Unmarshal(contents, &a); err != nil {
-			return nil, true, err
+		if !errors.Is(err, cache.ErrNotFound) {
+			slog.Warn("reading analysis from cache failed", "err", err)
 		}
-		return &a, false, nil
 	}
 
 	result, err := c.a.Analyze(ctx, n, q, schema, np)
@@ -97,9 +102,16 @@ func (c *CachedAnalyzer) analyze(ctx context.Context, n ast.Node, q string, sche
 			slog.Warn("unable to marshal analysis", "err", err)
 			return result, false, nil
 		}
-		if err := os.WriteFile(path, contents, 0644); err != nil {
-			slog.Warn("saving analysis to disk failed", "err", err)
+		outDigest, err := store.CAS.Put(contents)
+		if err != nil {
+			slog.Warn("saving analysis to cache failed", "err", err)
 			return result, false, nil
+		}
+		err = store.Actions.Put(actionDigest, &cache.ActionResult{
+			Outputs: map[string]cache.Digest{analysisOutput: outDigest},
+		})
+		if err != nil {
+			slog.Warn("saving analysis action result failed", "err", err)
 		}
 	}
 
@@ -107,6 +119,9 @@ func (c *CachedAnalyzer) analyze(ctx context.Context, n ast.Node, q string, sche
 }
 
 func (c *CachedAnalyzer) Close(ctx context.Context) error {
+	if c.store != nil {
+		c.store.Close()
+	}
 	return c.a.Close(ctx)
 }
 

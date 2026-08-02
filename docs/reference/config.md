@@ -158,7 +158,9 @@ The `gen` mapping supports the following keys:
 - `emit_methods_with_db_argument`:
   - If true, generated methods will accept a DBTX argument instead of storing a DBTX on the `*Queries` struct. Defaults to `false`.
 - `emit_pointers_for_null_types`:
-  - If true, generated types for nullable columns are emitted as pointers (ie. `*string`) instead of `database/sql` null types (ie. `NullString`). Currently only supported for PostgreSQL if `sql_package` is `pgx/v4` or `pgx/v5`, and for SQLite. Defaults to `false`.
+  - If true, generated types for nullable columns are emitted as pointers (ie. `*string`) instead of `database/sql` null types (ie. `NullString`). Currently only supported for PostgreSQL if `sql_package` is `pgx/v4` or `pgx/v5`, and for SQLite. Defaults to `false`. Nullable enum columns also follow this setting unless `emit_pointers_for_null_enum_types` is set.
+- `emit_pointers_for_null_enum_types`:
+  - Overrides `emit_pointers_for_null_types` for nullable enum columns only. When `true`, nullable enum columns are emitted as pointers (ie. `*UserRole`). When `false`, nullable enum columns use the generated `NullUserRole` wrapper struct even if `emit_pointers_for_null_types` is true. Set this to `false` to keep the pre-v1.31 behavior when upgrading. Only applies to PostgreSQL with `sql_package` `pgx/v4` or `pgx/v5`.
 - `emit_enum_valid_method`:
   - If true, generate a Valid method on enum types,
     indicating whether a string is a valid enum value.
@@ -441,7 +443,9 @@ Each mapping in the `packages` collection has the following keys:
 - `emit_methods_with_db_argument`:
   - If true, generated methods will accept a DBTX argument instead of storing a DBTX on the `*Queries` struct. Defaults to `false`.
 - `emit_pointers_for_null_types`:
-  - If true and `sql_package` is set to `pgx/v4` or `pgx/v5`, generated types for nullable columns are emitted as pointers (ie. `*string`) instead of `database/sql` null types (ie. `NullString`). Defaults to `false`.
+  - If true and `sql_package` is set to `pgx/v4` or `pgx/v5`, generated types for nullable columns are emitted as pointers (ie. `*string`) instead of `database/sql` null types (ie. `NullString`). Defaults to `false`. Nullable enum columns also follow this setting unless `emit_pointers_for_null_enum_types` is set.
+- `emit_pointers_for_null_enum_types`:
+  - Overrides `emit_pointers_for_null_types` for nullable enum columns only. When `true`, nullable enum columns are emitted as pointers (ie. `*UserRole`). When `false`, nullable enum columns use the generated `NullUserRole` wrapper struct even if `emit_pointers_for_null_types` is true. Set this to `false` to keep the pre-v1.31 behavior when upgrading. Only applies to PostgreSQL with `sql_package` `pgx/v4` or `pgx/v5`.
 - `emit_enum_valid_method`:
   - If true, generate a Valid method on enum types,
     indicating whether a string is a valid enum value.

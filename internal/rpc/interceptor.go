@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func UnaryInterceptor(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+func UnaryInterceptor(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 	err := invoker(ctx, method, req, reply, cc, opts...)
 
 	switch status.Convert(err).Code() {

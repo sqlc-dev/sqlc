@@ -9,7 +9,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
-	"github.com/sqlc-dev/sqlc/internal/sql/rewrite"
+	"github.com/sqlc-dev/sqlc/internal/sql/preprocess"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
@@ -21,7 +21,7 @@ func dataType(n *ast.TypeName) string {
 	}
 }
 
-func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, params *named.ParamSet, embeds rewrite.EmbedSet) ([]Parameter, error) {
+func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, args []paramRef, params *named.ParamSet, embeds preprocess.EmbedSet) ([]Parameter, error) {
 	c := comp.catalog
 
 	aliasMap := map[string]*ast.TableName{}
@@ -514,10 +514,11 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			}
 			col := toColumn(n.TypeName)
 			defaultP := named.NewInferredParam(col.Name, col.NotNull)
-			p, _ := params.FetchMerge(ref.ref.Number, defaultP)
+			p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
 
 			col.Name = p.Name()
 			col.NotNull = p.NotNull()
+			col.IsNamedParam = isNamed
 			a = append(a, Parameter{
 				Number: ref.ref.Number,
 				Column: col,

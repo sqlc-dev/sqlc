@@ -1,0 +1,21 @@
+[
+  {
+    "start": 0,
+    "end": 52,
+    "dollar": true,
+    "embeds": [
+      {
+        "table": "users",
+        "location": 7,
+        "origin": 7,
+        "orig": "sqlc.embed(users)"
+      },
+      {
+        "table": "pets",
+        "location": 16,
+        "origin": 26,
+        "orig": "sqlc.embed(pets)"
+      }
+    ]
+  }
+]

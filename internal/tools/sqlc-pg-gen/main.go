@@ -13,7 +13,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 )
 
 // https://dba.stackexchange.com/questions/255412/how-to-select-functions-that-belong-in-a-given-extension-in-postgresql
@@ -303,9 +303,9 @@ func run(ctx context.Context) error {
 	for _, extension := range extensions {
 		name := strings.Replace(extension, "-", "_", -1)
 
-		var funcName string
-		for _, part := range strings.Split(name, "_") {
-			funcName += strings.Title(part)
+		var funcName strings.Builder
+		for part := range strings.SplitSeq(name, "_") {
+			funcName.WriteString(strings.Title(part))
 		}
 
 		if _, err := conn.Exec(ctx, fmt.Sprintf("CREATE EXTENSION IF NOT EXISTS %q", extension)); err != nil {
@@ -343,14 +343,14 @@ func run(ctx context.Context) error {
 		err = writeFormattedGo(tmpl, tmplCtx{
 			Pkg:        "contrib",
 			SchemaName: "pg_catalog",
-			GenFnName:  funcName,
+			GenFnName:  funcName.String(),
 			Procs:      procs,
 		}, extensionPath)
 		if err != nil {
 			return fmt.Errorf("error generating extension %s: %w", extension, err)
 		}
 
-		loaded = append(loaded, extensionPair{Name: extension, Func: funcName})
+		loaded = append(loaded, extensionPair{Name: extension, Func: funcName.String()})
 	}
 
 	extensionTmpl, err := template.New("").Parse(loaderFuncTmpl)

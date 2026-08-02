@@ -8,11 +8,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func gen(n *yaml.Node) (interface{}, error) {
+func gen(n *yaml.Node) (any, error) {
 	switch n.Kind {
 
 	case yaml.MappingNode:
-		nn := map[string]interface{}{}
+		nn := map[string]any{}
 		for i, _ := range n.Content {
 			if i%2 == 0 {
 				k := n.Content[i]
@@ -26,7 +26,7 @@ func gen(n *yaml.Node) (interface{}, error) {
 		return nn, nil
 
 	case yaml.SequenceNode:
-		nn := []interface{}{}
+		nn := []any{}
 		for i, _ := range n.Content {
 			v, err := gen(n.Content[i])
 			if err != nil {

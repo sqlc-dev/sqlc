@@ -11,3 +11,8 @@ WHERE first_name = sqlc.arg(name)
 /* name: SelectUserQuestion :many */
 SELECT first_name from
 users where (? = id OR  ? = 0);
+
+/* name: SelectUserByAgeCast :many */
+SELECT first_name FROM users
+WHERE age > CAST(sqlc.arg(threshold) AS SIGNED)
+   OR age < CAST(sqlc.arg(threshold) AS SIGNED);

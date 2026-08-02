@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"os"
 	osexec "os/exec"
 	"path/filepath"
@@ -17,9 +18,25 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/cmd"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/opts"
+	"github.com/sqlc-dev/sqlc/internal/sqlcdebug"
 	"github.com/sqlc-dev/sqlc/internal/sqltest/docker"
 	"github.com/sqlc-dev/sqlc/internal/sqltest/native"
 )
+
+// withSQLCDEBUG installs the given SQLCDEBUG-formatted string for the
+// duration of the test and restores the empty default afterwards.
+//
+// Callers in TestReplay are sequential, so this does not need a mutex:
+// Go's test scheduler does not run TestReplay concurrently with the
+// parallel top-level tests in this package.
+func withSQLCDEBUG(t *testing.T, raw string) func() {
+	t.Helper()
+	if raw == "" {
+		return func() {}
+	}
+	sqlcdebug.Update(raw)
+	return func() { sqlcdebug.Update("") }
+}
 
 func lineEndings() cmp.Option {
 	return cmp.Transformer("LineEndings", func(in string) string {
@@ -221,8 +238,6 @@ func TestReplay(t *testing.T) {
 	}
 
 	for name, testctx := range contexts {
-		name := name
-		testctx := testctx
 
 		if !testctx.Enabled() {
 			continue
@@ -263,13 +278,14 @@ func TestReplay(t *testing.T) {
 
 				opts := cmd.Options{
 					Env: cmd.Env{
-						Debug:      opts.DebugFromString(args.Env["SQLCDEBUG"]),
 						Experiment: opts.ExperimentFromString(args.Env["SQLCEXPERIMENT"]),
-						NoRemote:   true,
 					},
 					Stderr:       &stderr,
 					MutateConfig: testctx.Mutate(t, path),
 				}
+
+				release := withSQLCDEBUG(t, args.Env["SQLCDEBUG"])
+				defer release()
 
 				switch args.Command {
 				case "diff":
@@ -281,6 +297,28 @@ func TestReplay(t *testing.T) {
 					}
 				case "vet":
 					err = cmd.Vet(ctx, path, "", &opts)
+				case "parse", "analyze":
+					// These commands are config-less and flag-driven. Run them
+					// through the real CLI entry point from inside the test
+					// directory so file arguments resolve and the output stays
+					// independent of the absolute path.
+					var stdout bytes.Buffer
+					wd, werr := os.Getwd()
+					if werr != nil {
+						t.Fatal(werr)
+					}
+					if cerr := os.Chdir(path); cerr != nil {
+						t.Fatal(cerr)
+					}
+					code := cmd.Do(append([]string{args.Command}, args.Args...), nil, &stdout, &stderr)
+					if cerr := os.Chdir(wd); cerr != nil {
+						t.Fatal(cerr)
+					}
+					if code != 0 {
+						err = fmt.Errorf("%s exited with code %d", args.Command, code)
+					} else if diff := cmp.Diff(strings.TrimSpace(string(tc.Stdout)), strings.TrimSpace(stdout.String()), lineEndings()); diff != "" {
+						t.Errorf("stdout differed (-want +got):\n%s", diff)
+					}
 				default:
 					t.Fatalf("unknown command")
 				}
@@ -354,7 +392,6 @@ func cmpDirectory(t *testing.T, dir string, actual map[string]string) {
 	if !cmp.Equal(expected, actual, opts...) {
 		t.Errorf("%s contents differ", dir)
 		for name, contents := range expected {
-			name := name
 			if actual[name] == "" {
 				t.Errorf("%s is empty", name)
 				return

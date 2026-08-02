@@ -1,32 +1,36 @@
 # Dolphin Engine (MySQL) - Claude Code Guide
 
-The dolphin engine handles MySQL parsing and AST conversion using the TiDB parser.
+The dolphin engine handles MySQL parsing and AST conversion using the Marino parser
+(a sqlc-maintained fork of the TiDB / pingcap parser).
 
 ## Architecture
 
 ### Parser Flow
 ```
-SQL String → TiDB Parser → TiDB AST → sqlc AST → Analysis/Codegen
+SQL String → Marino Parser → Marino AST → sqlc AST → Analysis/Codegen
 ```
 
 ### Key Files
-- `convert.go` - Converts TiDB AST nodes to sqlc AST nodes
+- `convert.go` - Converts Marino AST nodes to sqlc AST nodes
 - `format.go` - MySQL-specific formatting (identifiers, types, parameters)
 - `parse.go` - Entry point for parsing MySQL SQL
 
-## TiDB Parser
+## Marino Parser
 
-The TiDB parser (`github.com/pingcap/tidb/pkg/parser`) is used for MySQL parsing:
+The Marino parser (`github.com/sqlc-dev/marino`) is used for MySQL parsing. It is a
+hard fork of `github.com/pingcap/tidb/pkg/parser` with a flatter package layout
+(no `pkg/parser/...` prefix) and the former `test_driver` types merged into the
+`ast` package as `ValueExprBase` / `ParamMarkerExprBase`.
 
 ```go
 import (
-    pcast "github.com/pingcap/tidb/pkg/parser/ast"
-    "github.com/pingcap/tidb/pkg/parser/mysql"
-    "github.com/pingcap/tidb/pkg/parser/types"
+    pcast "github.com/sqlc-dev/marino/ast"
+    "github.com/sqlc-dev/marino/mysql"
+    "github.com/sqlc-dev/marino/types"
 )
 ```
 
-### Common TiDB Types
+### Common Marino Types
 - `pcast.SelectStmt`, `pcast.InsertStmt`, etc. - Statement types
 - `pcast.ColumnNameExpr` - Column reference
 - `pcast.FuncCallExpr` - Function call
@@ -195,13 +199,10 @@ func (p *Parser) Param(n int) string {
 **Cause**: New AST node type not handled in `astutils/walk.go` or `astutils/rewrite.go`
 **Solution**: Add case for the node type in both files
 
-### Issue: sqlc.arg() not converted in ON DUPLICATE KEY UPDATE
-**Cause**: `InsertStmt` case in `rewrite.go` didn't traverse `OnDuplicateKeyUpdate`
-**Solution**: Add `a.apply(n, "OnDuplicateKeyUpdate", nil, n.OnDuplicateKeyUpdate)`
-
 ### Issue: MySQL @variable being treated as parameter
-**Cause**: Converting `VariableExpr` to `A_Expr` with `@` operator
-**Solution**: Use `ast.VariableExpr` instead, which is not detected by `named.IsParamSign()`
+**Cause**: The preprocessor's dialect said `@name` is sqlc syntax
+**Solution**: MySQL sets `AtSign: false` in `internal/sql/preprocess/dialect.go`, so
+`@user_id` is left alone before the parser ever sees it
 
 ### Issue: Type length appearing incorrectly (e.g., datetime(39))
 **Cause**: Using internal `flen` for all types

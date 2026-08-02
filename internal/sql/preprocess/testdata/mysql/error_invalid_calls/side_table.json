@@ -1,0 +1,30 @@
+[
+  {
+    "start": 0,
+    "end": 77,
+    "dollar": true,
+    "error": "function \"sqlc.argh\" does not exist",
+    "error_at": 56
+  },
+  {
+    "start": 77,
+    "end": 160,
+    "dollar": true,
+    "error": "expected 1 parameter to sqlc.arg; got 2",
+    "error_at": 137
+  },
+  {
+    "start": 160,
+    "end": 230,
+    "dollar": true,
+    "error": "expected 1 parameter to sqlc.arg; got 0",
+    "error_at": 219
+  },
+  {
+    "start": 230,
+    "end": 312,
+    "dollar": true,
+    "error": "expected parameter to sqlc.arg to be string or reference; got \"?\"",
+    "error_at": 300
+  }
+]

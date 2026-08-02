@@ -10,7 +10,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -55,12 +54,13 @@ func (r *Runner) loadAndCompile(ctx context.Context) (*runtimeAndCode, error) {
 	if err != nil {
 		return nil, err
 	}
-	cacheDir, err := cache.PluginsDir()
+	store, err := cache.Open()
 	if err != nil {
 		return nil, err
 	}
-	value, err, _ := flight.Do(expected, func() (interface{}, error) {
-		return r.loadAndCompileWASM(ctx, cacheDir, expected)
+	defer store.Close()
+	value, err, _ := flight.Do(expected, func() (any, error) {
+		return r.loadAndCompileWASM(ctx, store, expected)
 	})
 	if err != nil {
 		return nil, err
@@ -113,36 +113,52 @@ func (r *Runner) fetch(ctx context.Context, uri string) ([]byte, string, error) 
 	return wmod, actual, nil
 }
 
-func (r *Runner) loadAndCompileWASM(ctx context.Context, cache string, expected string) (*runtimeAndCode, error) {
-	pluginDir := filepath.Join(cache, expected)
-	pluginPath := filepath.Join(pluginDir, "plugin.wasm")
-	_, staterr := os.Stat(pluginPath)
-
-	uri := r.URL
-	if staterr == nil {
-		uri = "file://" + pluginPath
-	}
-
-	wmod, actual, err := r.fetch(ctx, uri)
-	if err != nil {
+func (r *Runner) loadAndCompileWASM(ctx context.Context, store *cache.Cache, expected string) (*runtimeAndCode, error) {
+	// The sha256 declared in sqlc's configuration is a content address, so
+	// the plugin binary is looked up in the CAS directly by that checksum —
+	// no action cache entry is needed, and Get re-verifies the checksum on
+	// every hit.
+	wmod, err := store.CAS.Get(cache.SHA256Digest(expected))
+	if errors.Is(err, cache.ErrNotFound) {
+		var actual string
+		wmod, actual, err = r.fetch(ctx, r.URL)
+		if err != nil {
+			return nil, err
+		}
+		if expected != actual {
+			return nil, fmt.Errorf("invalid checksum: expected %s, got %s", expected, actual)
+		}
+		if _, err := store.CAS.Put(wmod); err != nil {
+			return nil, fmt.Errorf("cache wasm: %w", err)
+		}
+	} else if err != nil {
 		return nil, err
 	}
 
-	if expected != actual {
-		return nil, fmt.Errorf("invalid checksum: expected %s, got %s", expected, actual)
+	// Compiling the module to machine code is itself a cacheable action.
+	// Its only declared input is the module's checksum: the embedded wazero
+	// version and the target platform are determined by the sqlc binary,
+	// which is an implicit input of every action. Compiled artifacts are
+	// materialized into a private exec directory for wazero's compilation
+	// cache to find; the authoritative copies live in the CAS. Once wazero
+	// has loaded the module into memory the directory is no longer needed.
+	compileAction := store.NewAction("CompileModule").
+		AddInput("wasm", []byte(expected)).
+		Digest()
+
+	execDir, err := store.ExecDir(compileAction)
+	if err != nil {
+		return nil, err
+	}
+	defer os.RemoveAll(execDir)
+	compiled := true
+	if err := store.Actions.GetTree(compileAction, execDir); errors.Is(err, cache.ErrNotFound) {
+		compiled = false
+	} else if err != nil {
+		return nil, err
 	}
 
-	if staterr != nil {
-		err := os.Mkdir(pluginDir, 0755)
-		if err != nil && !os.IsExist(err) {
-			return nil, fmt.Errorf("mkdirall: %w", err)
-		}
-		if err := os.WriteFile(pluginPath, wmod, 0444); err != nil {
-			return nil, fmt.Errorf("cache wasm: %w", err)
-		}
-	}
-
-	wazeroCache, err := wazero.NewCompilationCacheWithDir(filepath.Join(cache, "wazero"))
+	wazeroCache, err := wazero.NewCompilationCacheWithDir(execDir)
 	if err != nil {
 		return nil, fmt.Errorf("wazero.NewCompilationCacheWithDir: %w", err)
 	}
@@ -155,10 +171,17 @@ func (r *Runner) loadAndCompileWASM(ctx context.Context, cache string, expected 
 	}
 
 	// Compile the Wasm binary once so that we can skip the entire compilation
-	// time during instantiation.
+	// time during instantiation. On an action cache hit this loads the
+	// materialized machine code instead of compiling.
 	code, err := rt.CompileModule(ctx, wmod)
 	if err != nil {
 		return nil, fmt.Errorf("compile module: %w", err)
+	}
+
+	if !compiled {
+		if err := store.Actions.PutTree(compileAction, execDir); err != nil {
+			slog.Warn("caching compiled module failed", "err", err)
+		}
 	}
 
 	return &runtimeAndCode{rt: rt, code: code}, nil

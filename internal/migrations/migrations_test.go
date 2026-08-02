@@ -56,6 +56,17 @@ const outputDbmate = `
 -- migrate:up
 CREATE TABLE foo (bar int);`
 
+const inputPsqlMeta = `\restrict auwherpfqaiuwrhgp
+
+CREATE TABLE foo (id int);
+
+\unrestrict auwherpfqaiuwrhgp
+`
+
+const outputPsqlMeta = `
+CREATE TABLE foo (id int);
+`
+
 func TestRemoveRollback(t *testing.T) {
 	if diff := cmp.Diff(outputGoose, RemoveRollbackStatements(inputGoose)); diff != "" {
 		t.Errorf("goose migration mismatch:\n%s", diff)
@@ -68,6 +79,12 @@ func TestRemoveRollback(t *testing.T) {
 	}
 	if diff := cmp.Diff(outputDbmate, RemoveRollbackStatements(inputDbmate)); diff != "" {
 		t.Errorf("dbmate migration mismatch:\n%s", diff)
+	}
+}
+
+func TestRemovePsqlMetaCommands(t *testing.T) {
+	if diff := cmp.Diff(outputPsqlMeta, RemovePsqlMetaCommands(inputPsqlMeta)); diff != "" {
+		t.Errorf("psql meta-command mismatch:\n%s", diff)
 	}
 }
 

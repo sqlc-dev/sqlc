@@ -110,18 +110,24 @@ func StripComments(sql string) (string, []string, error) {
 		if strings.HasPrefix(t, "# name:") {
 			continue
 		}
-		if strings.HasPrefix(t, "--") {
-			comments = append(comments, strings.TrimPrefix(t, "--"))
+		if after, ok := strings.CutPrefix(t, "--"); ok {
+			comments = append(comments, after)
 			continue
 		}
 		if strings.HasPrefix(t, "/*") && strings.HasSuffix(t, "*/") {
+			// Preserve MySQL optimizer hints, which share block-comment
+			// syntax but are semantically part of the query.
+			if strings.HasPrefix(t, "/*+") {
+				lines = append(lines, t)
+				continue
+			}
 			t = strings.TrimPrefix(t, "/*")
 			t = strings.TrimSuffix(t, "*/")
 			comments = append(comments, t)
 			continue
 		}
-		if strings.HasPrefix(t, "#") {
-			comments = append(comments, strings.TrimPrefix(t, "#"))
+		if after, ok := strings.CutPrefix(t, "#"); ok {
+			comments = append(comments, after)
 			continue
 		}
 		lines = append(lines, t)

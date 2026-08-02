@@ -1,6 +1,7 @@
 package clickhouse
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -471,6 +472,7 @@ func (c *cc) convertBinaryExpr(n *chast.BinaryExpr) ast.Node {
 
 	// Handle other operators
 	return &ast.A_Expr{
+		Kind: ast.A_Expr_Kind_OP,
 		Name: &ast.List{
 			Items: []ast.Node{&ast.String{Str: n.Op}},
 		},
@@ -485,8 +487,8 @@ func (c *cc) convertFunctionCall(n *chast.FunctionCall) *ast.FuncCall {
 		Funcname: &ast.List{
 			Items: []ast.Node{&ast.String{Str: n.Name}},
 		},
-		Location:     n.Pos().Offset,
-		AggDistinct:  n.Distinct,
+		Location:    n.Pos().Offset,
+		AggDistinct: n.Distinct,
 	}
 
 	// Convert arguments
@@ -691,6 +693,7 @@ func (c *cc) convertUnaryExpr(n *chast.UnaryExpr) ast.Node {
 	}
 
 	return &ast.A_Expr{
+		Kind: ast.A_Expr_Kind_OP,
 		Name: &ast.List{
 			Items: []ast.Node{&ast.String{Str: n.Op}},
 		},
@@ -825,15 +828,11 @@ func (c *cc) convertColumnDeclaration(n *chast.ColumnDeclaration) *ast.ColumnDef
 	}
 
 	if n.Type != nil {
-		colDef.TypeName = &ast.TypeName{
-			Name: n.Type.Name,
-		}
-		// Handle type parameters (e.g., Decimal(10, 2))
-		if len(n.Type.Parameters) > 0 {
-			colDef.TypeName.Typmods = &ast.List{}
-			for _, param := range n.Type.Parameters {
-				colDef.TypeName.Typmods.Items = append(colDef.TypeName.Typmods.Items, c.convertExpr(param))
-			}
+		base, isArray, nullable := unwrapTypeString(renderDataType(n.Type))
+		colDef.TypeName = &ast.TypeName{Name: base}
+		colDef.IsArray = isArray
+		if nullable {
+			colDef.IsNotNull = false
 		}
 	}
 
@@ -853,6 +852,92 @@ func (c *cc) convertColumnDeclaration(n *chast.ColumnDeclaration) *ast.ColumnDef
 	}
 
 	return colDef
+}
+
+func renderDataType(dt *chast.DataType) string {
+	if dt == nil {
+		return ""
+	}
+	if len(dt.Parameters) == 0 {
+		return dt.Name
+	}
+	parts := make([]string, 0, len(dt.Parameters))
+	for _, p := range dt.Parameters {
+		parts = append(parts, renderTypeParam(p))
+	}
+	return dt.Name + "(" + strings.Join(parts, ", ") + ")"
+}
+
+func renderTypeParam(e chast.Expression) string {
+	switch v := e.(type) {
+	case *chast.DataType:
+		return renderDataType(v)
+	case *chast.Literal:
+		if v.Source != "" {
+			return v.Source
+		}
+		return fmt.Sprintf("%v", v.Value)
+	case *chast.Identifier:
+		return strings.Join(v.Parts, ".")
+	default:
+		return ""
+	}
+}
+
+func unwrapTypeString(s string) (name string, isArray, nullable bool) {
+	base, args := splitType(s)
+	switch strings.ToLower(base) {
+	case "nullable":
+		if len(args) == 1 {
+			inner, arr, _ := unwrapTypeString(args[0])
+			return inner, arr, true
+		}
+		return strings.ToLower(base), false, true
+	case "lowcardinality":
+		if len(args) == 1 {
+			return unwrapTypeString(args[0])
+		}
+		return strings.ToLower(base), false, false
+	case "array":
+		if len(args) == 1 {
+			inner, _, nul := unwrapTypeString(args[0])
+			return inner, true, nul
+		}
+		return strings.ToLower(base), true, false
+	default:
+		if strings.TrimSpace(base) == "" {
+			return "nothing", false, false
+		}
+		return strings.ToLower(base), false, false
+	}
+}
+
+func splitType(s string) (base string, args []string) {
+	s = strings.TrimSpace(s)
+	open := strings.IndexByte(s, '(')
+	if open < 0 || !strings.HasSuffix(s, ")") {
+		return s, nil
+	}
+	base = strings.TrimSpace(s[:open])
+	inner := s[open+1 : len(s)-1]
+	depth, start := 0, 0
+	for i := 0; i < len(inner); i++ {
+		switch inner[i] {
+		case '(':
+			depth++
+		case ')':
+			depth--
+		case ',':
+			if depth == 0 {
+				args = append(args, strings.TrimSpace(inner[start:i]))
+				start = i + 1
+			}
+		}
+	}
+	if last := strings.TrimSpace(inner[start:]); last != "" {
+		args = append(args, last)
+	}
+	return base, args
 }
 
 func (c *cc) convertUpdateQuery(n *chast.UpdateQuery) *ast.UpdateStmt {

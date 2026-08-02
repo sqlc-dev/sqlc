@@ -6,8 +6,11 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/dbmanager"
+	"github.com/sqlc-dev/sqlc/internal/engine/clickhouse"
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
+	"github.com/sqlc-dev/sqlc/internal/engine/googlesql"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	pganalyze "github.com/sqlc-dev/sqlc/internal/engine/postgresql/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
@@ -26,6 +29,8 @@ type Compiler struct {
 	analyzer analyzer.Analyzer
 	client   dbmanager.Client
 	selector selector
+
+	coreCatalog *core.Catalog
 
 	schema []string
 
@@ -111,6 +116,22 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 				)
 			}
 		}
+	case config.EngineClickHouse:
+		c.parser = clickhouse.NewParser()
+		c.selector = newDefaultSelector()
+		cat, err := core.New(clickhouse.Dialect())
+		if err != nil {
+			return nil, fmt.Errorf("clickhouse: init catalog: %w", err)
+		}
+		c.coreCatalog = cat
+	case config.EngineGoogleSQL:
+		c.parser = googlesql.NewParser()
+		c.selector = newDefaultSelector()
+		cat, err := core.New(googlesql.Dialect())
+		if err != nil {
+			return nil, fmt.Errorf("googlesql: init catalog: %w", err)
+		}
+		c.coreCatalog = cat
 	default:
 		return nil, fmt.Errorf("unknown engine: %s", conf.Engine)
 	}
@@ -144,5 +165,8 @@ func (c *Compiler) Close(ctx context.Context) {
 	}
 	if c.client != nil {
 		c.client.Close(ctx)
+	}
+	if c.coreCatalog != nil {
+		c.coreCatalog.Close()
 	}
 }

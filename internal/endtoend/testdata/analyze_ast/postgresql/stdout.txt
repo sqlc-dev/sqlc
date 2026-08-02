@@ -1,0 +1,122 @@
+[
+  {
+    "name": "GetAuthorName",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "name",
+        "data_type": "text",
+        "not_null": true,
+        "is_array": false,
+        "table": "authors"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "data_type": "bigserial",
+          "not_null": true,
+          "is_array": false,
+          "table": "authors"
+        }
+      }
+    ],
+    "ast": {
+      "Stmt": {
+        "DistinctClause": {
+          "Items": null
+        },
+        "IntoClause": null,
+        "TargetList": {
+          "Items": [
+            {
+              "Name": null,
+              "Indirection": {
+                "Items": null
+              },
+              "Val": {
+                "Name": "",
+                "Fields": {
+                  "Items": [
+                    {
+                      "Str": "name"
+                    }
+                  ]
+                },
+                "Location": 35
+              },
+              "Location": 35
+            }
+          ]
+        },
+        "FromClause": {
+          "Items": [
+            {
+              "Catalogname": null,
+              "Schemaname": null,
+              "Relname": "authors",
+              "Inh": true,
+              "Relpersistence": 112,
+              "Alias": null,
+              "Location": 45
+            }
+          ]
+        },
+        "WhereClause": {
+          "Kind": 1,
+          "Name": {
+            "Items": [
+              {
+                "Str": "="
+              }
+            ]
+          },
+          "Lexpr": {
+            "Name": "",
+            "Fields": {
+              "Items": [
+                {
+                  "Str": "id"
+                }
+              ]
+            },
+            "Location": 59
+          },
+          "Rexpr": {
+            "Number": 1,
+            "Location": 64,
+            "Dollar": true
+          },
+          "Location": 62
+        },
+        "GroupClause": {
+          "Items": null
+        },
+        "HavingClause": {},
+        "WindowClause": {
+          "Items": null
+        },
+        "ValuesLists": {
+          "Items": null
+        },
+        "SortClause": {
+          "Items": null
+        },
+        "LimitOffset": {},
+        "LimitCount": {},
+        "LockingClause": {
+          "Items": null
+        },
+        "WithClause": null,
+        "Op": 0,
+        "All": false,
+        "Larg": null,
+        "Rarg": null
+      },
+      "StmtLocation": 0,
+      "StmtLen": 66
+    }
+  }
+]

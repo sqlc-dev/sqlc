@@ -1,0 +1,31 @@
+[
+  {
+    "start": 0,
+    "end": 106,
+    "dollar": true,
+    "params": [
+      {
+        "number": 1,
+        "location": 22,
+        "origin": 22,
+        "name": "Timezone",
+        "named": true
+      },
+      {
+        "number": 2,
+        "location": 60,
+        "origin": 79,
+        "name": "Timezone",
+        "named": true
+      },
+      {
+        "number": 3,
+        "location": 81,
+        "origin": 119,
+        "name": "calName",
+        "named": true,
+        "nullable": true
+      }
+    ]
+  }
+]

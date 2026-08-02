@@ -1,0 +1,24 @@
+[
+  {
+    "start": 0,
+    "end": 40,
+    "dollar": true,
+    "params": [
+      {
+        "number": 1,
+        "location": 37,
+        "origin": 47,
+        "name": "id",
+        "named": true
+      }
+    ],
+    "embeds": [
+      {
+        "table": "users",
+        "location": 7,
+        "origin": 7,
+        "orig": "sqlc.embed(users)"
+      }
+    ]
+  }
+]

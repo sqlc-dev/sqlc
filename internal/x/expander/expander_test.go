@@ -3,19 +3,18 @@ package expander
 import (
 	"context"
 	"database/sql"
-	"database/sql/driver"
-	"fmt"
 	"os"
 	"testing"
 
-	"github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/ncruces/go-sqlite3"
-	_ "github.com/ncruces/go-sqlite3/embed"
 
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
+	"github.com/sqlc-dev/sqlc/internal/sqltest/docker"
+	"github.com/sqlc-dev/sqlc/internal/sqltest/native"
 )
 
 // PostgreSQLColumnGetter implements ColumnGetter for PostgreSQL using pgxpool.
@@ -43,46 +42,28 @@ func (g *PostgreSQLColumnGetter) GetColumnNames(ctx context.Context, query strin
 	return columns, nil
 }
 
-// MySQLColumnGetter implements ColumnGetter for MySQL using the forked driver's StmtMetadata.
+// MySQLColumnGetter implements ColumnGetter for MySQL. Column names are read
+// from the result set metadata returned by executing the query; the test
+// tables are empty, so no real rows are transferred.
+//
+// An earlier implementation pulled column metadata straight out of a prepared
+// statement via a forked mysql driver exposing StmtMetadata. That fork
+// required a `replace` directive in go.mod, which broke `go install
+// github.com/sqlc-dev/sqlc/cmd/sqlc@latest` (see
+// https://github.com/sqlc-dev/sqlc/issues/4397). Reading columns from sql.Rows
+// works with the upstream driver and keeps the test covering the same
+// behavior.
 type MySQLColumnGetter struct {
 	db *sql.DB
 }
 
 func (g *MySQLColumnGetter) GetColumnNames(ctx context.Context, query string) ([]string, error) {
-	conn, err := g.db.Conn(ctx)
+	rows, err := g.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
-
-	var columns []string
-	err = conn.Raw(func(driverConn any) error {
-		preparer, ok := driverConn.(driver.ConnPrepareContext)
-		if !ok {
-			return fmt.Errorf("driver connection does not support PrepareContext")
-		}
-
-		stmt, err := preparer.PrepareContext(ctx, query)
-		if err != nil {
-			return err
-		}
-		defer stmt.Close()
-
-		meta, ok := stmt.(mysql.StmtMetadata)
-		if !ok {
-			return fmt.Errorf("prepared statement does not implement StmtMetadata")
-		}
-
-		for _, col := range meta.ColumnMetadata() {
-			columns = append(columns, col.Name)
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return columns, nil
+	defer rows.Close()
+	return rows.Columns()
 }
 
 // SQLiteColumnGetter implements ColumnGetter for SQLite using the native ncruces/go-sqlite3 API.
@@ -101,7 +82,7 @@ func (g *SQLiteColumnGetter) GetColumnNames(ctx context.Context, query string) (
 	// Get column names from the prepared statement
 	count := stmt.ColumnCount()
 	columns := make([]string, count)
-	for i := 0; i < count; i++ {
+	for i := range count {
 		columns[i] = stmt.ColumnName(i)
 	}
 
@@ -109,13 +90,26 @@ func (g *SQLiteColumnGetter) GetColumnNames(ctx context.Context, query string) (
 }
 
 func TestExpandPostgreSQL(t *testing.T) {
-	// Skip if no database connection available
+	ctx := context.Background()
+
 	uri := os.Getenv("POSTGRESQL_SERVER_URI")
 	if uri == "" {
-		uri = "postgres://postgres:mysecretpassword@localhost:5432/postgres"
+		if err := docker.Installed(); err == nil {
+			u, err := docker.StartPostgreSQLServer(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			uri = u
+		} else if err := native.Supported(); err == nil {
+			u, err := native.StartPostgreSQLServer(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			uri = u
+		} else {
+			t.Skip("POSTGRESQL_SERVER_URI is empty and neither Docker nor native installation is available")
+		}
 	}
-
-	ctx := context.Background()
 
 	pool, err := pgxpool.New(ctx, uri)
 	if err != nil {
@@ -235,31 +229,26 @@ func TestExpandPostgreSQL(t *testing.T) {
 }
 
 func TestExpandMySQL(t *testing.T) {
-	// Get MySQL connection parameters
-	user := os.Getenv("MYSQL_USER")
-	if user == "" {
-		user = "root"
-	}
-	pass := os.Getenv("MYSQL_ROOT_PASSWORD")
-	if pass == "" {
-		pass = "mysecretpassword"
-	}
-	host := os.Getenv("MYSQL_HOST")
-	if host == "" {
-		host = "127.0.0.1"
-	}
-	port := os.Getenv("MYSQL_PORT")
-	if port == "" {
-		port = "3306"
-	}
-	dbname := os.Getenv("MYSQL_DATABASE")
-	if dbname == "" {
-		dbname = "dinotest"
-	}
-
-	source := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?multiStatements=true&parseTime=true", user, pass, host, port, dbname)
-
 	ctx := context.Background()
+
+	source := os.Getenv("MYSQL_SERVER_URI")
+	if source == "" {
+		if err := docker.Installed(); err == nil {
+			u, err := docker.StartMySQLServer(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			source = u
+		} else if err := native.Supported(); err == nil {
+			u, err := native.StartMySQLServer(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			source = u
+		} else {
+			t.Skip("MYSQL_SERVER_URI is empty and neither Docker nor native installation is available")
+		}
+	}
 
 	db, err := sql.Open("mysql", source)
 	if err != nil {

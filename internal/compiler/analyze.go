@@ -8,7 +8,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
-	"github.com/sqlc-dev/sqlc/internal/sql/rewrite"
+	"github.com/sqlc-dev/sqlc/internal/sql/preprocess"
 	"github.com/sqlc-dev/sqlc/internal/sql/validate"
 )
 
@@ -114,15 +114,15 @@ func combineAnalysis(prev *analysis, a *analyzer.Analysis) *analysis {
 	return prev
 }
 
-func (c *Compiler) analyzeQuery(raw *ast.RawStmt, query string) (*analysis, error) {
-	return c._analyzeQuery(raw, query, true)
+func (c *Compiler) analyzeQuery(raw *ast.RawStmt, query string, pre *preprocess.Statement) (*analysis, error) {
+	return c._analyzeQuery(raw, query, pre, true)
 }
 
-func (c *Compiler) inferQuery(raw *ast.RawStmt, query string) (*analysis, error) {
-	return c._analyzeQuery(raw, query, false)
+func (c *Compiler) inferQuery(raw *ast.RawStmt, query string, pre *preprocess.Statement) (*analysis, error) {
+	return c._analyzeQuery(raw, query, pre, false)
 }
 
-func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) (*analysis, error) {
+func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, pre *preprocess.Statement, failfast bool) (*analysis, error) {
 	errors := make([]error, 0)
 	check := func(err error) error {
 		if failfast {
@@ -134,22 +134,22 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 		return nil
 	}
 
-	numbers, dollar, err := validate.ParamRef(raw)
-	if err := check(err); err != nil {
+	dollar := pre.Dollar
+	if err := check(pre.ParamErr); err != nil {
 		return nil, err
 	}
 
-	raw, namedParams, edits := rewrite.NamedParameters(c.conf.Engine, raw, numbers, dollar)
+	namedParams := pre.Params
 
 	var table *ast.TableName
 	switch n := raw.Stmt.(type) {
 	case *ast.InsertStmt:
-		if err := check(validate.InsertStmt(n)); err != nil {
-			return nil, err
-		}
 		var err error
 		table, err = ParseTableName(n.Relation)
 		if err := check(err); err != nil {
+			return nil, err
+		}
+		if err := check(validate.InsertStmt(c.catalog, table, n)); err != nil {
 			return nil, err
 		}
 	}
@@ -158,7 +158,7 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 		return nil, err
 	}
 
-	if err := check(validate.In(c.catalog, raw)); err != nil {
+	if err := check(validate.Slice(raw, pre.Slices)); err != nil {
 		return nil, err
 	}
 	rvs := rangeVars(raw.Stmt)
@@ -175,7 +175,7 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 	} else {
 		sort.Slice(refs, func(i, j int) bool { return refs[i].ref.Number < refs[j].ref.Number })
 	}
-	raw, embeds := rewrite.Embeds(raw)
+	embeds := pre.Embeds
 	qc, err := c.buildQueryCatalog(c.catalog, raw.Stmt, embeds)
 	if err := check(err); err != nil {
 		return nil, err
@@ -190,11 +190,10 @@ func (c *Compiler) _analyzeQuery(raw *ast.RawStmt, query string, failfast bool) 
 		return nil, err
 	}
 
-	expandEdits, err := c.expand(qc, raw)
+	edits, err := c.expand(qc, raw)
 	if check(err); err != nil {
 		return nil, err
 	}
-	edits = append(edits, expandEdits...)
 	expanded, err := source.Mutate(query, edits)
 	if err != nil {
 		return nil, err

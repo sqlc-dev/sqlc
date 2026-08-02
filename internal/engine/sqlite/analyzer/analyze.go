@@ -7,22 +7,23 @@ import (
 	"sync"
 
 	"github.com/ncruces/go-sqlite3"
-	_ "github.com/ncruces/go-sqlite3/embed"
 
 	core "github.com/sqlc-dev/sqlc/internal/analysis"
 	"github.com/sqlc-dev/sqlc/internal/config"
-	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/shfmt"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
+	"github.com/sqlc-dev/sqlc/internal/sqlcdebug"
+	_ "github.com/sqlc-dev/sqlc/internal/sqlite3ext"
 )
+
+var debugDatabases = sqlcdebug.New("databases")
 
 type Analyzer struct {
 	db       config.Database
 	conn     *sqlite3.Conn
-	dbg      opts.Debug
 	replacer *shfmt.Replacer
 	mu       sync.Mutex
 }
@@ -30,7 +31,6 @@ type Analyzer struct {
 func New(db config.Database) *Analyzer {
 	return &Analyzer{
 		db:       db,
-		dbg:      opts.DebugFromEnv(),
 		replacer: shfmt.NewReplacer(nil),
 	}
 }
@@ -45,7 +45,7 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 		if a.db.Managed {
 			// For managed databases, create an in-memory database
 			uri = ":memory:"
-		} else if a.dbg.OnlyManagedDatabases {
+		} else if debugDatabases.Value() == "managed" {
 			return nil, fmt.Errorf("database: connections disabled via SQLCDEBUG=databases=managed")
 		} else {
 			uri = a.replacer.Replace(a.db.URI)
@@ -87,20 +87,23 @@ func (a *Analyzer) Analyze(ctx context.Context, n ast.Node, query string, migrat
 
 	// Get column information
 	colCount := stmt.ColumnCount()
-	for i := 0; i < colCount; i++ {
+	for i := range colCount {
 		name := stmt.ColumnName(i)
 		declType := stmt.ColumnDeclType(i)
+		dbName := stmt.ColumnDatabaseName(i)
 		tableName := stmt.ColumnTableName(i)
 		originName := stmt.ColumnOriginName(i)
-		dbName := stmt.ColumnDatabaseName(i)
-
-		// Normalize the data type
-		dataType := normalizeType(declType)
 
 		// Determine if column is NOT NULL
-		// SQLite doesn't provide this info directly from prepared statements,
-		// so we default to nullable (false)
-		notNull := false
+		var notNull bool
+		var dataType string
+		if originName != "" {
+			declType, _, notNull, _, _, _ = a.conn.TableColumnMetadata(
+				dbName, tableName, originName)
+		}
+
+		// Normalize the data type
+		dataType = normalizeType(declType)
 
 		col := &core.Column{
 			Name:         name,
@@ -198,7 +201,7 @@ func (a *Analyzer) EnsureConn(ctx context.Context, migrations []string) error {
 	if a.db.Managed {
 		// For managed databases, create an in-memory database
 		uri = ":memory:"
-	} else if a.dbg.OnlyManagedDatabases {
+	} else if debugDatabases.Value() == "managed" {
 		return fmt.Errorf("database: connections disabled via SQLCDEBUG=databases=managed")
 	} else {
 		uri = a.replacer.Replace(a.db.URI)
@@ -249,7 +252,7 @@ func (a *Analyzer) GetColumnNames(ctx context.Context, query string) ([]string, 
 
 	colCount := stmt.ColumnCount()
 	columns := make([]string, colCount)
-	for i := 0; i < colCount; i++ {
+	for i := range colCount {
 		columns[i] = stmt.ColumnName(i)
 	}
 
