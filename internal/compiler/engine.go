@@ -32,8 +32,12 @@ type Compiler struct {
 
 	coreCatalog *core.Catalog
 
-	// coreAnalysis routes every engine through the core catalog and analyzer.
+	// coreAnalysis routes every engine through the core catalog and analyzer,
+	// and coreDialect seeds the catalog it does so with. The catalog itself is
+	// not built until the schema is loaded, because the two are cached
+	// together.
 	coreAnalysis bool
+	coreDialect  core.Option
 
 	schema []string
 
@@ -178,11 +182,7 @@ func (c *Compiler) initCore() error {
 	default:
 		return fmt.Errorf("unknown engine: %s", c.conf.Engine)
 	}
-	cat, err := core.New(dialect)
-	if err != nil {
-		return fmt.Errorf("%s: init catalog: %w", c.conf.Engine, err)
-	}
-	c.coreCatalog = cat
+	c.coreDialect = dialect
 	return nil
 }
 

@@ -30,29 +30,9 @@ func WithSeed(fn func(*Catalog) error) Option {
 }
 
 func New(opts ...Option) (*Catalog, error) {
-	db, err := sql.Open("sqlite", ":memory:")
+	db, err := openDB()
 	if err != nil {
-		return nil, fmt.Errorf("core: open catalog: %w", err)
-	}
-	// Every ":memory:" connection is its own empty database, so the pool has to
-	// be pinned to a single connection that is never retired — otherwise a
-	// second connection would see a catalog with no tables in it.
-	db.SetMaxOpenConns(1)
-	db.SetMaxIdleConns(1)
-	db.SetConnMaxIdleTime(0)
-	db.SetConnMaxLifetime(0)
-
-	// The catalog is scratch state rebuilt on every run and never read back
-	// from disk, so durability buys nothing and costs a journal write per
-	// statement.
-	for _, pragma := range []string{
-		"PRAGMA journal_mode = OFF",
-		"PRAGMA synchronous = OFF",
-	} {
-		if _, err := db.Exec(pragma); err != nil {
-			db.Close()
-			return nil, fmt.Errorf("core: %s: %w", pragma, err)
-		}
+		return nil, err
 	}
 
 	// catalogdef.Schema is a batch of DDL statements, so it goes to the
@@ -82,6 +62,35 @@ func New(opts ...Option) (*Catalog, error) {
 		return nil, fmt.Errorf("core: commit setup: %w", err)
 	}
 	return c, nil
+}
+
+// openDB opens the empty SQLite database a catalog is kept in.
+func openDB() (*sql.DB, error) {
+	db, err := sql.Open("sqlite", ":memory:")
+	if err != nil {
+		return nil, fmt.Errorf("core: open catalog: %w", err)
+	}
+	// Every ":memory:" connection is its own empty database, so the pool has to
+	// be pinned to a single connection that is never retired — otherwise a
+	// second connection would see a catalog with no tables in it.
+	db.SetMaxOpenConns(1)
+	db.SetMaxIdleConns(1)
+	db.SetConnMaxIdleTime(0)
+	db.SetConnMaxLifetime(0)
+
+	// The catalog is scratch state rebuilt on every run and never read back
+	// from disk, so durability buys nothing and costs a journal write per
+	// statement.
+	for _, pragma := range []string{
+		"PRAGMA journal_mode = OFF",
+		"PRAGMA synchronous = OFF",
+	} {
+		if _, err := db.Exec(pragma); err != nil {
+			db.Close()
+			return nil, fmt.Errorf("core: %s: %w", pragma, err)
+		}
+	}
+	return db, nil
 }
 
 func (c *Catalog) setup(opts []Option) error {

@@ -897,6 +897,19 @@ func (q *Queries) ResolveColumn(ctx context.Context, arg ResolveColumnParams) (R
 	return i, err
 }
 
+const seededDialect = `-- name: SeededDialect :one
+SELECT oid, name FROM sql_dialect ORDER BY oid LIMIT 1
+`
+
+// The dialect a catalog was seeded with. A catalog is built for exactly one,
+// so a restored catalog finds it without being told its name.
+func (q *Queries) SeededDialect(ctx context.Context) (SqlDialect, error) {
+	row := q.db.QueryRowContext(ctx, seededDialect)
+	var i SqlDialect
+	err := row.Scan(&i.Oid, &i.Name)
+	return i, err
+}
+
 const setAttributeNotNull = `-- name: SetAttributeNotNull :exec
 UPDATE sql_attribute SET not_null = ?1
 WHERE class_oid = ?2 AND name = ?3

@@ -20,6 +20,11 @@ INSERT INTO sql_dialect (name) VALUES (?);
 -- name: DialectOID :one
 SELECT oid FROM sql_dialect WHERE name = ?;
 
+-- name: SeededDialect :one
+-- The dialect a catalog was seeded with. A catalog is built for exactly one,
+-- so a restored catalog finds it without being told its name.
+SELECT oid, name FROM sql_dialect ORDER BY oid LIMIT 1;
+
 -- name: SetDialectFlag :exec
 INSERT INTO sql_dialect_flag (dialect_oid, key, value)
 VALUES (?, ?, ?)

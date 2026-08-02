@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/sqlc-dev/sqlc/internal/core"
 	coreschema "github.com/sqlc-dev/sqlc/internal/core/schema"
 	"github.com/sqlc-dev/sqlc/internal/migrations"
 	"github.com/sqlc-dev/sqlc/internal/multierr"
@@ -28,31 +29,64 @@ type Parser interface {
 	IsReservedKeyword(string) bool
 }
 
+// schemaFile is a schema file's contents, after the rewrites that are applied
+// before any of it is parsed.
+type schemaFile struct {
+	name     string
+	contents string
+}
+
 func (c *Compiler) parseCatalog(schemas []string) error {
-	files, err := sqlpath.Glob(schemas)
+	paths, err := sqlpath.Glob(schemas)
 	if err != nil {
 		return err
 	}
+
 	merr := multierr.New()
-	for _, filename := range files {
-		blob, err := os.ReadFile(filename)
+	files := make([]schemaFile, 0, len(paths))
+	for _, path := range paths {
+		blob, err := os.ReadFile(path)
 		if err != nil {
-			merr.Add(filename, "", 0, err)
+			merr.Add(path, "", 0, err)
 			continue
 		}
 		contents := migrations.RemoveRollbackStatements(string(blob))
 		contents = migrations.RemovePsqlMetaCommands(contents)
+		files = append(files, schemaFile{name: path, contents: contents})
 		c.schema = append(c.schema, contents)
+	}
 
+	if c.coreAnalysis {
+		// A schema file that could not be read is not part of the schema the
+		// action was keyed on, so there is no catalog to restore and nothing
+		// further to report.
+		if len(merr.Errs()) > 0 {
+			return merr
+		}
+		if err := c.parseCatalogCore(files, merr); err != nil {
+			return err
+		}
+	} else {
+		c.parseCatalogLegacy(files, merr)
+	}
+
+	if len(merr.Errs()) > 0 {
+		return merr
+	}
+	return nil
+}
+
+func (c *Compiler) parseCatalogLegacy(files []schemaFile, merr *multierr.Error) {
+	for _, file := range files {
 		// In database-only mode, we parse the schema to validate syntax
 		// but don't update the catalog - the database will be the source of truth
-		stmts, err := c.parser.Parse(strings.NewReader(contents))
+		stmts, err := c.parser.Parse(strings.NewReader(file.contents))
 		if err != nil {
 			// A schema file and a query file are often the same file, so a
 			// query's sqlc syntax can fail here. Look for an explanation
 			// before reporting the syntax error it caused.
-			if reported := addSyntaxErrors(merr, filename, contents, preprocess.File(c.conf.Engine, contents)); !reported {
-				merr.Add(filename, contents, 0, err)
+			if reported := addSyntaxErrors(merr, file.name, file.contents, preprocess.File(c.conf.Engine, file.contents)); !reported {
+				merr.Add(file.name, file.contents, 0, err)
 			}
 			continue
 		}
@@ -62,26 +96,57 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 			continue
 		}
 
-		if c.coreCatalog != nil {
-			for i := range stmts {
-				if err := coreschema.Apply(c.coreCatalog, stmts[i].Raw); err != nil {
-					merr.Add(filename, contents, stmts[i].Pos(), err)
-					continue
-				}
-			}
-			continue
-		}
-
 		for i := range stmts {
 			if err := c.catalog.Update(stmts[i], c); err != nil {
-				merr.Add(filename, contents, stmts[i].Pos(), err)
+				merr.Add(file.name, file.contents, stmts[i].Pos(), err)
 				continue
 			}
 		}
 	}
-	if len(merr.Errs()) > 0 {
-		return merr
+}
+
+// parseCatalogCore builds the catalog the analysis core works against: the
+// dialect's seed with the schema's DDL applied. The two are one cached action,
+// so a run that has built this catalog before restores it and never parses the
+// schema at all.
+func (c *Compiler) parseCatalogCore(files []schemaFile, merr *multierr.Error) error {
+	contents := make([]string, 0, len(files))
+	for _, file := range files {
+		contents = append(contents, file.contents)
 	}
+
+	cat, err := core.NewCached(string(c.conf.Engine), contents, func(cat *core.Catalog) error {
+		for _, file := range files {
+			stmts, err := c.parser.Parse(strings.NewReader(file.contents))
+			if err != nil {
+				// A schema file and a query file are often the same file, so a
+				// query's sqlc syntax can fail here. Look for an explanation
+				// before reporting the syntax error it caused.
+				if reported := addSyntaxErrors(merr, file.name, file.contents, preprocess.File(c.conf.Engine, file.contents)); !reported {
+					merr.Add(file.name, file.contents, 0, err)
+				}
+				continue
+			}
+			for i := range stmts {
+				if err := coreschema.Apply(cat, stmts[i].Raw); err != nil {
+					merr.Add(file.name, file.contents, stmts[i].Pos(), err)
+					continue
+				}
+			}
+		}
+		// A catalog the whole schema did not make it into is not the catalog
+		// this action describes, so it is not one to keep.
+		if len(merr.Errs()) > 0 {
+			return merr
+		}
+		return nil
+	}, c.coreDialect)
+
+	if cat == nil {
+		return fmt.Errorf("%s: init catalog: %w", c.conf.Engine, err)
+	}
+	// Whatever apply reported is already in merr, which the caller returns.
+	c.coreCatalog = cat
 	return nil
 }
 
