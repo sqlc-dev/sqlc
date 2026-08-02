@@ -1892,6 +1892,50 @@ func convertLockingClause(n *pg.LockingClause) *ast.LockingClause {
 	}
 }
 
+func convertMergeStmt(n *pg.MergeStmt) *ast.MergeStmt {
+	if n == nil {
+		return nil
+	}
+	return &ast.MergeStmt{
+		Relation:         convertRangeVar(n.Relation),
+		SourceRelation:   convertNode(n.SourceRelation),
+		JoinCondition:    convertNode(n.JoinCondition),
+		MergeWhenClauses: convertSlice(n.MergeWhenClauses),
+		ReturningList:    convertSlice(n.ReturningList),
+		WithClause:       convertWithClause(n.WithClause),
+	}
+}
+
+func convertMergeWhenClause(n *pg.MergeWhenClause) *ast.MergeWhenClause {
+	if n == nil {
+		return nil
+	}
+	return &ast.MergeWhenClause{
+		MatchKind:   ast.MergeMatchKind(n.MatchKind),
+		CommandType: ast.CmdType(n.CommandType),
+		Override:    ast.OverridingKind(n.Override),
+		Condition:   convertNode(n.Condition),
+		TargetList:  convertSlice(n.TargetList),
+		Values:      convertSlice(n.Values),
+	}
+}
+
+func convertMergeSupportFunc(n *pg.MergeSupportFunc) *ast.FuncCall {
+	if n == nil {
+		return nil
+	}
+	// PostgreSQL 17 parses merge_action() as a dedicated MergeSupportFunc node
+	// rather than a generic function call. Represent it as a FuncCall so the
+	// catalog can resolve its return type (text) and it formats back to
+	// merge_action().
+	return &ast.FuncCall{
+		Func:     &ast.FuncName{Name: "merge_action"},
+		Funcname: &ast.List{Items: []ast.Node{&ast.String{Str: "merge_action"}}},
+		Args:     &ast.List{},
+		Location: int(n.Location),
+	}
+}
+
 func convertMinMaxExpr(n *pg.MinMaxExpr) *ast.MinMaxExpr {
 	if n == nil {
 		return nil
@@ -3417,6 +3461,15 @@ func convertNode(node *pg.Node) ast.Node {
 
 	case *pg.Node_LockingClause:
 		return convertLockingClause(n.LockingClause)
+
+	case *pg.Node_MergeStmt:
+		return convertMergeStmt(n.MergeStmt)
+
+	case *pg.Node_MergeWhenClause:
+		return convertMergeWhenClause(n.MergeWhenClause)
+
+	case *pg.Node_MergeSupportFunc:
+		return convertMergeSupportFunc(n.MergeSupportFunc)
 
 	case *pg.Node_MinMaxExpr:
 		return convertMinMaxExpr(n.MinMaxExpr)
