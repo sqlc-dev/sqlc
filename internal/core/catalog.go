@@ -64,23 +64,40 @@ func New(opts ...Option) (*Catalog, error) {
 	return c, nil
 }
 
-// openDB opens the empty SQLite database a catalog is kept in.
+// openFile opens a catalog held in a file, read only. The file is named after
+// the hash of its contents, so it can never change under a reader: SQLite is
+// told as much, which lets any number of processes share it with no locking
+// and no copy.
+func openFile(path string) (*sql.DB, error) {
+	db, err := sql.Open("sqlite", "file:"+path+"?mode=ro&immutable=1")
+	if err != nil {
+		return nil, fmt.Errorf("core: open catalog %s: %w", path, err)
+	}
+	pinPool(db)
+	return db, nil
+}
+
+// pinPool holds the catalog to a single connection that is never retired.
+// Every ":memory:" connection is its own empty database, so a second one would
+// see a catalog with no tables in it; a catalog read from a file has no such
+// constraint, but has no use for more connections either.
+func pinPool(db *sql.DB) {
+	db.SetMaxOpenConns(1)
+	db.SetMaxIdleConns(1)
+	db.SetConnMaxIdleTime(0)
+	db.SetConnMaxLifetime(0)
+}
+
+// openDB opens the empty SQLite database a catalog is built in.
 func openDB() (*sql.DB, error) {
 	db, err := sql.Open("sqlite", ":memory:")
 	if err != nil {
 		return nil, fmt.Errorf("core: open catalog: %w", err)
 	}
-	// Every ":memory:" connection is its own empty database, so the pool has to
-	// be pinned to a single connection that is never retired — otherwise a
-	// second connection would see a catalog with no tables in it.
-	db.SetMaxOpenConns(1)
-	db.SetMaxIdleConns(1)
-	db.SetConnMaxIdleTime(0)
-	db.SetConnMaxLifetime(0)
+	pinPool(db)
 
-	// The catalog is scratch state rebuilt on every run and never read back
-	// from disk, so durability buys nothing and costs a journal write per
-	// statement.
+	// The catalog being built is scratch state that is never read back from
+	// disk, so durability buys nothing and costs a journal write per statement.
 	for _, pragma := range []string{
 		"PRAGMA journal_mode = OFF",
 		"PRAGMA synchronous = OFF",

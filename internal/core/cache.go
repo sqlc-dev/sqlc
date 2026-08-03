@@ -18,7 +18,6 @@ const catalogOutput = "catalog.db"
 // implements on its connections.
 type serializer interface {
 	Serialize() ([]byte, error)
-	Deserialize([]byte) error
 }
 
 // NewCached returns the catalog a dialect and a schema produce, restored from
@@ -27,8 +26,8 @@ type serializer interface {
 // Producing one means seeding the dialect — thousands of rows, since
 // PostgreSQL's functions and system catalogs alone run to five figures — and
 // then parsing the schema and applying its DDL. The result is the same every
-// time, so the finished database is serialized into the cache and
-// deserialized back on the next run, turning all of that work into one read.
+// time, so the finished database is stored in the cache and opened directly on
+// the next run, turning all of that work into opening a file.
 // It is a single action: the dialect and the schema together are what the
 // catalog is, so they are one key, and a hit means apply is never called.
 //
@@ -81,23 +80,21 @@ func openAction(dialect string, schema []string) (*cache.Cache, cache.Digest) {
 	return store, action.Digest()
 }
 
-// restore opens the catalog a previous run cached.
+// restore opens the catalog a previous run cached. The stored blob is opened
+// where it lies rather than copied: analysis only ever reads the catalog, so
+// every run that wants this one reads the same file.
 func restore(store *cache.Cache, action cache.Digest) (*Catalog, error) {
 	result, err := store.Actions.Get(action)
 	if err != nil {
 		return nil, err
 	}
-	blob, err := store.CAS.Get(result.Outputs[catalogOutput])
-	if err != nil {
-		return nil, err
+	path, ok := store.CAS.Filename(result.Outputs[catalogOutput])
+	if !ok {
+		return nil, cache.ErrNotFound
 	}
 
-	db, err := openDB()
+	db, err := openFile(path)
 	if err != nil {
-		return nil, err
-	}
-	if err := deserialize(db, blob); err != nil {
-		db.Close()
 		return nil, err
 	}
 
@@ -130,7 +127,8 @@ func save(store *cache.Cache, action cache.Digest, cat *Catalog) error {
 	})
 }
 
-// serialize returns the bytes a database would be written to disk as.
+// serialize returns the bytes a database being built in memory would be
+// written to disk as, which is what gets stored.
 func serialize(db *sql.DB) ([]byte, error) {
 	var blob []byte
 	err := withRawConn(db, func(s serializer) error {
@@ -142,18 +140,6 @@ func serialize(db *sql.DB) ([]byte, error) {
 		return nil, fmt.Errorf("core: serialize catalog: %w", err)
 	}
 	return blob, nil
-}
-
-// deserialize loads a serialized database into an open one. The pool is
-// pinned to a single connection, so the connection this replaces the contents
-// of is the only one the catalog will ever use.
-func deserialize(db *sql.DB, blob []byte) error {
-	if err := withRawConn(db, func(s serializer) error {
-		return s.Deserialize(blob)
-	}); err != nil {
-		return fmt.Errorf("core: deserialize catalog: %w", err)
-	}
-	return nil
 }
 
 func withRawConn(db *sql.DB, fn func(serializer) error) error {

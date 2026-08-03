@@ -41,6 +41,19 @@ func (c *CAS) path(d Digest) string {
 	return filepath.Join("cas", d.Hash[:2], d.Hash)
 }
 
+// Filename returns the path of a stored blob, for a consumer that needs the
+// file rather than its bytes — SQLite, for one, opens a database by name. A
+// blob is named after the hash of its contents, so the file at this path never
+// changes and any number of processes may read it at once.
+//
+// It reports false when the blob is not stored.
+func (c *CAS) Filename(d Digest) (string, bool) {
+	if !c.Contains(d) {
+		return "", false
+	}
+	return filepath.Join(c.root.Name(), c.path(d)), true
+}
+
 // createTemp creates a staging file under tmp/ in the cache root, returning
 // the open file and its root-relative name.
 func (c *CAS) createTemp(prefix string) (*os.File, string, error) {
