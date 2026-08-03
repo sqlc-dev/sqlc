@@ -30,7 +30,7 @@ func (a *analyzer) projectTarget(rt *ast.ResTarget) error {
 		SourceClassOID:     t.sourceClassOID,
 		SourceAttributeOID: t.sourceAttributeOID,
 	}
-	col.DataType, col.IsArray = a.dataType(t.typeOID)
+	col.DataType, col.IsArray = a.typeNameOf(t)
 	a.decorateSource(&col, t.sourceAttributeOID, t.sourceTableAlias)
 	a.columns = append(a.columns, col)
 	return nil
@@ -97,7 +97,7 @@ func (a *analyzer) emitStar(fields []string) {
 				SourceClassOID:     rel.classOID,
 				SourceAttributeOID: c.AttOID,
 			}
-			col.DataType, col.IsArray = a.dataType(c.TypeOID)
+			col.DataType, col.IsArray = a.typeNameOf(exprType{typeOID: c.TypeOID})
 			a.decorateSource(&col, c.AttOID, rel.alias)
 			a.columns = append(a.columns, col)
 		}

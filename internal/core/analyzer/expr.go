@@ -9,7 +9,12 @@ import (
 )
 
 type exprType struct {
-	typeOID            int64
+	typeOID int64
+	// typeName names a type the catalog does not hold — a cast to a type no
+	// dialect seeded and no schema declared, or an array of one. Analysis
+	// never adds a type: it reports the name the query used and carries on,
+	// so a query can be analyzed against a catalog it cannot write to.
+	typeName           string
 	nullable           bool
 	sourceClassOID     int64
 	sourceAttributeOID int64
@@ -202,9 +207,9 @@ func (a *analyzer) inferParam(number int, t exprType) {
 	if !ok {
 		cur = core.Parameter{Number: number}
 	}
-	if cur.TypeOID == 0 && t.typeOID != 0 {
+	if cur.TypeOID == 0 && cur.DataType == "" && (t.typeOID != 0 || t.typeName != "") {
 		cur.TypeOID = t.typeOID
-		cur.DataType, cur.IsArray = a.dataType(t.typeOID)
+		cur.DataType, cur.IsArray = a.typeNameOf(t)
 		cur.NotNull = !t.nullable
 	}
 	if cur.Source == nil && t.sourceAttributeOID != 0 {
@@ -413,22 +418,36 @@ func (a *analyzer) typeArrayExpr(e *ast.A_ArrayExpr) (exprType, error) {
 	if err != nil {
 		return exprType{}, err
 	}
-	if elemT.typeOID == 0 {
+	element, _ := a.typeNameOf(elemT)
+	if element == "" {
 		return exprType{}, nil
 	}
-	name, err := a.cat.TypeName(elemT.typeOID)
-	if err != nil {
-		return exprType{}, nil
+	return a.namedType(element + core.ArraySuffix), nil
+}
+
+// namedType is the type a name refers to, or the name itself when the catalog
+// has no such type.
+func (a *analyzer) namedType(name string) exprType {
+	if oid, err := a.cat.TypeOID(name); err == nil {
+		return exprType{typeOID: oid}
 	}
-	arrayName := name + core.ArraySuffix
-	oid, err := a.cat.TypeOID(arrayName)
-	if err != nil {
-		oid, err = a.cat.CreateArrayType(arrayName, elemT.typeOID)
-		if err != nil {
-			return exprType{}, err
+	return exprType{typeName: name}
+}
+
+// typeNameOf reports a type's name and whether it is an array of that name,
+// whether the type is one the catalog holds or one only the query named.
+func (a *analyzer) typeNameOf(t exprType) (string, bool) {
+	name := t.typeName
+	if t.typeOID != 0 {
+		var err error
+		if name, err = a.cat.TypeName(t.typeOID); err != nil {
+			return "", false
 		}
 	}
-	return exprType{typeOID: oid}, nil
+	if element, ok := strings.CutSuffix(name, core.ArraySuffix); ok {
+		return element, true
+	}
+	return name, false
 }
 
 // typeSubLink types a subquery used as an expression: EXISTS and IN yield a
@@ -497,7 +516,7 @@ func (a *analyzer) typeNullIf(e *ast.A_Expr) (exprType, error) {
 // placeholder that type.
 func (a *analyzer) typeOperands(n ast.Node, other exprType) error {
 	if pr, ok := n.(*ast.ParamRef); ok {
-		if other.typeOID != 0 {
+		if other.typeOID != 0 || other.typeName != "" {
 			a.inferParam(pr.Number, other)
 		}
 		return nil
@@ -710,13 +729,14 @@ func (a *analyzer) typeTypeCast(c *ast.TypeCast) (exprType, error) {
 	if c.TypeName == nil {
 		return exprType{}, fmt.Errorf("cast: missing target type")
 	}
-	oid, err := a.cat.ResolveType(c.TypeName)
-	if err != nil {
-		return exprType{}, fmt.Errorf("cast target %q: %w", core.TypeNameString(c.TypeName), err)
+	name := core.TypeNameString(c.TypeName)
+	if name == "" {
+		return exprType{}, fmt.Errorf("cast: missing target type")
 	}
+	t := a.namedType(name)
 	// A cast is how a query says what an otherwise untyped placeholder holds.
-	if err := a.typeOperands(c.Arg, exprType{typeOID: oid}); err != nil {
+	if err := a.typeOperands(c.Arg, t); err != nil {
 		return exprType{}, err
 	}
-	return exprType{typeOID: oid}, nil
+	return t, nil
 }

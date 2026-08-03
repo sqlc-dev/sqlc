@@ -414,10 +414,19 @@ func (b *builder) createType(name, category string) (int64, error) {
 var constKinds = []string{core.ConstInteger, core.ConstFloat, core.ConstString, core.ConstBool}
 
 func (b *builder) consts() error {
-	for kind, name := range b.settings.Const {
+	for kind := range b.settings.Const {
 		if !slices.Contains(constKinds, kind) {
 			return fmt.Errorf("seed %s: unknown constant kind %q, want one of %s",
 				b.settings.Dialect, kind, strings.Join(constKinds, ", "))
+		}
+	}
+	// Written in a fixed order rather than the map's: a catalog built from the
+	// same dialect twice has to come out byte for byte the same, so that the
+	// cache stores one copy of it rather than one per run.
+	for _, kind := range constKinds {
+		name, ok := b.settings.Const[kind]
+		if !ok {
+			continue
 		}
 		if _, ok := b.oids[strings.ToLower(name)]; !ok {
 			return fmt.Errorf("seed %s: constant %s names unknown type %q", b.settings.Dialect, kind, name)

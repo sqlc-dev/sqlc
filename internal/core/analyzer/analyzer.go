@@ -2,7 +2,6 @@ package analyzer
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -41,23 +40,6 @@ func Prepare(cat *core.Catalog, stmt ast.Node) (core.PrepareResult, error) {
 		return core.PrepareResult{}, fmt.Errorf("analyzer: unsupported statement %T", stmt)
 	}
 	return a.result(), nil
-}
-
-// dataType reports the type's name and whether it is an array of that type.
-// The catalog names an array after its element, so a caller that reports the
-// two separately gets them apart here.
-func (a *analyzer) dataType(oid int64) (string, bool) {
-	if oid == 0 {
-		return "", false
-	}
-	name, err := a.cat.TypeName(oid)
-	if err != nil {
-		return "", false
-	}
-	if element, ok := strings.CutSuffix(name, core.ArraySuffix); ok {
-		return element, true
-	}
-	return name, false
 }
 
 type analyzer struct {
