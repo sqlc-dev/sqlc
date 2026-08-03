@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"runtime"
 
 	"github.com/sqlc-dev/sqlc/internal/core/catalogdb"
 	"github.com/sqlc-dev/sqlc/internal/core/catalogdef"
@@ -73,14 +74,18 @@ func openFile(path string) (*sql.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("core: open catalog %s: %w", path, err)
 	}
-	pinPool(db)
+	// An immutable file has no locking to contend for, so queries analyzed
+	// concurrently each get their own connection rather than queueing on one.
+	db.SetMaxOpenConns(runtime.GOMAXPROCS(0))
+	db.SetMaxIdleConns(runtime.GOMAXPROCS(0))
+	db.SetConnMaxIdleTime(0)
+	db.SetConnMaxLifetime(0)
 	return db, nil
 }
 
-// pinPool holds the catalog to a single connection that is never retired.
-// Every ":memory:" connection is its own empty database, so a second one would
-// see a catalog with no tables in it; a catalog read from a file has no such
-// constraint, but has no use for more connections either.
+// pinPool holds a catalog being built to a single connection that is never
+// retired: every ":memory:" connection is its own empty database, so a second
+// one would see a catalog with no tables in it.
 func pinPool(db *sql.DB) {
 	db.SetMaxOpenConns(1)
 	db.SetMaxIdleConns(1)

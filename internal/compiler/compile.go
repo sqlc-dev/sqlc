@@ -7,7 +7,10 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
+
+	"golang.org/x/sync/errgroup"
 
 	"github.com/sqlc-dev/sqlc/internal/core"
 	coreschema "github.com/sqlc-dev/sqlc/internal/core/schema"
@@ -150,6 +153,15 @@ func (c *Compiler) parseCatalogCore(files []schemaFile, merr *multierr.Error) er
 	return nil
 }
 
+// statement is a parsed query awaiting analysis, with what error reporting
+// needs to place it back in the file it came from.
+type statement struct {
+	filename string
+	src      string
+	pp       *preprocess.Result
+	raw      *ast.RawStmt
+}
+
 func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 	ctx := context.Background()
 
@@ -160,13 +172,13 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 		}
 	}
 
-	var q []*Query
 	merr := multierr.New()
-	set := map[string]struct{}{}
 	files, err := sqlpath.Glob(c.conf.Queries)
 	if err != nil {
 		return nil, err
 	}
+
+	var stmts []statement
 	for _, filename := range files {
 		blob, err := os.ReadFile(filename)
 		if err != nil {
@@ -179,49 +191,58 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 		// engine parser ever sees the query, so parsers only handle SQL.
 		pp := preprocess.File(c.conf.Engine, src)
 
-		stmts, err := c.parser.Parse(strings.NewReader(pp.Text))
+		parsed, err := c.parser.Parse(strings.NewReader(pp.Text))
 		if err != nil {
 			if reported := addSyntaxErrors(merr, filename, src, pp); !reported {
 				merr.Add(filename, src, 0, err)
 			}
 			continue
 		}
-		for _, stmt := range stmts {
-			query, err := c.parseQuery(stmt.Raw, pp, o)
-			if err != nil {
-				var e *sqlerr.Error
-				loc := stmt.Raw.Pos()
-				if errors.As(err, &e) && e.Location != 0 {
-					loc = e.Location
-				}
-				// Locations are reported against the rewritten query; map them
-				// back so errors point at what the user wrote.
-				loc = pp.Origin(loc)
-				if e != nil && e.Location != 0 {
-					e.Location = loc
-				}
-				merr.Add(filename, src, loc, err)
-				// If this rpc unauthenticated error bubbles up, then all future parsing/analysis will fail
-				if errors.Is(err, rpc.ErrUnauthenticated) {
-					return nil, merr
-				}
-				continue
-			}
-			if query == nil {
-				continue
-			}
-			query.Metadata.Filename = filepath.Base(filename)
-			queryName := query.Metadata.Name
-			if queryName != "" {
-				if _, exists := set[queryName]; exists {
-					merr.Add(filename, src, pp.Origin(stmt.Raw.Pos()), fmt.Errorf("duplicate query name: %s", queryName))
-					continue
-				}
-				set[queryName] = struct{}{}
-			}
-			q = append(q, query)
+		for _, stmt := range parsed {
+			stmts = append(stmts, statement{filename: filename, src: src, pp: pp, raw: stmt.Raw})
 		}
 	}
+
+	queries, errs := c.analyzeStatements(stmts, o)
+
+	var q []*Query
+	set := map[string]struct{}{}
+	for i, stmt := range stmts {
+		if err := errs[i]; err != nil {
+			var e *sqlerr.Error
+			loc := stmt.raw.Pos()
+			if errors.As(err, &e) && e.Location != 0 {
+				loc = e.Location
+			}
+			// Locations are reported against the rewritten query; map them
+			// back so errors point at what the user wrote.
+			loc = stmt.pp.Origin(loc)
+			if e != nil && e.Location != 0 {
+				e.Location = loc
+			}
+			merr.Add(stmt.filename, stmt.src, loc, err)
+			// If this rpc unauthenticated error bubbles up, then all future parsing/analysis will fail
+			if errors.Is(err, rpc.ErrUnauthenticated) {
+				return nil, merr
+			}
+			continue
+		}
+		query := queries[i]
+		if query == nil {
+			continue
+		}
+		query.Metadata.Filename = filepath.Base(stmt.filename)
+		queryName := query.Metadata.Name
+		if queryName != "" {
+			if _, exists := set[queryName]; exists {
+				merr.Add(stmt.filename, stmt.src, stmt.pp.Origin(stmt.raw.Pos()), fmt.Errorf("duplicate query name: %s", queryName))
+				continue
+			}
+			set[queryName] = struct{}{}
+		}
+		q = append(q, query)
+	}
+
 	if len(merr.Errs()) > 0 {
 		return nil, merr
 	}
@@ -235,17 +256,41 @@ func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
 	}, nil
 }
 
-// addSyntaxErrors reports every sqlc syntax error the preprocessor recorded
-// for a file, in source order, and says whether there were any. Locations come
-// back in the rewritten text's coordinates, so they are mapped through Origin
-// to point at what the user wrote.
+// analyzeStatements analyzes each statement, returning the results in the
+// order the statements were given so that queries and errors come out in
+// source order however they were produced.
 //
-// A statement whose sqlc syntax did not validate is copied through for the
-// engine to parse, which assumes the engine can parse it. SQLite cannot: it
-// has no schema-qualified function call, so a bad sqlc.arg() is a syntax error
-// there rather than a call the preprocessor's message can be attached to.
-// These messages name the cause, so they are reported in place of the failure
-// they produced; anything else wrong with the file surfaces on the next run.
+// The analysis core reads the catalog and nothing else, so its statements are
+// analyzed concurrently. Every other path holds state that a second goroutine
+// would race — a database connection, the legacy catalog — and stays serial.
+func (c *Compiler) analyzeStatements(stmts []statement, o opts.Parser) ([]*Query, []error) {
+	queries := make([]*Query, len(stmts))
+	errs := make([]error, len(stmts))
+
+	analyze := func(i int) {
+		queries[i], errs[i] = c.parseQuery(stmts[i].raw, stmts[i].pp, o)
+	}
+
+	workers := runtime.GOMAXPROCS(0)
+	if !c.coreAnalysis || workers < 2 || len(stmts) < 2 {
+		for i := range stmts {
+			analyze(i)
+		}
+		return queries, errs
+	}
+
+	var g errgroup.Group
+	g.SetLimit(workers)
+	for i := range stmts {
+		g.Go(func() error {
+			analyze(i)
+			return nil
+		})
+	}
+	g.Wait()
+	return queries, errs
+}
+
 func addSyntaxErrors(merr *multierr.Error, filename, src string, pp *preprocess.Result) bool {
 	var found bool
 	for _, stmt := range pp.Statements() {
