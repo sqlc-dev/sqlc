@@ -581,7 +581,14 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 							})
 						}
 					}
-					if fn.ReturnType != nil {
+					if len(fn.ReturnTableColumns) > 0 {
+						for _, arg := range fn.ReturnTableColumns {
+							table.Columns = append(table.Columns, &Column{
+								Name:     arg.Name,
+								DataType: arg.Type.Name,
+							})
+						}
+					} else if fn.ReturnType != nil {
 						table.Columns = []*Column{
 							{
 								Name:     colName,
