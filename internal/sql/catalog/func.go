@@ -39,6 +39,22 @@ func (f *Function) InArgs() []*Argument {
 	return args
 }
 
+// CallArgs returns the arguments that must be supplied positionally for a
+// PostgreSQL CALL statement. Unlike InArgs, OUT parameters are included, since
+// CALL requires placeholder values for OUT parameters in their declared
+// positions. TABLE parameters remain excluded as they describe return columns
+// rather than callable arguments.
+func (f *Function) CallArgs() []*Argument {
+	var args []*Argument
+	for _, a := range f.Args {
+		if a.Mode == ast.FuncParamTable {
+			continue
+		}
+		args = append(args, a)
+	}
+	return args
+}
+
 func (f *Function) OutArgs() []*Argument {
 	var args []*Argument
 	for _, a := range f.Args {
