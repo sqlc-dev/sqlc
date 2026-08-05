@@ -22,6 +22,18 @@ Installing recent versions of sqlc requires Go 1.21+.
 go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 ```
 
+## uv / pip
+
+sqlc is available on PyPI as [sqlc-bin](https://pypi.org/project/sqlc-bin/), which packages the official release binaries. No Go toolchain is required.
+
+```
+uv tool install sqlc-bin
+```
+
+```
+pip install sqlc-bin
+```
+
 ## Docker
 
 ```
