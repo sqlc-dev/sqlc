@@ -325,6 +325,12 @@ func (c *cc) convertCreateVirtualTableFTS5(n *meyer.CreateVirtualTableStmt) ast.
 		})
 	}
 
+	stmt.Cols = append(stmt.Cols, &ast.ColumnDef{
+		Colname: identifier(stmt.Name.Name),
+		IsNotNull: true,
+		TypeName: &ast.TypeName{Name: "text"},
+	})
+
 	return stmt
 }
 

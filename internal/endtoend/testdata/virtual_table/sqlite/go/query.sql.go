@@ -65,15 +65,20 @@ SELECT b, c FROM tbl_ft
 WHERE b MATCH ?
 `
 
-func (q *Queries) SelectAllColsTblFt(ctx context.Context, b string) ([]TblFt, error) {
+type SelectAllColsTblFtRow struct {
+	B string
+	C string
+}
+
+func (q *Queries) SelectAllColsTblFt(ctx context.Context, b string) ([]SelectAllColsTblFtRow, error) {
 	rows, err := q.db.QueryContext(ctx, selectAllColsTblFt, b)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []TblFt
+	var items []SelectAllColsTblFtRow
 	for rows.Next() {
-		var i TblFt
+		var i SelectAllColsTblFtRow
 		if err := rows.Scan(&i.B, &i.C); err != nil {
 			return nil, err
 		}
@@ -88,15 +93,72 @@ func (q *Queries) SelectAllColsTblFt(ctx context.Context, b string) ([]TblFt, er
 	return items, nil
 }
 
+const selectAllColsTblFtEqualByTableName = `-- name: SelectAllColsTblFtEqualByTableName :many
+SELECT b, c, tbl_ft FROM tbl_ft
+WHERE tbl_ft = ?
+`
+
+func (q *Queries) SelectAllColsTblFtEqualByTableName(ctx context.Context, tblFt string) ([]TblFt, error) {
+	rows, err := q.db.QueryContext(ctx, selectAllColsTblFtEqualByTableName, tblFt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []TblFt
+	for rows.Next() {
+		var i TblFt
+		if err := rows.Scan(&i.B, &i.C, &i.TblFt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const selectAllColsTblFtMatchByTableName = `-- name: SelectAllColsTblFtMatchByTableName :many
+SELECT b, c, tbl_ft FROM tbl_ft
+WHERE tbl_ft MATCH ?
+`
+
+func (q *Queries) SelectAllColsTblFtMatchByTableName(ctx context.Context, tblFt string) ([]TblFt, error) {
+	rows, err := q.db.QueryContext(ctx, selectAllColsTblFtMatchByTableName, tblFt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []TblFt
+	for rows.Next() {
+		var i TblFt
+		if err := rows.Scan(&i.B, &i.C, &i.TblFt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const selectBm25Func = `-- name: SelectBm25Func :many
-SELECT b, c, bm25(tbl_ft, 2.0) FROM tbl_ft
+SELECT b, c, tbl_ft, bm25(tbl_ft, 2.0) FROM tbl_ft
 WHERE b MATCH ? ORDER BY bm25(tbl_ft)
 `
 
 type SelectBm25FuncRow struct {
-	B    string
-	C    string
-	Bm25 float64
+	B     string
+	C     string
+	TblFt string
+	Bm25  float64
 }
 
 func (q *Queries) SelectBm25Func(ctx context.Context, b string) ([]SelectBm25FuncRow, error) {
@@ -108,7 +170,12 @@ func (q *Queries) SelectBm25Func(ctx context.Context, b string) ([]SelectBm25Fun
 	var items []SelectBm25FuncRow
 	for rows.Next() {
 		var i SelectBm25FuncRow
-		if err := rows.Scan(&i.B, &i.C, &i.Bm25); err != nil {
+		if err := rows.Scan(
+			&i.B,
+			&i.C,
+			&i.TblFt,
+			&i.Bm25,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
