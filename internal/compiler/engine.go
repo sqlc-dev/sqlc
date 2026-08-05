@@ -32,6 +32,13 @@ type Compiler struct {
 
 	coreCatalog *core.Catalog
 
+	// coreAnalysis routes every engine through the core catalog and analyzer,
+	// and coreDialect seeds the catalog it does so with. The catalog itself is
+	// not built until the schema is loaded, because the two are cached
+	// together.
+	coreAnalysis bool
+	coreDialect  core.Option
+
 	schema []string
 
 	// databaseOnlyMode indicates that the compiler should use database-only analysis
@@ -41,8 +48,33 @@ type Compiler struct {
 	expander *expander.Expander
 }
 
-func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts.Parser) (*Compiler, error) {
+// Option configures a Compiler.
+type Option func(*Compiler)
+
+// WithCoreAnalysis analyzes queries with the core catalog and analyzer rather
+// than each engine's own analysis path. ClickHouse and GoogleSQL always do;
+// this opts the remaining engines in.
+func WithCoreAnalysis() Option {
+	return func(c *Compiler) { c.coreAnalysis = true }
+}
+
+func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts.Parser, options ...Option) (*Compiler, error) {
 	c := &Compiler{conf: conf, combo: combo}
+	for _, o := range options {
+		o(c)
+	}
+
+	// ClickHouse and GoogleSQL have no legacy analysis path to fall back to.
+	switch conf.Engine {
+	case config.EngineClickHouse, config.EngineGoogleSQL:
+		c.coreAnalysis = true
+	}
+	if c.coreAnalysis {
+		if err := c.initCore(); err != nil {
+			return nil, err
+		}
+		return c, nil
+	}
 
 	if conf.Database != nil && conf.Database.Managed {
 		client := dbmanager.NewClient(combo.Global.Servers)
@@ -116,26 +148,42 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 				)
 			}
 		}
-	case config.EngineClickHouse:
-		c.parser = clickhouse.NewParser()
-		c.selector = newDefaultSelector()
-		cat, err := core.New(clickhouse.Dialect())
-		if err != nil {
-			return nil, fmt.Errorf("clickhouse: init catalog: %w", err)
-		}
-		c.coreCatalog = cat
-	case config.EngineGoogleSQL:
-		c.parser = googlesql.NewParser()
-		c.selector = newDefaultSelector()
-		cat, err := core.New(googlesql.Dialect())
-		if err != nil {
-			return nil, fmt.Errorf("googlesql: init catalog: %w", err)
-		}
-		c.coreCatalog = cat
 	default:
 		return nil, fmt.Errorf("unknown engine: %s", conf.Engine)
 	}
 	return c, nil
+}
+
+// initCore wires up the engine's parser and a core catalog seeded with its
+// dialect. No legacy catalog and no analyzer connection are involved.
+func (c *Compiler) initCore() error {
+	var dialect core.Option
+	switch c.conf.Engine {
+	case config.EngineSQLite:
+		c.parser = sqlite.NewParser()
+		c.selector = newSQLiteSelector()
+		dialect = sqlite.Dialect()
+	case config.EngineMySQL:
+		c.parser = dolphin.NewParser()
+		c.selector = newDefaultSelector()
+		dialect = dolphin.Dialect()
+	case config.EnginePostgreSQL:
+		c.parser = postgresql.NewParser()
+		c.selector = newDefaultSelector()
+		dialect = postgresql.Dialect()
+	case config.EngineClickHouse:
+		c.parser = clickhouse.NewParser()
+		c.selector = newDefaultSelector()
+		dialect = clickhouse.Dialect()
+	case config.EngineGoogleSQL:
+		c.parser = googlesql.NewParser()
+		c.selector = newDefaultSelector()
+		dialect = googlesql.Dialect()
+	default:
+		return fmt.Errorf("unknown engine: %s", c.conf.Engine)
+	}
+	c.coreDialect = dialect
+	return nil
 }
 
 func (c *Compiler) Catalog() *catalog.Catalog {

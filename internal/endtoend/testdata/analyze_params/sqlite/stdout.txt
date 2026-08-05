@@ -1,0 +1,100 @@
+[
+  {
+    "name": "GetUser",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "data_type": "integer",
+        "not_null": true,
+        "is_array": false,
+        "table": "users"
+      },
+      {
+        "name": "name",
+        "data_type": "text",
+        "not_null": true,
+        "is_array": false,
+        "table": "users"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "data_type": "integer",
+          "not_null": true,
+          "is_array": false,
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "FilterUsers",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "data_type": "integer",
+        "not_null": true,
+        "is_array": false,
+        "table": "users"
+      },
+      {
+        "name": "name",
+        "data_type": "text",
+        "not_null": true,
+        "is_array": false,
+        "table": "users"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "data_type": "text",
+          "not_null": true,
+          "is_array": false,
+          "table": "users"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "bio",
+          "data_type": "text",
+          "not_null": false,
+          "is_array": false,
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "CountPosts",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "total",
+        "data_type": "integer",
+        "not_null": true,
+        "is_array": false
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "user_id",
+          "data_type": "integer",
+          "not_null": true,
+          "is_array": false,
+          "table": "posts"
+        }
+      }
+    ]
+  }
+]

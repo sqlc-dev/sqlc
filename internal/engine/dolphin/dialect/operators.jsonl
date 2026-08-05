@@ -1,0 +1,3 @@
+{"name": "~~", "left": "text", "right": "text", "result": "bool"}
+{"name": "!~~", "left": "text", "right": "text", "result": "bool"}
+{"name": "REGEXP", "left": "text", "right": "text", "result": "bool"}

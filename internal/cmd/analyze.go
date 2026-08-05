@@ -130,7 +130,7 @@ Examples:
 			parserOpts := opts.Parser{}
 
 			ctx := cmd.Context()
-			c, err := compiler.NewCompiler(sql, combo, parserOpts)
+			c, err := compiler.NewCompiler(sql, combo, parserOpts, compiler.WithCoreAnalysis())
 			if err != nil {
 				return fmt.Errorf("error creating compiler: %w", err)
 			}

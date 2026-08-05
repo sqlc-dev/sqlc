@@ -5,14 +5,14 @@
     "columns": [
       {
         "name": "id",
-        "data_type": "INTEGER",
+        "data_type": "integer",
         "not_null": true,
         "is_array": false,
         "table": "users"
       },
       {
         "name": "name",
-        "data_type": "TEXT",
+        "data_type": "text",
         "not_null": true,
         "is_array": false,
         "table": "users"
@@ -23,7 +23,7 @@
         "number": 1,
         "column": {
           "name": "id",
-          "data_type": "INTEGER",
+          "data_type": "integer",
           "not_null": true,
           "is_array": false,
           "table": "users"

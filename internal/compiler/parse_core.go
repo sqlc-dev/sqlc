@@ -92,6 +92,7 @@ func coreColumn(c core.Column) *Column {
 		Name:     c.Name,
 		DataType: c.DataType,
 		NotNull:  c.NotNull,
+		IsArray:  c.IsArray,
 	}
 	if c.Source != nil && c.Source.Table != "" {
 		col.Table = &ast.TableName{Schema: c.Source.Schema, Name: c.Source.Table}
@@ -110,6 +111,7 @@ func coreParamColumn(p core.Parameter, params *named.ParamSet) *Column {
 		Name:     p.Name,
 		DataType: p.DataType,
 		NotNull:  p.NotNull,
+		IsArray:  p.IsArray,
 	}
 	if p.Source != nil && p.Source.Table != "" {
 		col.Table = &ast.TableName{Schema: p.Source.Schema, Name: p.Source.Table}

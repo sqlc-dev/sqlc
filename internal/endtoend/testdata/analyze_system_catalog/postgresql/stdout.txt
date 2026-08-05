@@ -1,0 +1,65 @@
+[
+  {
+    "name": "ListColumns",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "table_name",
+        "data_type": "sql_identifier",
+        "not_null": false,
+        "is_array": false,
+        "table": "columns"
+      },
+      {
+        "name": "column_name",
+        "data_type": "sql_identifier",
+        "not_null": false,
+        "is_array": false,
+        "table": "columns"
+      },
+      {
+        "name": "data_type",
+        "data_type": "character_data",
+        "not_null": false,
+        "is_array": false,
+        "table": "columns"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "table_schema",
+          "data_type": "sql_identifier",
+          "not_null": false,
+          "is_array": false,
+          "table": "columns"
+        }
+      }
+    ]
+  },
+  {
+    "name": "CountRelations",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "total",
+        "data_type": "bigint",
+        "not_null": true,
+        "is_array": false
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "relkind",
+          "data_type": "char",
+          "not_null": true,
+          "is_array": false,
+          "table": "pg_class"
+        }
+      }
+    ]
+  }
+]
