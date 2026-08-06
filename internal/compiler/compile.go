@@ -1,7 +1,6 @@
 package compiler
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -81,8 +80,6 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 
 func (c *Compiler) parseCatalogLegacy(files []schemaFile, merr *multierr.Error) {
 	for _, file := range files {
-		// In database-only mode, we parse the schema to validate syntax
-		// but don't update the catalog - the database will be the source of truth
 		stmts, err := c.parser.Parse(strings.NewReader(file.contents))
 		if err != nil {
 			// A schema file and a query file are often the same file, so a
@@ -91,11 +88,6 @@ func (c *Compiler) parseCatalogLegacy(files []schemaFile, merr *multierr.Error) 
 			if reported := addSyntaxErrors(merr, file.name, file.contents, preprocess.File(c.conf.Engine, file.contents)); !reported {
 				merr.Add(file.name, file.contents, 0, err)
 			}
-			continue
-		}
-
-		// Skip catalog updates in database-only mode
-		if c.databaseOnlyMode {
 			continue
 		}
 
@@ -163,15 +155,6 @@ type statement struct {
 }
 
 func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
-	ctx := context.Background()
-
-	// In database-only mode, initialize the database connection before parsing queries
-	if c.databaseOnlyMode && c.analyzer != nil {
-		if err := c.analyzer.EnsureConn(ctx, c.schema); err != nil {
-			return nil, fmt.Errorf("failed to initialize database connection: %w", err)
-		}
-	}
-
 	merr := multierr.New()
 	files, err := sqlpath.Glob(c.conf.Queries)
 	if err != nil {
