@@ -14,8 +14,17 @@ SQLCEXPERIMENT=nofoo        # explicitly disable foo experiment
 SQLCEXPERIMENT=foo,nobar    # enable foo, disable bar
 ```
 
-Currently, no experiments are defined. Experiments will be documented here as
-they are introduced.
+The following experiments are defined:
+
+### coreanalyzer
+
+Routes `sqlc generate` through the core catalog and analyzer instead of each
+engine's own analysis path. This is the same analysis used by `sqlc analyze`,
+and the only analysis path for the ClickHouse and GoogleSQL engines.
+
+```
+SQLCEXPERIMENT=coreanalyzer
+```
 
 ## SQLCCACHE
 

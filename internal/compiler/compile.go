@@ -142,6 +142,13 @@ func (c *Compiler) parseCatalogCore(files []schemaFile, merr *multierr.Error) er
 	}
 	// Whatever apply reported is already in merr, which the caller returns.
 	c.coreCatalog = cat
+
+	// Codegen consumes the catalog through the Result, in the legacy shape.
+	legacy, err := coreResultCatalog(cat)
+	if err != nil {
+		return fmt.Errorf("%s: dump catalog: %w", c.conf.Engine, err)
+	}
+	c.catalog = legacy
 	return nil
 }
 
