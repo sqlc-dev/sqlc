@@ -1,3 +1,4 @@
+{"name":"daitch_mokotoff","args":[{"type":"text"}],"returns":"text[]"}
 {"name":"difference","args":[{"type":"text"},{"type":"text"}],"returns":"integer"}
 {"name":"dmetaphone","args":[{"type":"text"}],"returns":"text"}
 {"name":"dmetaphone_alt","args":[{"type":"text"}],"returns":"text"}

@@ -43,6 +43,22 @@ WHERE pg_function_is_visible(p.oid)
 ORDER BY 1, 2, 3, 4, 5;
 `
 
+// The types an extension defines, in the order they were declared so that a
+// type appears after the types it is built on. Array types are created
+// implicitly rather than by the extension's script, so they carry an internal
+// dependency and never show up here.
+const extensionTypes = `
+SELECT t.typname, t.typcategory
+FROM pg_catalog.pg_extension AS e
+    INNER JOIN pg_catalog.pg_depend AS d ON (d.refobjid = e.oid)
+    INNER JOIN pg_catalog.pg_type AS t ON (t.oid = d.objid)
+WHERE d.deptype = 'e'
+  AND d.classid = 'pg_catalog.pg_type'::regclass
+  AND e.extname = $1
+  AND t.typtype <> 'p'
+ORDER BY t.oid;
+`
+
 func main() {
 	if err := run(context.Background()); err != nil {
 		log.Fatal(err)
@@ -78,6 +94,42 @@ func writeFunctions(procs []Proc, destPath string) error {
 			fn.Args = append(fn.Args, a)
 		}
 		if err := enc.Encode(fn); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// readExtensionTypes reads the types an extension defines.
+func readExtensionTypes(ctx context.Context, conn *pgx.Conn, extension string) ([]seed.Type, error) {
+	rows, err := conn.Query(ctx, extensionTypes, extension)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var types []seed.Type
+	for rows.Next() {
+		var t seed.Type
+		if err := rows.Scan(&t.Name, &t.Category); err != nil {
+			return nil, err
+		}
+		types = append(types, t)
+	}
+	return types, rows.Err()
+}
+
+// writeTypes writes types to destPath as JSONL, one type per line, in the
+// form the seed package reads.
+func writeTypes(types []seed.Type, destPath string) error {
+	out, err := os.Create(destPath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	enc := json.NewEncoder(out)
+	for _, t := range types {
+		if err := enc.Encode(t); err != nil {
 			return err
 		}
 	}
@@ -252,8 +304,12 @@ func run(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		if len(procs) == 0 {
-			log.Printf("no functions in %s, skipping", extension)
+		types, err := readExtensionTypes(ctx, conn, extension)
+		if err != nil {
+			return err
+		}
+		if len(procs) == 0 && len(types) == 0 {
+			log.Printf("nothing in %s, skipping", extension)
 			continue
 		}
 
@@ -274,6 +330,11 @@ func run(ctx context.Context) error {
 		extensionDir := filepath.Join(dialectDir, "extensions", extension)
 		if err := os.MkdirAll(extensionDir, 0o755); err != nil {
 			return err
+		}
+		if len(types) > 0 {
+			if err := writeTypes(types, filepath.Join(extensionDir, seed.TypesFile)); err != nil {
+				return fmt.Errorf("error generating extension %s: %w", extension, err)
+			}
 		}
 		if err := writeFunctions(procs, filepath.Join(extensionDir, seed.FunctionsFile)); err != nil {
 			return fmt.Errorf("error generating extension %s: %w", extension, err)

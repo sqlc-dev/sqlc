@@ -3,6 +3,7 @@
 {"name":"brin_page_type","args":[{"name":"page","type":"bytea"}],"returns":"text"}
 {"name":"brin_revmap_data","args":[{"name":"page","type":"bytea"}],"returns":"tid"}
 {"name":"bt_metap","args":[{"name":"relname","type":"text"}],"returns":"record"}
+{"name":"bt_multi_page_stats","args":[{"name":"relname","type":"text"},{"name":"blkno","type":"bigint"},{"name":"blk_count","type":"bigint"}],"returns":"record"}
 {"name":"bt_page_items","args":[{"name":"page","type":"bytea"}],"returns":"record"}
 {"name":"bt_page_items","args":[{"name":"relname","type":"text"},{"name":"blkno","type":"bigint"}],"returns":"record"}
 {"name":"bt_page_stats","args":[{"name":"relname","type":"text"},{"name":"blkno","type":"bigint"}],"returns":"record"}
