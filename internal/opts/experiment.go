@@ -12,6 +12,10 @@ import (
 // This is modeled after Go's GOEXPERIMENT environment variable. For more
 // information, see https://pkg.go.dev/internal/goexperiment
 //
+// Available experiments:
+//
+//	coreanalyzer - routes generate through the core catalog and analyzer
+//
 // Example usage:
 //
 //	SQLCEXPERIMENT=foo,bar      # enable foo and bar experiments
@@ -21,6 +25,9 @@ import (
 // Experiment holds the state of all experimental features.
 // Add new experiments as boolean fields to this struct.
 type Experiment struct {
+	// CoreAnalyzer routes generate through the core catalog and analyzer
+	// instead of each engine's own analysis path.
+	CoreAnalyzer bool
 }
 
 // ExperimentFromEnv returns an Experiment initialized from the SQLCEXPERIMENT
@@ -68,6 +75,8 @@ func ExperimentFromString(val string) Experiment {
 // known experiment.
 func isKnownExperiment(name string) bool {
 	switch strings.ToLower(name) {
+	case "coreanalyzer":
+		return true
 	default:
 		return false
 	}
@@ -76,12 +85,17 @@ func isKnownExperiment(name string) bool {
 // setExperiment sets the experiment flag with the given name to the given value.
 func setExperiment(e *Experiment, name string, enabled bool) {
 	switch strings.ToLower(name) {
+	case "coreanalyzer":
+		e.CoreAnalyzer = enabled
 	}
 }
 
 // Enabled returns a slice of all enabled experiment names.
 func (e Experiment) Enabled() []string {
 	var enabled []string
+	if e.CoreAnalyzer {
+		enabled = append(enabled, "coreanalyzer")
+	}
 	return enabled
 }
 
