@@ -15,6 +15,10 @@
 // The lists are JSONL — one record per line — and are applied as they are
 // read, so a dialect whose function list runs to thousands of entries is never
 // held in memory as a whole. Any of the lists may be left out.
+//
+// A dialect may also hold an extensions/ directory with one directory per
+// extension, each a smaller bundle of the same files, applied when a schema
+// says CREATE EXTENSION.
 package seed
 
 import (
@@ -41,6 +45,10 @@ const (
 	FunctionsFile = "functions.jsonl"
 	RelationsFile = "relations.jsonl"
 )
+
+// ExtensionsDir is the directory under a dialect holding one directory per
+// extension the dialect knows.
+const ExtensionsDir = "extensions"
 
 // Settings is dialect.json: what the dialect is called and the rules that
 // generate its operators and casts.
@@ -139,14 +147,21 @@ type Arg struct {
 }
 
 // Dialect returns the catalog option that seeds the dialect described by the
-// JSONL files in dir.
+// JSONL files in dir. A dialect that ships extension data — a directory per
+// extension under extensions/ — also has CREATE EXTENSION wired up to it.
 func Dialect(fsys fs.FS, dir string) core.Option {
 	return core.WithSeed(func(cat *core.Catalog) error {
 		sub, err := fs.Sub(fsys, dir)
 		if err != nil {
 			return fmt.Errorf("seed: %s: %w", dir, err)
 		}
-		return apply(cat, sub)
+		if err := apply(cat, sub); err != nil {
+			return err
+		}
+		cat.SetExtensionLoader(func(name string) error {
+			return applyExtension(cat, sub, name)
+		})
+		return nil
 	})
 }
 
@@ -439,8 +454,15 @@ func (b *builder) consts() error {
 	// arrays, a SQLite column typed whatever the author felt like. Recording
 	// the comparison operators lets the catalog give those types the same ones.
 	if len(b.settings.Comparison) > 0 {
-		return b.cat.SetDialectFlag(b.dialectOID, core.FlagComparisonOperators,
-			strings.Join(b.settings.Comparison, ","))
+		if err := b.cat.SetDialectFlag(b.dialectOID, core.FlagComparisonOperators,
+			strings.Join(b.settings.Comparison, ",")); err != nil {
+			return err
+		}
+	}
+	// The cast categories are recorded for the same reason: a type an
+	// extension adds joins its category's casts.
+	if b.settings.CastCategories != "" {
+		return b.cat.SetDialectFlag(b.dialectOID, core.FlagCastCategories, b.settings.CastCategories)
 	}
 	return nil
 }

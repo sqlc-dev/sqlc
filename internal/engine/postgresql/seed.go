@@ -20,7 +20,7 @@ import (
 // tables and views of pg_catalog and information_schema, all written by
 // sqlc-pg-gen. Both the analysis core and the catalog the legacy compiler
 // builds read them. Each contrib extension sqlc knows is a directory under
-// extensions/ holding the functions CREATE EXTENSION adds.
+// extensions/ holding the types and functions CREATE EXTENSION adds.
 //
 //go:embed dialect
 var dialectFS embed.FS

@@ -1,0 +1,78 @@
+[
+  {
+    "name": "GetUserByEmail",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "data_type": "bigserial",
+        "not_null": true,
+        "is_array": false,
+        "table": "users"
+      },
+      {
+        "name": "email",
+        "data_type": "citext",
+        "not_null": true,
+        "is_array": false,
+        "table": "users"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "email",
+          "data_type": "citext",
+          "not_null": true,
+          "is_array": false,
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "MatchingEmails",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "data_type": "bigserial",
+        "not_null": true,
+        "is_array": false,
+        "table": "users"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "RankUsers",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "data_type": "bigserial",
+        "not_null": true,
+        "is_array": false,
+        "table": "users"
+      },
+      {
+        "name": "score",
+        "data_type": "real",
+        "not_null": true,
+        "is_array": false
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "",
+          "data_type": "text",
+          "not_null": true,
+          "is_array": false
+        }
+      }
+    ]
+  }
+]

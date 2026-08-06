@@ -28,6 +28,11 @@ func Apply(cat *core.Catalog, n ast.Node) error {
 		return applyDropTable(cat, v)
 	case *ast.CreateEnumStmt:
 		return applyCreateEnum(cat, v)
+	case *ast.CreateExtensionStmt:
+		if v.Extname == nil {
+			return nil
+		}
+		return cat.LoadExtension(*v.Extname)
 	case *ast.CreateFunctionStmt:
 		return applyCreateFunction(cat, v)
 	case *ast.AlterTableStmt:

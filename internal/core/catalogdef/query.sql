@@ -57,6 +57,11 @@ LIMIT 1;
 -- name: TypeNameByOID :one
 SELECT name FROM sql_type WHERE oid = ?;
 
+-- name: TypeOIDsInCategory :many
+SELECT oid FROM sql_type
+WHERE dialect_oid = ? AND category = ?
+ORDER BY oid;
+
 -- name: LookupType :one
 SELECT oid, name, category, typtype, preferred
 FROM sql_type
