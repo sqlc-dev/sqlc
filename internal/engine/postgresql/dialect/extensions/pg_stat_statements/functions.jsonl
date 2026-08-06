@@ -1,0 +1,3 @@
+{"name":"pg_stat_statements","args":[{"name":"showtext","type":"boolean"}],"returns":"record"}
+{"name":"pg_stat_statements_info","returns":"record"}
+{"name":"pg_stat_statements_reset","args":[{"name":"userid","type":"oid","has_default":true},{"name":"dbid","type":"oid","has_default":true},{"name":"queryid","type":"bigint","has_default":true}],"returns":"void"}

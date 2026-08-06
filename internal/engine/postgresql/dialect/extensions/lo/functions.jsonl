@@ -1,0 +1,2 @@
+{"name":"lo_manage","returns":"trigger"}
+{"name":"lo_oid","args":[{"type":"lo"}],"returns":"oid"}

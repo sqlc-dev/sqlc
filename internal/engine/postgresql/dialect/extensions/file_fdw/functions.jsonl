@@ -1,0 +1,2 @@
+{"name":"file_fdw_handler","returns":"fdw_handler"}
+{"name":"file_fdw_validator","args":[{"type":"text[]"},{"type":"oid"}],"returns":"void"}

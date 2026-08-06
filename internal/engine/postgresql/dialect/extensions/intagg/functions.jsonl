@@ -1,0 +1,2 @@
+{"name":"int_array_aggregate","args":[{"type":"integer"}],"returns":"integer[]"}
+{"name":"int_array_enum","args":[{"type":"integer[]"}],"returns":"integer"}

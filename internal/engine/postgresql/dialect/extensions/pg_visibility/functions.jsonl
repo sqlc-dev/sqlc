@@ -1,0 +1,8 @@
+{"name":"pg_check_frozen","args":[{"type":"regclass"}],"returns":"tid"}
+{"name":"pg_check_visible","args":[{"type":"regclass"}],"returns":"tid"}
+{"name":"pg_truncate_visibility_map","args":[{"type":"regclass"}],"returns":"void"}
+{"name":"pg_visibility","args":[{"type":"regclass"}],"returns":"record"}
+{"name":"pg_visibility","args":[{"type":"regclass"},{"name":"blkno","type":"bigint"}],"returns":"record"}
+{"name":"pg_visibility_map","args":[{"type":"regclass"}],"returns":"record"}
+{"name":"pg_visibility_map","args":[{"type":"regclass"},{"name":"blkno","type":"bigint"}],"returns":"record"}
+{"name":"pg_visibility_map_summary","args":[{"type":"regclass"}],"returns":"record"}

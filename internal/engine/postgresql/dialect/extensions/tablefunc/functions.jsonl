@@ -1,0 +1,11 @@
+{"name":"connectby","args":[{"type":"text"},{"type":"text"},{"type":"text"},{"type":"text"},{"type":"integer"}],"returns":"record"}
+{"name":"connectby","args":[{"type":"text"},{"type":"text"},{"type":"text"},{"type":"text"},{"type":"integer"},{"type":"text"}],"returns":"record"}
+{"name":"connectby","args":[{"type":"text"},{"type":"text"},{"type":"text"},{"type":"text"},{"type":"text"},{"type":"integer"}],"returns":"record"}
+{"name":"connectby","args":[{"type":"text"},{"type":"text"},{"type":"text"},{"type":"text"},{"type":"text"},{"type":"integer"},{"type":"text"}],"returns":"record"}
+{"name":"crosstab","args":[{"type":"text"}],"returns":"record"}
+{"name":"crosstab","args":[{"type":"text"},{"type":"integer"}],"returns":"record"}
+{"name":"crosstab","args":[{"type":"text"},{"type":"text"}],"returns":"record"}
+{"name":"crosstab2","args":[{"type":"text"}],"returns":"tablefunc_crosstab_2"}
+{"name":"crosstab3","args":[{"type":"text"}],"returns":"tablefunc_crosstab_3"}
+{"name":"crosstab4","args":[{"type":"text"}],"returns":"tablefunc_crosstab_4"}
+{"name":"normal_rand","args":[{"type":"integer"},{"type":"double precision"},{"type":"double precision"}],"returns":"double precision"}

@@ -1,0 +1,9 @@
+{"name":"pg_relpages","args":[{"name":"relname","type":"regclass"}],"returns":"bigint"}
+{"name":"pg_relpages","args":[{"name":"relname","type":"text"}],"returns":"bigint"}
+{"name":"pgstatginindex","args":[{"name":"relname","type":"regclass"}],"returns":"record"}
+{"name":"pgstathashindex","args":[{"name":"relname","type":"regclass"}],"returns":"record"}
+{"name":"pgstatindex","args":[{"name":"relname","type":"regclass"}],"returns":"record"}
+{"name":"pgstatindex","args":[{"name":"relname","type":"text"}],"returns":"record"}
+{"name":"pgstattuple","args":[{"name":"reloid","type":"regclass"}],"returns":"record"}
+{"name":"pgstattuple","args":[{"name":"relname","type":"text"}],"returns":"record"}
+{"name":"pgstattuple_approx","args":[{"name":"reloid","type":"regclass"}],"returns":"record"}
