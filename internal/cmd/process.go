@@ -87,10 +87,6 @@ func processQuerySets(ctx context.Context, rp ResultProcessor, conf *config.Conf
 
 			var name, lang string
 			parseOpts := opts.Parser{
-				// Only the coreanalyzer experiment reaches the compiler.
-				// analyzerv2 is intentionally left behind: the goldens of the
-				// tests that name it predate this wiring and pin the ordinary
-				// analyzer path.
 				Experiment: opts.Experiment{
 					CoreAnalyzer: o.Env.Experiment.CoreAnalyzer,
 				},
