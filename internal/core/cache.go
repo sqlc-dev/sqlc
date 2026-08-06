@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/ncruces/go-sqlite3"
+	"github.com/ncruces/go-sqlite3/ext/serdes"
+
 	"github.com/sqlc-dev/sqlc/internal/cache"
 	"github.com/sqlc-dev/sqlc/internal/core/catalogdb"
 )
@@ -14,10 +17,10 @@ import (
 // The name of the sole output blob a CoreCatalog action produces.
 const catalogOutput = "catalog.db"
 
-// serializer is the driver's serialization API, which the SQLite driver
-// implements on its connections.
-type serializer interface {
-	Serialize() ([]byte, error)
+// rawConn is the driver's escape hatch to the SQLite connection underneath a
+// database/sql connection, which the serialization API needs.
+type rawConn interface {
+	Raw() *sqlite3.Conn
 }
 
 // NewCached returns the catalog a dialect and a schema produce, restored from
@@ -131,9 +134,9 @@ func save(store *cache.Cache, action cache.Digest, cat *Catalog) error {
 // written to disk as, which is what gets stored.
 func serialize(db *sql.DB) ([]byte, error) {
 	var blob []byte
-	err := withRawConn(db, func(s serializer) error {
+	err := withRawConn(db, func(c *sqlite3.Conn) error {
 		var err error
-		blob, err = s.Serialize()
+		blob, err = serdes.Serialize(c, "main")
 		return err
 	})
 	if err != nil {
@@ -142,17 +145,17 @@ func serialize(db *sql.DB) ([]byte, error) {
 	return blob, nil
 }
 
-func withRawConn(db *sql.DB, fn func(serializer) error) error {
+func withRawConn(db *sql.DB, fn func(*sqlite3.Conn) error) error {
 	conn, err := db.Conn(context.Background())
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 	return conn.Raw(func(driverConn any) error {
-		s, ok := driverConn.(serializer)
+		r, ok := driverConn.(rawConn)
 		if !ok {
-			return fmt.Errorf("driver does not serialize databases")
+			return fmt.Errorf("driver does not expose its SQLite connection")
 		}
-		return fn(s)
+		return fn(r.Raw())
 	})
 }

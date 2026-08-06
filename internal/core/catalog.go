@@ -9,7 +9,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/core/catalogdb"
 	"github.com/sqlc-dev/sqlc/internal/core/catalogdef"
 
-	_ "modernc.org/sqlite"
+	_ "github.com/ncruces/go-sqlite3/driver"
 )
 
 //go:generate go run github.com/sqlc-dev/sqlc/cmd/sqlc generate
@@ -70,7 +70,7 @@ func New(opts ...Option) (*Catalog, error) {
 // told as much, which lets any number of processes share it with no locking
 // and no copy.
 func openFile(path string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite", "file:"+path+"?mode=ro&immutable=1")
+	db, err := sql.Open("sqlite3", "file:"+path+"?mode=ro&immutable=1")
 	if err != nil {
 		return nil, fmt.Errorf("core: open catalog %s: %w", path, err)
 	}
@@ -95,7 +95,7 @@ func pinPool(db *sql.DB) {
 
 // openDB opens the empty SQLite database a catalog is built in.
 func openDB() (*sql.DB, error) {
-	db, err := sql.Open("sqlite", ":memory:")
+	db, err := sql.Open("sqlite3", ":memory:")
 	if err != nil {
 		return nil, fmt.Errorf("core: open catalog: %w", err)
 	}
@@ -103,9 +103,15 @@ func openDB() (*sql.DB, error) {
 
 	// The catalog being built is scratch state that is never read back from
 	// disk, so durability buys nothing and costs a journal write per statement.
+	// Foreign keys are declared in the schema as documentation but not
+	// enforced: dialect seeds carry dangling references (a proc whose return
+	// type was never registered), and enforcement would also charge an index
+	// lookup per seeded row. The driver compiles SQLite with enforcement on by
+	// default, so it is switched off explicitly.
 	for _, pragma := range []string{
 		"PRAGMA journal_mode = OFF",
 		"PRAGMA synchronous = OFF",
+		"PRAGMA foreign_keys = OFF",
 	} {
 		if _, err := db.Exec(pragma); err != nil {
 			db.Close()
