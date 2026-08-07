@@ -94,6 +94,11 @@ func coreColumn(c core.Column) *Column {
 		NotNull:  c.NotNull,
 		IsArray:  c.IsArray,
 	}
+	// The core reports arrays without dimensions, and codegen renders one
+	// "[]" per dimension.
+	if c.IsArray {
+		col.ArrayDims = 1
+	}
 	if c.Source != nil && c.Source.Table != "" {
 		col.Table = &ast.TableName{Schema: c.Source.Schema, Name: c.Source.Table}
 		col.TableAlias = c.Source.TableAlias
@@ -112,6 +117,9 @@ func coreParamColumn(p core.Parameter, params *named.ParamSet) *Column {
 		DataType: p.DataType,
 		NotNull:  p.NotNull,
 		IsArray:  p.IsArray,
+	}
+	if p.IsArray {
+		col.ArrayDims = 1
 	}
 	if p.Source != nil && p.Source.Table != "" {
 		col.Table = &ast.TableName{Schema: p.Source.Schema, Name: p.Source.Table}

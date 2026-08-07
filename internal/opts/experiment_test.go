@@ -43,6 +43,26 @@ func TestExperimentFromString(t *testing.T) {
 			input: "foo,,bar",
 			want:  Experiment{},
 		},
+		{
+			name:  "enable coreanalyzer",
+			input: "coreanalyzer",
+			want:  Experiment{CoreAnalyzer: true},
+		},
+		{
+			name:  "disable coreanalyzer",
+			input: "nocoreanalyzer",
+			want:  Experiment{CoreAnalyzer: false},
+		},
+		{
+			name:  "enable then disable coreanalyzer",
+			input: "coreanalyzer,nocoreanalyzer",
+			want:  Experiment{CoreAnalyzer: false},
+		},
+		{
+			name:  "coreanalyzer case insensitive",
+			input: "CoreAnalyzer",
+			want:  Experiment{CoreAnalyzer: true},
+		},
 	}
 
 	for _, tt := range tests {
@@ -56,9 +76,36 @@ func TestExperimentFromString(t *testing.T) {
 }
 
 func TestExperimentEnabled(t *testing.T) {
-	exp := Experiment{}
-	if got := exp.Enabled(); len(got) != 0 {
-		t.Errorf("Experiment.Enabled() = %v, want none", got)
+	tests := []struct {
+		name string
+		exp  Experiment
+		want []string
+	}{
+		{
+			name: "no experiments enabled",
+			exp:  Experiment{},
+			want: nil,
+		},
+		{
+			name: "coreanalyzer enabled",
+			exp:  Experiment{CoreAnalyzer: true},
+			want: []string{"coreanalyzer"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.exp.Enabled()
+			if len(got) != len(tt.want) {
+				t.Errorf("Experiment.Enabled() = %v, want %v", got, tt.want)
+				return
+			}
+			for i := range got {
+				if got[i] != tt.want[i] {
+					t.Errorf("Experiment.Enabled()[%d] = %q, want %q", i, got[i], tt.want[i])
+				}
+			}
+		})
 	}
 }
 
@@ -84,6 +131,16 @@ func TestIsKnownExperiment(t *testing.T) {
 			name:  "empty string",
 			input: "",
 			want:  false,
+		},
+		{
+			name:  "coreanalyzer lowercase",
+			input: "coreanalyzer",
+			want:  true,
+		},
+		{
+			name:  "coreanalyzer mixed case",
+			input: "CoreAnalyzer",
+			want:  true,
 		},
 	}
 
