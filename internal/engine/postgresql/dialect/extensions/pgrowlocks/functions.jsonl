@@ -1,0 +1,1 @@
+{"name":"pgrowlocks","args":[{"name":"relname","type":"text"}],"returns":"record"}

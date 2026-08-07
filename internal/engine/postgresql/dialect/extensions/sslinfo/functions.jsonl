@@ -1,0 +1,10 @@
+{"name":"ssl_cipher","returns":"text"}
+{"name":"ssl_client_cert_present","returns":"boolean"}
+{"name":"ssl_client_dn","returns":"text"}
+{"name":"ssl_client_dn_field","args":[{"type":"text"}],"returns":"text"}
+{"name":"ssl_client_serial","returns":"numeric"}
+{"name":"ssl_extension_info","returns":"record"}
+{"name":"ssl_is_used","returns":"boolean"}
+{"name":"ssl_issuer_dn","returns":"text"}
+{"name":"ssl_issuer_field","args":[{"type":"text"}],"returns":"text"}
+{"name":"ssl_version","returns":"text"}

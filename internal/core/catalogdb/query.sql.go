@@ -1089,3 +1089,37 @@ func (q *Queries) TypeOIDByName(ctx context.Context, name string) (int64, error)
 	err := row.Scan(&oid)
 	return oid, err
 }
+
+const typeOIDsInCategory = `-- name: TypeOIDsInCategory :many
+SELECT oid FROM sql_type
+WHERE dialect_oid = ? AND category = ?
+ORDER BY oid
+`
+
+type TypeOIDsInCategoryParams struct {
+	DialectOid sql.NullInt64
+	Category   sql.NullString
+}
+
+func (q *Queries) TypeOIDsInCategory(ctx context.Context, arg TypeOIDsInCategoryParams) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, typeOIDsInCategory, arg.DialectOid, arg.Category)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var oid int64
+		if err := rows.Scan(&oid); err != nil {
+			return nil, err
+		}
+		items = append(items, oid)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

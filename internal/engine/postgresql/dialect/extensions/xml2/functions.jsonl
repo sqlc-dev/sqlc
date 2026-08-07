@@ -1,0 +1,13 @@
+{"name":"xml_encode_special_chars","args":[{"type":"text"}],"returns":"text"}
+{"name":"xml_valid","args":[{"type":"text"}],"returns":"boolean"}
+{"name":"xpath_bool","args":[{"type":"text"},{"type":"text"}],"returns":"boolean"}
+{"name":"xpath_list","args":[{"type":"text"},{"type":"text"}],"returns":"text"}
+{"name":"xpath_list","args":[{"type":"text"},{"type":"text"},{"type":"text"}],"returns":"text"}
+{"name":"xpath_nodeset","args":[{"type":"text"},{"type":"text"}],"returns":"text"}
+{"name":"xpath_nodeset","args":[{"type":"text"},{"type":"text"},{"type":"text"}],"returns":"text"}
+{"name":"xpath_nodeset","args":[{"type":"text"},{"type":"text"},{"type":"text"},{"type":"text"}],"returns":"text"}
+{"name":"xpath_number","args":[{"type":"text"},{"type":"text"}],"returns":"real"}
+{"name":"xpath_string","args":[{"type":"text"},{"type":"text"}],"returns":"text"}
+{"name":"xpath_table","args":[{"type":"text"},{"type":"text"},{"type":"text"},{"type":"text"},{"type":"text"}],"returns":"record"}
+{"name":"xslt_process","args":[{"type":"text"},{"type":"text"}],"returns":"text"}
+{"name":"xslt_process","args":[{"type":"text"},{"type":"text"},{"type":"text"}],"returns":"text"}

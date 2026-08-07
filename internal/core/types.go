@@ -128,6 +128,19 @@ func (c *Catalog) createComparisons(typeOID int64) error {
 	return nil
 }
 
+// TypeOIDsInCategory returns the types the catalog's dialect has in the named
+// category, in the order they were created.
+func (c *Catalog) TypeOIDsInCategory(category string) ([]int64, error) {
+	oids, err := c.q.TypeOIDsInCategory(context.Background(), catalogdb.TypeOIDsInCategoryParams{
+		DialectOid: nullInt64(c.dialectOID),
+		Category:   nullString(category),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("types in category %q: %w", category, err)
+	}
+	return oids, nil
+}
+
 func (c *Catalog) TypeOID(name string) (int64, error) {
 	oid, err := c.q.TypeOIDByName(context.Background(), strings.ToLower(name))
 	if err != nil {
