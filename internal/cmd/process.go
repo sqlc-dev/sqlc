@@ -87,9 +87,7 @@ func processQuerySets(ctx context.Context, rp ResultProcessor, conf *config.Conf
 
 			var name, lang string
 			parseOpts := opts.Parser{
-				Experiment: opts.Experiment{
-					CoreAnalyzer: o.Env.Experiment.CoreAnalyzer,
-				},
+				Experiment: o.Env.Experiment,
 			}
 
 			switch {
