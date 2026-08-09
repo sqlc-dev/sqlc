@@ -10,4 +10,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: bufbuild/buf-setup-action@v1
+        with:
+          # buf-setup-action resolves the release download URL through the
+          # GitHub API. Without a token that request is anonymous and shares
+          # a rate limit with every other job on the runner's IP, so setup
+          # intermittently fails with "API rate limit exceeded".
+          github_token: ${{ github.token }}
       - uses: bufbuild/buf-lint-action@v1
