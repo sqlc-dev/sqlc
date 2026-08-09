@@ -54,6 +54,11 @@ func (c *Catalog) DialectFlag(dialectOID int64, key string) (string, error) {
 // same ones the seeded types have.
 const FlagComparisonOperators = "operators.comparison"
 
+// FlagCastCategories holds the categories whose types are all implicitly
+// castable to one another, as the dialect's seed declared them, so that a type
+// arriving after the seed — an extension's, say — can join its category.
+const FlagCastCategories = "casts.categories"
+
 // Constant kinds. A literal in a query has no declared type, so each dialect
 // names the type its literals take on.
 const (

@@ -1,0 +1,3 @@
+{"name":"pg_buffercache_pages","returns":"record"}
+{"name":"pg_buffercache_summary","returns":"record"}
+{"name":"pg_buffercache_usage_counts","returns":"record"}

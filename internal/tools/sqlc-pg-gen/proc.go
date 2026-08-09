@@ -89,24 +89,6 @@ func (a *Arg) TypeName() string {
 	return clean(a.Type)
 }
 
-// GoMode returns Go's representation of the arguemnt's mode
-func (a *Arg) GoMode() string {
-	switch a.Mode {
-	case "", "i":
-		return "ast.FuncParamIn"
-	case "o":
-		return "ast.FuncParamOut"
-	case "b":
-		return "ast.FuncParamInOut"
-	case "v":
-		return "ast.FuncParamVariadic"
-	case "t":
-		return "ast.FuncParamTable"
-	}
-
-	return ""
-}
-
 func scanProcs(rows pgx.Rows) ([]Proc, error) {
 	defer rows.Close()
 	// Iterate through the result set

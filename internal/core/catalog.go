@@ -22,6 +22,12 @@ type Catalog struct {
 	// dialectOID is the dialect this catalog was seeded with. A catalog is
 	// built for one dialect, so dialect-wide lookups need no other input.
 	dialectOID int64
+
+	// loadExtension applies a named extension's seed, installed by the
+	// dialect's seed for the engines that ship extension data. It runs at most
+	// once per extension name: a schema is free to say CREATE EXTENSION twice.
+	loadExtension func(name string) error
+	extensions    map[string]bool
 }
 
 type Option func(*Catalog) error
@@ -148,4 +154,31 @@ func (c *Catalog) DB() *sql.DB {
 func (c *Catalog) bootstrap() error {
 	_, err := c.CreateNamespace("public")
 	return err
+}
+
+// SeededDialectOID returns the dialect this catalog was seeded with, which is
+// what anything registered after seeding — an extension's types and functions
+// — records as its dialect.
+func (c *Catalog) SeededDialectOID() int64 {
+	return c.dialectOID
+}
+
+// SetExtensionLoader installs the function CREATE EXTENSION calls to apply an
+// extension's seed. A dialect without extension data leaves it unset.
+func (c *Catalog) SetExtensionLoader(fn func(name string) error) {
+	c.loadExtension = fn
+}
+
+// LoadExtension applies the named extension's seed to the catalog. An
+// extension already applied, or a dialect with no loader, contributes
+// nothing; an extension the loader does not know is the loader's to ignore.
+func (c *Catalog) LoadExtension(name string) error {
+	if c.loadExtension == nil || c.extensions[name] {
+		return nil
+	}
+	if c.extensions == nil {
+		c.extensions = map[string]bool{}
+	}
+	c.extensions[name] = true
+	return c.loadExtension(name)
 }

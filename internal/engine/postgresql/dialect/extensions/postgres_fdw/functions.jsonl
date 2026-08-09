@@ -1,0 +1,5 @@
+{"name":"postgres_fdw_disconnect","args":[{"type":"text"}],"returns":"boolean"}
+{"name":"postgres_fdw_disconnect_all","returns":"boolean"}
+{"name":"postgres_fdw_get_connections","returns":"record"}
+{"name":"postgres_fdw_handler","returns":"fdw_handler"}
+{"name":"postgres_fdw_validator","args":[{"type":"text[]"},{"type":"oid"}],"returns":"void"}

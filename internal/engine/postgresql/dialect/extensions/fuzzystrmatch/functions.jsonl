@@ -1,0 +1,11 @@
+{"name":"daitch_mokotoff","args":[{"type":"text"}],"returns":"text[]"}
+{"name":"difference","args":[{"type":"text"},{"type":"text"}],"returns":"integer"}
+{"name":"dmetaphone","args":[{"type":"text"}],"returns":"text"}
+{"name":"dmetaphone_alt","args":[{"type":"text"}],"returns":"text"}
+{"name":"levenshtein","args":[{"type":"text"},{"type":"text"}],"returns":"integer"}
+{"name":"levenshtein","args":[{"type":"text"},{"type":"text"},{"type":"integer"},{"type":"integer"},{"type":"integer"}],"returns":"integer"}
+{"name":"levenshtein_less_equal","args":[{"type":"text"},{"type":"text"},{"type":"integer"}],"returns":"integer"}
+{"name":"levenshtein_less_equal","args":[{"type":"text"},{"type":"text"},{"type":"integer"},{"type":"integer"},{"type":"integer"},{"type":"integer"}],"returns":"integer"}
+{"name":"metaphone","args":[{"type":"text"},{"type":"integer"}],"returns":"text"}
+{"name":"soundex","args":[{"type":"text"}],"returns":"text"}
+{"name":"text_soundex","args":[{"type":"text"}],"returns":"text"}

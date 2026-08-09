@@ -1,0 +1,9 @@
+{"name":"earth","returns":"double precision"}
+{"name":"earth_box","args":[{"type":"earth"},{"type":"double precision"}],"returns":"cube"}
+{"name":"earth_distance","args":[{"type":"earth"},{"type":"earth"}],"returns":"double precision"}
+{"name":"gc_to_sec","args":[{"type":"double precision"}],"returns":"double precision"}
+{"name":"geo_distance","args":[{"type":"point"},{"type":"point"}],"returns":"double precision"}
+{"name":"latitude","args":[{"type":"earth"}],"returns":"double precision"}
+{"name":"ll_to_earth","args":[{"type":"double precision"},{"type":"double precision"}],"returns":"earth"}
+{"name":"longitude","args":[{"type":"earth"}],"returns":"double precision"}
+{"name":"sec_to_gc","args":[{"type":"double precision"}],"returns":"double precision"}

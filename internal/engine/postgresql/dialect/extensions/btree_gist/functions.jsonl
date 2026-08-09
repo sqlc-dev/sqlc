@@ -1,0 +1,24 @@
+{"name":"cash_dist","args":[{"type":"money"},{"type":"money"}],"returns":"money"}
+{"name":"date_dist","args":[{"type":"date"},{"type":"date"}],"returns":"integer"}
+{"name":"float4_dist","args":[{"type":"real"},{"type":"real"}],"returns":"real"}
+{"name":"float8_dist","args":[{"type":"double precision"},{"type":"double precision"}],"returns":"double precision"}
+{"name":"gbtreekey16_in","args":[{"type":"cstring"}],"returns":"gbtreekey16"}
+{"name":"gbtreekey16_out","args":[{"type":"gbtreekey16"}],"returns":"cstring"}
+{"name":"gbtreekey2_in","args":[{"type":"cstring"}],"returns":"gbtreekey2"}
+{"name":"gbtreekey2_out","args":[{"type":"gbtreekey2"}],"returns":"cstring"}
+{"name":"gbtreekey32_in","args":[{"type":"cstring"}],"returns":"gbtreekey32"}
+{"name":"gbtreekey32_out","args":[{"type":"gbtreekey32"}],"returns":"cstring"}
+{"name":"gbtreekey4_in","args":[{"type":"cstring"}],"returns":"gbtreekey4"}
+{"name":"gbtreekey4_out","args":[{"type":"gbtreekey4"}],"returns":"cstring"}
+{"name":"gbtreekey8_in","args":[{"type":"cstring"}],"returns":"gbtreekey8"}
+{"name":"gbtreekey8_out","args":[{"type":"gbtreekey8"}],"returns":"cstring"}
+{"name":"gbtreekey_var_in","args":[{"type":"cstring"}],"returns":"gbtreekey_var"}
+{"name":"gbtreekey_var_out","args":[{"type":"gbtreekey_var"}],"returns":"cstring"}
+{"name":"int2_dist","args":[{"type":"smallint"},{"type":"smallint"}],"returns":"smallint"}
+{"name":"int4_dist","args":[{"type":"integer"},{"type":"integer"}],"returns":"integer"}
+{"name":"int8_dist","args":[{"type":"bigint"},{"type":"bigint"}],"returns":"bigint"}
+{"name":"interval_dist","args":[{"type":"interval"},{"type":"interval"}],"returns":"interval"}
+{"name":"oid_dist","args":[{"type":"oid"},{"type":"oid"}],"returns":"oid"}
+{"name":"time_dist","args":[{"type":"time without time zone"},{"type":"time without time zone"}],"returns":"interval"}
+{"name":"ts_dist","args":[{"type":"timestamp without time zone"},{"type":"timestamp without time zone"}],"returns":"interval"}
+{"name":"tstz_dist","args":[{"type":"timestamp with time zone"},{"type":"timestamp with time zone"}],"returns":"interval"}
