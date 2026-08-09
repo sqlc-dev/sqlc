@@ -7,6 +7,13 @@ Unlike [`generate`](generate.md), this command does not require a configuration
 file and does not connect to a database. It uses sqlc's native static analysis
 to infer types directly from the provided schema.
 
+Every dialect is analyzed by the same engine-neutral analysis core: the schema
+is loaded into a catalog seeded with the dialect's types, operators and
+functions, and each query is resolved against it. `generate` still uses each
+engine's own analysis path, so the two can report a type differently — most
+visibly, `analyze` reports type names as the catalog stores them, in lower
+case.
+
 ## Usage
 
 ```sh
@@ -18,8 +25,8 @@ provided. The schema is always read from the `--schema` file.
 
 ## Flags
 
-- `--dialect`, `-d` - The SQL dialect to use. One of `postgresql`, `mysql`, or
-  `sqlite`. Required.
+- `--dialect`, `-d` - The SQL dialect to use. One of `postgresql`, `mysql`,
+  `sqlite`, `clickhouse`, or `googlesql`. Required.
 - `--schema`, `-s` - Path to the schema (DDL) file. Required.
 - `--ast` - Include each statement's AST in the output. Defaults to `false`.
 

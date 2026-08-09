@@ -30,10 +30,6 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 		return v
 	}
 
-	if fn.Schema == "sqlc" {
-		return nil
-	}
-
 	fun, err := v.catalog.ResolveFuncCall(call)
 	if fun != nil {
 		return v

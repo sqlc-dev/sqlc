@@ -1,0 +1,9 @@
+[
+  {
+    "start": 0,
+    "end": 26,
+    "dollar": true,
+    "error": "expected 1 parameter to sqlc.arg; got 2",
+    "error_at": 7
+  }
+]

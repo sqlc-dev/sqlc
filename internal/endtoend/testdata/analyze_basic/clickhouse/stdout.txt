@@ -1,0 +1,44 @@
+[
+  {
+    "name": "ListEvents",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "data_type": "uint64",
+        "not_null": true,
+        "is_array": false,
+        "table": "events"
+      },
+      {
+        "name": "name",
+        "data_type": "string",
+        "not_null": true,
+        "is_array": false,
+        "table": "events"
+      },
+      {
+        "name": "tag",
+        "data_type": "string",
+        "not_null": false,
+        "is_array": false,
+        "table": "events"
+      },
+      {
+        "name": "amount",
+        "data_type": "float64",
+        "not_null": true,
+        "is_array": false,
+        "table": "events"
+      },
+      {
+        "name": "created",
+        "data_type": "datetime",
+        "not_null": true,
+        "is_array": false,
+        "table": "events"
+      }
+    ],
+    "params": []
+  }
+]

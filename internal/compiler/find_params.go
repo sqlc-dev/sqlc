@@ -11,24 +11,31 @@ import (
 // target, handling both `col = $1` and the multi-column form
 // `(a, b) = ($1, $2)`, where each column is a separate ResTarget carrying a
 // MultiAssignRef with its own Colno pointing into a shared RowExpr source.
-func paramRefForAssignment(target *ast.ResTarget) (*ast.ParamRef, bool) {
+func paramRefForAssignment(target *ast.ResTarget) (*ast.ParamRef, bool, error) {
 	switch val := target.Val.(type) {
 	case *ast.ParamRef:
-		return val, true
+		return val, true, nil
 	case *ast.MultiAssignRef:
 		row, ok := val.Source.(*ast.RowExpr)
-		if !ok || row.Args == nil {
-			return nil, false
+		if !ok {
+			return nil, false, nil
+		}
+		valueCount := 0
+		if row.Args != nil {
+			valueCount = len(row.Args.Items)
+		}
+		if valueCount != val.Ncolumns {
+			return nil, false, fmt.Errorf("MERGE UPDATE has %d expressions for %d target columns", valueCount, val.Ncolumns)
 		}
 		idx := val.Colno - 1
-		if idx < 0 || idx >= len(row.Args.Items) {
-			return nil, false
+		if idx < 0 || idx >= valueCount {
+			return nil, false, fmt.Errorf("MERGE UPDATE has invalid target column %d", val.Colno)
 		}
 		if ref, ok := row.Args.Items[idx].(*ast.ParamRef); ok {
-			return ref, true
+			return ref, true, nil
 		}
 	}
-	return nil, false
+	return nil, false, nil
 }
 
 func findParameters(root ast.Node) ([]paramRef, []error) {
@@ -154,7 +161,11 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 					if !ok {
 						continue
 					}
-					ref, ok := paramRefForAssignment(target)
+					ref, ok, err := paramRefForAssignment(target)
+					if err != nil {
+						*p.errs = append(*p.errs, err)
+						return p
+					}
 					if !ok {
 						continue
 					}
@@ -178,6 +189,14 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 						return p
 					}
 					continue
+				}
+				if len(clause.Values.Items) > len(clause.TargetList.Items) {
+					*p.errs = append(*p.errs, fmt.Errorf("MERGE INSERT has more expressions than target columns"))
+					return p
+				}
+				if len(clause.Values.Items) > 0 && len(clause.Values.Items) < len(clause.TargetList.Items) {
+					*p.errs = append(*p.errs, fmt.Errorf("MERGE INSERT has fewer expressions than target columns"))
+					return p
 				}
 				for i, v := range clause.Values.Items {
 					ref, ok := v.(*ast.ParamRef)

@@ -105,9 +105,11 @@ case *ast.VariableExpr:
 ## Important Distinctions
 
 ### MySQL @variable vs sqlc @param
-- MySQL user variables (`@user_id`) use `VariableExpr` - preserved as-is in output
-- sqlc named parameters (`@param`) use `A_Expr` with `@` operator - replaced with `?`
-- The `named.IsParamSign()` function checks for `A_Expr` with `@` operator
+- sqlc named parameters (`@param`) never reach the AST: `internal/sql/preprocess`
+  replaces them with the dialect's native placeholder before parsing, so engines
+  only ever see a `ParamRef`
+- `@name` is only sqlc syntax where the preprocessor's dialect says so. MySQL is
+  excluded, so `@user_id` there stays a user variable (`VariableExpr`)
 
 ### Type Modifiers
 - `TypeName.Typmods` holds type modifiers like `varchar(255)`

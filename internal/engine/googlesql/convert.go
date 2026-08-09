@@ -11,6 +11,9 @@ import (
 
 type cc struct {
 	paramCount int
+	// namedParams tracks the number assigned to each "@name" so repeated uses
+	// share a single parameter.
+	namedParams map[string]int
 }
 
 func (c *cc) convert(node zjast.Node) ast.Node {
@@ -419,6 +422,7 @@ func (c *cc) convertExpr(node zjast.Node) ast.Node {
 			op = "<<"
 		}
 		return &ast.A_Expr{
+			Kind:     ast.A_Expr_Kind_OP,
 			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: op}}},
 			Lexpr:    c.convertExpr(n.Lhs),
 			Rexpr:    c.convertExpr(n.Rhs),
@@ -510,17 +514,24 @@ func (c *cc) convertIntLiteral(n *zjast.IntLiteral) ast.Node {
 
 // convertParameterExpr converts "@name" and "?" query parameters.
 //
-// Named parameters are mapped to the shape the PostgreSQL and SQLite engines
-// produce for "@name": an A_Expr with the operator "@" and the parameter name
-// as the right operand. That is the representation sqlc's named-parameter
-// rewriter (internal/sql/rewrite, named.IsParamSign) already understands.
-// Positional "?" parameters become ParamRef nodes numbered by their 1-based
-// position in the statement.
+// Both become ParamRef nodes. "@name" is native GoogleSQL syntax rather than
+// sqlc syntax, so nothing rewrites it before the parser runs and the numbering
+// here is what the rest of the pipeline sees: repeated uses of a name share a
+// number, and positional parameters are numbered by their 1-based position in
+// the statement.
 func (c *cc) convertParameterExpr(n *zjast.ParameterExpr) ast.Node {
 	if n.Name != nil {
-		return &ast.A_Expr{
-			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: "@"}}},
-			Rexpr:    &ast.String{Str: n.Name.Name},
+		number, ok := c.namedParams[n.Name.Name]
+		if !ok {
+			c.paramCount++
+			number = c.paramCount
+			if c.namedParams == nil {
+				c.namedParams = map[string]int{}
+			}
+			c.namedParams[n.Name.Name] = number
+		}
+		return &ast.ParamRef{
+			Number:   number,
 			Location: n.Pos(),
 		}
 	}
@@ -546,6 +557,7 @@ func (c *cc) convertUnaryExpression(n *zjast.UnaryExpression) ast.Node {
 		}
 	}
 	return &ast.A_Expr{
+		Kind:     ast.A_Expr_Kind_OP,
 		Name:     &ast.List{Items: []ast.Node{&ast.String{Str: n.Op}}},
 		Rexpr:    c.convertExpr(n.Operand),
 		Location: n.Pos(),
@@ -570,6 +582,7 @@ func (c *cc) convertBinaryExpression(n *zjast.BinaryExpression) ast.Node {
 	}
 
 	var expr ast.Node = &ast.A_Expr{
+		Kind:     ast.A_Expr_Kind_OP,
 		Name:     &ast.List{Items: []ast.Node{&ast.String{Str: n.Op}}},
 		Lexpr:    c.convertExpr(n.Left),
 		Rexpr:    c.convertExpr(n.Right),

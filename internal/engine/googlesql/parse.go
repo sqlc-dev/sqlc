@@ -29,23 +29,32 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		return nil, err
 	}
 
+	// zetajones node locations are byte offsets into the input. Following the
+	// convention used by the other engines, a statement's location starts at the
+	// end of the previous statement (or the start of the input) so that any
+	// leading comment — in particular the "-- name:" annotation sqlc relies on —
+	// is captured as part of the statement.
 	var stmts []ast.Statement
+	loc := 0
 	for _, stmt := range stmtNodes {
 		converter := &cc{}
 		out := converter.convert(stmt)
 		if _, ok := out.(*ast.TODO); ok {
+			// Skip over the unsupported statement (and its trailing semicolon)
+			// so the next statement's leading comment is measured from here.
+			loc = stmt.End() + 1
 			continue
 		}
 
-		// zetajones node locations are byte offsets into the input.
-		loc := stmt.Pos()
+		end := stmt.End()
 		stmts = append(stmts, ast.Statement{
 			Raw: &ast.RawStmt{
 				Stmt:         out,
 				StmtLocation: loc,
-				StmtLen:      stmt.End() - loc,
+				StmtLen:      end - loc,
 			},
 		})
+		loc = end + 1
 	}
 
 	return stmts, nil

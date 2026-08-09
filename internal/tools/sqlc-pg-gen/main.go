@@ -3,15 +3,19 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"go/format"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 	"text/template"
+
+	"github.com/sqlc-dev/sqlc/internal/core/seed"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -156,6 +160,62 @@ func clean(arg string) string {
 	return arg
 }
 
+// writeFunctions writes procs to destPath as JSONL, one function per line, in
+// the form the seed package reads. Both the analysis core and the catalog the
+// legacy compiler builds load the result.
+func writeFunctions(procs []Proc, destPath string) error {
+	out, err := os.Create(destPath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	enc := json.NewEncoder(out)
+	for _, proc := range procs {
+		fn := seed.Function{Name: proc.Name, Returns: proc.ReturnTypeName()}
+		for _, arg := range proc.Args() {
+			a := seed.Arg{Name: arg.Name, Type: arg.TypeName(), HasDefault: arg.HasDefault}
+			if arg.Mode != "" && arg.Mode != "i" {
+				a.Mode = arg.Mode
+			}
+			fn.Args = append(fn.Args, a)
+		}
+		if err := enc.Encode(fn); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// writeRelations appends a schema's relations to out as JSONL, one relation
+// per line, in the form the seed package reads.
+func writeRelations(out io.Writer, schemaName string, relations []Relation) error {
+	enc := json.NewEncoder(out)
+	for _, relation := range relations {
+		rec := seed.Relation{
+			Catalog: relation.Catalog,
+			Schema:  schemaName,
+			Name:    relation.Name,
+		}
+		for _, col := range relation.Columns {
+			c := seed.Column{
+				Name:    col.Name,
+				Type:    col.Type,
+				NotNull: col.IsNotNull,
+				Array:   col.IsArray,
+			}
+			if col.Length != nil {
+				c.Length = *col.Length
+			}
+			rec.Columns = append(rec.Columns, c)
+		}
+		if err := enc.Encode(rec); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // writeFormattedGo executes `tmpl` with `data` as its context to the file `destPath`
 func writeFormattedGo(tmpl *template.Template, data any, destPath string) error {
 	out := bytes.NewBuffer([]byte{})
@@ -174,6 +234,23 @@ func writeFormattedGo(tmpl *template.Template, data any, destPath string) error 
 	}
 
 	return nil
+}
+
+// supplementalPGCatalogProcs are parser-level functions that do not appear in
+// pg_catalog.pg_proc but still need signatures in both analysis catalogs.
+var supplementalPGCatalogProcs = []Proc{
+	{
+		Name:       "merge_action",
+		ReturnType: "text",
+	},
+}
+
+func addSupplementalPGCatalogProcs(procs []Proc) []Proc {
+	procs = append(procs, supplementalPGCatalogProcs...)
+	sort.SliceStable(procs, func(i, j int) bool {
+		return procs[i].Name < procs[j].Name
+	})
+	return procs
 }
 
 // preserveLegacyCatalogBehavior maintain previous ordering and filtering
@@ -258,18 +335,26 @@ func run(ctx context.Context) error {
 	}
 	defer conn.Close(ctx)
 
+	// The two schemas sqlc knows PostgreSQL by are written to the dialect
+	// directory rather than to Go: the engine and the analysis core both read
+	// them from there. Their relations share one file, keyed by schema.
+	dialectDir := filepath.Join(dir, "dialect")
+	relationsPath := filepath.Join(dialectDir, seed.RelationsFile)
 	schemas := []schemaToLoad{
 		{
 			Name:      "pg_catalog",
-			GenFnName: "genPGCatalog",
-			DestPath:  filepath.Join(dir, "pg_catalog.go"),
+			FuncsPath: filepath.Join(dialectDir, seed.FunctionsFile),
 		},
 		{
-			Name:      "information_schema",
-			GenFnName: "genInformationSchema",
-			DestPath:  filepath.Join(dir, "information_schema.go"),
+			Name: "information_schema",
 		},
 	}
+
+	relationsFile, err := os.Create(relationsPath)
+	if err != nil {
+		return err
+	}
+	defer relationsFile.Close()
 
 	for _, schema := range schemas {
 		procs, err := readProcs(ctx, conn, schema.Name)
@@ -278,6 +363,7 @@ func run(ctx context.Context) error {
 		}
 
 		if schema.Name == "pg_catalog" {
+			procs = addSupplementalPGCatalogProcs(procs)
 			procs = preserveLegacyCatalogBehavior(procs)
 		}
 
@@ -286,6 +372,18 @@ func run(ctx context.Context) error {
 			return err
 		}
 
+		if schema.FuncsPath != "" {
+			if err := writeFunctions(procs, schema.FuncsPath); err != nil {
+				return err
+			}
+		}
+		if err := writeRelations(relationsFile, schema.Name, relations); err != nil {
+			return err
+		}
+
+		if schema.DestPath == "" {
+			continue
+		}
 		err = writeFormattedGo(tmpl, tmplCtx{
 			Pkg:        "postgresql",
 			SchemaName: schema.Name,
@@ -370,10 +468,14 @@ func run(ctx context.Context) error {
 type schemaToLoad struct {
 	// name is the name of a schema to load
 	Name string
-	// DestPath is the desination for the generate file
+	// DestPath is the desination for the generate file. A schema written to
+	// data files instead of Go leaves it empty.
 	DestPath string
 	// The name of the function to generate for loading this schema
 	GenFnName string
+	// FuncsPath, when set, is the JSONL file this schema's functions are
+	// written to rather than being compiled into the generated Go.
+	FuncsPath string
 }
 
 type extensionPair struct {

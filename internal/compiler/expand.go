@@ -169,34 +169,27 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 			}
 		}
 
-		var oldString string
-		var oldFunc func(string) int
-
-		// use the sqlc.embed string instead
-		if embed, ok := qc.embeds.Find(ref); ok {
-			oldString = embed.Orig()
-		} else {
-			oldFunc = func(s string) int {
-				length := 0
-				for i, o := range old {
-					if hasSeparator := i > 0; hasSeparator {
-						length++
-					}
-					if strings.HasPrefix(s[length:], o) {
-						length += len(o)
-					} else if quoted := c.quote(o); strings.HasPrefix(s[length:], quoted) {
-						length += len(quoted)
-					} else {
-						length += len(o)
-					}
+		// An embed was rewritten to "table.*" in the query text, so it is
+		// measured the same way as a star reference the user wrote.
+		oldFunc := func(s string) int {
+			length := 0
+			for i, o := range old {
+				if hasSeparator := i > 0; hasSeparator {
+					length++
 				}
-				return length
+				if strings.HasPrefix(s[length:], o) {
+					length += len(o)
+				} else if quoted := c.quote(o); strings.HasPrefix(s[length:], quoted) {
+					length += len(quoted)
+				} else {
+					length += len(o)
+				}
 			}
+			return length
 		}
 
 		edits = append(edits, source.Edit{
 			Location: res.Location - raw.StmtLocation,
-			Old:      oldString,
 			OldFunc:  oldFunc,
 			New:      strings.Join(cols, ", "),
 		})

@@ -159,28 +159,23 @@ func run() error {
 	log.Println(authors)
 
 	// create an author
-	result, err := queries.CreateAuthor(ctx, tutorial.CreateAuthorParams{
+	insertedAuthor, err := queries.CreateAuthor(ctx, tutorial.CreateAuthorParams{
 		Name: "Brian Kernighan",
 		Bio:  sql.NullString{String: "Co-author of The C Programming Language and The Go Programming Language", Valid: true},
 	})
 	if err != nil {
 		return err
 	}
-
-	insertedAuthorID, err := result.LastInsertId()
-	if err != nil {
-		return err
-	}
-	log.Println(insertedAuthorID)
+	log.Println(insertedAuthor)
 
 	// get the author we just inserted
-	fetchedAuthor, err := queries.GetAuthor(ctx, insertedAuthorID)
+	fetchedAuthor, err := queries.GetAuthor(ctx, insertedAuthor.ID)
 	if err != nil {
 		return err
 	}
 
 	// prints true
-	log.Println(reflect.DeepEqual(insertedAuthorID, fetchedAuthor.ID))
+	log.Println(reflect.DeepEqual(insertedAuthor, fetchedAuthor))
 	return nil
 }
 

@@ -1,0 +1,16 @@
+[
+  {
+    "start": 0,
+    "end": 124,
+    "dollar": true,
+    "params": [
+      {
+        "number": 1,
+        "location": 114,
+        "origin": 114,
+        "name": "data",
+        "named": true
+      }
+    ]
+  }
+]

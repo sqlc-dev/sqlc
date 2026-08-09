@@ -1,0 +1,16 @@
+[
+  {
+    "start": 0,
+    "end": 10,
+    "dollar": true,
+    "params": [
+      {
+        "number": 1,
+        "location": 7,
+        "origin": 7,
+        "name": "name",
+        "named": true
+      }
+    ]
+  }
+]

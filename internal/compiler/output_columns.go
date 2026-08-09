@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
@@ -71,7 +72,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 
 		if n.GroupClause != nil {
 			for _, item := range n.GroupClause.Items {
-				if err := findColumnForNode(item, tables, targets); err != nil {
+				if err := c.findColumnForNode(item, tables, targets); err != nil {
 					return nil, err
 				}
 			}
@@ -87,7 +88,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 					if !ok {
 						continue
 					}
-					if err := findColumnForNode(sb.Node, tables, targets); err != nil {
+					if err := c.findColumnForNode(sb.Node, tables, targets); err != nil {
 						return nil, fmt.Errorf("%v: if you want to skip this validation, set 'strict_order_by' to false", err)
 					}
 				}
@@ -103,7 +104,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 						if !ok {
 							continue
 						}
-						if err := findColumnForNode(caseExpr.Xpr, tables, targets); err != nil {
+						if err := c.findColumnForNode(caseExpr.Xpr, tables, targets); err != nil {
 							return nil, fmt.Errorf("%v: if you want to skip this validation, set 'strict_order_by' to false", err)
 						}
 					}
@@ -260,7 +261,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 			if hasStarRef(n) {
 
 				// add a column with a reference to an embedded table
-				if embed, ok := qc.embeds.Find(n); ok {
+				if embed, ok := qc.embeds.Find(n.Location, res.Location); ok {
 					cols = append(cols, &Column{
 						Name:       embed.Table.Name,
 						EmbedTable: embed.Table,
@@ -792,12 +793,34 @@ func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) 
 	return cols, nil
 }
 
-func findColumnForNode(item ast.Node, tables []*Table, targetList *ast.List) error {
+func (c *Compiler) findColumnForNode(item ast.Node, tables []*Table, targetList *ast.List) error {
 	ref, ok := item.(*ast.ColumnRef)
 	if !ok {
 		return nil
 	}
+	if c.isImplicitColumnRef(ref) {
+		return nil
+	}
 	return findColumnForRef(ref, tables, targetList)
+}
+
+// isImplicitColumnRef reports whether ref names a column that every table in
+// the dialect has without declaring it, and which therefore never appears in
+// a catalog built from the schema. SQLite gives each ordinary table a rowid,
+// reachable under three spellings.
+func (c *Compiler) isImplicitColumnRef(ref *ast.ColumnRef) bool {
+	if c.conf.Engine != config.EngineSQLite {
+		return false
+	}
+	parts := stringSlice(ref.Fields)
+	if len(parts) == 0 {
+		return false
+	}
+	switch parts[len(parts)-1] {
+	case "rowid", "_rowid_", "oid":
+		return true
+	}
+	return false
 }
 
 func findColumnForRef(ref *ast.ColumnRef, tables []*Table, targetList *ast.List) error {

@@ -1,0 +1,3 @@
+{"name": "||", "left": "text", "right": "text", "result": "text"}
+{"name": "~~", "left": "text", "right": "text", "result": "boolean"}
+{"name": "!~~", "left": "text", "right": "text", "result": "boolean"}

@@ -1,0 +1,3 @@
+SELECT sqlc.arg(
+  name
+);

@@ -20,9 +20,25 @@ they are introduced.
 ## SQLCCACHE
 
 The `SQLCCACHE` environment variable dictates where `sqlc` will store cached
-WASM-based plugins and modules. By default `sqlc` follows the [XDG Base
-Directory
+data. By default `sqlc` follows the [XDG Base Directory
 Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html).
+
+The cache is designed after Bazel's local disk cache and has three parts:
+
+- `cas/` — a content-addressable store holding blobs (query analysis
+  results, WASM plugin binaries, compiled WASM machine code) keyed by the
+  SHA-256 hash of their contents. A remotely fetched plugin's address is
+  exactly the checksum declared in the configuration file, so it is loaded
+  directly by that address.
+- `ac/` — an action cache mapping the digest of a unit of cacheable work and
+  its inputs (analyzing a query against a schema, compiling a WASM module to
+  machine code) to the CAS digests of its outputs.
+- `exec/` — per-action directories where cached output trees are
+  materialized for tools that read them from disk, such as the
+  [wazero](https://wazero.io) runtime's compilation cache.
+
+The entire directory is safe to delete at any time; sqlc will rebuild it as
+needed.
 
 ## SQLCDEBUG
 

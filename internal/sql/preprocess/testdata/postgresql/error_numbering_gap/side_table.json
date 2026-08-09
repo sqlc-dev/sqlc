@@ -1,0 +1,22 @@
+[
+  {
+    "start": 0,
+    "end": 45,
+    "dollar": true,
+    "params": [
+      {
+        "number": 2,
+        "location": 31,
+        "origin": 31,
+        "named": false
+      },
+      {
+        "number": 3,
+        "location": 42,
+        "origin": 42,
+        "named": false
+      }
+    ],
+    "param_error": "could not determine data type of parameter $1"
+  }
+]

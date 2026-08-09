@@ -14,9 +14,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-go@v6
+    - uses: actions/setup-go@v7
       with:
-        go-version: '1.26.4'
+        go-version: '1.26.5'
     - run: go build ./...
       env:
         CGO_ENABLED: "0"
@@ -26,9 +26,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v7
-    - uses: actions/setup-go@v6
+    - uses: actions/setup-go@v7
       with:
-        go-version: '1.26.4'
+        go-version: '1.26.5'
 
     - name: install gotestsum
       run: go install gotest.tools/gotestsum@latest

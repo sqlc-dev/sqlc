@@ -10,8 +10,8 @@ import (
 
 type Author struct {
 	ID       int64
-	Username interface{}
-	Email    interface{}
+	Username sql.NullString
+	Email    sql.NullString
 	Name     string
 	Bio      sql.NullString
 }

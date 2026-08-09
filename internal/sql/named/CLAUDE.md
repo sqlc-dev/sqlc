@@ -1,94 +1,58 @@
 # Named Parameters Package - Claude Code Guide
 
-This package provides utilities for identifying sqlc's named parameter syntax.
+This package models a query's parameters: their names, their nullability and
+whether they came from `sqlc.slice()`.
 
-## Named Parameter Styles
+It no longer knows anything about sqlc's *syntax*. `sqlc.arg()`, `sqlc.narg()`,
+`sqlc.slice()` and `@name` are rewritten to native placeholders by
+`internal/sql/preprocess` before any engine parser runs, and that package builds
+the `ParamSet` while it rewrites.
 
-sqlc supports two styles of named parameters:
+## Param
 
-### 1. Function-style: `sqlc.arg(name)`, `sqlc.narg(name)`, `sqlc.slice(name)`
-Identified by `IsParamFunc()`:
+A `Param` carries the user-facing name plus a nullability that combines what was
+inferred from the schema with what the user asked for:
+
+- `NewParam(name)` — unspecified nullability, from `sqlc.arg()` or `@name`
+- `NewUserNullableParam(name)` — from `sqlc.narg()`, always nullable
+- `NewSqlcSlice(name)` — from `sqlc.slice()`
+- `NewInferredParam(name, notNull)` — what the compiler inferred
+
+A user-specified nullability outranks an inferred one. `mergeParam` ORs the
+nullability bits together, so the order the two sources arrive in does not
+matter.
+
+## ParamSet
+
+`ParamSet` maps placeholder numbers to `Param` values for a single statement.
+
 ```go
-func IsParamFunc(node ast.Node) bool {
-    call, ok := node.(*ast.FuncCall)
-    if !ok {
-        return false
-    }
-    return call.Func.Schema == "sqlc" &&
-           (call.Func.Name == "arg" || call.Func.Name == "narg" || call.Func.Name == "slice")
-}
+ps := named.NewParamSet(numbersAlreadyUsed, hasNamedSupport)
+n := ps.Add(named.NewParam("author_id")) // returns the placeholder number
 ```
 
-### 2. At-sign style: `@param_name` (PostgreSQL only)
-Identified by `IsParamSign()`:
-```go
-func IsParamSign(node ast.Node) bool {
-    expr, ok := node.(*ast.A_Expr)
-    return ok && astutils.Join(expr.Name, ".") == "@"
-}
-```
+`hasNamedSupport` is false for dialects that send one argument per `?`
+(MySQL, ClickHouse). There, every occurrence of a name gets its own number. For
+`$1`/`?1`/`@name` dialects repeated uses of a name share a number.
 
-## Important Distinction: sqlc @param vs MySQL @variable
+The compiler reads the set back with:
 
-**sqlc named parameters** (`@param` in PostgreSQL queries):
-- Represented as `A_Expr` with `Kind=A_Expr_Kind_OP` and `Name=["@"]`
-- Detected by `IsParamSign()`
-- Replaced with positional parameters (`$1`, `$2` for PostgreSQL, `?` for MySQL)
+- `NameFor(number)` — the user-facing name for a placeholder
+- `FetchMerge(number, inferred)` — the merged param and whether it was named
 
-**MySQL user variables** (`@user_id` in MySQL queries):
-- Represented as `VariableExpr`
-- NOT detected by `IsParamSign()` (it checks for `A_Expr`, not `VariableExpr`)
-- Preserved as-is in the output SQL
+## MySQL @variable vs sqlc @param
 
-This distinction is critical:
+`@name` is only sqlc syntax where the preprocessor's dialect says it is. MySQL
+sets `AtSign: false`, so `@user_id` there is a user variable and reaches the
+parser untouched (converted to `ast.VariableExpr`). PostgreSQL, SQLite and
+GoogleSQL treat `@name` as a named parameter.
+
 ```sql
 -- PostgreSQL with sqlc @param syntax:
 SELECT * FROM users WHERE id = @user_id
--- Becomes: SELECT * FROM users WHERE id = $1
+-- Preprocessed to: SELECT * FROM users WHERE id = $1
 
 -- MySQL with user variable:
 SELECT * FROM users WHERE id != @user_id
 -- Stays: SELECT * FROM users WHERE id != @user_id
-```
-
-## Usage in Parameter Rewriting
-
-The `rewrite/parameters.go` package uses these functions to find and replace named parameters:
-
-```go
-// Find all named parameters
-params := astutils.Search(root, func(node ast.Node) bool {
-    return named.IsParamFunc(node) || named.IsParamSign(node)
-})
-
-// Replace with positional parameters
-astutils.Apply(root, func(cr *astutils.Cursor) bool {
-    if named.IsParamFunc(cr.Node()) || named.IsParamSign(cr.Node()) {
-        cr.Replace(&ast.ParamRef{Number: nextParam()})
-    }
-    return true
-}, nil)
-```
-
-## Converting MySQL @variable Correctly
-
-When converting TiDB's `VariableExpr` in `dolphin/convert.go`:
-
-```go
-// CORRECT - preserves MySQL user variable as-is
-func (c *cc) convertVariableExpr(n *pcast.VariableExpr) ast.Node {
-    return &ast.VariableExpr{
-        Name:     n.Name,
-        Location: n.OriginTextPosition(),
-    }
-}
-
-// WRONG - would be treated as sqlc named parameter
-func (c *cc) convertVariableExpr(n *pcast.VariableExpr) ast.Node {
-    return &ast.A_Expr{
-        Kind: ast.A_Expr_Kind_OP,
-        Name: &ast.List{Items: []ast.Node{&ast.String{Str: "@"}}},
-        Rexpr: &ast.String{Str: n.Name},
-    }
-}
 ```
