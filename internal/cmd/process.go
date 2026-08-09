@@ -86,7 +86,9 @@ func processQuerySets(ctx context.Context, rp ResultProcessor, conf *config.Conf
 			sql.Queries = joined
 
 			var name, lang string
-			parseOpts := opts.Parser{}
+			parseOpts := opts.Parser{
+				Experiment: o.Env.Experiment,
+			}
 
 			switch {
 			case sql.Gen.Go != nil:
