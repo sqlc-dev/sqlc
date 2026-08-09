@@ -1,6 +1,6 @@
 # Migrating off hosted managed databases
  
-Starting in sqlc 1.27.0, [managed databases](../docs/managed-databases.md) will require a database server URI in the configuration file.
+Starting in sqlc 1.27.0, [managed databases](../howto/managed-databases.md) will require a database server URI in the configuration file.
 
 This guide walks you through migrating to a locally running database server.
 
