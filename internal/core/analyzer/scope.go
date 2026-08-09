@@ -22,12 +22,24 @@ type scopeRel struct {
 func (a *analyzer) buildScope(from *ast.List) (*scope, error) {
 	items := listItems(from)
 	sc := &scope{rels: make([]scopeRel, 0, len(items))}
+	defer a.binding(sc)()
 	for _, item := range items {
 		if err := a.appendFromItem(sc, item); err != nil {
 			return nil, err
 		}
 	}
 	return sc, nil
+}
+
+// binding makes the scope under construction the one the analyzer resolves
+// against, and returns the func that puts back the scope it replaced. A FROM
+// item can refer to the ones before it — a set-returning function takes its
+// arguments from them — so binding an item has to see what is bound so far
+// rather than no scope at all.
+func (a *analyzer) binding(sc *scope) func() {
+	prev := a.scope
+	a.scope = sc
+	return func() { a.scope = prev }
 }
 
 func (a *analyzer) appendFromItem(sc *scope, item ast.Node) error {
@@ -202,6 +214,12 @@ func (a *analyzer) resolveColumn(relation, column string) (scopeRel, core.ClassC
 // relation. It reports an error when more than one relation in scope offers
 // that name.
 func (s *scope) resolveColumn(relation, column string) (rel scopeRel, col core.ClassColumn, ok bool, err error) {
+	// A statement whose scope is not built yet offers no columns. Report the
+	// column as unresolved and let the caller say so, rather than crashing on
+	// the way to the same answer.
+	if s == nil {
+		return rel, col, false, nil
+	}
 	found := 0
 	for _, r := range s.rels {
 		if relation != "" && r.alias != relation {
