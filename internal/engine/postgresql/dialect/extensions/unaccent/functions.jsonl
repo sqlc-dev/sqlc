@@ -1,0 +1,2 @@
+{"name":"unaccent","args":[{"type":"regdictionary"},{"type":"text"}],"returns":"text"}
+{"name":"unaccent","args":[{"type":"text"}],"returns":"text"}

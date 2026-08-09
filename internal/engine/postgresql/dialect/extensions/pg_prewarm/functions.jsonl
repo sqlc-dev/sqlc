@@ -1,0 +1,3 @@
+{"name":"autoprewarm_dump_now","returns":"bigint"}
+{"name":"autoprewarm_start_worker","returns":"void"}
+{"name":"pg_prewarm","args":[{"type":"regclass"},{"name":"mode","type":"text","has_default":true},{"name":"fork","type":"text","has_default":true},{"name":"first_block","type":"bigint","has_default":true},{"name":"last_block","type":"bigint","has_default":true}],"returns":"bigint"}

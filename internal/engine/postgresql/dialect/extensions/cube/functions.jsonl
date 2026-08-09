@@ -1,0 +1,33 @@
+{"name":"cube","args":[{"type":"cube"},{"type":"double precision"}],"returns":"cube"}
+{"name":"cube","args":[{"type":"cube"},{"type":"double precision"},{"type":"double precision"}],"returns":"cube"}
+{"name":"cube","args":[{"type":"double precision"}],"returns":"cube"}
+{"name":"cube","args":[{"type":"double precision"},{"type":"double precision"}],"returns":"cube"}
+{"name":"cube","args":[{"type":"double precision[]"}],"returns":"cube"}
+{"name":"cube","args":[{"type":"double precision[]"},{"type":"double precision[]"}],"returns":"cube"}
+{"name":"cube_cmp","args":[{"type":"cube"},{"type":"cube"}],"returns":"integer"}
+{"name":"cube_contained","args":[{"type":"cube"},{"type":"cube"}],"returns":"boolean"}
+{"name":"cube_contains","args":[{"type":"cube"},{"type":"cube"}],"returns":"boolean"}
+{"name":"cube_coord","args":[{"type":"cube"},{"type":"integer"}],"returns":"double precision"}
+{"name":"cube_coord_llur","args":[{"type":"cube"},{"type":"integer"}],"returns":"double precision"}
+{"name":"cube_dim","args":[{"type":"cube"}],"returns":"integer"}
+{"name":"cube_distance","args":[{"type":"cube"},{"type":"cube"}],"returns":"double precision"}
+{"name":"cube_enlarge","args":[{"type":"cube"},{"type":"double precision"},{"type":"integer"}],"returns":"cube"}
+{"name":"cube_eq","args":[{"type":"cube"},{"type":"cube"}],"returns":"boolean"}
+{"name":"cube_ge","args":[{"type":"cube"},{"type":"cube"}],"returns":"boolean"}
+{"name":"cube_gt","args":[{"type":"cube"},{"type":"cube"}],"returns":"boolean"}
+{"name":"cube_in","args":[{"type":"cstring"}],"returns":"cube"}
+{"name":"cube_inter","args":[{"type":"cube"},{"type":"cube"}],"returns":"cube"}
+{"name":"cube_is_point","args":[{"type":"cube"}],"returns":"boolean"}
+{"name":"cube_le","args":[{"type":"cube"},{"type":"cube"}],"returns":"boolean"}
+{"name":"cube_ll_coord","args":[{"type":"cube"},{"type":"integer"}],"returns":"double precision"}
+{"name":"cube_lt","args":[{"type":"cube"},{"type":"cube"}],"returns":"boolean"}
+{"name":"cube_ne","args":[{"type":"cube"},{"type":"cube"}],"returns":"boolean"}
+{"name":"cube_out","args":[{"type":"cube"}],"returns":"cstring"}
+{"name":"cube_overlap","args":[{"type":"cube"},{"type":"cube"}],"returns":"boolean"}
+{"name":"cube_send","args":[{"type":"cube"}],"returns":"bytea"}
+{"name":"cube_size","args":[{"type":"cube"}],"returns":"double precision"}
+{"name":"cube_subset","args":[{"type":"cube"},{"type":"integer[]"}],"returns":"cube"}
+{"name":"cube_union","args":[{"type":"cube"},{"type":"cube"}],"returns":"cube"}
+{"name":"cube_ur_coord","args":[{"type":"cube"},{"type":"integer"}],"returns":"double precision"}
+{"name":"distance_chebyshev","args":[{"type":"cube"},{"type":"cube"}],"returns":"double precision"}
+{"name":"distance_taxicab","args":[{"type":"cube"},{"type":"cube"}],"returns":"double precision"}

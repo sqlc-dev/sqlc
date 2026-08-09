@@ -1,0 +1,6 @@
+{"name":"pg_file_rename","args":[{"type":"text"},{"type":"text"}],"returns":"boolean"}
+{"name":"pg_file_rename","args":[{"type":"text"},{"type":"text"},{"type":"text"}],"returns":"boolean"}
+{"name":"pg_file_sync","args":[{"type":"text"}],"returns":"void"}
+{"name":"pg_file_unlink","args":[{"type":"text"}],"returns":"boolean"}
+{"name":"pg_file_write","args":[{"type":"text"},{"type":"text"},{"type":"boolean"}],"returns":"bigint"}
+{"name":"pg_logdir_ls","returns":"record"}

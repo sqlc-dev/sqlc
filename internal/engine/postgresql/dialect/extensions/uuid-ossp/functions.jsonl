@@ -1,0 +1,10 @@
+{"name":"uuid_generate_v1","returns":"uuid"}
+{"name":"uuid_generate_v1mc","returns":"uuid"}
+{"name":"uuid_generate_v3","args":[{"name":"namespace","type":"uuid"},{"name":"name","type":"text"}],"returns":"uuid"}
+{"name":"uuid_generate_v4","returns":"uuid"}
+{"name":"uuid_generate_v5","args":[{"name":"namespace","type":"uuid"},{"name":"name","type":"text"}],"returns":"uuid"}
+{"name":"uuid_nil","returns":"uuid"}
+{"name":"uuid_ns_dns","returns":"uuid"}
+{"name":"uuid_ns_oid","returns":"uuid"}
+{"name":"uuid_ns_url","returns":"uuid"}
+{"name":"uuid_ns_x500","returns":"uuid"}

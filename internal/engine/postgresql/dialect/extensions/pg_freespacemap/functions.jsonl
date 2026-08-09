@@ -1,0 +1,2 @@
+{"name":"pg_freespace","args":[{"name":"rel","type":"regclass"}],"returns":"record"}
+{"name":"pg_freespace","args":[{"type":"regclass"},{"type":"bigint"}],"returns":"smallint"}

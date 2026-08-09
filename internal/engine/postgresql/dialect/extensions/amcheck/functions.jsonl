@@ -1,0 +1,6 @@
+{"name":"bt_index_check","args":[{"name":"index","type":"regclass"}],"returns":"void"}
+{"name":"bt_index_check","args":[{"name":"index","type":"regclass"},{"name":"heapallindexed","type":"boolean"}],"returns":"void"}
+{"name":"bt_index_parent_check","args":[{"name":"index","type":"regclass"}],"returns":"void"}
+{"name":"bt_index_parent_check","args":[{"name":"index","type":"regclass"},{"name":"heapallindexed","type":"boolean"}],"returns":"void"}
+{"name":"bt_index_parent_check","args":[{"name":"index","type":"regclass"},{"name":"heapallindexed","type":"boolean"},{"name":"rootdescend","type":"boolean"}],"returns":"void"}
+{"name":"verify_heapam","args":[{"name":"relation","type":"regclass"},{"name":"on_error_stop","type":"boolean","has_default":true},{"name":"check_toast","type":"boolean","has_default":true},{"name":"skip","type":"text","has_default":true},{"name":"startblock","type":"bigint","has_default":true},{"name":"endblock","type":"bigint","has_default":true}],"returns":"record"}
