@@ -120,6 +120,10 @@ func BenchmarkExamples(b *testing.B) {
 type textContext struct {
 	Mutate  func(*testing.T, string) func(*config.Config)
 	Enabled func() bool
+	// Experiments names the experiments every case in this context runs
+	// with. A case's own SQLCEXPERIMENT is appended to these, so a case can
+	// still turn one back off with the "no" prefix.
+	Experiments func() []string
 }
 
 func TestReplay(t *testing.T) {
@@ -235,6 +239,16 @@ func TestReplay(t *testing.T) {
 				return postgresURI != "" || mysqlURI != ""
 			},
 		},
+		"core": {
+			Mutate:      func(t *testing.T, path string) func(*config.Config) { return func(c *config.Config) {} },
+			Experiments: func() []string { return []string{"coreanalyzer"} },
+			Enabled: func() bool {
+				// Running the whole corpus through the analysis core is opt-in
+				// while the two paths still disagree. The core needs no
+				// database, so nothing else gates this.
+				return os.Getenv("SQLC_TEST_CORE") != ""
+			},
+		},
 	}
 
 	for name, testctx := range contexts {
@@ -276,9 +290,14 @@ func TestReplay(t *testing.T) {
 					}
 				}
 
+				experiments := args.Env["SQLCEXPERIMENT"]
+				if testctx.Experiments != nil {
+					experiments = strings.Join(append(testctx.Experiments(), experiments), ",")
+				}
+
 				opts := cmd.Options{
 					Env: cmd.Env{
-						Experiment: opts.ExperimentFromString(args.Env["SQLCEXPERIMENT"]),
+						Experiment: opts.ExperimentFromString(experiments),
 					},
 					Stderr:       &stderr,
 					MutateConfig: testctx.Mutate(t, path),
