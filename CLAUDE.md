@@ -124,6 +124,25 @@ stdout against `stdout.txt`. A case that is expected to fail commits its
 `stderr.txt`. Regenerate a golden by running the command in its directory and
 writing the output back over the committed file.
 
+`TestReplay` runs the whole corpus once per *context*. `base` runs each case as
+committed and `managed-db` reruns it against a live database, so a context can
+change the config a case is generated with and the experiments it is generated
+under. A case restricts itself to some of them with `"contexts": [...]` in its
+`exec.json`, and commits per-context expected errors as `stderr/<context>.txt`.
+There is only one set of committed golden files, so every context is expected
+to generate identical code.
+
+The `core` context generates every case through the analysis core
+(`SQLCEXPERIMENT=coreanalyzer`). The two paths still disagree, so it is opt-in
+and needs no database:
+
+```bash
+SQLC_TEST_CORE=1 go test ./internal/endtoend -run 'TestReplay/core'
+```
+
+Go aborts a test binary on panic, so a case that panics the core analyzer ends
+the run early. Run a subset to get past one (`-run 'TestReplay/core/^select'`).
+
 ### Example Tests
 
 - **Location:** `/examples/` directory

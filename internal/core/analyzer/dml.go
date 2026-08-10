@@ -83,6 +83,7 @@ func (a *analyzer) analyzeDelete(s *ast.DeleteStmt) error {
 // report a multi-table DELETE that way — a single FROM node.
 func (a *analyzer) relationScope(relations, extra *ast.List, from ast.Node) (*scope, error) {
 	sc := &scope{}
+	defer a.binding(sc)()
 	for _, item := range listItems(relations) {
 		if err := a.appendFromItem(sc, item); err != nil {
 			return nil, err
