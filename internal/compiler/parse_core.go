@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/core"
@@ -63,6 +64,21 @@ func (c *Compiler) parseQueryCore(raw *ast.RawStmt, src string, pre *preprocess.
 		}
 		for _, p := range res.Parameters {
 			params = append(params, Parameter{Number: p.Number, Column: coreParamColumn(p, namedParams)})
+		}
+		edits, err := c.expandCore(raw, res.Stars)
+		if err != nil {
+			return nil, err
+		}
+		expanded, err = source.Mutate(rawSQL, edits)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// If the query string was edited, make sure the syntax is valid
+	if expanded != rawSQL {
+		if _, err := c.newParser().Parse(strings.NewReader(expanded)); err != nil {
+			return nil, fmt.Errorf("edited query syntax is invalid: %w", err)
 		}
 	}
 

@@ -36,7 +36,7 @@ func (q *Queries) DeleteAuthor(ctx context.Context, id int64) error {
 }
 
 const getAuthor = `-- name: GetAuthor :one
-SELECT * FROM authors
+SELECT id, name, bio FROM authors
 WHERE id = ?
 `
 

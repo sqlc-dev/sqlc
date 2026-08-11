@@ -38,6 +38,12 @@ type Compiler struct {
 	coreAnalysis bool
 	coreDialect  core.Option
 
+	// newParser builds a parser for the configured engine. The core path
+	// analyzes statements concurrently, and a parser holds enough state that
+	// two goroutines cannot share one, so a goroutine that has to parse
+	// something of its own — the query text it just rewrote — builds its own.
+	newParser func() Parser
+
 	schema []string
 }
 
@@ -119,28 +125,29 @@ func (c *Compiler) initCore() error {
 	var dialect core.Option
 	switch c.conf.Engine {
 	case config.EngineSQLite:
-		c.parser = sqlite.NewParser()
+		c.newParser = func() Parser { return sqlite.NewParser() }
 		c.selector = newSQLiteSelector()
 		dialect = sqlite.Dialect()
 	case config.EngineMySQL:
-		c.parser = dolphin.NewParser()
+		c.newParser = func() Parser { return dolphin.NewParser() }
 		c.selector = newDefaultSelector()
 		dialect = dolphin.Dialect()
 	case config.EnginePostgreSQL:
-		c.parser = postgresql.NewParser()
+		c.newParser = func() Parser { return postgresql.NewParser() }
 		c.selector = newDefaultSelector()
 		dialect = postgresql.Dialect()
 	case config.EngineClickHouse:
-		c.parser = clickhouse.NewParser()
+		c.newParser = func() Parser { return clickhouse.NewParser() }
 		c.selector = newDefaultSelector()
 		dialect = clickhouse.Dialect()
 	case config.EngineGoogleSQL:
-		c.parser = googlesql.NewParser()
+		c.newParser = func() Parser { return googlesql.NewParser() }
 		c.selector = newDefaultSelector()
 		dialect = googlesql.Dialect()
 	default:
 		return fmt.Errorf("unknown engine: %s", c.conf.Engine)
 	}
+	c.parser = c.newParser()
 	c.coreDialect = dialect
 	return nil
 }
