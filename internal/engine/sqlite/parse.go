@@ -3,6 +3,7 @@ package sqlite
 import (
 	"errors"
 	"io"
+	"strings"
 
 	meyer "github.com/sqlc-dev/meyer/ast"
 	"github.com/sqlc-dev/meyer/parser"
@@ -31,7 +32,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		return nil, err
 	}
 	src := string(blob)
-	parsed, err := parseOptions.ParseString(src)
+	parsed, err := parseOptions.ParseString(terminateNamedQueries(src))
 	if err != nil {
 		return nil, normalizeErr(err)
 	}
@@ -56,6 +57,35 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		loc = raw.End()
 	}
 	return stmts, nil
+}
+
+// terminateNamedQueries adds a virtual terminator before a subsequent sqlc
+// query annotation when the preceding query omitted one. sqlc annotations
+// delimit queries for the other engines, and a query file may therefore
+// contain multiple valid queries even though the complete SQLite script would
+// otherwise be invalid. Replacing the newline immediately before the
+// annotation preserves every byte offset reported by the parser.
+func terminateNamedQueries(src string) string {
+	terminated := []byte(src)
+	for lineStart := 0; lineStart < len(terminated); {
+		lineEnd := strings.IndexByte(src[lineStart:], '\n')
+		if lineEnd < 0 {
+			lineEnd = len(terminated)
+		} else {
+			lineEnd += lineStart
+		}
+		if lineStart > 0 && strings.HasPrefix(src[lineStart:lineEnd], "-- name: ") {
+			i := lineStart - 1
+			for i >= 0 && isSpace(terminated[i]) {
+				i--
+			}
+			if i >= 0 && terminated[i] != ';' {
+				terminated[lineStart-1] = ';'
+			}
+		}
+		lineStart = lineEnd + 1
+	}
+	return string(terminated)
 }
 
 // trimTerminator returns the end of stmt with its terminating semicolon, and

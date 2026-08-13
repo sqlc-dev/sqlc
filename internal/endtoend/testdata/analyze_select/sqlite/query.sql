@@ -1,5 +1,5 @@
 -- name: ListUsers :many
-SELECT * FROM users;
+SELECT * FROM users
 
 -- name: CountUsers :one
 SELECT count(*) AS total FROM users;
