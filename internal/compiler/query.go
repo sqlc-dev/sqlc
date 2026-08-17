@@ -55,6 +55,17 @@ type Query struct {
 	RawStmt *ast.RawStmt
 }
 
+// InsertIsReplace reports whether the query was written as REPLACE INTO. MySQL
+// renders a :copyfrom for such a query as LOAD DATA ... REPLACE INTO TABLE, so
+// that rows colliding on a key overwrite instead of being skipped.
+func (q *Query) InsertIsReplace() bool {
+	if q.RawStmt == nil {
+		return false
+	}
+	ins, ok := q.RawStmt.Stmt.(*ast.InsertStmt)
+	return ok && ins.IsReplace
+}
+
 type Parameter struct {
 	Number int
 	Column *Column

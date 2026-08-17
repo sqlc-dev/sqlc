@@ -208,6 +208,10 @@ and use SHOW WARNINGS to check for any problems and roll back if necessary.
 
 Check the [error handling](https://dev.mysql.com/doc/refman/8.0/en/load-data.html#load-data-error-handling) documentation for more information.
 
+Writing the query as `REPLACE INTO` generates `LOAD DATA ... REPLACE INTO TABLE`,
+which overwrites rows that collide on a primary or unique key instead of skipping
+them.
+
 ```sql
 CREATE TABLE foo (a text, b integer, c DATETIME, d DATE);
 

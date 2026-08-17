@@ -86,3 +86,41 @@ func (q *Queries) InsertValues(ctx context.Context, arg []InsertValuesParams) (i
 	}
 	return result.RowsAffected()
 }
+
+var readerHandlerSequenceForReplaceValues uint32 = 1
+
+func convertRowsForReplaceValues(w *io.PipeWriter, arg []ReplaceValuesParams) {
+	e := mysqltsv.NewEncoder(w, 4, nil)
+	for _, row := range arg {
+		e.AppendValue(row.A)
+		e.AppendValue(row.B)
+		e.AppendValue(row.C)
+		e.AppendValue(row.D)
+	}
+	w.CloseWithError(e.Close())
+}
+
+// ReplaceValues uses MySQL's LOAD DATA LOCAL INFILE and is not atomic.
+//
+// Errors are treated as warnings and insertion will continue, even without an
+// error for some cases.  Rows that collide on a primary or unique key replace
+// the existing row.  Use this in a transaction and use SHOW WARNINGS to check
+// for any problems and roll back if you want to.
+//
+// Check the documentation for more information:
+// https://dev.mysql.com/doc/refman/8.0/en/load-data.html#load-data-error-handling
+func (q *Queries) ReplaceValues(ctx context.Context, arg []ReplaceValuesParams) (int64, error) {
+	pr, pw := io.Pipe()
+	defer pr.Close()
+	rh := fmt.Sprintf("ReplaceValues_%d", atomic.AddUint32(&readerHandlerSequenceForReplaceValues, 1))
+	mysql.RegisterReaderHandler(rh, func() io.Reader { return pr })
+	defer mysql.DeregisterReaderHandler(rh)
+	go convertRowsForReplaceValues(pw, arg)
+	// The string interpolation is necessary because LOAD DATA INFILE requires
+	// the file name to be given as a literal string.
+	result, err := q.db.ExecContext(ctx, fmt.Sprintf("LOAD DATA LOCAL INFILE '%s' REPLACE INTO TABLE `foo` %s (a, b, c, d)", "Reader::"+rh, mysqltsv.Escaping))
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}

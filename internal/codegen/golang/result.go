@@ -218,14 +218,15 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 		}
 
 		gq := Query{
-			Cmd:          query.Cmd,
-			ConstantName: constantName,
-			FieldName:    sdk.LowerTitle(query.Name) + "Stmt",
-			MethodName:   query.Name,
-			SourceName:   query.Filename,
-			SQL:          query.Text,
-			Comments:     comments,
-			Table:        query.InsertIntoTable,
+			Cmd:             query.Cmd,
+			ConstantName:    constantName,
+			FieldName:       sdk.LowerTitle(query.Name) + "Stmt",
+			MethodName:      query.Name,
+			SourceName:      query.Filename,
+			SQL:             query.Text,
+			Comments:        comments,
+			Table:           query.InsertIntoTable,
+			InsertIsReplace: query.InsertIsReplace,
 		}
 		sqlpkg := parseDriver(options.SqlPackage)
 

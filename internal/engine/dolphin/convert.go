@@ -492,6 +492,7 @@ func (c *cc) convertInsertStmt(n *pcast.InsertStmt) *ast.InsertStmt {
 		Relation:      rangeVar,
 		Cols:          c.convertColumnNames(n.Columns),
 		ReturningList: &ast.List{},
+		IsReplace:     n.IsReplace,
 	}
 	if ss, ok := c.convert(n.Select).(*ast.SelectStmt); ok {
 		ss.ValuesLists = c.convertLists(n.Lists)

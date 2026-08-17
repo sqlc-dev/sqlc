@@ -12,6 +12,7 @@ type InsertStmt struct {
 	WithClause           *WithClause
 	Override             OverridingKind
 	DefaultValues        bool // SQLite-specific: INSERT INTO ... DEFAULT VALUES
+	IsReplace            bool // MySQL-specific: REPLACE INTO ... instead of INSERT INTO ...
 }
 
 func (n *InsertStmt) Pos() int {
@@ -28,7 +29,11 @@ func (n *InsertStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 		buf.WriteString(" ")
 	}
 
-	buf.WriteString("INSERT INTO ")
+	if n.IsReplace {
+		buf.WriteString("REPLACE INTO ")
+	} else {
+		buf.WriteString("INSERT INTO ")
+	}
 	if n.Relation != nil {
 		buf.astFormat(n.Relation, d)
 	}
