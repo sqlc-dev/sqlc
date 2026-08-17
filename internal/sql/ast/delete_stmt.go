@@ -12,6 +12,9 @@ type DeleteStmt struct {
 	// MySQL multi-table DELETE support
 	Targets    *List // Tables to delete from (e.g., jt.*, pt.*)
 	FromClause Node  // FROM clause with JOINs (Node to support JoinExpr)
+	// PostgreSQL 18 RETURNING WITH (OLD AS ..., NEW AS ...) aliases
+	ReturningOldAlias string
+	ReturningNewAlias string
 }
 
 func (n *DeleteStmt) Pos() int {
@@ -63,6 +66,7 @@ func (n *DeleteStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 
 	if items(n.ReturningList) {
 		buf.WriteString(" RETURNING ")
+		formatReturningOptions(buf, d, n.ReturningOldAlias, n.ReturningNewAlias)
 		buf.astFormat(n.ReturningList, d)
 	}
 }

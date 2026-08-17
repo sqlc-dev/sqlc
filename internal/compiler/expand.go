@@ -84,6 +84,13 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 		return nil, err
 	}
 
+	// Virtual tables for the OLD and NEW aliases available in a RETURNING
+	// clause (PostgreSQL 18)
+	rtables, err := c.returningTables(qc, node)
+	if err != nil {
+		return nil, err
+	}
+
 	var targets *ast.List
 	switch n := node.(type) {
 	case *ast.DeleteStmt:
@@ -131,7 +138,11 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 				}
 			}
 		}
-		for _, t := range tables {
+		starTables := tables
+		if vt := returningTableForScope(tables, rtables, scope); vt != nil {
+			starTables = []*Table{vt}
+		}
+		for _, t := range starTables {
 			if scope != "" && scope != t.Rel.Name {
 				continue
 			}
