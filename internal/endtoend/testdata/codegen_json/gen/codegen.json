@@ -66389,7 +66389,8 @@
       ],
       "comments": [],
       "filename": "query.sql",
-      "insert_into_table": null
+      "insert_into_table": null,
+      "insert_is_replace": false
     },
     {
       "text": "SELECT id, name, bio FROM authors\nORDER BY name",
@@ -66478,7 +66479,8 @@
       "params": [],
       "comments": [],
       "filename": "query.sql",
-      "insert_into_table": null
+      "insert_into_table": null,
+      "insert_is_replace": false
     },
     {
       "text": "INSERT INTO authors (\n          name, bio\n) VALUES (\n  $1, $2\n)\nRETURNING id, name, bio",
@@ -66630,7 +66632,8 @@
         "catalog": "",
         "schema": "",
         "name": "authors"
-      }
+      },
+      "insert_is_replace": false
     },
     {
       "text": "DELETE FROM authors\nWHERE id = $1",
@@ -66670,7 +66673,8 @@
       ],
       "comments": [],
       "filename": "query.sql",
-      "insert_into_table": null
+      "insert_into_table": null,
+      "insert_is_replace": false
     }
   ],
   "sqlc_version": "v1.31.1",

@@ -23,3 +23,14 @@ type InsertValuesParams struct {
 	C sql.NullTime
 	D sql.NullTime
 }
+
+const replaceValues = `-- name: ReplaceValues :copyfrom
+REPLACE INTO foo (a, b, c, d) VALUES (?, ?, ?, ?)
+`
+
+type ReplaceValuesParams struct {
+	A sql.NullString
+	B sql.NullInt32
+	C sql.NullTime
+	D sql.NullTime
+}
