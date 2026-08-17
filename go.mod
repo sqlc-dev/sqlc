@@ -21,7 +21,7 @@ require (
 	github.com/sqlc-dev/doubleclick v1.0.0
 	github.com/sqlc-dev/marino v0.1.0
 	github.com/sqlc-dev/meyer v0.1.1
-	github.com/sqlc-dev/oliphant v0.0.0-20260817154825-6aaeaa73d2c2
+	github.com/sqlc-dev/oliphant v0.1.0
 	github.com/sqlc-dev/zetajones v0.1.0
 	github.com/tetratelabs/wazero v1.12.0
 	github.com/xeipuuv/gojsonschema v1.2.0

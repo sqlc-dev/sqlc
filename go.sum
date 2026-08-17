@@ -71,8 +71,8 @@ github.com/sqlc-dev/marino v0.1.0 h1:8Fn13vFhx7OUcmDFfRZdf3zARAbNl04Lcy74211ZpIw
 github.com/sqlc-dev/marino v0.1.0/go.mod h1:mQxC2dgDE0DWHMb2B5jZNk7KToJuS6wnxnffBfYnq08=
 github.com/sqlc-dev/meyer v0.1.1 h1:BAeZcfgLyTnk9f90DyGEKXPrHxtgvVD/DTM6awq2kUY=
 github.com/sqlc-dev/meyer v0.1.1/go.mod h1:pS4USCRf/SLjWtaMcnTo4YrEEFKBj8CyyqlxcVUJQH8=
-github.com/sqlc-dev/oliphant v0.0.0-20260817154825-6aaeaa73d2c2 h1:2EL2CIeFA4/ch+fM115rR28oiDr9FeP8GADaCSs3Dtw=
-github.com/sqlc-dev/oliphant v0.0.0-20260817154825-6aaeaa73d2c2/go.mod h1:fRM/t4FutRddTIq2YCuS4O9o+2rRwSwELRvLMqtPloo=
+github.com/sqlc-dev/oliphant v0.1.0 h1:RAsO6BMitIzB2+swx/qzUR5nf6w4cQ1abgHIu+Fgppo=
+github.com/sqlc-dev/oliphant v0.1.0/go.mod h1:fRM/t4FutRddTIq2YCuS4O9o+2rRwSwELRvLMqtPloo=
 github.com/sqlc-dev/zetajones v0.1.0 h1:VeG0atx6lNABr9V2bSI5vL9DvOKTHX0XjMqWUE/rv40=
 github.com/sqlc-dev/zetajones v0.1.0/go.mod h1:dU1DxwqC6Cahbpnw16KpH1J2waWRDMdwyDSvovMZR4I=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
