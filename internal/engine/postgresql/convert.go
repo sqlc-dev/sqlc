@@ -3,7 +3,7 @@ package postgresql
 import (
 	"fmt"
 
-	pg "github.com/pganalyze/pg_query_go/v6"
+	pg "github.com/sqlc-dev/oliphant"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
@@ -1424,7 +1424,7 @@ func convertDeleteStmt(n *pg.DeleteStmt) *ast.DeleteStmt {
 		},
 		UsingClause:   convertSlice(n.UsingClause),
 		WhereClause:   convertNode(n.WhereClause),
-		ReturningList: convertSlice(n.ReturningList),
+		ReturningList: convertSlice(n.ReturningClause.GetExprs()),
 		WithClause:    convertWithClause(n.WithClause),
 	}
 }
@@ -1806,7 +1806,7 @@ func convertInsertStmt(n *pg.InsertStmt) *ast.InsertStmt {
 		Cols:             convertSlice(n.Cols),
 		SelectStmt:       convertNode(n.SelectStmt),
 		OnConflictClause: convertOnConflictClause(n.OnConflictClause),
-		ReturningList:    convertSlice(n.ReturningList),
+		ReturningList:    convertSlice(n.ReturningClause.GetExprs()),
 		WithClause:       convertWithClause(n.WithClause),
 		Override:         ast.OverridingKind(n.Override),
 	}
@@ -1825,13 +1825,17 @@ func convertIntoClause(n *pg.IntoClause) *ast.IntoClause {
 	if n == nil {
 		return nil
 	}
+	var viewQuery ast.Node = &ast.TODO{}
+	if n.ViewQuery != nil {
+		viewQuery = convertQuery(n.ViewQuery)
+	}
 	return &ast.IntoClause{
 		Rel:            convertRangeVar(n.Rel),
 		ColNames:       convertSlice(n.ColNames),
 		Options:        convertSlice(n.Options),
 		OnCommit:       ast.OnCommitAction(n.OnCommit),
 		TableSpaceName: makeString(n.TableSpaceName),
-		ViewQuery:      convertNode(n.ViewQuery),
+		ViewQuery:      viewQuery,
 		SkipData:       n.SkipData,
 	}
 }
@@ -2434,7 +2438,7 @@ func convertRowCompareExpr(n *pg.RowCompareExpr) *ast.RowCompareExpr {
 	}
 	return &ast.RowCompareExpr{
 		Xpr:          convertNode(n.Xpr),
-		Rctype:       ast.RowCompareType(n.Rctype),
+		Rctype:       ast.RowCompareType(n.Cmptype),
 		Opnos:        convertSlice(n.Opnos),
 		Opfamilies:   convertSlice(n.Opfamilies),
 		Inputcollids: convertSlice(n.Inputcollids),
@@ -2808,7 +2812,7 @@ func convertUpdateStmt(n *pg.UpdateStmt) *ast.UpdateStmt {
 		TargetList:    convertSlice(n.TargetList),
 		WhereClause:   convertNode(n.WhereClause),
 		FromClause:    convertSlice(n.FromClause),
-		ReturningList: convertSlice(n.ReturningList),
+		ReturningList: convertSlice(n.ReturningClause.GetExprs()),
 		WithClause:    convertWithClause(n.WithClause),
 	}
 }

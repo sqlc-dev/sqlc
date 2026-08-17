@@ -6,13 +6,16 @@ import (
 	"io"
 	"strings"
 
-	nodes "github.com/pganalyze/pg_query_go/v6"
+	nodes "github.com/sqlc-dev/oliphant"
+	"github.com/sqlc-dev/oliphant/parser"
 
-	"github.com/sqlc-dev/sqlc/internal/engine/postgresql/parser"
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
+
+var Parse = nodes.Parse
+var Fingerprint = nodes.Fingerprint
 
 func stringSlice(list *nodes.List) []string {
 	items := []string{}
@@ -158,7 +161,30 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	}
 
 	var stmts []ast.Statement
+	// PostgreSQL 18 changed stmt_location to point at the statement's first
+	// token. The rest of the compiler expects the earlier convention, where a
+	// statement begins where the previous one ended and so carries its leading
+	// comments (that's where `-- name:` lives).
+	loc := 0
 	for _, raw := range tree.Stmts {
+		start := loc
+		end := int(raw.StmtLocation) + int(raw.StmtLen)
+		next := end
+		for next < len(contents) && contents[next] != ';' {
+			next++
+		}
+		terminated := next < len(contents)
+		if terminated {
+			next++
+		}
+		loc = next
+		length := end - start
+		if !terminated {
+			// A zero length marked an unterminated final statement before
+			// PostgreSQL 18, and the compiler still reports it that way.
+			length = 0
+		}
+
 		n, err := translate(raw.Stmt)
 		if err == errSkip {
 			continue
@@ -172,8 +198,8 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		stmts = append(stmts, ast.Statement{
 			Raw: &ast.RawStmt{
 				Stmt:         n,
-				StmtLocation: int(raw.StmtLocation),
-				StmtLen:      int(raw.StmtLen),
+				StmtLocation: start,
+				StmtLen:      length,
 			},
 		})
 	}
