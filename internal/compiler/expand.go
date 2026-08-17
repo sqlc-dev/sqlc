@@ -132,7 +132,8 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 			}
 		}
 		for _, t := range tables {
-			if scope != "" && scope != t.Rel.Name {
+			isOldNew := strings.EqualFold(scope, "old") || strings.EqualFold(scope, "new")
+			if scope != "" && !isOldNew && scope != t.Rel.Name {
 				continue
 			}
 			tableName := c.quoteIdent(t.Rel.Name)
