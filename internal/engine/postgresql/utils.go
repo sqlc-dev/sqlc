@@ -1,7 +1,7 @@
 package postgresql
 
 import (
-	nodes "github.com/pganalyze/pg_query_go/v6"
+	nodes "github.com/sqlc-dev/oliphant"
 )
 
 func isArray(n *nodes.TypeName) bool {
