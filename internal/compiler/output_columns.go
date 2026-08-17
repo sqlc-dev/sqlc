@@ -58,6 +58,13 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 		return nil, err
 	}
 
+	// Virtual tables for the OLD and NEW aliases available in a RETURNING
+	// clause (PostgreSQL 18)
+	rtables, err := c.returningTables(qc, node)
+	if err != nil {
+		return nil, err
+	}
+
 	targets := &ast.List{}
 	switch n := node.(type) {
 	case *ast.DeleteStmt:
@@ -235,7 +242,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 					continue
 				}
 				if ref, ok := arg.(*ast.ColumnRef); ok {
-					columns, err := outputColumnRefs(res, tables, ref)
+					columns, err := outputColumnRefs(res, tablesForRef(ref, tables, rtables), ref)
 					if err != nil {
 						return nil, err
 					}
@@ -268,8 +275,12 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 				}
 
 				// TODO: This code is copied in func expand()
-				for _, t := range tables {
-					scope := astutils.Join(n.Fields, ".")
+				scope := astutils.Join(n.Fields, ".")
+				starTables := tables
+				if vt := returningTableForScope(tables, rtables, scope); vt != nil {
+					starTables = []*Table{vt}
+				}
+				for _, t := range starTables {
 					if scope != "" && scope != t.Rel.Name {
 						continue
 					}
@@ -297,7 +308,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 				continue
 			}
 
-			columns, err := outputColumnRefs(res, tables, n)
+			columns, err := outputColumnRefs(res, tablesForRef(n, tables, rtables), n)
 			if err != nil {
 				return nil, err
 			}

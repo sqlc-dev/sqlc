@@ -12,6 +12,9 @@ type InsertStmt struct {
 	WithClause           *WithClause
 	Override             OverridingKind
 	DefaultValues        bool // SQLite-specific: INSERT INTO ... DEFAULT VALUES
+	// PostgreSQL 18 RETURNING WITH (OLD AS ..., NEW AS ...) aliases
+	ReturningOldAlias string
+	ReturningNewAlias string
 }
 
 func (n *InsertStmt) Pos() int {
@@ -57,6 +60,7 @@ func (n *InsertStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 
 	if items(n.ReturningList) {
 		buf.WriteString(" RETURNING ")
+		formatReturningOptions(buf, d, n.ReturningOldAlias, n.ReturningNewAlias)
 		buf.astFormat(n.ReturningList, d)
 	}
 }
