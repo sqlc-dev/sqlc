@@ -1670,7 +1670,6 @@ func convertFunctionParameter(n *pg.FunctionParameter) *ast.FunctionParameter {
 	return &ast.FunctionParameter{
 		Name:    makeString(n.Name),
 		ArgType: convertTypeName(n.ArgType),
-		Mode:    ast.FunctionParameterMode(n.Mode),
 		Defexpr: convertNode(n.Defexpr),
 	}
 }
