@@ -50,6 +50,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.AddCommand(verifyCmd)
 	rootCmd.AddCommand(pushCmd)
 	rootCmd.AddCommand(NewCmdVet())
+	rootCmd.AddCommand(NewCmdExplain())
 
 	rootCmd.SetArgs(args)
 	rootCmd.SetIn(stdin)
