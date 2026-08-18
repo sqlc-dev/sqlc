@@ -188,7 +188,7 @@ package, but in this tutorial we've used `pgx/v5`:
 
 ```shell
 go get github.com/jackc/pgx/v5
-go build ./...
+go build .
 ```
 
 The program should compile without errors. To make that possible, sqlc generates
