@@ -15,3 +15,6 @@ WITH t AS (SELECT * FROM bar) SELECT * FROM t;
 
 -- name: StarExpansionReturning :one
 INSERT INTO bar (a, c) VALUES (?, ?) RETURNING *;
+
+-- name: StarExpansionAliasedSubquery :many
+SELECT (SELECT * FROM baz LIMIT 1) AS x FROM foo GROUP BY x;
