@@ -13,16 +13,18 @@ import (
 // its subqueries, so there is nothing left to look up here: what remains is
 // deciding how each name is written, which is the engine's business and not
 // the core's.
-func (c *Compiler) expandCore(raw *ast.RawStmt, stars []core.StarExpansion) ([]source.Edit, error) {
+func (c *Compiler) expandCore(raw *ast.RawStmt, stars []core.StarExpansion) []source.Edit {
 	if len(stars) == 0 {
-		return nil, nil
+		return nil
 	}
 	edits := make([]source.Edit, 0, len(stars))
 	seen := make(map[int]bool, len(stars))
 	for _, star := range stars {
-		// A statement analyzed more than once — the same CTE referenced twice,
-		// say — reports its stars once per pass. Editing one twice would
-		// overlap, so only the first is kept.
+		// The analyzer types an expression again when a later clause refers to
+		// the output name it was given, so "SELECT (SELECT * FROM t) AS x ...
+		// GROUP BY x" reports the star in the subquery once per pass. The
+		// passes agree on what the star covers, and editing the same reference
+		// twice would overlap, so only the first is kept.
 		if seen[star.Location] {
 			continue
 		}
@@ -70,5 +72,5 @@ func (c *Compiler) expandCore(raw *ast.RawStmt, stars []core.StarExpansion) ([]s
 			New:      strings.Join(cols, ", "),
 		})
 	}
-	return edits, nil
+	return edits
 }

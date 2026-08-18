@@ -59,6 +59,33 @@ func (q *Queries) StarExpansion(ctx context.Context) ([]StarExpansionRow, error)
 	return items, nil
 }
 
+const starExpansionAliasedSubquery = `-- name: StarExpansionAliasedSubquery :many
+SELECT (SELECT z FROM baz LIMIT 1) AS x FROM foo GROUP BY x
+`
+
+func (q *Queries) StarExpansionAliasedSubquery(ctx context.Context) ([]sql.NullString, error) {
+	rows, err := q.db.QueryContext(ctx, starExpansionAliasedSubquery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []sql.NullString
+	for rows.Next() {
+		var x sql.NullString
+		if err := rows.Scan(&x); err != nil {
+			return nil, err
+		}
+		items = append(items, x)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const starExpansionCTE = `-- name: StarExpansionCTE :many
 WITH t AS (SELECT a, c FROM bar) SELECT a, c FROM t
 `

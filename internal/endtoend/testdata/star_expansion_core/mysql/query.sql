@@ -12,3 +12,6 @@ SELECT * FROM (SELECT * FROM bar) sub;
 
 -- name: StarExpansionCTE :many
 WITH t AS (SELECT * FROM bar) SELECT * FROM t;
+
+-- name: StarExpansionAliasedSubquery :many
+SELECT (SELECT * FROM baz LIMIT 1) AS x FROM foo GROUP BY x;

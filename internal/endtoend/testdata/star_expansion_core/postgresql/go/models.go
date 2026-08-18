@@ -13,6 +13,10 @@ type Bar struct {
 	C sql.NullString
 }
 
+type Baz struct {
+	Z sql.NullString
+}
+
 type Foo struct {
 	A     sql.NullString
 	B     sql.NullString
