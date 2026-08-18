@@ -18,7 +18,7 @@ type Llc struct {
 type Organisation struct {
 	PartyID   pgtype.UUID
 	Name      string
-	LegalName string
+	LegalName pgtype.Text
 }
 
 type Party struct {
