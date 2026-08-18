@@ -71,9 +71,13 @@ func (p *Parser) NamedParam(name string) string {
 }
 
 // Cast returns a type cast expression.
-// PostgreSQL uses expr::type syntax.
+// PostgreSQL uses expr::type syntax. Wrap the arg in parens so that
+// operator precedence is preserved when the arg is a compound expression
+// like a -> b or a ->> b. Parens around a simple expression are a no-op
+// to the parser (pg_query normalises them away during fingerprinting),
+// so this is safe for the existing simple-arg cases too.
 func (p *Parser) Cast(arg, typeName string) string {
-	return arg + "::" + typeName
+	return "(" + arg + ")::" + typeName
 }
 
 // https://www.postgresql.org/docs/current/sql-keywords-appendix.html
