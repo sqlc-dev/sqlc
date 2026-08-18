@@ -3,14 +3,30 @@ package sqltest
 import (
 	"database/sql"
 	"fmt"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func id() string {
+	b := make([]rune, 10)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}
 
 func MySQL(t *testing.T, migrations []string) (*sql.DB, func()) {
 	// For each test, pick a new database name at random.
