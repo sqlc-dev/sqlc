@@ -190,7 +190,7 @@ Before this code will compile you'll need to fetch the relevant SQLite driver:
 
 ```shell
 go get modernc.org/sqlite
-go build ./...
+go build .
 ```
 
 The program should compile without errors, and run successfully. To make that

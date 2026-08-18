@@ -169,7 +169,7 @@ Before this code will compile you'll need to fetch the relevant MySQL driver:
 
 ```shell
 go get github.com/go-sql-driver/mysql
-go build ./...
+go build .
 ```
 
 The program should compile without errors. To make that possible, sqlc generates
