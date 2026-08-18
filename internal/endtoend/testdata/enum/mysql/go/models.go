@@ -20,7 +20,7 @@ const (
 	UsersShirtSizeXLarge UsersShirtSize = "x-large"
 )
 
-func (e *UsersShirtSize) Scan(src interface{}) error {
+func (e *UsersShirtSize) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = UsersShirtSize(s)
@@ -38,7 +38,7 @@ type NullUsersShirtSize struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullUsersShirtSize) Scan(value interface{}) error {
+func (ns *NullUsersShirtSize) Scan(value any) error {
 	if value == nil {
 		ns.UsersShirtSize, ns.Valid = "", false
 		return nil
@@ -65,7 +65,7 @@ const (
 	UsersShoeSizeXLarge UsersShoeSize = "x-large"
 )
 
-func (e *UsersShoeSize) Scan(src interface{}) error {
+func (e *UsersShoeSize) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = UsersShoeSize(s)
@@ -83,7 +83,7 @@ type NullUsersShoeSize struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullUsersShoeSize) Scan(value interface{}) error {
+func (ns *NullUsersShoeSize) Scan(value any) error {
 	if value == nil {
 		ns.UsersShoeSize, ns.Valid = "", false
 		return nil

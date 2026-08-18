@@ -22,7 +22,7 @@ const (
 	EnumTypeAfterlast   EnumType = "afterlast"
 )
 
-func (e *EnumType) Scan(src interface{}) error {
+func (e *EnumType) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = EnumType(s)
@@ -40,7 +40,7 @@ type NullEnumType struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullEnumType) Scan(value interface{}) error {
+func (ns *NullEnumType) Scan(value any) error {
 	if value == nil {
 		ns.EnumType, ns.Valid = "", false
 		return nil

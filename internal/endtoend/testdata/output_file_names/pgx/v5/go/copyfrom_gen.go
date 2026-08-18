@@ -27,8 +27,8 @@ func (r *iteratorForUsersC) Next() bool {
 	return len(r.rows) > 0
 }
 
-func (r iteratorForUsersC) Values() ([]interface{}, error) {
-	return []interface{}{
+func (r iteratorForUsersC) Values() ([]any, error) {
+	return []any{
 		r.rows[0],
 	}, nil
 }

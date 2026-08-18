@@ -19,7 +19,7 @@ GROUP BY 1
 
 type SumBazRow struct {
 	Bar      pgtype.Text
-	Quantity interface{}
+	Quantity any
 }
 
 func (q *Queries) SumBaz(ctx context.Context) ([]SumBazRow, error) {

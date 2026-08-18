@@ -27,8 +27,8 @@ func (r *iteratorForCreateAuthors) Next() bool {
 	return len(r.rows) > 0
 }
 
-func (r iteratorForCreateAuthors) Values() ([]interface{}, error) {
-	return []interface{}{
+func (r iteratorForCreateAuthors) Values() ([]any, error) {
+	return []any{
 		r.rows[0],
 	}, nil
 }

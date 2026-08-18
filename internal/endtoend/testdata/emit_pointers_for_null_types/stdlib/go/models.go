@@ -94,19 +94,19 @@ type DtNumericNotNull struct {
 }
 
 type DtRange struct {
-	A interface{}
-	B interface{}
-	C interface{}
-	D interface{}
-	E interface{}
-	F interface{}
+	A any
+	B any
+	C any
+	D any
+	E any
+	F any
 }
 
 type DtRangeNotNull struct {
-	A interface{}
-	B interface{}
-	C interface{}
-	D interface{}
-	E interface{}
-	F interface{}
+	A any
+	B any
+	C any
+	D any
+	E any
+	F any
 }

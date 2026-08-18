@@ -9,6 +9,10 @@ func escape(s string) string {
 
 func IsReserved(s string) bool {
 	switch s {
+	// Not a keyword, but generated code refers to the predeclared type
+	// `any`, so a package-scope identifier with that name would shadow it.
+	case "any":
+		return true
 	case "break":
 		return true
 	case "default":

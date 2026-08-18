@@ -16,7 +16,7 @@ const (
 	AuthorsAddItemAdded AuthorsAddItem = "added"
 )
 
-func (e *AuthorsAddItem) Scan(src interface{}) error {
+func (e *AuthorsAddItem) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = AuthorsAddItem(s)
@@ -34,7 +34,7 @@ type NullAuthorsAddItem struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullAuthorsAddItem) Scan(value interface{}) error {
+func (ns *NullAuthorsAddItem) Scan(value any) error {
 	if value == nil {
 		ns.AuthorsAddItem, ns.Valid = "", false
 		return nil
@@ -57,7 +57,7 @@ const (
 	AuthorsAddedOk AuthorsAdded = "ok"
 )
 
-func (e *AuthorsAdded) Scan(src interface{}) error {
+func (e *AuthorsAdded) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = AuthorsAdded(s)
@@ -75,7 +75,7 @@ type NullAuthorsAdded struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullAuthorsAdded) Scan(value interface{}) error {
+func (ns *NullAuthorsAdded) Scan(value any) error {
 	if value == nil {
 		ns.AuthorsAdded, ns.Valid = "", false
 		return nil
@@ -98,7 +98,7 @@ const (
 	AuthorsBarOk AuthorsBar = "ok"
 )
 
-func (e *AuthorsBar) Scan(src interface{}) error {
+func (e *AuthorsBar) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = AuthorsBar(s)
@@ -116,7 +116,7 @@ type NullAuthorsBar struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullAuthorsBar) Scan(value interface{}) error {
+func (ns *NullAuthorsBar) Scan(value any) error {
 	if value == nil {
 		ns.AuthorsBar, ns.Valid = "", false
 		return nil
@@ -139,7 +139,7 @@ const (
 	AuthorsFooOk AuthorsFoo = "ok"
 )
 
-func (e *AuthorsFoo) Scan(src interface{}) error {
+func (e *AuthorsFoo) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = AuthorsFoo(s)
@@ -157,7 +157,7 @@ type NullAuthorsFoo struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullAuthorsFoo) Scan(value interface{}) error {
+func (ns *NullAuthorsFoo) Scan(value any) error {
 	if value == nil {
 		ns.AuthorsFoo, ns.Valid = "", false
 		return nil
@@ -180,7 +180,7 @@ const (
 	AuthorsRemoveItemOk AuthorsRemoveItem = "ok"
 )
 
-func (e *AuthorsRemoveItem) Scan(src interface{}) error {
+func (e *AuthorsRemoveItem) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = AuthorsRemoveItem(s)
@@ -198,7 +198,7 @@ type NullAuthorsRemoveItem struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullAuthorsRemoveItem) Scan(value interface{}) error {
+func (ns *NullAuthorsRemoveItem) Scan(value any) error {
 	if value == nil {
 		ns.AuthorsRemoveItem, ns.Valid = "", false
 		return nil
@@ -221,7 +221,7 @@ const (
 	BooksFooOk BooksFoo = "ok"
 )
 
-func (e *BooksFoo) Scan(src interface{}) error {
+func (e *BooksFoo) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = BooksFoo(s)
@@ -239,7 +239,7 @@ type NullBooksFoo struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullBooksFoo) Scan(value interface{}) error {
+func (ns *NullBooksFoo) Scan(value any) error {
 	if value == nil {
 		ns.BooksFoo, ns.Valid = "", false
 		return nil

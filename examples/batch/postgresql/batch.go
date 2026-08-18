@@ -31,7 +31,7 @@ type BooksByYearBatchResults struct {
 func (q *Queries) BooksByYear(ctx context.Context, year []int32) *BooksByYearBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range year {
-		vals := []interface{}{
+		vals := []any{
 			a,
 		}
 		batch.Queue(booksByYear, vals...)
@@ -125,7 +125,7 @@ type CreateBookParams struct {
 func (q *Queries) CreateBook(ctx context.Context, arg []CreateBookParams) *CreateBookBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range arg {
-		vals := []interface{}{
+		vals := []any{
 			a.AuthorID,
 			a.Isbn,
 			a.BookType,
@@ -186,7 +186,7 @@ type DeleteBookBatchResults struct {
 func (q *Queries) DeleteBook(ctx context.Context, bookID []int32) *DeleteBookBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range bookID {
-		vals := []interface{}{
+		vals := []any{
 			a,
 		}
 		batch.Queue(deleteBook, vals...)
@@ -230,7 +230,7 @@ type DeleteBookNamedFuncBatchResults struct {
 func (q *Queries) DeleteBookNamedFunc(ctx context.Context, bookID []int32) *DeleteBookNamedFuncBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range bookID {
-		vals := []interface{}{
+		vals := []any{
 			a,
 		}
 		batch.Queue(deleteBookNamedFunc, vals...)
@@ -274,7 +274,7 @@ type DeleteBookNamedSignBatchResults struct {
 func (q *Queries) DeleteBookNamedSign(ctx context.Context, bookID []int32) *DeleteBookNamedSignBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range bookID {
-		vals := []interface{}{
+		vals := []any{
 			a,
 		}
 		batch.Queue(deleteBookNamedSign, vals...)
@@ -318,7 +318,7 @@ type GetBiographyBatchResults struct {
 func (q *Queries) GetBiography(ctx context.Context, authorID []int32) *GetBiographyBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range authorID {
-		vals := []interface{}{
+		vals := []any{
 			a,
 		}
 		batch.Queue(getBiography, vals...)
@@ -371,7 +371,7 @@ type UpdateBookParams struct {
 func (q *Queries) UpdateBook(ctx context.Context, arg []UpdateBookParams) *UpdateBookBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range arg {
-		vals := []interface{}{
+		vals := []any{
 			a.Title,
 			a.Tags,
 			a.BookID,

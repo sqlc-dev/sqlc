@@ -21,7 +21,7 @@ const (
 	SizeXLarge Size = "x-large"
 )
 
-func (e *Size) Scan(src interface{}) error {
+func (e *Size) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = Size(s)
@@ -39,7 +39,7 @@ type NullSize struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullSize) Scan(value interface{}) error {
+func (ns *NullSize) Scan(value any) error {
 	if value == nil {
 		ns.Size, ns.Valid = "", false
 		return nil

@@ -26,7 +26,7 @@ const (
 	DigitValue11 Digit = "*"
 )
 
-func (e *Digit) Scan(src interface{}) error {
+func (e *Digit) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = Digit(s)
@@ -44,7 +44,7 @@ type NullDigit struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullDigit) Scan(value interface{}) error {
+func (ns *NullDigit) Scan(value any) error {
 	if value == nil {
 		ns.Digit, ns.Valid = "", false
 		return nil
@@ -73,7 +73,7 @@ const (
 	FoobarFoog Foobar = "foo!g"
 )
 
-func (e *Foobar) Scan(src interface{}) error {
+func (e *Foobar) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = Foobar(s)
@@ -91,7 +91,7 @@ type NullFoobar struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullFoobar) Scan(value interface{}) error {
+func (ns *NullFoobar) Scan(value any) error {
 	if value == nil {
 		ns.Foobar, ns.Valid = "", false
 		return nil

@@ -58,7 +58,7 @@ type DtNumeric struct {
 	D sql.NullInt16
 	E sql.NullInt32
 	F sql.NullInt64
-	G interface{}
+	G any
 	H sql.NullString
 	I sql.NullString
 	J sql.NullFloat64
@@ -73,7 +73,7 @@ type DtNumericNotNull struct {
 	D int16
 	E int32
 	F int64
-	G interface{}
+	G any
 	H string
 	I string
 	J float64

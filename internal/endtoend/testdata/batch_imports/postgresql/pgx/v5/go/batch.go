@@ -32,7 +32,7 @@ type GetValuesBatchResults struct {
 func (q *Queries) GetValues(ctx context.Context, b []pgtype.Int4) *GetValuesBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range b {
-		vals := []interface{}{
+		vals := []any{
 			a,
 		}
 		batch.Queue(getValues, vals...)
@@ -97,7 +97,7 @@ type InsertValuesParams struct {
 func (q *Queries) InsertValues(ctx context.Context, arg []InsertValuesParams) *InsertValuesBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range arg {
-		vals := []interface{}{
+		vals := []any{
 			a.A,
 			a.B,
 		}
