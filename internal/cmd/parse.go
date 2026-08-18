@@ -12,6 +12,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/engine/clickhouse"
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
 	"github.com/sqlc-dev/sqlc/internal/engine/googlesql"
+	"github.com/sqlc-dev/sqlc/internal/engine/mssql"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
@@ -59,7 +60,10 @@ Examples:
   sqlc parse --dialect clickhouse queries.sql
 
   # Parse GoogleSQL (BigQuery, Spanner)
-  sqlc parse --dialect googlesql queries.sql`,
+  sqlc parse --dialect googlesql queries.sql
+
+  # Parse SQL Server (T-SQL) SQL
+  sqlc parse --dialect mssql queries.sql`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dialect, err := cmd.Flags().GetString("dialect")
@@ -67,7 +71,7 @@ Examples:
 				return err
 			}
 			if dialect == "" {
-				return fmt.Errorf("--dialect flag is required (postgresql, mysql, sqlite, clickhouse, or googlesql)")
+				return fmt.Errorf("--dialect flag is required (postgresql, mysql, sqlite, clickhouse, googlesql, or mssql)")
 			}
 
 			// Determine input source
@@ -104,8 +108,10 @@ Examples:
 				parser = clickhouse.NewParser()
 			case "googlesql":
 				parser = googlesql.NewParser()
+			case "mssql", "sqlserver":
+				parser = mssql.NewParser()
 			default:
-				return fmt.Errorf("unsupported dialect: %s (use postgresql, mysql, sqlite, clickhouse, or googlesql)", dialect)
+				return fmt.Errorf("unsupported dialect: %s (use postgresql, mysql, sqlite, clickhouse, googlesql, or mssql)", dialect)
 			}
 
 			// Read the full source so each statement's name and command can be
@@ -149,6 +155,6 @@ Examples:
 			return nil
 		},
 	}
-	cmd.Flags().StringP("dialect", "d", "", "SQL dialect to use (postgresql, mysql, sqlite, clickhouse, or googlesql)")
+	cmd.Flags().StringP("dialect", "d", "", "SQL dialect to use (postgresql, mysql, sqlite, clickhouse, googlesql, or mssql)")
 	return cmd
 }

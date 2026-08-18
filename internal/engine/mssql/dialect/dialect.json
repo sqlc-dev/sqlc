@@ -1,0 +1,15 @@
+{
+  "dialect": "mssql",
+  "const": {
+    "integer": "int",
+    "float": "float",
+    "string": "varchar",
+    "bool": "bit"
+  },
+  "bool": "bit",
+  "comparison": ["=", "<>", "!=", "<", "<=", ">", ">="],
+  "comparison_categories": "NBSD",
+  "arithmetic": ["+", "-", "*", "/", "%"],
+  "arithmetic_categories": "N",
+  "cast_categories": "NSD"
+}
