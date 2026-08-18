@@ -1,0 +1,100 @@
+{{define "queryBatchCodePgx"}}
+
+// QueryBatch allows queuing multiple queries to be executed in a single
+// round-trip using pgx v5's batch API. Each Queue* method calls
+// pgx.Batch.Queue and registers a result handler that writes to the provided
+// destination pointer(s) when ExecuteBatch processes the batch results.
+// For :exec queries, no destination is needed - errors propagate via ExecuteBatch.
+//
+// The Batch field is exported to allow interoperability: callers can mix
+// generated Queue* calls with custom pgx batch operations on the same
+// underlying pgx.Batch.
+type QueryBatch struct {
+	Batch *pgx.Batch
+}
+
+// NewQueryBatch creates a new QueryBatch.
+func NewQueryBatch() *QueryBatch {
+	return &QueryBatch{
+		Batch: &pgx.Batch{},
+	}
+}
+
+// ExecuteBatch sends all queued queries and closes the batch.
+func (q *Queries) ExecuteBatch(ctx context.Context, {{if $.EmitMethodsWithDBArgument}}db DBTX, {{end}}batch *QueryBatch) error {
+	return {{if $.EmitMethodsWithDBArgument}}db{{else}}q.db{{end}}.SendBatch(ctx, batch.Batch).Close()
+}
+
+{{range .GoQueries}}
+{{if and (ne .Cmd ":copyfrom") (ne (hasPrefix .Cmd ":batch") true)}}
+{{if eq .Cmd ":one"}}
+// Queue{{.MethodName}} queues {{.MethodName}} for batch execution.
+// The result is written to dest when ExecuteBatch is called.
+// If no row is found, *ok is set to false (no error is returned in this case).
+func (b *QueryBatch) Queue{{.MethodName}}({{.Arg.Pair}}{{if .Arg.Pair}}, {{end}}dest *{{.Ret.DefineType}}, ok *bool) {
+	b.Batch.Queue({{.ConstantName}}, {{.Arg.Params}}).QueryRow(func(row pgx.Row) error {
+		var {{.Ret.Name}} {{.Ret.Type}}
+		err := row.Scan({{.Ret.Scan}})
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				*ok = false
+				return nil
+			}
+			return err
+		}
+		*dest = {{.Ret.ReturnName}}
+		*ok = true
+		return nil
+	})
+}
+{{end}}
+
+{{if eq .Cmd ":many"}}
+// Queue{{.MethodName}} queues {{.MethodName}} for batch execution.
+// The results are appended to *dest when ExecuteBatch is called.
+func (b *QueryBatch) Queue{{.MethodName}}({{.Arg.Pair}}{{if .Arg.Pair}}, {{end}}dest *[]{{.Ret.DefineType}}) {
+	b.Batch.Queue({{.ConstantName}}, {{.Arg.Params}}).Query(func(rows pgx.Rows) error {
+		defer rows.Close()
+		for rows.Next() {
+			var {{.Ret.Name}} {{.Ret.Type}}
+			if err := rows.Scan({{.Ret.Scan}}); err != nil {
+				return err
+			}
+			*dest = append(*dest, {{.Ret.ReturnName}})
+		}
+		return rows.Err()
+	})
+}
+{{end}}
+
+{{if eq .Cmd ":exec"}}
+// Queue{{.MethodName}} queues {{.MethodName}} for batch execution.
+func (b *QueryBatch) Queue{{.MethodName}}({{.Arg.Pair}}) {
+	b.Batch.Queue({{.ConstantName}}, {{.Arg.Params}})
+}
+{{end}}
+
+{{if eq .Cmd ":execrows"}}
+// Queue{{.MethodName}} queues {{.MethodName}} for batch execution.
+// The number of rows affected is written to dest when ExecuteBatch is called.
+func (b *QueryBatch) Queue{{.MethodName}}({{.Arg.Pair}}{{if .Arg.Pair}}, {{end}}dest *int64) {
+	b.Batch.Queue({{.ConstantName}}, {{.Arg.Params}}).Exec(func(ct pgconn.CommandTag) error {
+		*dest = ct.RowsAffected()
+		return nil
+	})
+}
+{{end}}
+
+{{if eq .Cmd ":execresult"}}
+// Queue{{.MethodName}} queues {{.MethodName}} for batch execution.
+// The command tag is written to dest when ExecuteBatch is called.
+func (b *QueryBatch) Queue{{.MethodName}}({{.Arg.Pair}}{{if .Arg.Pair}}, {{end}}dest *pgconn.CommandTag) {
+	b.Batch.Queue({{.ConstantName}}, {{.Arg.Params}}).Exec(func(ct pgconn.CommandTag) error {
+		*dest = ct
+		return nil
+	})
+}
+{{end}}
+{{end}}
+{{end}}
+{{end}}
