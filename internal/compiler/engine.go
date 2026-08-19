@@ -11,6 +11,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/engine/clickhouse"
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
 	"github.com/sqlc-dev/sqlc/internal/engine/googlesql"
+	"github.com/sqlc-dev/sqlc/internal/engine/mssql"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	pganalyze "github.com/sqlc-dev/sqlc/internal/engine/postgresql/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
@@ -57,9 +58,10 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 		o(c)
 	}
 
-	// ClickHouse and GoogleSQL have no legacy analysis path to fall back to.
+	// ClickHouse, GoogleSQL and SQL Server have no legacy analysis path to
+	// fall back to.
 	switch conf.Engine {
-	case config.EngineClickHouse, config.EngineGoogleSQL:
+	case config.EngineClickHouse, config.EngineGoogleSQL, config.EngineMSSQL:
 		c.coreAnalysis = true
 	}
 	if c.coreAnalysis {
@@ -138,6 +140,10 @@ func (c *Compiler) initCore() error {
 		c.parser = googlesql.NewParser()
 		c.selector = newDefaultSelector()
 		dialect = googlesql.Dialect()
+	case config.EngineMSSQL:
+		c.parser = mssql.NewParser()
+		c.selector = newDefaultSelector()
+		dialect = mssql.Dialect()
 	default:
 		return fmt.Errorf("unknown engine: %s", c.conf.Engine)
 	}

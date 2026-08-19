@@ -1,0 +1,34 @@
+{"name": "bigint", "category": "N"}
+{"name": "int", "category": "N", "aliases": ["integer"]}
+{"name": "smallint", "category": "N"}
+{"name": "tinyint", "category": "N"}
+{"name": "bit", "category": "B"}
+{"name": "decimal", "category": "N", "aliases": ["dec", "numeric"]}
+{"name": "money", "category": "N"}
+{"name": "smallmoney", "category": "N"}
+{"name": "float", "category": "N", "aliases": ["double precision"]}
+{"name": "real", "category": "N"}
+{"name": "date", "category": "D"}
+{"name": "datetime", "category": "D"}
+{"name": "datetime2", "category": "D"}
+{"name": "smalldatetime", "category": "D"}
+{"name": "datetimeoffset", "category": "D"}
+{"name": "time", "category": "D"}
+{"name": "char", "category": "S", "aliases": ["character"]}
+{"name": "varchar", "category": "S"}
+{"name": "text", "category": "S"}
+{"name": "nchar", "category": "S"}
+{"name": "nvarchar", "category": "S"}
+{"name": "ntext", "category": "S"}
+{"name": "binary", "category": "S"}
+{"name": "varbinary", "category": "S"}
+{"name": "image", "category": "S"}
+{"name": "uniqueidentifier", "category": "S"}
+{"name": "xml", "category": "U"}
+{"name": "json", "category": "U"}
+{"name": "sql_variant", "category": "U"}
+{"name": "rowversion", "category": "U", "aliases": ["timestamp"]}
+{"name": "hierarchyid", "category": "U"}
+{"name": "geography", "category": "U"}
+{"name": "geometry", "category": "U"}
+{"name": "vector", "category": "U"}

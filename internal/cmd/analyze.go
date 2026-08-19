@@ -43,6 +43,9 @@ Examples:
   # Analyze a GoogleSQL (BigQuery, Spanner) query
   sqlc analyze --dialect googlesql --schema schema.sql query.sql
 
+  # Analyze a SQL Server (T-SQL) query
+  sqlc analyze --dialect mssql --schema schema.sql query.sql
+
   # Analyze a query piped via stdin
   echo "-- name: GetAuthor :one
   SELECT * FROM authors WHERE id = $1;" | sqlc analyze --dialect postgresql --schema schema.sql
@@ -56,7 +59,7 @@ Examples:
 				return err
 			}
 			if dialect == "" {
-				return fmt.Errorf("--dialect flag is required (postgresql, mysql, sqlite, clickhouse, or googlesql)")
+				return fmt.Errorf("--dialect flag is required (postgresql, mysql, sqlite, clickhouse, googlesql, or mssql)")
 			}
 
 			schemaPath, err := cmd.Flags().GetString("schema")
@@ -117,8 +120,10 @@ Examples:
 				engine = config.EngineClickHouse
 			case "googlesql":
 				engine = config.EngineGoogleSQL
+			case "mssql", "sqlserver":
+				engine = config.EngineMSSQL
 			default:
-				return fmt.Errorf("unsupported dialect: %s (use postgresql, mysql, sqlite, clickhouse, or googlesql)", dialect)
+				return fmt.Errorf("unsupported dialect: %s (use postgresql, mysql, sqlite, clickhouse, googlesql, or mssql)", dialect)
 			}
 
 			sql := config.SQL{
@@ -160,7 +165,7 @@ Examples:
 			return nil
 		},
 	}
-	cmd.Flags().StringP("dialect", "d", "", "SQL dialect to use (postgresql, mysql, sqlite, clickhouse, or googlesql)")
+	cmd.Flags().StringP("dialect", "d", "", "SQL dialect to use (postgresql, mysql, sqlite, clickhouse, googlesql, or mssql)")
 	cmd.Flags().StringP("schema", "s", "", "path to the schema file")
 	cmd.Flags().BoolP("ast", "", false, "include the statement AST in the output")
 	return cmd

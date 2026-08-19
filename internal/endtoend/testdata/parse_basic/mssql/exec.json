@@ -1,0 +1,5 @@
+{
+  "command": "parse",
+  "args": ["--dialect", "mssql", "query.sql"],
+  "contexts": ["base"]
+}
