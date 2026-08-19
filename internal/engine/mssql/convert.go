@@ -14,6 +14,35 @@ type cc struct {
 	// namedParams tracks the number assigned to each "@name" so repeated
 	// uses share a single parameter.
 	namedParams map[string]int
+	// toByte maps a teesql UTF-16 code-unit offset to a byte offset in the
+	// source, so Location fields agree with StmtLocation/StmtLen.
+	toByte func(int) int
+}
+
+// loc returns a node's start offset in bytes, for the Location fields of the
+// sqlc AST.
+func (c *cc) loc(n any) int {
+	f, ok := n.(fragmented)
+	if !ok {
+		return 0
+	}
+	off := f.Frag().StartOffset
+	if c.toByte != nil {
+		return c.toByte(off)
+	}
+	return off
+}
+
+func (c *cc) parseRangeVar(n *tsql.SchemaObjectName) *ast.RangeVar {
+	name := parseTableName(n)
+	rv := &ast.RangeVar{
+		Relname:  &name.Name,
+		Location: c.loc(n),
+	}
+	if name.Schema != "" {
+		rv.Schemaname = &name.Schema
+	}
+	return rv
 }
 
 func (c *cc) convert(node tsql.Node) ast.Node {
@@ -57,14 +86,14 @@ func (c *cc) convertWithClause(n *tsql.WithCtesAndXmlNamespaces) *ast.WithClause
 	}
 	with := &ast.WithClause{
 		Ctes:     &ast.List{},
-		Location: location(n),
+		Location: c.loc(n),
 	}
 	for _, cte := range n.CommonTableExpressions {
 		name := identifierValue(cte.ExpressionName)
 		item := &ast.CommonTableExpr{
 			Ctename:  &name,
 			Ctequery: c.convertQueryExpression(cte.QueryExpression),
-			Location: location(cte),
+			Location: c.loc(cte),
 		}
 		if len(cte.Columns) > 0 {
 			item.Aliascolnames = &ast.List{}
@@ -189,7 +218,7 @@ func (c *cc) convertSelectElement(elem tsql.SelectElement) ast.Node {
 	case *tsql.SelectScalarExpression:
 		res := &ast.ResTarget{
 			Val:      c.convertScalarExpression(e.Expression),
-			Location: location(e),
+			Location: c.loc(e),
 		}
 		if name := columnAlias(e.ColumnName); name != "" {
 			res.Name = &name
@@ -206,14 +235,14 @@ func (c *cc) convertSelectElement(elem tsql.SelectElement) ast.Node {
 		return &ast.ResTarget{
 			Val: &ast.ColumnRef{
 				Fields:   fields,
-				Location: location(e),
+				Location: c.loc(e),
 			},
-			Location: location(e),
+			Location: c.loc(e),
 		}
 	default:
 		return &ast.ResTarget{
 			Val:      todo(elem),
-			Location: location(elem),
+			Location: c.loc(elem),
 		}
 	}
 }
@@ -236,7 +265,7 @@ func (c *cc) convertOrderByClause(n *tsql.OrderByClause) *ast.List {
 	for _, elem := range n.OrderByElements {
 		sortBy := &ast.SortBy{
 			Node:     c.convertScalarExpression(elem.Expression),
-			Location: location(elem),
+			Location: c.loc(elem),
 		}
 		switch elem.SortOrder {
 		case "Descending":
@@ -254,7 +283,7 @@ func (c *cc) convertOrderByClause(n *tsql.OrderByClause) *ast.List {
 func (c *cc) convertTableReference(ref tsql.TableReference) ast.Node {
 	switch t := ref.(type) {
 	case *tsql.NamedTableReference:
-		rv := parseRangeVar(t.SchemaObject)
+		rv := c.parseRangeVar(t.SchemaObject)
 		if t.Alias != nil {
 			alias := identifierValue(t.Alias)
 			rv.Alias = &ast.Alias{Aliasname: &alias}
@@ -315,7 +344,7 @@ func (c *cc) convertBooleanExpression(expr tsql.BooleanExpression) ast.Node {
 			},
 			Lexpr:    c.convertScalarExpression(e.FirstExpression),
 			Rexpr:    c.convertScalarExpression(e.SecondExpression),
-			Location: location(e),
+			Location: c.loc(e),
 		}
 	case *tsql.BooleanBinaryExpression:
 		boolop := ast.BoolExprTypeAnd
@@ -330,7 +359,7 @@ func (c *cc) convertBooleanExpression(expr tsql.BooleanExpression) ast.Node {
 					c.convertBooleanExpression(e.SecondExpression),
 				},
 			},
-			Location: location(e),
+			Location: c.loc(e),
 		}
 	case *tsql.BooleanNotExpression:
 		return &ast.BoolExpr{
@@ -338,7 +367,7 @@ func (c *cc) convertBooleanExpression(expr tsql.BooleanExpression) ast.Node {
 			Args: &ast.List{
 				Items: []ast.Node{c.convertBooleanExpression(e.Expression)},
 			},
-			Location: location(e),
+			Location: c.loc(e),
 		}
 	case *tsql.BooleanParenthesisExpression:
 		return c.convertBooleanExpression(e.Expression)
@@ -350,7 +379,7 @@ func (c *cc) convertBooleanExpression(expr tsql.BooleanExpression) ast.Node {
 		return &ast.NullTest{
 			Arg:          c.convertScalarExpression(e.Expression),
 			Nulltesttype: test,
-			Location:     location(e),
+			Location:     c.loc(e),
 		}
 	case *tsql.BooleanTernaryExpression:
 		return &ast.BetweenExpr{
@@ -358,13 +387,13 @@ func (c *cc) convertBooleanExpression(expr tsql.BooleanExpression) ast.Node {
 			Left:     c.convertScalarExpression(e.SecondExpression),
 			Right:    c.convertScalarExpression(e.ThirdExpression),
 			Not:      e.TernaryExpressionType == "NotBetween",
-			Location: location(e),
+			Location: c.loc(e),
 		}
 	case *tsql.BooleanInExpression:
 		in := &ast.In{
 			Expr:     c.convertScalarExpression(e.Expression),
 			Not:      e.NotDefined,
-			Location: location(e),
+			Location: c.loc(e),
 		}
 		for _, item := range e.Values {
 			in.List = append(in.List, c.convertScalarExpression(item))
@@ -385,13 +414,13 @@ func (c *cc) convertBooleanExpression(expr tsql.BooleanExpression) ast.Node {
 			},
 			Lexpr:    c.convertScalarExpression(e.FirstExpression),
 			Rexpr:    c.convertScalarExpression(e.SecondExpression),
-			Location: location(e),
+			Location: c.loc(e),
 		}
 	case *tsql.ExistsPredicate:
 		return &ast.SubLink{
 			SubLinkType: ast.EXISTS_SUBLINK,
 			Subselect:   c.convertQueryExpression(e.Subquery),
-			Location:    location(e),
+			Location:    c.loc(e),
 		}
 	case *tsql.BooleanScalarPlaceholder:
 		return c.convertScalarExpression(e.Scalar)
@@ -432,32 +461,32 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 		ival, _ := strconv.ParseInt(e.Value, 10, 64)
 		return &ast.A_Const{
 			Val:      &ast.Integer{Ival: ival},
-			Location: location(e),
+			Location: c.loc(e),
 		}
 	case *tsql.NumericLiteral:
 		return &ast.A_Const{
 			Val:      &ast.Float{Str: e.Value},
-			Location: location(e),
+			Location: c.loc(e),
 		}
 	case *tsql.RealLiteral:
 		return &ast.A_Const{
 			Val:      &ast.Float{Str: e.Value},
-			Location: location(e),
+			Location: c.loc(e),
 		}
 	case *tsql.MoneyLiteral:
 		return &ast.A_Const{
 			Val:      &ast.Float{Str: e.Value},
-			Location: location(e),
+			Location: c.loc(e),
 		}
 	case *tsql.StringLiteral:
 		return &ast.A_Const{
 			Val:      &ast.String{Str: e.Value},
-			Location: location(e),
+			Location: c.loc(e),
 		}
 	case *tsql.NullLiteral:
 		return &ast.A_Const{
 			Val:      &ast.Null{},
-			Location: location(e),
+			Location: c.loc(e),
 		}
 	case *tsql.BinaryExpression:
 		return &ast.A_Expr{
@@ -467,7 +496,7 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 			},
 			Lexpr:    c.convertScalarExpression(e.FirstExpression),
 			Rexpr:    c.convertScalarExpression(e.SecondExpression),
-			Location: location(e),
+			Location: c.loc(e),
 		}
 	case *tsql.UnaryExpression:
 		switch e.UnaryExpressionType {
@@ -480,7 +509,7 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 					Items: []ast.Node{&ast.String{Str: "~"}},
 				},
 				Rexpr:    c.convertScalarExpression(e.Expression),
-				Location: location(e),
+				Location: c.loc(e),
 			}
 		default: // Negative
 			return &ast.A_Expr{
@@ -489,7 +518,7 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 					Items: []ast.Node{&ast.String{Str: "-"}},
 				},
 				Rexpr:    c.convertScalarExpression(e.Expression),
-				Location: location(e),
+				Location: c.loc(e),
 			}
 		}
 	case *tsql.ParenthesisExpression:
@@ -500,30 +529,30 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 		return &ast.TypeCast{
 			Arg:      c.convertScalarExpression(e.Parameter),
 			TypeName: &ast.TypeName{Name: dataTypeName(e.DataType)},
-			Location: location(e),
+			Location: c.loc(e),
 		}
 	case *tsql.TryCastCall:
 		return &ast.TypeCast{
 			Arg:      c.convertScalarExpression(e.Parameter),
 			TypeName: &ast.TypeName{Name: dataTypeName(e.DataType)},
-			Location: location(e),
+			Location: c.loc(e),
 		}
 	case *tsql.ConvertCall:
 		return &ast.TypeCast{
 			Arg:      c.convertScalarExpression(e.Parameter),
 			TypeName: &ast.TypeName{Name: dataTypeName(e.DataType)},
-			Location: location(e),
+			Location: c.loc(e),
 		}
 	case *tsql.TryConvertCall:
 		return &ast.TypeCast{
 			Arg:      c.convertScalarExpression(e.Parameter),
 			TypeName: &ast.TypeName{Name: dataTypeName(e.DataType)},
-			Location: location(e),
+			Location: c.loc(e),
 		}
 	case *tsql.CoalesceExpression:
 		coalesce := &ast.CoalesceExpr{
 			Args:     &ast.List{},
-			Location: location(e),
+			Location: c.loc(e),
 		}
 		for _, arg := range e.Expressions {
 			coalesce.Args.Items = append(coalesce.Args.Items, c.convertScalarExpression(arg))
@@ -540,7 +569,7 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 					c.convertScalarExpression(e.SecondExpression),
 				},
 			},
-			Location: location(e),
+			Location: c.loc(e),
 		}
 	case *tsql.IIfCall:
 		return &ast.CaseExpr{
@@ -553,12 +582,12 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 				},
 			},
 			Defresult: c.convertScalarExpression(e.ElseExpression),
-			Location:  location(e),
+			Location:  c.loc(e),
 		}
 	case *tsql.SearchedCaseExpression:
 		caseExpr := &ast.CaseExpr{
 			Args:     &ast.List{},
-			Location: location(e),
+			Location: c.loc(e),
 		}
 		for _, when := range e.WhenClauses {
 			caseExpr.Args.Items = append(caseExpr.Args.Items, &ast.CaseWhen{
@@ -574,7 +603,7 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 		caseExpr := &ast.CaseExpr{
 			Arg:      c.convertScalarExpression(e.InputExpression),
 			Args:     &ast.List{},
-			Location: location(e),
+			Location: c.loc(e),
 		}
 		for _, when := range e.WhenClauses {
 			caseExpr.Args.Items = append(caseExpr.Args.Items, &ast.CaseWhen{
@@ -590,14 +619,14 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 		return &ast.SubLink{
 			SubLinkType: ast.EXPR_SUBLINK,
 			Subselect:   c.convertQueryExpression(e.QueryExpression),
-			Location:    location(e),
+			Location:    c.loc(e),
 		}
 	case *tsql.ParameterlessCall:
 		return &ast.FuncCall{
 			Funcname: &ast.List{
 				Items: []ast.Node{&ast.String{Str: identifier(e.ParameterlessCallType)}},
 			},
-			Location: location(e),
+			Location: c.loc(e),
 		}
 	default:
 		return todo(expr)
@@ -639,7 +668,7 @@ func (c *cc) convertColumnReference(n *tsql.ColumnReferenceExpression) *ast.Colu
 	}
 	return &ast.ColumnRef{
 		Fields:   fields,
-		Location: location(n),
+		Location: c.loc(n),
 	}
 }
 
@@ -658,7 +687,7 @@ func (c *cc) convertVariableReference(n *tsql.VariableReference) ast.Node {
 	}
 	return &ast.ParamRef{
 		Number:   number,
-		Location: location(n),
+		Location: c.loc(n),
 	}
 }
 
@@ -667,7 +696,7 @@ func (c *cc) convertFunctionCall(n *tsql.FunctionCall) *ast.FuncCall {
 		Funcname: &ast.List{
 			Items: []ast.Node{&ast.String{Str: identifierValue(n.FunctionName)}},
 		},
-		Location:    location(n),
+		Location:    c.loc(n),
 		AggDistinct: n.UniqueRowFilter == "Distinct",
 	}
 
@@ -684,7 +713,7 @@ func (c *cc) convertFunctionCall(n *tsql.FunctionCall) *ast.FuncCall {
 	}
 
 	if n.OverClause != nil {
-		fc.Over = &ast.WindowDef{Location: location(n.OverClause)}
+		fc.Over = &ast.WindowDef{Location: c.loc(n.OverClause)}
 		if len(n.OverClause.Partitions) > 0 {
 			fc.Over.PartitionClause = &ast.List{}
 			for _, p := range n.OverClause.Partitions {
@@ -742,7 +771,7 @@ func (c *cc) convertInsertStatement(n *tsql.InsertStatement) ast.Node {
 	}
 
 	stmt := &ast.InsertStmt{
-		Relation: parseRangeVar(target.SchemaObject),
+		Relation: c.parseRangeVar(target.SchemaObject),
 	}
 
 	if len(spec.Columns) > 0 {
@@ -755,7 +784,7 @@ func (c *cc) convertInsertStatement(n *tsql.InsertStatement) ast.Node {
 			name := identifierValue(ids[len(ids)-1])
 			stmt.Cols.Items = append(stmt.Cols.Items, &ast.ResTarget{
 				Name:     &name,
-				Location: location(col),
+				Location: c.loc(col),
 			})
 		}
 	}
@@ -797,13 +826,13 @@ func (c *cc) convertUpdateStatement(n *tsql.UpdateStatement) ast.Node {
 		return todo(n)
 	}
 
+	rv, fromItems, quals := c.dmlTargetAndFrom(target, spec.FromClause)
 	stmt := &ast.UpdateStmt{
 		Relations: &ast.List{
-			Items: []ast.Node{parseRangeVar(target.SchemaObject)},
+			Items: []ast.Node{rv},
 		},
 		TargetList:    &ast.List{},
-		WhereClause:   nil,
-		FromClause:    &ast.List{},
+		FromClause:    &ast.List{Items: fromItems},
 		ReturningList: &ast.List{},
 		WithClause:    c.convertWithClause(n.WithCtesAndXmlNamespaces),
 	}
@@ -821,19 +850,14 @@ func (c *cc) convertUpdateStatement(n *tsql.UpdateStatement) ast.Node {
 		stmt.TargetList.Items = append(stmt.TargetList.Items, &ast.ResTarget{
 			Name:     &name,
 			Val:      c.convertScalarExpression(assign.NewValue),
-			Location: location(assign),
+			Location: c.loc(assign),
 		})
-	}
-
-	if spec.FromClause != nil {
-		for _, ref := range spec.FromClause.TableReferences {
-			stmt.FromClause.Items = append(stmt.FromClause.Items, c.convertTableReference(ref))
-		}
 	}
 
 	if spec.WhereClause != nil {
 		stmt.WhereClause = c.convertBooleanExpression(spec.WhereClause.SearchCondition)
 	}
+	stmt.WhereClause = andQuals(stmt.WhereClause, quals)
 
 	if returning := c.convertOutputClause(spec.OutputClause); returning != nil {
 		stmt.ReturningList = returning
@@ -853,23 +877,125 @@ func (c *cc) convertDeleteStatement(n *tsql.DeleteStatement) ast.Node {
 		return todo(n)
 	}
 
+	rv, fromItems, quals := c.dmlTargetAndFrom(target, spec.FromClause)
 	stmt := &ast.DeleteStmt{
 		Relations: &ast.List{
-			Items: []ast.Node{parseRangeVar(target.SchemaObject)},
+			Items: []ast.Node{rv},
 		},
 		ReturningList: &ast.List{},
 		WithClause:    c.convertWithClause(n.WithCtesAndXmlNamespaces),
+	}
+	if len(fromItems) > 0 {
+		stmt.FromClause = &ast.List{Items: fromItems}
 	}
 
 	if spec.WhereClause != nil {
 		stmt.WhereClause = c.convertBooleanExpression(spec.WhereClause.SearchCondition)
 	}
+	stmt.WhereClause = andQuals(stmt.WhereClause, quals)
 
 	if returning := c.convertOutputClause(spec.OutputClause); returning != nil {
 		stmt.ReturningList = returning
 	}
 
 	return stmt
+}
+
+// dmlTargetAndFrom resolves an UPDATE or DELETE statement's target against
+// its FROM clause. T-SQL names the target by the alias the FROM clause gives
+// it — "UPDATE a SET ... FROM authors a" — so a target matching a FROM
+// relation becomes that relation, removed from the returned FROM items. The
+// ON conditions of inner joins dissolved by the removal are returned as
+// extra WHERE conditions.
+func (c *cc) dmlTargetAndFrom(target *tsql.NamedTableReference, from *tsql.FromClause) (*ast.RangeVar, []ast.Node, []ast.Node) {
+	rv := c.parseRangeVar(target.SchemaObject)
+	if target.Alias != nil {
+		alias := identifierValue(target.Alias)
+		rv.Alias = &ast.Alias{Aliasname: &alias}
+	}
+	var items []ast.Node
+	if from != nil {
+		for _, ref := range from.TableReferences {
+			items = append(items, c.convertTableReference(ref))
+		}
+	}
+	if rv.Schemaname == nil && rv.Alias == nil && rv.Relname != nil {
+		for i, item := range items {
+			found, remaining, quals := extractTarget(item, *rv.Relname)
+			if found == nil {
+				continue
+			}
+			if remaining == nil {
+				items = append(items[:i], items[i+1:]...)
+			} else {
+				items[i] = remaining
+			}
+			return found, items, quals
+		}
+	}
+	return rv, items, nil
+}
+
+// extractTarget removes the relation named name — by alias, or by table name
+// when unaliased — from a FROM item. It returns the extracted relation, what
+// remains of the item (nil when the relation was the whole item), and the ON
+// conditions of any inner join dissolved by the removal. Relations under an
+// outer join are left alone: pulling one out would change the join's meaning.
+func extractTarget(item ast.Node, name string) (*ast.RangeVar, ast.Node, []ast.Node) {
+	switch v := item.(type) {
+	case *ast.RangeVar:
+		if rangeVarNamed(v, name) {
+			return v, nil, nil
+		}
+	case *ast.JoinExpr:
+		if v.Jointype != ast.JoinTypeInner {
+			return nil, item, nil
+		}
+		if found, remaining, quals := extractTarget(v.Larg, name); found != nil {
+			if remaining == nil {
+				if v.Quals != nil {
+					quals = append(quals, v.Quals)
+				}
+				return found, v.Rarg, quals
+			}
+			v.Larg = remaining
+			return found, v, quals
+		}
+		if found, remaining, quals := extractTarget(v.Rarg, name); found != nil {
+			if remaining == nil {
+				if v.Quals != nil {
+					quals = append(quals, v.Quals)
+				}
+				return found, v.Larg, quals
+			}
+			v.Rarg = remaining
+			return found, v, quals
+		}
+	}
+	return nil, item, nil
+}
+
+func rangeVarNamed(rv *ast.RangeVar, name string) bool {
+	if rv.Alias != nil && rv.Alias.Aliasname != nil {
+		return *rv.Alias.Aliasname == name
+	}
+	return rv.Schemaname == nil && rv.Relname != nil && *rv.Relname == name
+}
+
+// andQuals conjoins the ON conditions of dissolved inner joins onto a WHERE
+// clause; for inner joins the two forms are equivalent.
+func andQuals(where ast.Node, quals []ast.Node) ast.Node {
+	for _, q := range quals {
+		if where == nil {
+			where = q
+			continue
+		}
+		where = &ast.BoolExpr{
+			Boolop: ast.BoolExprTypeAnd,
+			Args:   &ast.List{Items: []ast.Node{where, q}},
+		}
+	}
+	return where
 }
 
 func (c *cc) convertCreateTableStatement(n *tsql.CreateTableStatement) ast.Node {
@@ -912,7 +1038,7 @@ func (c *cc) convertColumnDefinition(n *tsql.ColumnDefinition, tablePrimaryKey m
 	colDef := &ast.ColumnDef{
 		Colname:  name,
 		TypeName: &ast.TypeName{Name: dataTypeName(n.DataType)},
-		Location: location(n),
+		Location: c.loc(n),
 	}
 
 	// T-SQL columns are nullable unless declared otherwise.

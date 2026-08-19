@@ -44,7 +44,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 			}
 			end := statementEnd(blob, start)
 
-			converter := &cc{}
+			converter := &cc{toByte: toByte}
 			out := converter.convert(stmt)
 			if _, ok := out.(*ast.TODO); ok {
 				loc = end

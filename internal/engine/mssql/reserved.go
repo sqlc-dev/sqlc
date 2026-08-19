@@ -188,7 +188,6 @@ func (p *Parser) IsReservedKeyword(s string) bool {
 	case "where":
 	case "while":
 	case "with":
-	case "within group":
 	case "writetext":
 	default:
 		return false

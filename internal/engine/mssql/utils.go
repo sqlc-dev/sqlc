@@ -15,16 +15,6 @@ type fragmented interface {
 	Frag() *tsql.Fragment
 }
 
-// location returns a node's start offset, for the Location fields of the sqlc
-// AST. Spans are recorded in UTF-16 code units, which agree with byte offsets
-// for ASCII input.
-func location(n any) int {
-	if f, ok := n.(fragmented); ok {
-		return f.Frag().StartOffset
-	}
-	return 0
-}
-
 func todo(n tsql.Node) *ast.TODO {
 	if debug.Active {
 		log.Printf("mssql.convert: Unknown node type %T\n", n)
@@ -73,14 +63,3 @@ func parseTableName(n *tsql.SchemaObjectName) *ast.TableName {
 	}
 }
 
-func parseRangeVar(n *tsql.SchemaObjectName) *ast.RangeVar {
-	name := parseTableName(n)
-	rv := &ast.RangeVar{
-		Relname:  &name.Name,
-		Location: location(n),
-	}
-	if name.Schema != "" {
-		rv.Schemaname = &name.Schema
-	}
-	return rv
-}
