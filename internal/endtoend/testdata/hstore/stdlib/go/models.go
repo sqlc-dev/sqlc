@@ -5,6 +5,6 @@
 package hstore
 
 type Foo struct {
-	Bar interface{}
-	Baz interface{}
+	Bar any
+	Baz any
 }

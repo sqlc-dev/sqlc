@@ -182,7 +182,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 				return "pqtype.NullRawMessage"
 			}
 		default:
-			return "interface{}"
+			return "any"
 		}
 
 	case "jsonb", "pg_catalog.jsonb":
@@ -198,7 +198,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 				return "pqtype.NullRawMessage"
 			}
 		default:
-			return "interface{}"
+			return "any"
 		}
 
 	case "bytea", "blob", "pg_catalog.bytea":
@@ -297,7 +297,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		case opts.SQLDriverLibPQ:
 			return "pqtype.Inet"
 		default:
-			return "interface{}"
+			return "any"
 		}
 
 	case "cidr":
@@ -312,7 +312,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		case opts.SQLDriverLibPQ:
 			return "pqtype.CIDR"
 		default:
-			return "interface{}"
+			return "any"
 		}
 
 	case "macaddr", "macaddr8":
@@ -324,7 +324,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		case opts.SQLDriverLibPQ:
 			return "pqtype.Macaddr"
 		default:
-			return "interface{}"
+			return "any"
 		}
 
 	case "ltree", "lquery", "ltxtquery":
@@ -363,7 +363,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		case opts.SQLDriverPGXV5:
 			return "pgtype.Range[pgtype.Date]"
 		default:
-			return "interface{}"
+			return "any"
 		}
 
 	case "datemultirange":
@@ -371,7 +371,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		case opts.SQLDriverPGXV5:
 			return "pgtype.Multirange[pgtype.Range[pgtype.Date]]"
 		default:
-			return "interface{}"
+			return "any"
 		}
 
 	case "tsrange":
@@ -381,7 +381,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		case opts.SQLDriverPGXV5:
 			return "pgtype.Range[pgtype.Timestamp]"
 		default:
-			return "interface{}"
+			return "any"
 		}
 
 	case "tsmultirange":
@@ -389,7 +389,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		case opts.SQLDriverPGXV5:
 			return "pgtype.Multirange[pgtype.Range[pgtype.Timestamp]]"
 		default:
-			return "interface{}"
+			return "any"
 		}
 
 	case "tstzrange":
@@ -399,7 +399,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		case opts.SQLDriverPGXV5:
 			return "pgtype.Range[pgtype.Timestamptz]"
 		default:
-			return "interface{}"
+			return "any"
 		}
 
 	case "tstzmultirange":
@@ -407,7 +407,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		case opts.SQLDriverPGXV5:
 			return "pgtype.Multirange[pgtype.Range[pgtype.Timestamptz]]"
 		default:
-			return "interface{}"
+			return "any"
 		}
 
 	case "numrange":
@@ -417,7 +417,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		case opts.SQLDriverPGXV5:
 			return "pgtype.Range[pgtype.Numeric]"
 		default:
-			return "interface{}"
+			return "any"
 		}
 
 	case "nummultirange":
@@ -425,7 +425,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		case opts.SQLDriverPGXV5:
 			return "pgtype.Multirange[pgtype.Range[pgtype.Numeric]]"
 		default:
-			return "interface{}"
+			return "any"
 		}
 
 	case "int4range":
@@ -435,7 +435,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		case opts.SQLDriverPGXV5:
 			return "pgtype.Range[pgtype.Int4]"
 		default:
-			return "interface{}"
+			return "any"
 		}
 
 	case "int4multirange":
@@ -443,7 +443,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		case opts.SQLDriverPGXV5:
 			return "pgtype.Multirange[pgtype.Range[pgtype.Int4]]"
 		default:
-			return "interface{}"
+			return "any"
 		}
 
 	case "int8range":
@@ -453,7 +453,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		case opts.SQLDriverPGXV5:
 			return "pgtype.Range[pgtype.Int8]"
 		default:
-			return "interface{}"
+			return "any"
 		}
 
 	case "int8multirange":
@@ -461,14 +461,14 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		case opts.SQLDriverPGXV5:
 			return "pgtype.Multirange[pgtype.Range[pgtype.Int8]]"
 		default:
-			return "interface{}"
+			return "any"
 		}
 
 	case "hstore":
 		if driver.IsPGX() {
 			return "pgtype.Hstore"
 		}
-		return "interface{}"
+		return "any"
 
 	case "bit", "varbit", "pg_catalog.bit", "pg_catalog.varbit":
 		if driver == opts.SQLDriverPGXV5 {
@@ -558,16 +558,16 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 
 	case "void":
 		// A void value can only be scanned into an empty interface.
-		return "interface{}"
+		return "any"
 
 	case "any":
-		return "interface{}"
+		return "any"
 
 	default:
 		rel, err := parseIdentifierString(columnType)
 		if err != nil {
 			// TODO: Should this actually return an error here?
-			return "interface{}"
+			return "any"
 		}
 		if rel.Schema == "" {
 			rel.Schema = req.Catalog.DefaultSchema
@@ -615,5 +615,5 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 	if debug.Active {
 		log.Printf("unknown PostgreSQL type: %s\n", columnType)
 	}
-	return "interface{}"
+	return "any"
 }

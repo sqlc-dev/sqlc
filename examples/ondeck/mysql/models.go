@@ -18,7 +18,7 @@ const (
 	VenueStatusClosed VenueStatus = "closed"
 )
 
-func (e *VenueStatus) Scan(src interface{}) error {
+func (e *VenueStatus) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = VenueStatus(s)
@@ -36,7 +36,7 @@ type NullVenueStatus struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullVenueStatus) Scan(value interface{}) error {
+func (ns *NullVenueStatus) Scan(value any) error {
 	if value == nil {
 		ns.VenueStatus, ns.Valid = "", false
 		return nil

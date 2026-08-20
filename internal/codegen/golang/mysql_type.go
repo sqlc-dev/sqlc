@@ -115,7 +115,7 @@ func mysqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.C
 		return "json.RawMessage"
 
 	case "any":
-		return "interface{}"
+		return "any"
 
 	default:
 		for _, schema := range req.Catalog.Schemas {
@@ -138,7 +138,7 @@ func mysqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.C
 		if debug.Active {
 			log.Printf("Unknown MySQL type: %s\n", columnType)
 		}
-		return "interface{}"
+		return "any"
 
 	}
 }

@@ -16,7 +16,7 @@ const (
 	FooTypeUserRoleUser  FooTypeUserRole = "user"
 )
 
-func (e *FooTypeUserRole) Scan(src interface{}) error {
+func (e *FooTypeUserRole) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = FooTypeUserRole(s)
@@ -34,7 +34,7 @@ type NullFooTypeUserRole struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullFooTypeUserRole) Scan(value interface{}) error {
+func (ns *NullFooTypeUserRole) Scan(value any) error {
 	if value == nil {
 		ns.FooTypeUserRole, ns.Valid = "", false
 		return nil

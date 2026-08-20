@@ -17,7 +17,7 @@ const (
 	IpProtocolIcmp IPProtocol = "icmp"
 )
 
-func (e *IPProtocol) Scan(src interface{}) error {
+func (e *IPProtocol) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = IPProtocol(s)
@@ -35,7 +35,7 @@ type NullIPProtocol struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullIPProtocol) Scan(value interface{}) error {
+func (ns *NullIPProtocol) Scan(value any) error {
 	if value == nil {
 		ns.IPProtocol, ns.Valid = "", false
 		return nil

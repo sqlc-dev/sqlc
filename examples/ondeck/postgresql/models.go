@@ -21,7 +21,7 @@ const (
 	StatusClosed Status = "clo@sed"
 )
 
-func (e *Status) Scan(src interface{}) error {
+func (e *Status) Scan(src any) error {
 	switch s := src.(type) {
 	case []byte:
 		*e = Status(s)
@@ -39,7 +39,7 @@ type NullStatus struct {
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullStatus) Scan(value interface{}) error {
+func (ns *NullStatus) Scan(value any) error {
 	if value == nil {
 		ns.Status, ns.Valid = "", false
 		return nil

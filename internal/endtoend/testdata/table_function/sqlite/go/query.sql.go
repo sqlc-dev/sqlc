@@ -31,8 +31,8 @@ type GetTransactionParams struct {
 }
 
 type GetTransactionRow struct {
-	JsonExtract    interface{}
-	JsonGroupArray interface{}
+	JsonExtract    any
+	JsonGroupArray any
 }
 
 func (q *Queries) GetTransaction(ctx context.Context, arg GetTransactionParams) ([]GetTransactionRow, error) {

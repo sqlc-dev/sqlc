@@ -23,8 +23,8 @@ INSERT INTO authors (
 
 type AddAuthorParams struct {
 	Address        string
-	CalName        interface{}
-	CalDescription interface{}
+	CalName        any
+	CalDescription any
 }
 
 func (q *Queries) AddAuthor(ctx context.Context, arg AddAuthorParams) (int64, error) {
@@ -44,7 +44,7 @@ INSERT INTO ` + "`" + `Event` + "`" + ` (
 `
 
 type AddEventParams struct {
-	Timezone      interface{}
+	Timezone      any
 	CalendarIdKey string
 }
 

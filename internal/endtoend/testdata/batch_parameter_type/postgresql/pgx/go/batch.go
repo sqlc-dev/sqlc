@@ -67,7 +67,7 @@ type InsertMapppingParams struct {
 func (q *Queries) InsertMappping(ctx context.Context, arg []InsertMapppingParams) *InsertMapppingBatchResults {
 	batch := &pgx.Batch{}
 	for _, a := range arg {
-		vals := []interface{}{
+		vals := []any{
 			a.DeviceId,
 			a.Version,
 			a.Sn,
