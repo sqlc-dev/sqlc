@@ -165,6 +165,23 @@ func writeRelations(out io.Writer, schemaName string, relations []Relation) erro
 	return nil
 }
 
+// supplementalPGCatalogProcs are parser-level functions that do not appear in
+// pg_catalog.pg_proc but still need signatures in both analysis catalogs.
+var supplementalPGCatalogProcs = []Proc{
+	{
+		Name:       "merge_action",
+		ReturnType: "text",
+	},
+}
+
+func addSupplementalPGCatalogProcs(procs []Proc) []Proc {
+	procs = append(procs, supplementalPGCatalogProcs...)
+	sort.SliceStable(procs, func(i, j int) bool {
+		return procs[i].Name < procs[j].Name
+	})
+	return procs
+}
+
 // preserveLegacyCatalogBehavior maintain previous ordering and filtering
 // that was manually done to the generated file pg_catalog.go.
 // Some of the test depend on this ordering - in particular, function lookups
@@ -271,6 +288,7 @@ func run(ctx context.Context) error {
 		}
 
 		if schema.Name == "pg_catalog" {
+			procs = addSupplementalPGCatalogProcs(procs)
 			procs = preserveLegacyCatalogBehavior(procs)
 		}
 

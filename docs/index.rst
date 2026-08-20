@@ -58,6 +58,7 @@ code ever again.
    howto/insert.md
    howto/update.md
    howto/delete.md
+   howto/merge.md
 
    howto/prepared_query.md
    howto/transactions.md

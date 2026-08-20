@@ -78,6 +78,8 @@ func Cmd(n ast.Node, name, cmd string) error {
 		list = stmt.ReturningList
 	case *ast.UpdateStmt:
 		list = stmt.ReturningList
+	case *ast.MergeStmt:
+		list = stmt.ReturningList
 	default:
 		return nil
 	}

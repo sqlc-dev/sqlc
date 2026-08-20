@@ -82,6 +82,8 @@ func (e *Expander) expandNode(ctx context.Context, node ast.Node) error {
 		return e.expandInsertStmt(ctx, n)
 	case *ast.UpdateStmt:
 		return e.expandUpdateStmt(ctx, n)
+	case *ast.MergeStmt:
+		return e.expandMergeStmt(ctx, n)
 	case *ast.DeleteStmt:
 		return e.expandDeleteStmt(ctx, n)
 	case *ast.CommonTableExpr:
@@ -204,15 +206,39 @@ func (e *Expander) getCTEColumnNames(ctx context.Context, stmt *ast.SelectStmt, 
 	return e.getColumnNames(ctx, tempQuery)
 }
 
+// expandCTEs expands * in each CTE of a WITH clause.
+func (e *Expander) expandCTEs(ctx context.Context, with *ast.WithClause) error {
+	if with == nil || with.Ctes == nil {
+		return nil
+	}
+	for _, cte := range with.Ctes.Items {
+		if err := e.expandNode(ctx, cte); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// expandReturning expands a * in the RETURNING list of stmt. stmt is the
+// enclosing statement (used to build the query for column-name lookup) and
+// returning is its RETURNING list; the possibly-rewritten list is returned.
+func (e *Expander) expandReturning(ctx context.Context, stmt ast.Node, returning *ast.List) (*ast.List, error) {
+	if !hasStarInList(returning) {
+		return returning, nil
+	}
+	tempRaw := &ast.RawStmt{Stmt: stmt}
+	tempQuery := ast.Format(tempRaw, e.dialect)
+	columns, err := e.getColumnNames(ctx, tempQuery)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get column names: %w", err)
+	}
+	return rewriteTargetList(returning, columns), nil
+}
+
 // expandInsertStmt expands * in an INSERT statement's RETURNING clause
 func (e *Expander) expandInsertStmt(ctx context.Context, stmt *ast.InsertStmt) error {
-	// Expand CTEs first
-	if stmt.WithClause != nil && stmt.WithClause.Ctes != nil {
-		for _, cte := range stmt.WithClause.Ctes.Items {
-			if err := e.expandNode(ctx, cte); err != nil {
-				return err
-			}
-		}
+	if err := e.expandCTEs(ctx, stmt.WithClause); err != nil {
+		return err
 	}
 
 	// Expand the SELECT part if present
@@ -222,67 +248,50 @@ func (e *Expander) expandInsertStmt(ctx context.Context, stmt *ast.InsertStmt) e
 		}
 	}
 
-	// Expand RETURNING clause
-	if hasStarInList(stmt.ReturningList) {
-		tempRaw := &ast.RawStmt{Stmt: stmt}
-		tempQuery := ast.Format(tempRaw, e.dialect)
-		columns, err := e.getColumnNames(ctx, tempQuery)
-		if err != nil {
-			return fmt.Errorf("failed to get column names: %w", err)
-		}
-		stmt.ReturningList = rewriteTargetList(stmt.ReturningList, columns)
+	returning, err := e.expandReturning(ctx, stmt, stmt.ReturningList)
+	if err != nil {
+		return err
 	}
-
+	stmt.ReturningList = returning
 	return nil
 }
 
 // expandUpdateStmt expands * in an UPDATE statement's RETURNING clause
 func (e *Expander) expandUpdateStmt(ctx context.Context, stmt *ast.UpdateStmt) error {
-	// Expand CTEs first
-	if stmt.WithClause != nil && stmt.WithClause.Ctes != nil {
-		for _, cte := range stmt.WithClause.Ctes.Items {
-			if err := e.expandNode(ctx, cte); err != nil {
-				return err
-			}
-		}
+	if err := e.expandCTEs(ctx, stmt.WithClause); err != nil {
+		return err
 	}
-
-	// Expand RETURNING clause
-	if hasStarInList(stmt.ReturningList) {
-		tempRaw := &ast.RawStmt{Stmt: stmt}
-		tempQuery := ast.Format(tempRaw, e.dialect)
-		columns, err := e.getColumnNames(ctx, tempQuery)
-		if err != nil {
-			return fmt.Errorf("failed to get column names: %w", err)
-		}
-		stmt.ReturningList = rewriteTargetList(stmt.ReturningList, columns)
+	returning, err := e.expandReturning(ctx, stmt, stmt.ReturningList)
+	if err != nil {
+		return err
 	}
+	stmt.ReturningList = returning
+	return nil
+}
 
+// expandMergeStmt expands * in a MERGE statement's RETURNING clause
+func (e *Expander) expandMergeStmt(ctx context.Context, stmt *ast.MergeStmt) error {
+	if err := e.expandCTEs(ctx, stmt.WithClause); err != nil {
+		return err
+	}
+	returning, err := e.expandReturning(ctx, stmt, stmt.ReturningList)
+	if err != nil {
+		return err
+	}
+	stmt.ReturningList = returning
 	return nil
 }
 
 // expandDeleteStmt expands * in a DELETE statement's RETURNING clause
 func (e *Expander) expandDeleteStmt(ctx context.Context, stmt *ast.DeleteStmt) error {
-	// Expand CTEs first
-	if stmt.WithClause != nil && stmt.WithClause.Ctes != nil {
-		for _, cte := range stmt.WithClause.Ctes.Items {
-			if err := e.expandNode(ctx, cte); err != nil {
-				return err
-			}
-		}
+	if err := e.expandCTEs(ctx, stmt.WithClause); err != nil {
+		return err
 	}
-
-	// Expand RETURNING clause
-	if hasStarInList(stmt.ReturningList) {
-		tempRaw := &ast.RawStmt{Stmt: stmt}
-		tempQuery := ast.Format(tempRaw, e.dialect)
-		columns, err := e.getColumnNames(ctx, tempQuery)
-		if err != nil {
-			return fmt.Errorf("failed to get column names: %w", err)
-		}
-		stmt.ReturningList = rewriteTargetList(stmt.ReturningList, columns)
+	returning, err := e.expandReturning(ctx, stmt, stmt.ReturningList)
+	if err != nil {
+		return err
 	}
-
+	stmt.ReturningList = returning
 	return nil
 }
 

@@ -1376,6 +1376,7 @@
 {"name":"max","args":[{"type":"xid8"}],"returns":"xid8"}
 {"name":"md5","args":[{"type":"bytea"}],"returns":"text"}
 {"name":"md5","args":[{"type":"text"}],"returns":"text"}
+{"name":"merge_action","returns":"text"}
 {"name":"min","args":[{"type":"anyarray"}],"returns":"anyarray"}
 {"name":"min","args":[{"type":"anyenum"}],"returns":"anyenum"}
 {"name":"min","args":[{"type":"bigint"}],"returns":"bigint"}

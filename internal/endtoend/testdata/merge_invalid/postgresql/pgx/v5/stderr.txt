@@ -1,0 +1,2 @@
+# package querytest
+query.sql:1:1: query "MergeWithoutReturning" specifies parameter ":one" without containing a RETURNING clause
