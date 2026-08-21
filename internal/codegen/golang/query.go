@@ -268,15 +268,17 @@ func (v QueryValue) VariableForField(f Field) string {
 
 // A struct used to generate methods and fields on the Queries struct
 type Query struct {
-	Cmd          string
-	Comments     []string
-	MethodName   string
-	FieldName    string
-	ConstantName string
-	SQL          string
-	SourceName   string
-	Ret          QueryValue
-	Arg          QueryValue
+	Cmd            string
+	Comments       []string
+	MethodName     string
+	IterMethodName string
+	EmitIterator   bool
+	FieldName      string
+	ConstantName   string
+	SQL            string
+	SourceName     string
+	Ret            QueryValue
+	Arg            QueryValue
 	// Used for :copyfrom
 	Table *plugin.Identifier
 }
