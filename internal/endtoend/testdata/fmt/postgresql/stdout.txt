@@ -4,12 +4,13 @@
  -- name: GetAuthor :one
 -select  id,name , bio
 -from   authors
--where id =  $1 limit 1;
-+SELECT id, name, bio FROM authors WHERE id = $1 LIMIT 1;
+-where id =  $1 limit 1; -- the primary lookup
++SELECT id, name, bio FROM authors WHERE id = $1 LIMIT 1; -- the primary lookup
  
- -- a helpful comment
+ /* This listing powers the admin page.
+    Keep it ordered by name so the UI stays stable. */
+@@ -8,14 +6,8 @@
  -- name: ListAuthors :many
-@@ -8,16 +6,14 @@
 -SELECT id, name, bio FROM authors
 -ORDER BY name;
 +SELECT id, name, bio FROM authors ORDER BY name;
@@ -22,6 +23,11 @@
 -)
 -RETURNING *;
 +INSERT INTO authors (name, bio) VALUES ($1, $2) RETURNING *;
+ 
+ -- name: PickyQuery :many
+ SELECT id, -- the primary key
+@@ -24,7 +16,11 @@
+ WHERE id > $1;
  
  -- name: SearchAuthors :many
 -SELECT id, name, bio, created_at FROM authors WHERE name LIKE $1 AND bio IS NOT NULL AND id > $2 AND name <> $3 ORDER BY name, id LIMIT $4;

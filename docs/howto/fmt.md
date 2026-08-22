@@ -13,10 +13,15 @@ same layout model used by Prettier and by ruff's Python formatter: the printer
 lays each group of the statement out flat when it fits and breaks it when it
 does not.
 
-The comments above each query are kept, including the
-[`-- name:`](../reference/query-annotations.md) annotation. A statement that
-cannot be proven to survive formatting unchanged — for example one using
-syntax the formatter does not support yet — is left exactly as written.
+Comments are never deleted. The comments above each query are kept, including
+the [`-- name:`](../reference/query-annotations.md) annotation and multi-line
+`/* */` blocks, and a comment on the same line as a statement's closing
+semicolon stays attached to it. Comments *inside* a statement cannot survive
+the trip through the syntax tree — the parsers discard them — so a statement
+containing interior comments (or optimizer hints, which share their syntax)
+is left exactly as written. The same applies to any statement that cannot be
+proven to survive formatting unchanged, such as one using syntax the
+formatter does not support yet.
 
 Formatting is supported for the `postgresql`, `mysql`, `sqlite` and
 `clickhouse` engines. Query files for other engines are skipped, as are files

@@ -58,10 +58,11 @@ func newFmtCmd() *cobra.Command {
 		Long: `Format the SQL query files referenced by the configuration file.
 
 Each query is parsed with the engine's parser and printed back in a canonical
-form, keeping the comments above it (including the "-- name:" annotation). A
-statement that cannot be proven to survive formatting unchanged is left exactly
-as written. Files are rewritten in place; pass --diff to print the changes to
-stdout instead.`,
+form, keeping the comments above it (including the "-- name:" annotation).
+Comments are never deleted: a statement with comments inside it, or one that
+cannot be proven to survive formatting unchanged, is left exactly as written.
+Files are rewritten in place; pass --diff to print the changes to stdout
+instead.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			defer trace.StartRegion(cmd.Context(), "fmt").End()
 			stderr := cmd.ErrOrStderr()
@@ -222,7 +223,16 @@ func formatQueries(engine config.Engine, f queryFormatter, src string) (string, 
 			continue
 		}
 		prevEnd = start + length
-		orig := strings.TrimSpace(strings.TrimLeft(src[segStart:start+length], "; \t\r\n"))
+		seg := src[segStart : start+length]
+		// A comment on the same line as the previous statement's terminator
+		// belongs to that statement, not to this one's header.
+		if len(blocks) > 0 {
+			if trailing, remainder := splitTrailingComment(engine, seg); trailing != "" {
+				blocks[len(blocks)-1] += " " + trailing
+				seg = remainder
+			}
+		}
+		orig := strings.TrimSpace(strings.TrimLeft(seg, "; \t\r\n"))
 		if orig == "" {
 			continue
 		}
@@ -233,7 +243,14 @@ func formatQueries(engine config.Engine, f queryFormatter, src string) (string, 
 	}
 	// Everything after the last statement is its terminator, whitespace and
 	// trailing comments; keep the comments.
-	if tail := strings.TrimSpace(strings.TrimLeft(src[prevEnd:], "; \t\r\n")); tail != "" {
+	tailSeg := src[prevEnd:]
+	if len(blocks) > 0 {
+		if trailing, remainder := splitTrailingComment(engine, tailSeg); trailing != "" {
+			blocks[len(blocks)-1] += " " + trailing
+			tailSeg = remainder
+		}
+	}
+	if tail := strings.TrimSpace(strings.TrimLeft(tailSeg, "; \t\r\n")); tail != "" {
 		blocks = append(blocks, tail)
 	}
 	if len(blocks) == 0 {
@@ -242,15 +259,63 @@ func formatQueries(engine config.Engine, f queryFormatter, src string) (string, 
 	return strings.Join(blocks, "\n\n") + "\n", nil
 }
 
+// splitTrailingComment splits a comment sitting on the same line as the
+// previous statement's terminator off the front of the text between two
+// statements, returning the comment (or "") and the remaining text.
+func splitTrailingComment(engine config.Engine, seg string) (string, string) {
+	k := 0
+	for k < len(seg) && (seg[k] == ';' || seg[k] == ' ' || seg[k] == '\t' || seg[k] == '\r') {
+		k++
+	}
+	rest := seg[k:]
+	line, _, _ := strings.Cut(rest, "\n")
+	trimmed := strings.TrimSpace(line)
+	switch {
+	case strings.HasPrefix(trimmed, "--"),
+		engine == config.EngineMySQL && strings.HasPrefix(trimmed, "#"):
+		return trimmed, seg[k+len(line):]
+	case strings.HasPrefix(trimmed, "/*") && !strings.HasPrefix(trimmed, "/*+") &&
+		strings.HasSuffix(trimmed, "*/") && strings.Count(trimmed, "*/") == 1:
+		// A block comment contained on the terminator's line.
+		return trimmed, seg[k+len(line):]
+	}
+	return "", seg
+}
+
 // splitLeadingComments splits a statement's text into the comment lines above
 // it and the statement itself. Comment lines are returned with surrounding
-// whitespace trimmed; blank lines between comments are kept.
+// whitespace trimmed (block comment continuation lines keep their leading
+// whitespace); blank lines between comments are kept.
 func splitLeadingComments(engine config.Engine, text string) ([]string, string) {
 	var header []string
 	rest := text
 	for rest != "" {
 		line, remainder, found := strings.Cut(rest, "\n")
 		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "/*") && !strings.HasPrefix(trimmed, "/*+") && !strings.Contains(trimmed, "*/") {
+			// A block comment spanning several lines: commit it to the
+			// header only when its closing line arrives with nothing after
+			// it. Otherwise leave the whole block with the statement.
+			block := []string{trimmed}
+			blockRest := remainder
+			for closed := false; !closed; {
+				if !found || blockRest == "" {
+					return header, rest
+				}
+				var blockLine string
+				blockLine, blockRest, found = strings.Cut(blockRest, "\n")
+				if end := strings.TrimSpace(blockLine); strings.Contains(end, "*/") {
+					if !strings.HasSuffix(end, "*/") || strings.Count(end, "*/") != 1 {
+						return header, rest
+					}
+					closed = true
+				}
+				block = append(block, strings.TrimRight(blockLine, " \t\r"))
+			}
+			header = append(header, block...)
+			rest = blockRest
+			continue
+		}
 		if !isCommentLine(engine, trimmed) {
 			break
 		}
@@ -292,6 +357,12 @@ func isCommentLine(engine config.Engine, line string) bool {
 // original text when formatting cannot be proven to preserve the query.
 func formatStmt(engine config.Engine, f queryFormatter, raw *ast.RawStmt, orig string) string {
 	fallback := strings.TrimSuffix(strings.TrimSpace(orig), ";") + ";"
+	if hasComment(engine, orig) {
+		// Comments never survive the trip through the AST — the parsers
+		// discard them — so a statement carrying comments (or optimizer
+		// hints, which share their syntax) is left exactly as written.
+		return fallback
+	}
 	out := formatRaw(raw, f)
 	if strings.TrimSpace(strings.TrimSuffix(out, ";")) == "" {
 		return fallback
@@ -300,6 +371,87 @@ func formatStmt(engine config.Engine, f queryFormatter, raw *ast.RawStmt, orig s
 		return fallback
 	}
 	return out
+}
+
+// hasComment reports whether the statement text contains a comment outside
+// of string literals and quoted identifiers. Escaping conventions inside
+// strings vary with server settings (e.g. PostgreSQL's
+// standard_conforming_strings), so the text is scanned under both
+// conventions and a comment found by either counts: a false positive only
+// leaves a statement unformatted, while a miss would delete the comment.
+func hasComment(engine config.Engine, sql string) bool {
+	return scanComment(engine, sql, false) || scanComment(engine, sql, true)
+}
+
+// scanComment reports whether sql contains a comment token outside of
+// quoted regions. backslash controls whether a backslash escapes the next
+// character inside single-quoted strings. The scan is conservative: an
+// unterminated quoted region also reports true, since anything after it
+// cannot be classified.
+func scanComment(engine config.Engine, sql string, backslash bool) bool {
+	n := len(sql)
+	i := 0
+	for i < n {
+		c := sql[i]
+		switch {
+		case c == '-' && i+1 < n && sql[i+1] == '-':
+			return true
+		case c == '/' && i+1 < n && sql[i+1] == '*':
+			return true
+		case c == '#' && engine == config.EngineMySQL:
+			return true
+		case c == '\'' || c == '"' || c == '`':
+			term := c
+			i++
+			closed := false
+			for i < n {
+				if backslash && term == '\'' && sql[i] == '\\' {
+					i += 2
+					continue
+				}
+				if sql[i] == term {
+					// A doubled quote is an escaped quote, not the end.
+					if i+1 < n && sql[i+1] == term {
+						i += 2
+						continue
+					}
+					closed = true
+					i++
+					break
+				}
+				i++
+			}
+			if !closed {
+				return true
+			}
+		case c == '$' && engine == config.EnginePostgreSQL:
+			// A dollar-quoted string ($tag$ ... $tag$) can hold anything.
+			j := i + 1
+			for j < n && (isTagChar(sql[j])) {
+				j++
+			}
+			if j < n && sql[j] == '$' {
+				tag := sql[i : j+1]
+				end := strings.Index(sql[j+1:], tag)
+				if end < 0 {
+					return true
+				}
+				i = j + 1 + end + len(tag)
+			} else {
+				i++
+			}
+		default:
+			i++
+		}
+	}
+	return false
+}
+
+func isTagChar(c byte) bool {
+	return c == '_' ||
+		('a' <= c && c <= 'z') ||
+		('A' <= c && c <= 'Z') ||
+		('0' <= c && c <= '9')
 }
 
 // formatRaw pretty-prints a statement's AST, turning a formatter panic into
