@@ -10,12 +10,32 @@ All AST nodes implement the `Node` interface with:
 - `Format(buf *TrackedBuffer)` - formats the node back to SQL
 
 ### TrackedBuffer
-The `TrackedBuffer` type (`pg_query.go`) handles SQL formatting with dialect-specific behavior:
+The `TrackedBuffer` type (`print.go`) handles SQL formatting with dialect-specific behavior:
 - `astFormat(node Node)` - formats any AST node
 - `join(list *List, sep string)` - joins list items with separator
 - `WriteString(s string)` - writes raw SQL
 - `QuoteIdent(name string)` - quotes identifiers (dialect-specific)
 - `TypeName(ns, name string)` - formats type names (dialect-specific)
+
+### Pretty printing
+`TrackedBuffer` records a Wadler-style document (the model behind Prettier
+and ruff): Format methods emit text plus layout tokens, and the renderer
+decides which break opportunities become newlines.
+
+- `line()` - a space when the group fits on one line, a newline otherwise
+- `softline()` - nothing when the group fits, a newline otherwise
+- `group()` / `endGroup()` - a region laid out flat when its width fits
+- `indent()` / `endIndent()` - one level deeper (2 spaces) after breaks
+- `joinComma(list)` - joins items with `,` + `line()`
+- `condition(node)` - clause-level AND/OR chain without outer parentheses,
+  one branch per line when broken
+
+`ast.Format(n, d)` renders on a single line (all breaks collapse);
+`ast.Pretty(n, d, width)` breaks lines to fit `width` columns. Statement
+Format methods open a group and put `line()` before each clause keyword
+(`FROM`, `WHERE`, ...), so a statement that fits stays on one line and a
+long one breaks at clause boundaries. When adding a Format method, write
+tokens so the flat rendering is correct SQL; layout tokens are optional.
 
 ### Dialect Interface
 Dialect-specific formatting is handled via the `Dialect` interface:

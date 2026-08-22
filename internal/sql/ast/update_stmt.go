@@ -27,9 +27,12 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
+	buf.group()
+	defer buf.endGroup()
+
 	if n.WithClause != nil {
 		buf.astFormat(n.WithClause, d)
-		buf.WriteString(" ")
+		buf.line()
 	}
 
 	buf.WriteString("UPDATE ")
@@ -38,7 +41,8 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	}
 
 	if items(n.TargetList) {
-		buf.WriteString(" SET ")
+		buf.line()
+		buf.WriteString("SET ")
 
 		multi := false
 		for _, item := range n.TargetList.Items {
@@ -79,9 +83,12 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 			buf.join(vals, d, ",")
 			buf.WriteString(")")
 		} else {
+			buf.group()
+			buf.indent()
 			for i, item := range n.TargetList.Items {
 				if i > 0 {
-					buf.WriteString(", ")
+					buf.WriteString(",")
+					buf.line()
 				}
 				switch nn := item.(type) {
 				case *ResTarget:
@@ -100,26 +107,32 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 					buf.astFormat(item, d)
 				}
 			}
+			buf.endIndent()
+			buf.endGroup()
 		}
 	}
 
 	if items(n.FromClause) {
-		buf.WriteString(" FROM ")
+		buf.line()
+		buf.WriteString("FROM ")
 		buf.astFormat(n.FromClause, d)
 	}
 
 	if set(n.WhereClause) {
-		buf.WriteString(" WHERE ")
-		buf.astFormat(n.WhereClause, d)
+		buf.line()
+		buf.WriteString("WHERE ")
+		buf.condition(n.WhereClause, d)
 	}
 
 	if set(n.LimitCount) {
-		buf.WriteString(" LIMIT ")
+		buf.line()
+		buf.WriteString("LIMIT ")
 		buf.astFormat(n.LimitCount, d)
 	}
 
 	if items(n.ReturningList) {
-		buf.WriteString(" RETURNING ")
+		buf.line()
+		buf.WriteString("RETURNING ")
 		formatReturningOptions(buf, d, n.ReturningOldAlias, n.ReturningNewAlias)
 		buf.astFormat(n.ReturningList, d)
 	}

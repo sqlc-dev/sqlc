@@ -1,6 +1,10 @@
 package ast
 
-import "github.com/sqlc-dev/sqlc/internal/sql/format"
+import (
+	"strings"
+
+	"github.com/sqlc-dev/sqlc/internal/sql/format"
+)
 
 type A_Expr struct {
 	Kind     A_Expr_Kind
@@ -40,6 +44,16 @@ func (n *A_Expr) isNamedParam() (string, bool) {
 	return "", false
 }
 
+// negated returns true when the expression's operator carries the negated
+// spelling of a pattern-match operator (e.g. "!~~" for NOT LIKE).
+func (n *A_Expr) negated() bool {
+	if n.Name == nil || len(n.Name.Items) != 1 {
+		return false
+	}
+	s, ok := n.Name.Items[0].(*String)
+	return ok && strings.HasPrefix(s.Str, "!")
+}
+
 func (n *A_Expr) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
@@ -59,11 +73,19 @@ func (n *A_Expr) Format(buf *TrackedBuffer, d format.Dialect) {
 		buf.WriteString(")")
 	case A_Expr_Kind_LIKE:
 		buf.astFormat(n.Lexpr, d)
-		buf.WriteString(" LIKE ")
+		if n.negated() {
+			buf.WriteString(" NOT LIKE ")
+		} else {
+			buf.WriteString(" LIKE ")
+		}
 		buf.astFormat(n.Rexpr, d)
 	case A_Expr_Kind_ILIKE:
 		buf.astFormat(n.Lexpr, d)
-		buf.WriteString(" ILIKE ")
+		if n.negated() {
+			buf.WriteString(" NOT ILIKE ")
+		} else {
+			buf.WriteString(" ILIKE ")
+		}
 		buf.astFormat(n.Rexpr, d)
 	case A_Expr_Kind_SIMILAR:
 		buf.astFormat(n.Lexpr, d)

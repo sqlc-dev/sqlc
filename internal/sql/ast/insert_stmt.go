@@ -26,9 +26,12 @@ func (n *InsertStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 		return
 	}
 
+	buf.group()
+	defer buf.endGroup()
+
 	if n.WithClause != nil {
 		buf.astFormat(n.WithClause, d)
-		buf.WriteString(" ")
+		buf.line()
 	}
 
 	buf.WriteString("INSERT INTO ")
@@ -37,29 +40,36 @@ func (n *InsertStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	}
 	if items(n.Cols) {
 		buf.WriteString(" (")
-		buf.astFormat(n.Cols, d)
+		buf.group()
+		buf.indent()
+		buf.softline()
+		buf.joinComma(n.Cols, d)
+		buf.endIndent()
+		buf.softline()
+		buf.endGroup()
 		buf.WriteString(")")
 	}
 
 	if n.DefaultValues {
 		buf.WriteString(" DEFAULT VALUES")
 	} else if set(n.SelectStmt) {
-		buf.WriteString(" ")
+		buf.line()
 		buf.astFormat(n.SelectStmt, d)
 	}
 
 	if n.OnConflictClause != nil {
-		buf.WriteString(" ")
+		buf.line()
 		buf.astFormat(n.OnConflictClause, d)
 	}
 
 	if n.OnDuplicateKeyUpdate != nil {
-		buf.WriteString(" ")
+		buf.line()
 		buf.astFormat(n.OnDuplicateKeyUpdate, d)
 	}
 
 	if items(n.ReturningList) {
-		buf.WriteString(" RETURNING ")
+		buf.line()
+		buf.WriteString("RETURNING ")
 		formatReturningOptions(buf, d, n.ReturningOldAlias, n.ReturningNewAlias)
 		buf.astFormat(n.ReturningList, d)
 	}

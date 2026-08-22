@@ -1262,11 +1262,20 @@ func (c *cc) convertPatternInExpr(n *pcast.PatternInExpr) ast.Node {
 }
 
 func (c *cc) convertPatternLikeExpr(n *pcast.PatternLikeOrIlikeExpr) ast.Node {
+	kind := ast.A_Expr_Kind_ILIKE
+	op := "~~*"
+	if n.IsLike {
+		kind = ast.A_Expr_Kind_LIKE
+		op = "~~"
+	}
+	if n.Not {
+		op = "!" + op
+	}
 	return &ast.A_Expr{
-		Kind: ast.A_Expr_Kind(9),
+		Kind: kind,
 		Name: &ast.List{
 			Items: []ast.Node{
-				&ast.String{Str: "~~"},
+				&ast.String{Str: op},
 			},
 		},
 		Lexpr: c.convert(n.Expr),

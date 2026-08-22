@@ -23,6 +23,12 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 )
 
+// fmtLineWidth is the line width formatted queries are wrapped to. A
+// statement whose flat form fits stays on one line; a longer one breaks at
+// clause boundaries, and any list or parenthesized region that still does
+// not fit breaks again one indentation level deeper.
+const fmtLineWidth = 80
+
 // queryFormatter is the subset of the engine parsers that the fmt command
 // needs: parsing SQL into statements and dialect-aware formatting.
 type queryFormatter interface {
@@ -296,15 +302,15 @@ func formatStmt(engine config.Engine, f queryFormatter, raw *ast.RawStmt, orig s
 	return out
 }
 
-// formatRaw formats a statement's AST, turning a formatter panic into an
-// empty string so the caller falls back to the original text.
+// formatRaw pretty-prints a statement's AST, turning a formatter panic into
+// an empty string so the caller falls back to the original text.
 func formatRaw(raw *ast.RawStmt, f queryFormatter) (out string) {
 	defer func() {
 		if r := recover(); r != nil {
 			out = ""
 		}
 	}()
-	return ast.Format(raw, f)
+	return ast.Pretty(raw, f, fmtLineWidth)
 }
 
 // verifyFormatted reports whether the formatted SQL provably still means the

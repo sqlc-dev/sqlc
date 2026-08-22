@@ -35,15 +35,34 @@ func (n *BoolExpr) Format(buf *TrackedBuffer, d format.Dialect) {
 			buf.astFormat(n.Args.Items[0], d)
 		}
 	default:
+		var op string
+		switch n.Boolop {
+		case BoolExprTypeAnd:
+			op = "AND "
+		case BoolExprTypeOr:
+			op = "OR "
+		}
 		buf.WriteString("(")
-		if items(n.Args) {
-			switch n.Boolop {
-			case BoolExprTypeAnd:
-				buf.join(n.Args, d, " AND ")
-			case BoolExprTypeOr:
-				buf.join(n.Args, d, " OR ")
+		buf.group()
+		buf.indent()
+		buf.softline()
+		if items(n.Args) && op != "" {
+			first := true
+			for _, item := range n.Args.Items {
+				if _, ok := item.(*TODO); ok {
+					continue
+				}
+				if !first {
+					buf.line()
+					buf.WriteString(op)
+				}
+				first = false
+				buf.astFormat(item, d)
 			}
 		}
+		buf.endIndent()
+		buf.softline()
+		buf.endGroup()
 		buf.WriteString(")")
 	}
 }

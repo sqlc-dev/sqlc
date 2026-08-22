@@ -9,7 +9,7 @@
  
  -- a helpful comment
  -- name: ListAuthors :many
-@@ -8,13 +6,7 @@
+@@ -8,16 +6,14 @@
 -SELECT id, name, bio FROM authors
 -ORDER BY name;
 +SELECT id, name, bio FROM authors ORDER BY name;
@@ -22,6 +22,14 @@
 -)
 -RETURNING *;
 +INSERT INTO authors (name, bio) VALUES ($1, $2) RETURNING *;
+ 
+ -- name: SearchAuthors :many
+-SELECT id, name, bio, created_at FROM authors WHERE name LIKE $1 AND bio IS NOT NULL AND id > $2 AND name <> $3 ORDER BY name, id LIMIT $4;
++SELECT id, name, bio, created_at
++FROM authors
++WHERE name LIKE $1 AND bio IS NOT NULL AND id > $2 AND name <> $3
++ORDER BY name, id
++LIMIT $4;
  
  -- name: DeleteAuthor :exec
 -DELETE FROM authors WHERE id = @id
