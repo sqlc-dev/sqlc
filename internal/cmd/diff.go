@@ -32,7 +32,7 @@ func Diff(ctx context.Context, dir, name string, opts *Options) error {
 		source := output[filename]
 		if _, err := os.Stat(filename); errors.Is(err, os.ErrNotExist) {
 			errored = true
-			// stdout message
+			fmt.Fprintf(stderr, "missing %s\n", filename)
 			continue
 		}
 		existing, err := os.ReadFile(filename)
