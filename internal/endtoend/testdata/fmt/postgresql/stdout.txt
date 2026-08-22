@@ -1,0 +1,28 @@
+--- a/query.sql
++++ b/query.sql
+@@ -1,7 +1,5 @@
+ -- name: GetAuthor :one
+-select  id,name , bio
+-from   authors
+-where id =  $1 limit 1;
++SELECT id, name, bio FROM authors WHERE id = $1 LIMIT 1;
+ 
+ -- a helpful comment
+ -- name: ListAuthors :many
+@@ -8,13 +6,7 @@
+-SELECT id, name, bio FROM authors
+-ORDER BY name;
++SELECT id, name, bio FROM authors ORDER BY name;
+ 
+ -- name: CreateAuthor :one
+-INSERT INTO authors (
+-  name, bio
+-) VALUES (
+-  $1, $2
+-)
+-RETURNING *;
++INSERT INTO authors (name, bio) VALUES ($1, $2) RETURNING *;
+ 
+ -- name: DeleteAuthor :exec
+-DELETE FROM authors WHERE id = @id
++DELETE FROM authors WHERE id = @id;

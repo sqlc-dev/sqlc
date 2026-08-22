@@ -560,9 +560,28 @@ func (c *cc) convertSelectField(n *pcast.SelectField) *ast.ResTarget {
 }
 
 func (c *cc) convertSelectStmt(n *pcast.SelectStmt) *ast.SelectStmt {
+	// The ORDER BY expressions are recorded twice: bare in WindowClause,
+	// where the compiler's strict_order_by validation expects them, and
+	// wrapped in SortBy nodes in SortClause, which carries the sort
+	// direction and is what formatting prints. Both share the same
+	// converted nodes so parameter numbering stays intact.
 	windowClause := &ast.List{Items: make([]ast.Node, 0)}
-	orderByClause := c.convertOrderByClause(n.OrderBy)
-	if orderByClause != nil {
+	var sortClause *ast.List
+	if n.OrderBy != nil {
+		sortClause = &ast.List{Items: make([]ast.Node, 0)}
+		orderByClause := &ast.List{Items: []ast.Node{}}
+		for _, item := range n.OrderBy.Items {
+			expr := c.convert(item.Expr)
+			orderByClause.Items = append(orderByClause.Items, expr)
+			dir := ast.SortByDirDefault
+			if item.Desc {
+				dir = ast.SortByDirDesc
+			}
+			sortClause.Items = append(sortClause.Items, &ast.SortBy{
+				Node:      expr,
+				SortbyDir: dir,
+			})
+		}
 		windowClause.Items = append(windowClause.Items, orderByClause)
 	}
 
@@ -575,6 +594,7 @@ func (c *cc) convertSelectStmt(n *pcast.SelectStmt) *ast.SelectStmt {
 		WhereClause:  c.convert(n.Where),
 		WithClause:   c.convertWithClause(n.With),
 		WindowClause: windowClause,
+		SortClause:   sortClause,
 		Op:           op,
 		All:          all,
 	}

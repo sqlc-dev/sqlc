@@ -316,11 +316,12 @@ func TestReplay(t *testing.T) {
 					}
 				case "vet":
 					err = cmd.Vet(ctx, path, "", &opts)
-				case "parse", "analyze":
-					// These commands are config-less and flag-driven. Run them
-					// through the real CLI entry point from inside the test
-					// directory so file arguments resolve and the output stays
-					// independent of the absolute path.
+				case "parse", "analyze", "fmt":
+					// These commands are flag-driven (fmt cases pass --diff so
+					// nothing is rewritten). Run them through the real CLI
+					// entry point from inside the test directory so file
+					// arguments resolve and the output stays independent of
+					// the absolute path.
 					var stdout bytes.Buffer
 					wd, werr := os.Getwd()
 					if werr != nil {

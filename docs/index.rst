@@ -42,6 +42,7 @@ code ever again.
    :hidden:
 
    howto/analyze.md
+   howto/fmt.md
    howto/generate.md
    howto/parse.md
    howto/push.md

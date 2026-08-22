@@ -43,6 +43,7 @@ func Do(args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int 
 	rootCmd.AddCommand(createDBCmd)
 	rootCmd.AddCommand(diffCmd)
 	rootCmd.AddCommand(genCmd)
+	rootCmd.AddCommand(newFmtCmd())
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(newParseCmd())
 	rootCmd.AddCommand(newAnalyzeCmd())

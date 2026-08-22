@@ -1,0 +1,5 @@
+{
+  "command": "fmt",
+  "args": ["--diff"],
+  "contexts": ["base"]
+}

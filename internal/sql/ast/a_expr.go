@@ -30,6 +30,13 @@ func (n *A_Expr) isNamedParam() (string, bool) {
 	if nameStr, ok := n.Rexpr.(*String); ok {
 		return nameStr.Str, true
 	}
+	// Before the compiler rewrites named parameters, @name parses as the @
+	// operator applied to a bare column reference.
+	if col, ok := n.Rexpr.(*ColumnRef); ok && col.Fields != nil && len(col.Fields.Items) == 1 {
+		if s, ok := col.Fields.Items[0].(*String); ok {
+			return s.Str, true
+		}
+	}
 	return "", false
 }
 
