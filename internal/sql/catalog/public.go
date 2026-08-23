@@ -33,6 +33,20 @@ func (c *Catalog) ListFuncsByName(rel *ast.FuncName) ([]Function, error) {
 }
 
 func (c *Catalog) ResolveFuncCall(call *ast.FuncCall) (*Function, error) {
+	return c.resolveFuncCall(call, false)
+}
+
+// ResolveCallStmt resolves the procedure referenced by a PostgreSQL CALL
+// statement. Unlike ResolveFuncCall it includes OUT parameters when matching
+// the supplied argument count, because CALL requires placeholder values for
+// OUT parameters in their declared positions.
+//
+// See: https://www.postgresql.org/docs/current/sql-call.html
+func (c *Catalog) ResolveCallStmt(call *ast.FuncCall) (*Function, error) {
+	return c.resolveFuncCall(call, true)
+}
+
+func (c *Catalog) resolveFuncCall(call *ast.FuncCall, isCallStmt bool) (*Function, error) {
 	// Do not validate unknown functions
 	funs, err := c.ListFuncsByName(call.Func)
 	if err != nil || len(funs) == 0 {
@@ -64,7 +78,12 @@ func (c *Catalog) ResolveFuncCall(call *ast.FuncCall) (*Function, error) {
 	}
 
 	for _, fun := range funs {
-		args := fun.InArgs()
+		var args []*Argument
+		if isCallStmt {
+			args = fun.CallArgs()
+		} else {
+			args = fun.InArgs()
+		}
 		var defaults int
 		var variadic bool
 		known := map[string]struct{}{}
