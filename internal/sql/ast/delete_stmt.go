@@ -53,24 +53,28 @@ func (n *DeleteStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	}
 
 	if items(n.UsingClause) {
+		buf.beforeClause(n.UsingClause)
 		buf.line()
 		buf.WriteString("USING ")
 		buf.join(n.UsingClause, d, ", ")
 	}
 
 	if set(n.WhereClause) {
+		buf.beforeClause(n.WhereClause)
 		buf.line()
 		buf.WriteString("WHERE ")
 		buf.condition(n.WhereClause, d)
 	}
 
 	if set(n.LimitCount) {
+		buf.beforeClause(n.LimitCount)
 		buf.line()
 		buf.WriteString("LIMIT ")
 		buf.astFormat(n.LimitCount, d)
 	}
 
 	if items(n.ReturningList) {
+		buf.beforeClause(n.ReturningList)
 		buf.line()
 		buf.WriteString("RETURNING ")
 		formatReturningOptions(buf, d, n.ReturningOldAlias, n.ReturningNewAlias)

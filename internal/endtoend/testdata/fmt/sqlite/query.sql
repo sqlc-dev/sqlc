@@ -2,6 +2,19 @@
 select  id,name , bio from   authors
 where id =  ? limit 1;
 
+-- name: PickyQuery :many
+SELECT id, -- the primary key
+       name,
+       -- computed downstream
+       bio
+FROM authors
+-- soft-deleted rows are filtered
+WHERE bio IS NOT NULL
+  AND id > ?;
+
+-- name: InlineBlock :many
+SELECT /* inline note */ id, name FROM authors ORDER BY name;
+
 -- name: ListAuthors :many
 SELECT id, name, bio FROM authors
 ORDER BY name;

@@ -53,6 +53,7 @@ func (n *InsertStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n.DefaultValues {
 		buf.WriteString(" DEFAULT VALUES")
 	} else if set(n.SelectStmt) {
+		buf.beforeClause(n.SelectStmt)
 		buf.line()
 		buf.astFormat(n.SelectStmt, d)
 	}
@@ -68,6 +69,7 @@ func (n *InsertStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	}
 
 	if items(n.ReturningList) {
+		buf.beforeClause(n.ReturningList)
 		buf.line()
 		buf.WriteString("RETURNING ")
 		formatReturningOptions(buf, d, n.ReturningOldAlias, n.ReturningNewAlias)

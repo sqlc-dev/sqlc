@@ -20,6 +20,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/format"
+	"github.com/sqlc-dev/sqlc/internal/sql/lex"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 )
 
@@ -183,6 +184,17 @@ func Format(ctx context.Context, dir, filename string, o *Options) (map[string]s
 			fmt.Fprintf(stderr, "%s: skipped: %s\n", rel, err)
 			continue
 		}
+		// File-level belt for the reprinter path: no formatting result may
+		// change the file's comments. A violation is a formatter bug; keep
+		// the file as written and say so.
+		if engines[file] == config.EngineSQLite {
+			before := lex.Comments(lex.SQLite(), string(contents))
+			after := lex.Comments(lex.SQLite(), formatted)
+			if !sameComments(before, after) {
+				fmt.Fprintf(stderr, "%s: skipped: formatting would alter comments (this is a bug in sqlc fmt)\n", rel)
+				continue
+			}
+		}
 		output[file] = formatted
 	}
 	return output, nil
@@ -190,11 +202,19 @@ func Format(ctx context.Context, dir, filename string, o *Options) (map[string]s
 
 // formatQueries formats each statement in a query file, preserving the
 // comments above every statement (that's where the "-- name:" annotation
-// lives).
+// lives). For engines with reprinter support (SQLite), comments inside
+// statements are threaded through the printer by position; for the rest
+// they trigger the verbatim fallback in formatStmt.
 func formatQueries(engine config.Engine, f queryFormatter, src string) (string, error) {
 	stmts, err := f.Parse(strings.NewReader(src))
 	if err != nil {
 		return "", err
+	}
+	// The file's comments, scanned once with the engine's lexical rules.
+	// Statement bodies slice this list by span.
+	var fileComments []ast.Comment
+	if engine == config.EngineSQLite {
+		fileComments = lex.Comments(lex.SQLite(), src)
 	}
 	var blocks []string
 	prevEnd := 0
@@ -224,11 +244,13 @@ func formatQueries(engine config.Engine, f queryFormatter, src string) (string, 
 		}
 		prevEnd = start + length
 		seg := src[segStart : start+length]
+		segOff := segStart
 		// A comment on the same line as the previous statement's terminator
 		// belongs to that statement, not to this one's header.
 		if len(blocks) > 0 {
 			if trailing, remainder := splitTrailingComment(engine, seg); trailing != "" {
 				blocks[len(blocks)-1] += " " + trailing
+				segOff += len(seg) - len(remainder)
 				seg = remainder
 			}
 		}
@@ -237,8 +259,18 @@ func formatQueries(engine config.Engine, f queryFormatter, src string) (string, 
 			continue
 		}
 		header, rest := splitLeadingComments(engine, orig)
+		// The statement body's own file offset, so its interior comments
+		// can be sliced out of the file's comment list in the same
+		// coordinates the parser stamped on the nodes.
+		restOff := segOff + strings.Index(seg, orig) + len(orig) - len(rest)
+		var interior []ast.Comment
+		for _, c := range fileComments {
+			if c.Start >= restOff && c.End <= start+length {
+				interior = append(interior, c)
+			}
+		}
 		block := append([]string{}, header...)
-		block = append(block, formatStmt(engine, f, stmt.Raw, rest))
+		block = append(block, formatStmt(engine, f, stmt.Raw, rest, interior, src))
 		blocks = append(blocks, strings.Join(block, "\n"))
 	}
 	// Everything after the last statement is its terminator, whitespace and
@@ -355,12 +387,21 @@ func isCommentLine(engine config.Engine, line string) bool {
 
 // formatStmt returns the canonical form of a single statement, or the
 // original text when formatting cannot be proven to preserve the query.
-func formatStmt(engine config.Engine, f queryFormatter, raw *ast.RawStmt, orig string) string {
+func formatStmt(engine config.Engine, f queryFormatter, raw *ast.RawStmt, orig string, interior []ast.Comment, src string) string {
 	fallback := strings.TrimSuffix(strings.TrimSpace(orig), ";") + ";"
-	if hasComment(engine, orig) {
-		// Comments never survive the trip through the AST — the parsers
-		// discard them — so a statement carrying comments (or optimizer
-		// hints, which share their syntax) is left exactly as written.
+	if len(interior) > 0 {
+		// The reprinter path: interior comments are woven back in by
+		// position. Any failure to prove the result faithful keeps the
+		// statement as written.
+		if out, ok := formatWithComments(engine, f, raw, interior, src); ok {
+			return out
+		}
+		return fallback
+	}
+	if engine != config.EngineSQLite && hasComment(engine, orig) {
+		// Engines without reprinter support: comments never survive the
+		// trip through the AST, so a statement carrying comments (or
+		// optimizer hints, which share their syntax) is left as written.
 		return fallback
 	}
 	out := formatRaw(raw, f)
@@ -371,6 +412,68 @@ func formatStmt(engine config.Engine, f queryFormatter, raw *ast.RawStmt, orig s
 		return fallback
 	}
 	return out
+}
+
+// formatWithComments pretty-prints a statement with its interior comments
+// and proves the result faithful three ways before accepting it: every
+// comment survives (multiset equality after re-lexing the output), the SQL
+// still parses as one statement, and the output is a fixed point (printing
+// the reparsed statement with its rescanned comments reproduces it).
+func formatWithComments(engine config.Engine, f queryFormatter, raw *ast.RawStmt, interior []ast.Comment, src string) (string, bool) {
+	out := prettyCommented(raw, f, interior, src)
+	if strings.TrimSpace(strings.TrimSuffix(out, ";")) == "" {
+		return "", false
+	}
+	outComments := lex.Comments(lex.SQLite(), out)
+	if !sameComments(interior, outComments) {
+		return "", false
+	}
+	stmts, err := f.Parse(strings.NewReader(out))
+	if err != nil || len(stmts) != 1 || stmts[0].Raw == nil {
+		return "", false
+	}
+	again := prettyCommented(stmts[0].Raw, f, outComments, out)
+	if !strings.EqualFold(again, out) {
+		return "", false
+	}
+	return out, true
+}
+
+// prettyCommented renders a statement with comments, returning "" when the
+// printer panics or fails to place every comment.
+func prettyCommented(raw *ast.RawStmt, f queryFormatter, comments []ast.Comment, src string) (out string) {
+	defer func() {
+		if r := recover(); r != nil {
+			out = ""
+		}
+	}()
+	cs := ast.NewCommentSet(comments, src)
+	out = ast.PrettyWithComments(raw, f, fmtLineWidth, cs)
+	if !cs.Exhausted() {
+		return ""
+	}
+	return out
+}
+
+// sameComments reports whether two comment lists carry the same comment
+// texts, as multisets, ignoring surrounding whitespace.
+func sameComments(a, b []ast.Comment) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	counts := make(map[string]int, len(a))
+	for _, c := range a {
+		counts[strings.TrimSpace(c.Text)]++
+	}
+	for _, c := range b {
+		counts[strings.TrimSpace(c.Text)]--
+	}
+	for _, n := range counts {
+		if n != 0 {
+			return false
+		}
+	}
+	return true
 }
 
 // hasComment reports whether the statement text contains a comment outside

@@ -1,10 +1,30 @@
 --- a/query.sql
 +++ b/query.sql
-@@ -1,7 +1,5 @@
+@@ -1,16 +1,15 @@
  -- name: GetAuthor :one
 -select  id,name , bio from   authors
 -where id =  ? limit 1;
 +SELECT id, name, bio FROM authors WHERE id = ? LIMIT 1;
+ 
+ -- name: PickyQuery :many
+-SELECT id, -- the primary key
+-       name,
+-       -- computed downstream
+-       bio
++SELECT
++  id, -- the primary key
++  name,
++  -- computed downstream
++  bio
+ FROM authors
+ -- soft-deleted rows are filtered
+-WHERE bio IS NOT NULL
+-  AND id > ?;
++WHERE bio IS NOT NULL AND id > ?;
+ 
+ -- name: InlineBlock :many
+ SELECT /* inline note */ id, name FROM authors ORDER BY name;
+@@ -17,4 +16,3 @@
  
  -- name: ListAuthors :many
 -SELECT id, name, bio FROM authors

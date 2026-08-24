@@ -16,12 +16,17 @@ does not.
 Comments are never deleted. The comments above each query are kept, including
 the [`-- name:`](../reference/query-annotations.md) annotation and multi-line
 `/* */` blocks, and a comment on the same line as a statement's closing
-semicolon stays attached to it. Comments *inside* a statement cannot survive
-the trip through the syntax tree — the parsers discard them — so a statement
-containing interior comments (or optimizer hints, which share their syntax)
-is left exactly as written. The same applies to any statement that cannot be
-proven to survive formatting unchanged, such as one using syntax the
-formatter does not support yet.
+semicolon stays attached to it.
+
+For the `sqlite` engine, comments *inside* a statement are formatted along
+with it: each comment is anchored to the code around it by source position
+and printed back there — a comment trailing a select-list item stays with
+that item, a comment above a clause stays above its keyword — and a
+statement carrying comments keeps its multi-line shape. For the other
+engines, interior comments cannot yet survive the trip through the syntax
+tree, so a statement containing them (or optimizer hints, which share their
+syntax) is left exactly as written. The same applies on every engine to any
+statement that cannot be proven to survive formatting unchanged.
 
 Formatting is supported for the `postgresql`, `mysql`, `sqlite` and
 `clickhouse` engines. Query files for other engines are skipped, as are files

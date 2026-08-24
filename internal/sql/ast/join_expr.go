@@ -22,6 +22,7 @@ func (n *JoinExpr) Format(buf *TrackedBuffer, d format.Dialect) {
 		return
 	}
 	buf.astFormat(n.Larg, d)
+	buf.beforeClause(n.Rarg)
 	buf.line()
 	if n.IsNatural {
 		buf.WriteString("NATURAL ")

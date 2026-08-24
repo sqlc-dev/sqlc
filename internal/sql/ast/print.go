@@ -30,11 +30,23 @@ const (
 	// tokenSoftline renders as nothing when its group fits on one line and
 	// as a line break when the group is broken.
 	tokenSoftline
+	// tokenHardline always renders a line break and forces every group
+	// containing it to break (it measures as infinitely wide). Emitted
+	// around comments, which pin the author's layout open.
+	tokenHardline
+	// tokenBreaker renders nothing but forces every group containing it to
+	// break. Emitted after a trailing line comment, whose text swallows the
+	// rest of the line: the following separator must become a real break.
+	tokenBreaker
 	tokenOpenGroup
 	tokenCloseGroup
 	tokenOpenIndent
 	tokenCloseIndent
 )
+
+// breakWidth is the measured width of tokens that force a break: wider than
+// any real line, so no group containing one ever fits.
+const breakWidth = 1 << 24
 
 // indentWidth is the number of spaces per indentation level in broken
 // (multi-line) output.
@@ -47,6 +59,9 @@ type token struct {
 
 type TrackedBuffer struct {
 	tokens []token
+	// cs, when set, carries the statement's interior comments; the buffer
+	// flushes them by position as nodes are formatted, gofmt-style.
+	cs *CommentSet
 }
 
 // NewTrackedBuffer creates a new TrackedBuffer.
@@ -88,6 +103,14 @@ func (t *TrackedBuffer) softline() {
 	t.tokens = append(t.tokens, token{kind: tokenSoftline})
 }
 
+func (t *TrackedBuffer) hardline() {
+	t.tokens = append(t.tokens, token{kind: tokenHardline})
+}
+
+func (t *TrackedBuffer) breaker() {
+	t.tokens = append(t.tokens, token{kind: tokenBreaker})
+}
+
 // group opens a region the renderer tries to lay out on a single line,
 // breaking it only when its flat form does not fit. Must be paired with
 // endGroup.
@@ -110,11 +133,125 @@ func (t *TrackedBuffer) endIndent() {
 }
 
 func (t *TrackedBuffer) astFormat(n Node, d format.Dialect) {
+	if t.cs != nil && n != nil {
+		if pos := n.Pos(); pos > 0 {
+			t.flushLeading(pos)
+			t.cs.advance(pos)
+		}
+	}
 	if ft, ok := n.(nodeFormatter); ok {
 		ft.Format(t, d)
 	} else {
 		debug.Dump(n)
 	}
+}
+
+// flushLeading prints every unprinted comment positioned before pos, in
+// leading style: own-line comments (and line comments, which cannot share
+// their line with anything after them) go on their own line; an inline
+// block comment stays in the flow.
+func (t *TrackedBuffer) flushLeading(pos int) {
+	for {
+		c, ok := t.cs.pending()
+		if !ok || c.Start >= pos {
+			return
+		}
+		t.cs.next++
+		if c.OwnLine || c.Line() {
+			t.hardline()
+			t.WriteString(c.Text)
+			t.hardline()
+		} else {
+			t.WriteString(c.Text)
+			t.WriteString(" ")
+		}
+	}
+}
+
+// flushTrailing prints comments that trail the code just printed: not on
+// their own line, on the same source line as the printer's cursor, and
+// positioned before limit (the next element, so a comment trailing a later
+// element on the same line is not stolen). A trailing line comment swallows
+// the rest of its output line, so it forces the enclosing groups to break.
+func (t *TrackedBuffer) flushTrailing(limit int) {
+	if t.cs == nil {
+		return
+	}
+	for {
+		c, ok := t.cs.pending()
+		if !ok || c.Start >= limit || c.OwnLine {
+			return
+		}
+		if t.cs.cursor <= 0 || t.cs.lineOf(c.Start) != t.cs.lineOf(t.cs.cursor) {
+			return
+		}
+		t.cs.next++
+		t.WriteString(" ")
+		t.WriteString(c.Text)
+		if c.Line() {
+			t.breaker()
+		}
+	}
+}
+
+// beforeClause flushes the comments that sit between the previous clause
+// and the one about to be printed, so they land before the clause keyword.
+// Call it before the clause's line break.
+func (t *TrackedBuffer) beforeClause(n Node) {
+	if t.cs == nil || n == nil {
+		return
+	}
+	pos := firstPos(n)
+	if pos <= 0 {
+		return
+	}
+	t.flushTrailing(pos)
+	t.flushLeading(pos)
+}
+
+// flushRemaining prints every comment not yet printed; the statement is
+// over, so everything left trails it.
+func (t *TrackedBuffer) flushRemaining() {
+	if t.cs == nil {
+		return
+	}
+	for {
+		c, ok := t.cs.pending()
+		if !ok {
+			return
+		}
+		t.cs.next++
+		if !c.OwnLine && t.cs.cursor > 0 && t.cs.lineOf(c.Start) == t.cs.lineOf(t.cs.cursor) {
+			t.WriteString(" ")
+			t.WriteString(c.Text)
+			if c.Line() {
+				t.breaker()
+			}
+		} else {
+			t.hardline()
+			t.WriteString(c.Text)
+		}
+	}
+}
+
+// firstPos returns a node's position, descending into lists to the first
+// positioned item (lists themselves carry no position).
+func firstPos(n Node) int {
+	if n == nil {
+		return 0
+	}
+	if l, ok := n.(*List); ok {
+		for _, item := range l.Items {
+			if _, ok := item.(*TODO); ok {
+				continue
+			}
+			if p := firstPos(item); p > 0 {
+				return p
+			}
+		}
+		return 0
+	}
+	return n.Pos()
 }
 
 func (t *TrackedBuffer) join(n *List, d format.Dialect, sep string) {
@@ -136,21 +273,25 @@ func (t *TrackedBuffer) join(n *List, d format.Dialect, sep string) {
 
 // joinComma writes the list items separated by a comma and a break
 // opportunity, so a list that fits stays on one line and a list that does
-// not puts every item on its own line.
+// not puts every item on its own line. An item's trailing comment prints
+// after the comma, gofmt-style: `total, -- computed`.
 func (t *TrackedBuffer) joinComma(n *List, d format.Dialect) {
 	if n == nil {
 		return
 	}
-	first := true
+	items := make([]Node, 0, len(n.Items))
 	for _, item := range n.Items {
 		if _, ok := item.(*TODO); ok {
 			continue
 		}
-		if !first {
+		items = append(items, item)
+	}
+	for i, item := range items {
+		if i > 0 {
 			t.WriteString(",")
+			t.flushTrailing(firstPos(item))
 			t.line()
 		}
-		first = false
 		t.astFormat(item, d)
 	}
 }
@@ -196,6 +337,7 @@ func (t *TrackedBuffer) conditionArgs(be *BoolExpr, d format.Dialect, op string,
 			continue
 		}
 		if !*first {
+			t.flushTrailing(firstPos(item))
 			t.line()
 			t.WriteString(op)
 		}
@@ -221,7 +363,7 @@ func (t *TrackedBuffer) tree() *docNode {
 	for _, tok := range t.tokens {
 		top := stack[len(stack)-1]
 		switch tok.kind {
-		case tokenText, tokenLine, tokenSoftline:
+		case tokenText, tokenLine, tokenSoftline, tokenHardline, tokenBreaker:
 			top.kids = append(top.kids, &docNode{kind: tok.kind, text: tok.text})
 		case tokenOpenGroup, tokenOpenIndent:
 			n := &docNode{kind: tok.kind}
@@ -236,7 +378,9 @@ func (t *TrackedBuffer) tree() *docNode {
 	return root
 }
 
-// measure computes the width of every node when rendered flat.
+// measure computes the width of every node when rendered flat. Hardlines
+// and breakers measure wider than any real line, so no group containing one
+// ever fits — Prettier's breakParent, by arithmetic.
 func measure(d *docNode) int {
 	switch d.kind {
 	case tokenText:
@@ -245,9 +389,14 @@ func measure(d *docNode) int {
 		d.width = 1
 	case tokenSoftline:
 		d.width = 0
+	case tokenHardline, tokenBreaker:
+		d.width = breakWidth
 	default:
 		for _, kid := range d.kids {
 			d.width += measure(kid)
+			if d.width > breakWidth {
+				d.width = breakWidth
+			}
 		}
 	}
 	return d.width
@@ -267,6 +416,22 @@ func (t *TrackedBuffer) print(width int) string {
 	}
 	var sb strings.Builder
 	col := 0
+	// atLineStart dedupes consecutive breaks: a break that fires when the
+	// output is already at the start of a fresh line writes nothing, so a
+	// comment's surrounding hardlines collapse against clause breaks
+	// instead of leaving blank lines.
+	atLineStart := true
+	newline := func(indent int) {
+		if atLineStart {
+			return
+		}
+		sb.WriteByte('\n')
+		for i := 0; i < indent; i++ {
+			sb.WriteByte(' ')
+		}
+		col = indent
+		atLineStart = true
+	}
 	stack := []frame{{d: root, flat: width < 0}}
 	for len(stack) > 0 {
 		f := stack[len(stack)-1]
@@ -275,25 +440,23 @@ func (t *TrackedBuffer) print(width int) string {
 		case tokenText:
 			sb.WriteString(f.d.text)
 			col += f.d.width
+			atLineStart = false
 		case tokenLine:
 			if f.flat {
 				sb.WriteByte(' ')
 				col++
+				atLineStart = false
 			} else {
-				sb.WriteByte('\n')
-				for i := 0; i < f.indent; i++ {
-					sb.WriteByte(' ')
-				}
-				col = f.indent
+				newline(f.indent)
 			}
 		case tokenSoftline:
 			if !f.flat {
-				sb.WriteByte('\n')
-				for i := 0; i < f.indent; i++ {
-					sb.WriteByte(' ')
-				}
-				col = f.indent
+				newline(f.indent)
 			}
+		case tokenHardline:
+			newline(f.indent)
+		case tokenBreaker:
+			// forces enclosing groups broken; renders nothing
 		case tokenOpenGroup:
 			flat := f.flat || f.d.width <= width-col
 			for i := len(f.d.kids) - 1; i >= 0; i-- {
@@ -317,7 +480,18 @@ func Format(n Node, d format.Dialect) string {
 // width columns where the statement's structure allows it. A negative width
 // renders everything on a single line.
 func Pretty(n Node, d format.Dialect, width int) string {
+	return PrettyWithComments(n, d, width, nil)
+}
+
+// PrettyWithComments renders the node as SQL like Pretty, weaving the
+// statement's interior comments back in at the positions their offsets
+// anchor them to. The printer flushes each comment before the first node
+// positioned after it; a comment on the same source line as the code before
+// it trails that code. Every comment in the set is printed: anything left
+// when the statement ends trails it.
+func PrettyWithComments(n Node, d format.Dialect, width int, cs *CommentSet) string {
 	tb := NewTrackedBuffer()
+	tb.cs = cs
 	if ft, ok := n.(nodeFormatter); ok {
 		ft.Format(tb, d)
 	}
