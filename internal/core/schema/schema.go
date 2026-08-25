@@ -163,6 +163,7 @@ func applyCreateTable(cat *core.Catalog, stmt *ast.CreateTableStmt) error {
 			NotNull:      col.IsNotNull || col.PrimaryKey,
 			IsPrimaryKey: col.PrimaryKey,
 			DeclType:     col.TypeName.Name,
+			Hidden:       col.IsHidden,
 		}); err != nil {
 			return fmt.Errorf("attr %s.%s: %w", stmt.Name.Name, col.Colname, err)
 		}

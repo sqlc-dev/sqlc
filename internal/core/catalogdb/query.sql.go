@@ -12,7 +12,7 @@ import (
 )
 
 const classAttributes = `-- name: ClassAttributes :many
-SELECT oid, name, type_oid, not_null
+SELECT oid, name, type_oid, not_null, hidden
 FROM sql_attribute
 WHERE class_oid = ?
 ORDER BY num
@@ -23,6 +23,7 @@ type ClassAttributesRow struct {
 	Name    string
 	TypeOid int64
 	NotNull int64
+	Hidden  int64
 }
 
 func (q *Queries) ClassAttributes(ctx context.Context, classOid int64) ([]ClassAttributesRow, error) {
@@ -39,6 +40,7 @@ func (q *Queries) ClassAttributes(ctx context.Context, classOid int64) ([]ClassA
 			&i.Name,
 			&i.TypeOid,
 			&i.NotNull,
+			&i.Hidden,
 		); err != nil {
 			return nil, err
 		}
@@ -85,8 +87,8 @@ const createAttribute = `-- name: CreateAttribute :exec
 INSERT INTO sql_attribute (
     class_oid, name, type_oid, not_null, has_default, num,
     decl_type, type_length, type_scale,
-    auto_increment, is_primary_key, is_unique
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    auto_increment, is_primary_key, is_unique, hidden
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 type CreateAttributeParams struct {
@@ -102,6 +104,7 @@ type CreateAttributeParams struct {
 	AutoIncrement int64
 	IsPrimaryKey  int64
 	IsUnique      int64
+	Hidden        int64
 }
 
 // ============================= sql_attribute ===========================
@@ -119,6 +122,7 @@ func (q *Queries) CreateAttribute(ctx context.Context, arg CreateAttributeParams
 		arg.AutoIncrement,
 		arg.IsPrimaryKey,
 		arg.IsUnique,
+		arg.Hidden,
 	)
 	return err
 }
@@ -452,8 +456,8 @@ WHERE name = ?1
 
 type FindOperatorsParams struct {
 	Name         string
-	LeftTypeOid  interface{}
-	RightTypeOid interface{}
+	LeftTypeOid  any
+	RightTypeOid any
 }
 
 type FindOperatorsRow struct {
@@ -560,7 +564,7 @@ type FindProcsInNamespacesRow struct {
 
 func (q *Queries) FindProcsInNamespaces(ctx context.Context, arg FindProcsInNamespacesParams) ([]FindProcsInNamespacesRow, error) {
 	query := findProcsInNamespaces
-	var queryParams []interface{}
+	var queryParams []any
 	queryParams = append(queryParams, arg.Name)
 	if len(arg.NamespaceOids) > 0 {
 		for _, v := range arg.NamespaceOids {
@@ -602,7 +606,7 @@ const listClassColumns = `-- name: ListClassColumns :many
 SELECT a.name AS column_name, t.name AS type_name, a.not_null
 FROM sql_attribute a
 JOIN sql_type t ON t.oid = a.type_oid
-WHERE a.class_oid = ?
+WHERE a.class_oid = ? AND a.hidden = 0
 ORDER BY a.num
 `
 

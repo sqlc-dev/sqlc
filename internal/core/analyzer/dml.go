@@ -108,7 +108,13 @@ func (a *analyzer) relationScope(relations, extra *ast.List, from ast.Node) (*sc
 func insertTargets(rel scopeRel, cols *ast.List) ([]core.ClassColumn, error) {
 	items := listItems(cols)
 	if len(items) == 0 {
-		return rel.cols, nil
+		out := make([]core.ClassColumn, 0, len(rel.cols))
+		for _, col := range rel.cols {
+			if !col.Hidden {
+				out = append(out, col)
+			}
+		}
+		return out, nil
 	}
 	out := make([]core.ClassColumn, 0, len(items))
 	for _, item := range items {

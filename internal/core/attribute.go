@@ -20,6 +20,10 @@ type AttributeSpec struct {
 	AutoIncrement bool
 	IsPrimaryKey  bool
 	IsUnique      bool
+	// Hidden columns resolve by name but stay out of a star expansion and
+	// the relation's model, like the column an sqlite fts5 table names
+	// after itself.
+	Hidden bool
 }
 
 func (c *Catalog) CreateAttributeSpec(s AttributeSpec) error {
@@ -36,6 +40,7 @@ func (c *Catalog) CreateAttributeSpec(s AttributeSpec) error {
 		AutoIncrement: boolToInt64(s.AutoIncrement),
 		IsPrimaryKey:  boolToInt64(s.IsPrimaryKey),
 		IsUnique:      boolToInt64(s.IsUnique),
+		Hidden:        boolToInt64(s.Hidden),
 	})
 	if err != nil {
 		return fmt.Errorf("create attribute %q on class %d: %w", s.Name, s.ClassOID, err)
@@ -213,6 +218,7 @@ type ClassColumn struct {
 	Name    string
 	TypeOID int64
 	NotNull bool
+	Hidden  bool
 }
 
 // ClassColumns returns a relation's columns in ordinal order.
@@ -228,6 +234,7 @@ func (c *Catalog) ClassColumns(classOID int64) ([]ClassColumn, error) {
 			Name:    r.Name,
 			TypeOID: r.TypeOid,
 			NotNull: r.NotNull != 0,
+			Hidden:  r.Hidden != 0,
 		})
 	}
 	return out, nil

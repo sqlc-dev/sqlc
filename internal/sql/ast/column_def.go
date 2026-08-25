@@ -12,6 +12,11 @@ type ColumnDef struct {
 	Vals       *List
 	Length     *int
 	PrimaryKey bool
+	// IsHidden marks a column a relation offers by name without listing it,
+	// like the column an sqlite fts5 table names after itself. The legacy
+	// catalog drops hidden columns; the core catalog keeps them out of star
+	// expansions and models.
+	IsHidden bool
 
 	// From pg.ColumnDef
 	Inhcount      int
