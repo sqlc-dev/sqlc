@@ -22,7 +22,7 @@ WHERE b MATCH ?;
 SELECT snippet(tbl_ft, 0, '<b>', '</b>', 'aa', ?) FROM tbl_ft;
 
 -- name: SelectBm25Func :many
-SELECT *, bm25(tbl_ft, 2.0) FROM tbl_ft
+SELECT b, c, bm25(tbl_ft, 2.0) FROM tbl_ft
 WHERE b MATCH ? ORDER BY bm25(tbl_ft);
 
 -- name: UpdateTblFt :exec

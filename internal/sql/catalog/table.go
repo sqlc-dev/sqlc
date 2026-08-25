@@ -301,6 +301,11 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 	}
 
 	for _, col := range stmt.Cols {
+		// The legacy catalog has no notion of a hidden column, so it drops
+		// them rather than list them on the table.
+		if col.IsHidden {
+			continue
+		}
 		if notNull, ok := seen[col.Colname]; ok {
 			seen[col.Colname] = notNull || col.IsNotNull
 			if a, ok := coltype[col.Colname]; ok {

@@ -90,6 +90,9 @@ func (a *analyzer) emitStar(fields []string) {
 		}
 		a.columns = slices.Grow(a.columns, len(rel.cols))
 		for _, c := range rel.cols {
+			if c.Hidden {
+				continue
+			}
 			col := core.Column{
 				Name:               c.Name,
 				TypeOID:            c.TypeOID,
