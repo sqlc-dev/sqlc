@@ -3,9 +3,11 @@ package sqlite
 import (
 	"errors"
 	"io"
+	"strings"
 
 	meyer "github.com/sqlc-dev/meyer/ast"
 	"github.com/sqlc-dev/meyer/parser"
+	mtoken "github.com/sqlc-dev/meyer/token"
 
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -26,12 +28,22 @@ type Parser struct {
 var parseOptions = parser.Options{UpdateDeleteLimit: true}
 
 func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
+	f, err := p.ParseFile(r)
+	if err != nil {
+		return nil, err
+	}
+	return f.Stmts, nil
+}
+
+// ParseFile parses like Parse and also carries the file's comments, taken
+// from the trivia meyer's single lexer pass produces alongside the tokens.
+func (p *Parser) ParseFile(r io.Reader) (*ast.File, error) {
 	blob, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
 	src := string(blob)
-	parsed, err := parseOptions.ParseString(src)
+	parsed, err := parseOptions.ParseFile(src)
 	if err != nil {
 		return nil, normalizeErr(err)
 	}
@@ -41,7 +53,7 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	// that a statement's extent covers the comments written above it. sqlc
 	// reads the "-- name:" annotation out of that range.
 	loc := 0
-	for _, raw := range parsed {
+	for _, raw := range parsed.Stmts {
 		converter := &cc{}
 		out := converter.convert(raw)
 		if _, ok := out.(*ast.TODO); !ok {
@@ -55,7 +67,36 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 		}
 		loc = raw.End()
 	}
-	return stmts, nil
+
+	var comments []ast.Comment
+	for _, tr := range parsed.Trivia {
+		if tr.Kind != mtoken.COMMENT {
+			continue
+		}
+		comments = append(comments, ast.Comment{
+			Text:    strings.TrimRight(tr.Text(src), " \t\r\n"),
+			Start:   tr.Pos,
+			End:     tr.End,
+			OwnLine: ownLine(src, tr.Pos),
+		})
+	}
+	return &ast.File{Stmts: stmts, Comments: comments}, nil
+}
+
+// ownLine reports that only blank space sits between the preceding line
+// break and pos.
+func ownLine(src string, pos int) bool {
+	for j := pos - 1; j >= 0; j-- {
+		switch src[j] {
+		case '\n':
+			return true
+		case ' ', '\t', '\r':
+			continue
+		default:
+			return false
+		}
+	}
+	return true
 }
 
 // trimTerminator returns the end of stmt with its terminating semicolon, and

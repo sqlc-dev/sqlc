@@ -5,6 +5,16 @@ import (
 	"strings"
 )
 
+// File is a parsed query file: its statements together with the comments
+// the parser's lexer saw. Engines whose parsers surface their trivia — the
+// lexical channel of whitespace and comments the grammar never sees, in
+// Roslyn's terminology — return it from ParseFile, so the formatter gets
+// statements and comments from one lexer pass.
+type File struct {
+	Stmts    []Statement
+	Comments []Comment
+}
+
 // Comment is a single SQL comment, positioned by byte offsets into the
 // source the statement was parsed from — the same coordinates the engine
 // parsers stamp on nodes.

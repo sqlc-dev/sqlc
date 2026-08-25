@@ -20,7 +20,6 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/format"
-	"github.com/sqlc-dev/sqlc/internal/sql/lex"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 )
 
@@ -35,6 +34,14 @@ const fmtLineWidth = 80
 type queryFormatter interface {
 	Parse(io.Reader) ([]ast.Statement, error)
 	format.Dialect
+}
+
+// fileParser is the optional capability of engines whose parsers surface
+// the comments their lexer already scans (SQLite, via meyer's ParseFile).
+// For these engines statements and comments come from one lexer pass, and
+// interior comments format along with their statements.
+type fileParser interface {
+	ParseFile(io.Reader) (*ast.File, error)
 }
 
 func newQueryFormatter(engine config.Engine) queryFormatter {
@@ -187,10 +194,10 @@ func Format(ctx context.Context, dir, filename string, o *Options) (map[string]s
 		// File-level belt for the reprinter path: no formatting result may
 		// change the file's comments. A violation is a formatter bug; keep
 		// the file as written and say so.
-		if engines[file] == config.EngineSQLite {
-			before := lex.Comments(lex.SQLite(), string(contents))
-			after := lex.Comments(lex.SQLite(), formatted)
-			if !sameComments(before, after) {
+		if fp, ok := f.(fileParser); ok {
+			before, err1 := fp.ParseFile(strings.NewReader(string(contents)))
+			after, err2 := fp.ParseFile(strings.NewReader(formatted))
+			if err1 == nil && (err2 != nil || !sameComments(before.Comments, after.Comments)) {
 				fmt.Fprintf(stderr, "%s: skipped: formatting would alter comments (this is a bug in sqlc fmt)\n", rel)
 				continue
 			}
@@ -206,15 +213,22 @@ func Format(ctx context.Context, dir, filename string, o *Options) (map[string]s
 // statements are threaded through the printer by position; for the rest
 // they trigger the verbatim fallback in formatStmt.
 func formatQueries(engine config.Engine, f queryFormatter, src string) (string, error) {
-	stmts, err := f.Parse(strings.NewReader(src))
-	if err != nil {
-		return "", err
-	}
-	// The file's comments, scanned once with the engine's lexical rules.
-	// Statement bodies slice this list by span.
+	// Engines with ParseFile hand over statements and comments from one
+	// lexer pass; statement bodies slice the comment list by span.
+	var stmts []ast.Statement
 	var fileComments []ast.Comment
-	if engine == config.EngineSQLite {
-		fileComments = lex.Comments(lex.SQLite(), src)
+	if fp, ok := f.(fileParser); ok {
+		file, err := fp.ParseFile(strings.NewReader(src))
+		if err != nil {
+			return "", err
+		}
+		stmts, fileComments = file.Stmts, file.Comments
+	} else {
+		var err error
+		stmts, err = f.Parse(strings.NewReader(src))
+		if err != nil {
+			return "", err
+		}
 	}
 	var blocks []string
 	prevEnd := 0
@@ -398,10 +412,12 @@ func formatStmt(engine config.Engine, f queryFormatter, raw *ast.RawStmt, orig s
 		}
 		return fallback
 	}
-	if engine != config.EngineSQLite && hasComment(engine, orig) {
+	if _, ok := f.(fileParser); !ok && hasComment(engine, orig) {
 		// Engines without reprinter support: comments never survive the
 		// trip through the AST, so a statement carrying comments (or
 		// optimizer hints, which share their syntax) is left as written.
+		// (For engines with ParseFile, the parser's comment list is the
+		// truth, and an empty interior list means there is nothing to keep.)
 		return fallback
 	}
 	out := formatRaw(raw, f)
@@ -416,23 +432,26 @@ func formatStmt(engine config.Engine, f queryFormatter, raw *ast.RawStmt, orig s
 
 // formatWithComments pretty-prints a statement with its interior comments
 // and proves the result faithful three ways before accepting it: every
-// comment survives (multiset equality after re-lexing the output), the SQL
+// comment survives (multiset equality after reparsing the output), the SQL
 // still parses as one statement, and the output is a fixed point (printing
-// the reparsed statement with its rescanned comments reproduces it).
+// the reparsed statement with its reparsed comments reproduces it).
 func formatWithComments(engine config.Engine, f queryFormatter, raw *ast.RawStmt, interior []ast.Comment, src string) (string, bool) {
+	fp, ok := f.(fileParser)
+	if !ok {
+		return "", false
+	}
 	out := prettyCommented(raw, f, interior, src)
 	if strings.TrimSpace(strings.TrimSuffix(out, ";")) == "" {
 		return "", false
 	}
-	outComments := lex.Comments(lex.SQLite(), out)
-	if !sameComments(interior, outComments) {
+	file, err := fp.ParseFile(strings.NewReader(out))
+	if err != nil || len(file.Stmts) != 1 || file.Stmts[0].Raw == nil {
 		return "", false
 	}
-	stmts, err := f.Parse(strings.NewReader(out))
-	if err != nil || len(stmts) != 1 || stmts[0].Raw == nil {
+	if !sameComments(interior, file.Comments) {
 		return "", false
 	}
-	again := prettyCommented(stmts[0].Raw, f, outComments, out)
+	again := prettyCommented(file.Stmts[0].Raw, f, file.Comments, out)
 	if !strings.EqualFold(again, out) {
 		return "", false
 	}
