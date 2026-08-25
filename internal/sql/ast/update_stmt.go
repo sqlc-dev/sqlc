@@ -41,7 +41,7 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	}
 
 	if items(n.TargetList) {
-		buf.beforeClause(n.TargetList)
+		buf.beforeClause(n.TargetList, d)
 		buf.line()
 		buf.WriteString("SET ")
 
@@ -114,28 +114,28 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	}
 
 	if items(n.FromClause) {
-		buf.beforeClause(n.FromClause)
+		buf.beforeClause(n.FromClause, d)
 		buf.line()
 		buf.WriteString("FROM ")
 		buf.astFormat(n.FromClause, d)
 	}
 
 	if set(n.WhereClause) {
-		buf.beforeClause(n.WhereClause)
+		buf.beforeClause(n.WhereClause, d)
 		buf.line()
 		buf.WriteString("WHERE ")
 		buf.condition(n.WhereClause, d)
 	}
 
 	if set(n.LimitCount) {
-		buf.beforeClause(n.LimitCount)
+		buf.beforeClause(n.LimitCount, d)
 		buf.line()
 		buf.WriteString("LIMIT ")
 		buf.astFormat(n.LimitCount, d)
 	}
 
 	if items(n.ReturningList) {
-		buf.beforeClause(n.ReturningList)
+		buf.beforeClause(n.ReturningList, d)
 		buf.line()
 		buf.WriteString("RETURNING ")
 		formatReturningOptions(buf, d, n.ReturningOldAlias, n.ReturningNewAlias)

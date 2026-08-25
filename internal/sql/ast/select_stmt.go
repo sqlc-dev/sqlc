@@ -101,49 +101,49 @@ func (n *SelectStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	}
 
 	if items(n.FromClause) {
-		buf.beforeClause(n.FromClause)
+		buf.beforeClause(n.FromClause, d)
 		buf.line()
 		buf.WriteString("FROM ")
 		buf.astFormat(n.FromClause, d)
 	}
 
 	if set(n.WhereClause) {
-		buf.beforeClause(n.WhereClause)
+		buf.beforeClause(n.WhereClause, d)
 		buf.line()
 		buf.WriteString("WHERE ")
 		buf.condition(n.WhereClause, d)
 	}
 
 	if items(n.GroupClause) {
-		buf.beforeClause(n.GroupClause)
+		buf.beforeClause(n.GroupClause, d)
 		buf.line()
 		buf.WriteString("GROUP BY ")
 		buf.astFormat(n.GroupClause, d)
 	}
 
 	if set(n.HavingClause) {
-		buf.beforeClause(n.HavingClause)
+		buf.beforeClause(n.HavingClause, d)
 		buf.line()
 		buf.WriteString("HAVING ")
 		buf.condition(n.HavingClause, d)
 	}
 
 	if items(n.SortClause) {
-		buf.beforeClause(n.SortClause)
+		buf.beforeClause(n.SortClause, d)
 		buf.line()
 		buf.WriteString("ORDER BY ")
 		buf.astFormat(n.SortClause, d)
 	}
 
 	if set(n.LimitCount) {
-		buf.beforeClause(n.LimitCount)
+		buf.beforeClause(n.LimitCount, d)
 		buf.line()
 		buf.WriteString("LIMIT ")
 		buf.astFormat(n.LimitCount, d)
 	}
 
 	if set(n.LimitOffset) {
-		buf.beforeClause(n.LimitOffset)
+		buf.beforeClause(n.LimitOffset, d)
 		buf.line()
 		buf.WriteString("OFFSET ")
 		buf.astFormat(n.LimitOffset, d)

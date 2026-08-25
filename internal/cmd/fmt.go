@@ -426,17 +426,17 @@ func formatWithComments(f queryFormatter, raw *ast.RawStmt, interior []ast.Comme
 	return out, true
 }
 
-// prettyCommented renders a statement with comments, returning "" when the
-// printer panics or fails to place every comment.
+// prettyCommented attaches a statement's comments to its nodes and renders
+// it, returning "" when the printer panics or fails to place every comment.
 func prettyCommented(raw *ast.RawStmt, f queryFormatter, comments []ast.Comment, src string) (out string) {
 	defer func() {
 		if r := recover(); r != nil {
 			out = ""
 		}
 	}()
-	cs := ast.NewCommentSet(comments, src)
-	out = ast.PrettyWithComments(raw, f, fmtLineWidth, cs)
-	if !cs.Exhausted() {
+	ct := ast.AttachComments(raw, f, comments, src)
+	out = ast.PrettyWithComments(raw, f, fmtLineWidth, ct)
+	if !ct.Exhausted() {
 		return ""
 	}
 	return out

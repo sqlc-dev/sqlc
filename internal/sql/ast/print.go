@@ -59,9 +59,15 @@ type token struct {
 
 type TrackedBuffer struct {
 	tokens []token
-	// cs, when set, carries the statement's interior comments; the buffer
-	// flushes them by position as nodes are formatted, gofmt-style.
-	cs *CommentSet
+	// ct, when set, carries the statement's interior comments attached to
+	// their anchor nodes; the buffer emits each comment when it reaches the
+	// comment's anchor. Positions were consulted once, in AttachComments —
+	// never here — so edited and synthetic trees print comments correctly.
+	ct *CommentTable
+	// anchors, when set, records every positioned node in print order
+	// instead of producing output; AttachComments uses this dry run to
+	// classify comments against the same order printing will use.
+	anchors *[]anchor
 }
 
 // NewTrackedBuffer creates a new TrackedBuffer.
@@ -133,11 +139,11 @@ func (t *TrackedBuffer) endIndent() {
 }
 
 func (t *TrackedBuffer) astFormat(n Node, d format.Dialect) {
-	if t.cs != nil && n != nil {
-		if pos := n.Pos(); pos > 0 {
-			t.flushLeading(pos)
-			t.cs.advance(pos)
-		}
+	if t.anchors != nil && n != nil && n.Pos() > 0 {
+		*t.anchors = append(*t.anchors, anchor{node: n, pos: n.Pos()})
+	}
+	if t.ct != nil && n != nil {
+		t.emitComments(t.ct.take(n))
 	}
 	if ft, ok := n.(nodeFormatter); ok {
 		ft.Format(t, d)
@@ -146,112 +152,83 @@ func (t *TrackedBuffer) astFormat(n Node, d format.Dialect) {
 	}
 }
 
-// flushLeading prints every unprinted comment positioned before pos, in
-// leading style: own-line comments (and line comments, which cannot share
-// their line with anything after them) go on their own line; an inline
-// block comment stays in the flow.
-func (t *TrackedBuffer) flushLeading(pos int) {
-	for {
-		c, ok := t.cs.pending()
-		if !ok || c.Start >= pos {
-			return
-		}
-		t.cs.next++
-		if c.OwnLine || c.Line() {
+// emitComments prints attached comments at the boundary before their anchor
+// node. A trailing comment continues the line before it (a line comment
+// then forces the enclosing groups to break); an own-line or line comment
+// goes on its own line; an inline block comment stays in the flow.
+func (t *TrackedBuffer) emitComments(recs []commentRec) {
+	for _, rec := range recs {
+		switch {
+		case rec.trailing:
+			t.WriteString(" ")
+			t.WriteString(rec.c.Text)
+			if rec.c.Line() {
+				t.breaker()
+			}
+		case rec.c.OwnLine || rec.c.Line():
 			t.hardline()
-			t.WriteString(c.Text)
+			t.WriteString(rec.c.Text)
 			t.hardline()
-		} else {
-			t.WriteString(c.Text)
+		default:
+			t.WriteString(rec.c.Text)
 			t.WriteString(" ")
 		}
 	}
 }
 
-// flushTrailing prints comments that trail the code just printed: not on
-// their own line, on the same source line as the printer's cursor, and
-// positioned before limit (the next element, so a comment trailing a later
-// element on the same line is not stolen). A trailing line comment swallows
-// the rest of its output line, so it forces the enclosing groups to break.
-func (t *TrackedBuffer) flushTrailing(limit int) {
-	if t.cs == nil {
+// beforeClause is the emission point for comments that sit between the
+// previous clause and the one about to be printed, so they land before the
+// clause keyword. Call it before the clause's line break. During the
+// AttachComments dry run it records itself as a boundary marker, which is
+// how classification and emission are guaranteed to pick the same spot.
+func (t *TrackedBuffer) beforeClause(n Node, d format.Dialect) {
+	if n == nil {
 		return
 	}
-	for {
-		c, ok := t.cs.pending()
-		if !ok || c.Start >= limit || c.OwnLine {
-			return
-		}
-		if t.cs.cursor <= 0 || t.cs.lineOf(c.Start) != t.cs.lineOf(t.cs.cursor) {
-			return
-		}
-		t.cs.next++
-		t.WriteString(" ")
-		t.WriteString(c.Text)
-		if c.Line() {
-			t.breaker()
-		}
+	if t.anchors != nil {
+		*t.anchors = append(*t.anchors, anchor{node: n, marker: true})
+		return
+	}
+	if t.ct != nil {
+		t.emitComments(t.ct.take(n))
 	}
 }
 
-// beforeClause flushes the comments that sit between the previous clause
-// and the one about to be printed, so they land before the clause keyword.
-// Call it before the clause's line break.
-func (t *TrackedBuffer) beforeClause(n Node) {
-	if t.cs == nil || n == nil {
+// boundary is a separator-adjacent emission point (after a comma, before
+// an AND/OR): comments classified to the upcoming node print here, before
+// the separator's line break, so a trailing comment stays on the line it
+// annotated. On the dry run it records a marker like beforeClause.
+func (t *TrackedBuffer) boundary(next Node) {
+	if next == nil {
 		return
 	}
-	pos := firstPos(n)
-	if pos <= 0 {
+	if t.anchors != nil {
+		*t.anchors = append(*t.anchors, anchor{node: next, marker: true})
 		return
 	}
-	t.flushTrailing(pos)
-	t.flushLeading(pos)
+	if t.ct != nil {
+		t.emitComments(t.ct.take(next))
+	}
 }
 
 // flushRemaining prints every comment not yet printed; the statement is
 // over, so everything left trails it.
 func (t *TrackedBuffer) flushRemaining() {
-	if t.cs == nil {
+	if t.ct == nil {
 		return
 	}
-	for {
-		c, ok := t.cs.pending()
-		if !ok {
-			return
-		}
-		t.cs.next++
-		if !c.OwnLine && t.cs.cursor > 0 && t.cs.lineOf(c.Start) == t.cs.lineOf(t.cs.cursor) {
+	for _, rec := range t.ct.takeRemaining() {
+		if rec.trailing {
 			t.WriteString(" ")
-			t.WriteString(c.Text)
-			if c.Line() {
+			t.WriteString(rec.c.Text)
+			if rec.c.Line() {
 				t.breaker()
 			}
 		} else {
 			t.hardline()
-			t.WriteString(c.Text)
+			t.WriteString(rec.c.Text)
 		}
 	}
-}
-
-// firstPos returns a node's position, descending into lists to the first
-// positioned item (lists themselves carry no position).
-func firstPos(n Node) int {
-	if n == nil {
-		return 0
-	}
-	if l, ok := n.(*List); ok {
-		for _, item := range l.Items {
-			if _, ok := item.(*TODO); ok {
-				continue
-			}
-			if p := firstPos(item); p > 0 {
-				return p
-			}
-		}
-		return 0
-	}
-	return n.Pos()
 }
 
 func (t *TrackedBuffer) join(n *List, d format.Dialect, sep string) {
@@ -289,7 +266,7 @@ func (t *TrackedBuffer) joinComma(n *List, d format.Dialect) {
 	for i, item := range items {
 		if i > 0 {
 			t.WriteString(",")
-			t.flushTrailing(firstPos(item))
+			t.boundary(item)
 			t.line()
 		}
 		t.astFormat(item, d)
@@ -337,7 +314,7 @@ func (t *TrackedBuffer) conditionArgs(be *BoolExpr, d format.Dialect, op string,
 			continue
 		}
 		if !*first {
-			t.flushTrailing(firstPos(item))
+			t.boundary(item)
 			t.line()
 			t.WriteString(op)
 		}
@@ -483,15 +460,14 @@ func Pretty(n Node, d format.Dialect, width int) string {
 	return PrettyWithComments(n, d, width, nil)
 }
 
-// PrettyWithComments renders the node as SQL like Pretty, weaving the
-// statement's interior comments back in at the positions their offsets
-// anchor them to. The printer flushes each comment before the first node
-// positioned after it; a comment on the same source line as the code before
-// it trails that code. Every comment in the set is printed: anything left
-// when the statement ends trails it.
-func PrettyWithComments(n Node, d format.Dialect, width int, cs *CommentSet) string {
+// PrettyWithComments renders the node as SQL like Pretty, emitting the
+// comments a prior AttachComments call anchored to its nodes: each comment
+// prints at the boundary before its anchor, a trailing comment continues
+// the line of the code it followed, and every comment in the table is
+// printed — anything left when the statement ends trails it.
+func PrettyWithComments(n Node, d format.Dialect, width int, ct *CommentTable) string {
 	tb := NewTrackedBuffer()
-	tb.cs = cs
+	tb.ct = ct
 	if ft, ok := n.(nodeFormatter); ok {
 		ft.Format(tb, d)
 	}

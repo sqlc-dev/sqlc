@@ -39,13 +39,21 @@ tokens so the flat rendering is correct SQL; layout tokens are optional.
 
 ### Comments
 `ast.File{Stmts, Comments}` is what a comment-surfacing parser returns
-(SQLite via meyer's ParseFile). `PrettyWithComments(n, d, width, cs)`
-weaves a `CommentSet` back in gofmt-style: the printer flushes each
-comment before the first node positioned after it, using source line
-numbers to decide trailing (same line, after the code) vs leading (own
-line, `hardline()`-separated). A line comment forces every enclosing
-group to break — `hardline` and `breaker` tokens measure as infinitely
-wide — so commented statements format instead of collapsing.
+(SQLite via meyer's ParseFile). `AttachComments(raw, d, comments, src)`
+classifies each comment once, against a dry-run of the printer: source
+positions and line numbers decide trailing (same line as the code
+before) vs leading, and each comment is attached to the emission point
+— node or clause/list boundary — where the printer will reach it. From
+then on positions are never consulted: `PrettyWithComments(n, d, width,
+table)` emits by node identity, which is what lets edited or synthetic
+trees print their comments correctly (the dave/dst model; each record
+also keeps the node the comment followed, for future rewriting tools).
+A line comment forces every enclosing group to break — `hardline` and
+`breaker` tokens measure as infinitely wide — so commented statements
+format instead of collapsing. Emission points (`beforeClause`,
+`boundary` in joinComma/condition) double as classification markers on
+the dry run, guaranteeing attach-time decisions and print-time emission
+agree.
 
 ### Dialect Interface
 Dialect-specific formatting is handled via the `Dialect` interface:
