@@ -1,0 +1,1 @@
+sqlc fmt does not yet support the postgresql engine; query files left unchanged

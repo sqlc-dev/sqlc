@@ -37,6 +37,16 @@ Format methods open a group and put `line()` before each clause keyword
 long one breaks at clause boundaries. When adding a Format method, write
 tokens so the flat rendering is correct SQL; layout tokens are optional.
 
+### Comments
+`ast.File{Stmts, Comments}` is what a comment-surfacing parser returns
+(SQLite via meyer's ParseFile). `PrettyWithComments(n, d, width, cs)`
+weaves a `CommentSet` back in gofmt-style: the printer flushes each
+comment before the first node positioned after it, using source line
+numbers to decide trailing (same line, after the code) vs leading (own
+line, `hardline()`-separated). A line comment forces every enclosing
+group to break — `hardline` and `breaker` tokens measure as infinitely
+wide — so commented statements format instead of collapsing.
+
 ### Dialect Interface
 Dialect-specific formatting is handled via the `Dialect` interface:
 ```go

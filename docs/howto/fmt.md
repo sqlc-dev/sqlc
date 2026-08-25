@@ -18,21 +18,19 @@ the [`-- name:`](../reference/query-annotations.md) annotation and multi-line
 `/* */` blocks, and a comment on the same line as a statement's closing
 semicolon stays attached to it.
 
-For the `sqlite` engine, comments *inside* a statement are formatted along
-with it: each comment is anchored to the code around it by source position
-and printed back there — a comment trailing a select-list item stays with
-that item, a comment above a clause stays above its keyword — and a
-statement carrying comments keeps its multi-line shape. For the other
-engines, interior comments cannot yet survive the trip through the syntax
-tree, so a statement containing them (or optimizer hints, which share their
-syntax) is left exactly as written. The same applies on every engine to any
-statement that cannot be proven to survive formatting unchanged.
+Comments inside a statement are formatted along with it: each comment is
+anchored to the code around it by source position and printed back there —
+a comment trailing a select-list item stays with that item, a comment above
+a clause stays above its keyword — and a statement carrying comments keeps
+its multi-line shape. Any statement that cannot be proven to survive
+formatting unchanged is left exactly as written.
 
-Formatting is supported for the `postgresql`, `mysql`, `sqlite` and
-`clickhouse` engines. Query files for other engines are skipped, as are files
-that cannot be parsed without the compiler's preprocessing (for example, files
-using `sqlc.slice()` on engines whose parser rejects it); a skipped file is
-reported on standard error and left unchanged.
+Formatting currently supports the `sqlite` engine, whose parser surfaces the
+comments its lexer sees; other engines' query files are left untouched and
+gain support as their parsers are updated. Files that cannot be parsed
+without the compiler's preprocessing (for example, files using
+`sqlc.slice()` on engines whose parser rejects it) are also skipped; a
+skipped file is reported on standard error and left unchanged.
 
 ## Usage
 
@@ -51,25 +49,30 @@ Given this query file:
 -- name: GetAuthor :one
 select  id,name , bio
 from   authors
-where id =  $1 limit 1;
+where id =  ? limit 1;
 
 -- name: SearchAuthors :many
-SELECT id, name, bio, created_at FROM authors WHERE name LIKE $1 AND bio IS NOT NULL AND id > $2 AND created_at > $3 AND name <> $4 ORDER BY name;
+SELECT id, -- the primary key
+       name, bio, created_at FROM authors WHERE name LIKE ? AND bio IS NOT NULL AND id > ? AND created_at > ? AND name <> ? ORDER BY name;
 ```
 
 running `sqlc fmt` rewrites it to:
 
 ```sql
 -- name: GetAuthor :one
-SELECT id, name, bio FROM authors WHERE id = $1 LIMIT 1;
+SELECT id, name, bio FROM authors WHERE id = ? LIMIT 1;
 
 -- name: SearchAuthors :many
-SELECT id, name, bio, created_at
+SELECT
+  id, -- the primary key
+  name,
+  bio,
+  created_at
 FROM authors
-WHERE name LIKE $1
+WHERE name LIKE ?
   AND bio IS NOT NULL
-  AND id > $2
-  AND created_at > $3
-  AND name <> $4
+  AND id > ?
+  AND created_at > ?
+  AND name <> ?
 ORDER BY name;
 ```
