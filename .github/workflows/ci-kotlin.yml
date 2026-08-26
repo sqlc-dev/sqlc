@@ -5,11 +5,9 @@ on:
       - main
     paths-ignore:
       - 'docs/**'
-      - '.readthedocs.yaml'
   pull_request:
     paths-ignore:
       - 'docs/**'
-      - '.readthedocs.yaml'
 jobs:
   build:
     if: false

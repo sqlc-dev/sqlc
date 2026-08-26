@@ -346,6 +346,31 @@ func (c *cc) convertCreateVirtualTableFTS5(n *meyer.CreateVirtualTableStmt) ast.
 		})
 	}
 
+	// An fts5 table also offers hidden columns: one named after the table,
+	// matched against the whole row (`tbl MATCH ?`) and passed to the
+	// auxiliary functions (`bm25(tbl)`), `rank`, the current match's score,
+	// and `rowid`, which an external-content table maps to its content
+	// table. Hidden keeps them out of star expansions and the table's model.
+	stmt.Cols = append(stmt.Cols,
+		&ast.ColumnDef{
+			Colname:   stmt.Name.Name,
+			IsNotNull: true,
+			IsHidden:  true,
+			TypeName:  &ast.TypeName{Name: "text"},
+		},
+		&ast.ColumnDef{
+			Colname:  "rank",
+			IsHidden: true,
+			TypeName: &ast.TypeName{Name: "real"},
+		},
+		&ast.ColumnDef{
+			Colname:   "rowid",
+			IsNotNull: true,
+			IsHidden:  true,
+			TypeName:  &ast.TypeName{Name: "integer"},
+		},
+	)
+
 	return stmt
 }
 

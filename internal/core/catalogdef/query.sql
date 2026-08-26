@@ -95,8 +95,8 @@ UPDATE sql_class SET name = sqlc.arg(new_name) WHERE oid = sqlc.arg(oid);
 INSERT INTO sql_attribute (
     class_oid, name, type_oid, not_null, has_default, num,
     decl_type, type_length, type_scale,
-    auto_increment, is_primary_key, is_unique
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    auto_increment, is_primary_key, is_unique, hidden
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- name: SetAttributePrimaryKey :exec
 UPDATE sql_attribute SET is_primary_key = 1, not_null = 1
@@ -147,7 +147,7 @@ WHERE c.name = ?
 ORDER BY a.num;
 
 -- name: ClassAttributes :many
-SELECT oid, name, type_oid, not_null
+SELECT oid, name, type_oid, not_null, hidden
 FROM sql_attribute
 WHERE class_oid = ?
 ORDER BY num;
@@ -156,7 +156,7 @@ ORDER BY num;
 SELECT a.name AS column_name, t.name AS type_name, a.not_null
 FROM sql_attribute a
 JOIN sql_type t ON t.oid = a.type_oid
-WHERE a.class_oid = ?
+WHERE a.class_oid = ? AND a.hidden = 0
 ORDER BY a.num;
 
 -- name: LookupAttribute :one

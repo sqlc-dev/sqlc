@@ -20,7 +20,7 @@ FROM authors
 WHERE lower(name) = ?;
 ```
 
-See more examples in [Naming parameters](../howto/named_parameters).
+See more examples in [Naming parameters](../howto/named_parameters.md).
 
 ## `sqlc.embed`
 
@@ -72,7 +72,7 @@ func (q *Queries) GetStudentAndScore(ctx context.Context, id int64) (GetStudentA
 }
 ```
 
-See a full example in [Embedding structs](../howto/embedding).
+See a full example in [Embedding structs](../howto/embedding.md).
 
 ## `sqlc.narg`
 
@@ -92,7 +92,7 @@ FROM authors
 WHERE LOWER(name) = ?;
 ```
 
-See more examples in [Naming parameters](../howto/named_parameters).
+See more examples in [Naming parameters](../howto/named_parameters.md).
 
 ## `sqlc.slice`
 

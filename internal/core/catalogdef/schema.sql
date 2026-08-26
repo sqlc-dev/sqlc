@@ -65,6 +65,9 @@ CREATE TABLE sql_class (
 --                    Set both for inline-column PK and for table-level PK.
 --   is_unique:       column has a UNIQUE constraint or a single-column UNIQUE
 --                    table constraint.
+--   hidden:          resolvable by name but absent from a star expansion and
+--                    from the relation's model, like the column an sqlite
+--                    fts5 table names after itself.
 CREATE TABLE sql_attribute (
     oid            INTEGER PRIMARY KEY AUTOINCREMENT,
     class_oid      INTEGER NOT NULL REFERENCES sql_class(oid),
@@ -79,6 +82,7 @@ CREATE TABLE sql_attribute (
     auto_increment INTEGER NOT NULL DEFAULT 0,
     is_primary_key INTEGER NOT NULL DEFAULT 0,
     is_unique      INTEGER NOT NULL DEFAULT 0,
+    hidden         INTEGER NOT NULL DEFAULT 0,
     UNIQUE(class_oid, name),
     UNIQUE(class_oid, num)
 );

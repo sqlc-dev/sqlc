@@ -22,6 +22,7 @@ type SqlAttribute struct {
 	AutoIncrement int64
 	IsPrimaryKey  int64
 	IsUnique      int64
+	Hidden        int64
 }
 
 type SqlCast struct {

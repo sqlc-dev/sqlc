@@ -4,7 +4,7 @@
 
 `sqlc vet` runs queries through a set of lint rules.
 
-Rules are defined in the `sqlc` [configuration](../reference/config) file. They
+Rules are defined in the `sqlc` [configuration](../reference/config.md) file. They
 consist of a name, message, and a [Common Expression Language
 (CEL)](https://github.com/google/cel-spec) expression. Expressions are evaluated
 using [cel-go](https://github.com/google/cel-go).  If an expression evaluates to
@@ -48,7 +48,7 @@ each CEL expression has access to the output from running `EXPLAIN ...` on your 
 via the `postgresql.explain` and `mysql.explain` variables.
 This output is quite complex and depends on the structure of your query but sqlc attempts
 to parse and provide as much information as it can. See
-[Rules using `EXPLAIN ...` output](#rules-using-explain-output) for more information.
+[Rules using `EXPLAIN ...` output](#rules-using-explain--output) for more information.
 
 Here are a few example rules just using the basic configuration and query information available
 to the CEL expression environment. While these examples are simplistic, they give you a flavor

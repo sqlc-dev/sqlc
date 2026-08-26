@@ -79,9 +79,9 @@ sql:
 
 With managed databases configured, `sqlc vet` will automatically create a hosted ephemeral database with your
 schema and use that database when running lint rules that require a
-database connection, e.g. any [rule relying on `EXPLAIN ...` output](vet.md#rules-using-explain-output).
+database connection, e.g. any [rule relying on `EXPLAIN ...` output](vet.md#rules-using-explain--output).
 
-If you don't yet have any vet rules, the [built-in sqlc/db-prepare rule](vet.md#sqlc-db-prepare)
+If you don't yet have any vet rules, the [built-in sqlc/db-prepare rule](vet.md#sqlcdb-prepare)
 is a good place to start. It prepares each of your queries against the database
 to ensure the query is valid. Here's a minimal working configuration:
 
