@@ -11,6 +11,7 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/engine/clickhouse"
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
+	"github.com/sqlc-dev/sqlc/internal/engine/duckdb"
 	"github.com/sqlc-dev/sqlc/internal/engine/googlesql"
 	"github.com/sqlc-dev/sqlc/internal/engine/mssql"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
@@ -63,7 +64,10 @@ Examples:
   sqlc parse --dialect googlesql queries.sql
 
   # Parse SQL Server (T-SQL) SQL
-  sqlc parse --dialect mssql queries.sql`,
+  sqlc parse --dialect mssql queries.sql
+
+  # Parse DuckDB SQL
+  sqlc parse --dialect duckdb queries.sql`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dialect, err := cmd.Flags().GetString("dialect")
@@ -71,7 +75,7 @@ Examples:
 				return err
 			}
 			if dialect == "" {
-				return fmt.Errorf("--dialect flag is required (postgresql, mysql, sqlite, clickhouse, googlesql, or mssql)")
+				return fmt.Errorf("--dialect flag is required (postgresql, mysql, sqlite, clickhouse, googlesql, mssql, or duckdb)")
 			}
 
 			// Determine input source
@@ -110,8 +114,10 @@ Examples:
 				parser = googlesql.NewParser()
 			case "mssql", "sqlserver":
 				parser = mssql.NewParser()
+			case "duckdb":
+				parser = duckdb.NewParser()
 			default:
-				return fmt.Errorf("unsupported dialect: %s (use postgresql, mysql, sqlite, clickhouse, googlesql, or mssql)", dialect)
+				return fmt.Errorf("unsupported dialect: %s (use postgresql, mysql, sqlite, clickhouse, googlesql, mssql, or duckdb)", dialect)
 			}
 
 			// Read the full source so each statement's name and command can be
@@ -155,6 +161,6 @@ Examples:
 			return nil
 		},
 	}
-	cmd.Flags().StringP("dialect", "d", "", "SQL dialect to use (postgresql, mysql, sqlite, clickhouse, googlesql, or mssql)")
+	cmd.Flags().StringP("dialect", "d", "", "SQL dialect to use (postgresql, mysql, sqlite, clickhouse, googlesql, mssql, or duckdb)")
 	return cmd
 }
