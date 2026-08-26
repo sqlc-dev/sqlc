@@ -20,7 +20,7 @@ provided.
 ## Flags
 
 - `--dialect`, `-d` - The SQL dialect to use. One of `postgresql`, `mysql`,
-  `sqlite`, `clickhouse`, `googlesql`, or `mssql`. Required.
+  `sqlite`, `clickhouse`, `googlesql`, `mssql`, or `duckdb`. Required.
 
 ## Examples
 

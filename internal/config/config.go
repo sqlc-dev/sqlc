@@ -57,6 +57,7 @@ const (
 	EngineClickHouse Engine = "clickhouse"
 	EngineGoogleSQL  Engine = "googlesql"
 	EngineMSSQL      Engine = "mssql"
+	EngineDuckDB     Engine = "duckdb"
 )
 
 type Config struct {

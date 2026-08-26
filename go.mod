@@ -18,6 +18,7 @@ require (
 	github.com/riza-io/grpc-go v0.2.0
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
+	github.com/sqlc-dev/darkwing v0.1.0
 	github.com/sqlc-dev/doubleclick v1.0.0
 	github.com/sqlc-dev/marino v0.3.0
 	github.com/sqlc-dev/meyer v0.1.1

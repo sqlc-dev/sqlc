@@ -26,7 +26,7 @@ provided. The schema is always read from the `--schema` file.
 ## Flags
 
 - `--dialect`, `-d` - The SQL dialect to use. One of `postgresql`, `mysql`,
-  `sqlite`, `clickhouse`, `googlesql`, or `mssql`. Required.
+  `sqlite`, `clickhouse`, `googlesql`, `mssql`, or `duckdb`. Required.
 - `--schema`, `-s` - Path to the schema (DDL) file. Required.
 - `--ast` - Include each statement's AST in the output. Defaults to `false`.
 

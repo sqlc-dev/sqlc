@@ -10,6 +10,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/dbmanager"
 	"github.com/sqlc-dev/sqlc/internal/engine/clickhouse"
 	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
+	"github.com/sqlc-dev/sqlc/internal/engine/duckdb"
 	"github.com/sqlc-dev/sqlc/internal/engine/googlesql"
 	"github.com/sqlc-dev/sqlc/internal/engine/mssql"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
@@ -58,10 +59,10 @@ func NewCompiler(conf config.SQL, combo config.CombinedSettings, parserOpts opts
 		o(c)
 	}
 
-	// ClickHouse, GoogleSQL and SQL Server have no legacy analysis path to
-	// fall back to.
+	// ClickHouse, GoogleSQL, SQL Server and DuckDB have no legacy analysis
+	// path to fall back to.
 	switch conf.Engine {
-	case config.EngineClickHouse, config.EngineGoogleSQL, config.EngineMSSQL:
+	case config.EngineClickHouse, config.EngineGoogleSQL, config.EngineMSSQL, config.EngineDuckDB:
 		c.coreAnalysis = true
 	}
 	if c.coreAnalysis {
@@ -144,6 +145,10 @@ func (c *Compiler) initCore() error {
 		c.parser = mssql.NewParser()
 		c.selector = newDefaultSelector()
 		dialect = mssql.Dialect()
+	case config.EngineDuckDB:
+		c.parser = duckdb.NewParser()
+		c.selector = newDefaultSelector()
+		dialect = duckdb.Dialect()
 	default:
 		return fmt.Errorf("unknown engine: %s", c.conf.Engine)
 	}

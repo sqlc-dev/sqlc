@@ -1,0 +1,15 @@
+{
+  "dialect": "duckdb",
+  "const": {
+    "integer": "integer",
+    "float": "double",
+    "string": "varchar",
+    "bool": "boolean"
+  },
+  "bool": "boolean",
+  "comparison": ["=", "==", "<>", "!=", "<", "<=", ">", ">=", "IS DISTINCT FROM", "IS NOT DISTINCT FROM"],
+  "comparison_categories": "BNSDU",
+  "arithmetic": ["+", "-", "*", "/", "//", "%", "**", "^"],
+  "arithmetic_categories": "N",
+  "cast_categories": "NSD"
+}
