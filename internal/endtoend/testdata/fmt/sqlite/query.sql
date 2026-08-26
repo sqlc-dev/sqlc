@@ -26,3 +26,19 @@ FROM "Events" WHERE id = ? LIMIT 1;
 -- name: CountSigils :one
 SELECT count(*) FROM authors
 WHERE id <> @at_param AND id <> :colon_param AND id <> $dollar_param;
+
+-- name: TopAuthors :many
+WITH ranked AS (
+  SELECT id, name FROM authors
+)
+SELECT * FROM ranked;
+
+-- name: AddAuthor :exec
+INSERT INTO authors (name, bio)
+VALUES (?, ?);
+
+-- name: MakeScratch :exec
+CREATE TABLE scratch (
+  id INTEGER NOT NULL,
+  label TEXT
+);

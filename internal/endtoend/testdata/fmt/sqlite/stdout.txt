@@ -32,7 +32,7 @@
  ORDER BY name;
  
  -- name: GetEvent :one
-@@ -23,6 +27,9 @@
+@@ -23,8 +27,11 @@
  SELECT "EventName", "order"
 +FROM "Events"
 +WHERE id = ?
@@ -44,3 +44,5 @@
 +FROM authors
 -SELECT count(*) FROM authors
  WHERE id <> @at_param AND id <> :colon_param AND id <> $dollar_param;
+ 
+ -- name: TopAuthors :many

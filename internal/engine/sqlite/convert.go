@@ -284,6 +284,7 @@ func (c *cc) convertCreateTableStmt(n *meyer.CreateTableStmt) ast.Node {
 			Colname:   identifier(def.Name),
 			IsNotNull: hasNotNullConstraint(def.Constraints),
 			TypeName:  &ast.TypeName{Name: columnTypeName(def.Type)},
+			Location:  def.Pos(),
 		})
 	}
 	return stmt
@@ -306,6 +307,7 @@ func (c *cc) convertCreateVirtualTableFTS5(n *meyer.CreateVirtualTableStmt) ast.
 	stmt := &ast.CreateTableStmt{
 		Name:        parseTableName(n.Name),
 		IfNotExists: n.IfNotExists,
+		Virtual:     true,
 	}
 
 	// The module arguments of a virtual table are an arbitrary token
@@ -437,7 +439,8 @@ func (c *cc) convertColumnNames(cols []*meyer.Ident) *ast.List {
 	for _, col := range cols {
 		name := identifier(col)
 		list.Items = append(list.Items, &ast.ResTarget{
-			Name: &name,
+			Name:     &name,
+			Location: col.Pos(),
 		})
 	}
 	return list

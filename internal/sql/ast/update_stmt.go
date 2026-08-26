@@ -32,7 +32,13 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 
 	if n.WithClause != nil {
 		buf.astFormat(n.WithClause, d)
+		// The boundary between the WITH clause and the statement's own
+		// first keyword; the group keeps a break inside the WITH clause
+		// from forcing the statement body apart clause by clause.
+		buf.boundary(n.Relations)
 		buf.Line()
+		buf.Group()
+		defer buf.EndGroup()
 	}
 
 	buf.WriteString("UPDATE ")

@@ -63,7 +63,17 @@ func (n *SelectStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 
 	if n.WithClause != nil {
 		buf.astFormat(n.WithClause, d)
+		// The boundary between the WITH clause and the statement's own
+		// first keyword; the group keeps a break inside the WITH clause
+		// from forcing the statement body apart clause by clause.
+		if n.Larg != nil {
+			buf.boundary(n.Larg)
+		} else {
+			buf.boundary(n.TargetList)
+		}
 		buf.Line()
+		buf.Group()
+		defer buf.EndGroup()
 	}
 
 	if n.Larg != nil && n.Rarg != nil {
