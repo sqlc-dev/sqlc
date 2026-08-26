@@ -18,3 +18,7 @@ SELECT /* inline note */ id, name FROM authors ORDER BY name;
 -- name: ListAuthors :many
 SELECT id, name, bio FROM authors
 ORDER BY name;
+
+-- name: GetEvent :one
+SELECT "EventName", "order"
+FROM "Events" WHERE id = ? LIMIT 1;

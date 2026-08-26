@@ -22,7 +22,7 @@
  FROM authors
  -- soft-deleted rows are filtered
  WHERE bio IS NOT NULL
-@@ -16,5 +19,6 @@
+@@ -16,7 +19,8 @@
  SELECT /* inline note */ id, name FROM authors ORDER BY name;
  
  -- name: ListAuthors :many
@@ -30,3 +30,11 @@
 +FROM authors
 -SELECT id, name, bio FROM authors
  ORDER BY name;
+ 
+ -- name: GetEvent :one
+@@ -23,2 +27,4 @@
+ SELECT "EventName", "order"
++FROM "Events"
++WHERE id = ?
++LIMIT 1;
+-FROM "Events" WHERE id = ? LIMIT 1;
