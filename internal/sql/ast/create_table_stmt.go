@@ -9,10 +9,11 @@ type CreateTableStmt struct {
 	ReferTable  *TableName
 	Comment     string
 	Inherits    []*TableName
-	// Virtual marks a table backed by a module (SQLite's CREATE VIRTUAL
-	// TABLE). The statement's argument list cannot be reconstructed from
-	// this node, so it has no faithful rendering.
-	Virtual bool
+	// Incomplete marks a statement whose source carried syntax this node
+	// does not model — a virtual table's module arguments, column or table
+	// constraints beyond plain NOT NULL and PRIMARY KEY, table options,
+	// TEMP, or an AS SELECT body. No faithful rendering exists for it.
+	Incomplete bool
 }
 
 func (n *CreateTableStmt) Pos() int {
@@ -23,13 +24,16 @@ func (n *CreateTableStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
-	// A virtual table cannot be printed back: its module arguments were
-	// parsed away. Render nothing, which no verification accepts, so the
-	// formatter keeps the statement as written.
-	if n.Virtual {
+	// An incomplete statement cannot be printed back: part of its source
+	// was parsed away. Render nothing, which no verification accepts, so
+	// the formatter keeps the statement as written.
+	if n.Incomplete {
 		return
 	}
 	buf.WriteString("CREATE TABLE ")
+	if n.IfNotExists {
+		buf.WriteString("IF NOT EXISTS ")
+	}
 	buf.astFormat(n.Name, d)
 
 	buf.WriteString(" (")

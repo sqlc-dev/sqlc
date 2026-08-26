@@ -42,3 +42,17 @@ CREATE TABLE scratch (
   id INTEGER NOT NULL,
   label TEXT
 );
+
+-- name: MakeMeasurements :exec
+CREATE TABLE IF NOT EXISTS measurements (
+  id INTEGER PRIMARY KEY,
+  label VARYING  CHARACTER(120),
+  ratio DECIMAL(10,5),
+  note
+);
+
+-- name: KeepAutoinc :exec
+CREATE TABLE   counters (id INTEGER PRIMARY KEY AUTOINCREMENT, hits INTEGER DEFAULT 0);
+
+-- name: CastLabel :one
+SELECT CAST(bio AS VARYING CHARACTER(120)) FROM authors LIMIT 1;

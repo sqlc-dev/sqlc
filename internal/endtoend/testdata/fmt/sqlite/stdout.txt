@@ -46,3 +46,12 @@
  WHERE id <> @at_param AND id <> :colon_param AND id <> $dollar_param;
  
  -- name: TopAuthors :many
+@@ -46,7 +53,7 @@
+ -- name: MakeMeasurements :exec
+ CREATE TABLE IF NOT EXISTS measurements (
+   id INTEGER PRIMARY KEY,
++  label VARYING CHARACTER(120),
+-  label VARYING  CHARACTER(120),
+   ratio DECIMAL(10,5),
+   note
+ );

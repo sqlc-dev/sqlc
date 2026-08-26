@@ -214,15 +214,21 @@ func (c *cc) convertAlterTableStmt(n *meyer.AlterTableStmt) ast.Node {
 		}
 		name := identifier(def.Name)
 		return &ast.AlterTableStmt{
-			Table: parseTableName(n.Table),
+			Table:      parseTableName(n.Table),
+			Incomplete: !representableColumn(def),
 			Cmds: &ast.List{Items: []ast.Node{
 				&ast.AlterTableCmd{
 					Name:    &name,
 					Subtype: ast.AT_AddColumn,
 					Def: &ast.ColumnDef{
-						Colname:   name,
-						TypeName:  &ast.TypeName{Name: columnTypeName(def.Type)},
-						IsNotNull: hasNotNullConstraint(def.Constraints),
+						Colname: name,
+						TypeName: &ast.TypeName{
+							Name:     columnTypeName(def.Type),
+							Spelling: typeSpelling(def.Type),
+						},
+						Typeless:   def.Type == nil,
+						IsNotNull:  hasNotNullConstraint(def.Constraints),
+						PrimaryKey: hasPrimaryKeyConstraint(def.Constraints),
 					},
 				},
 			}},
@@ -278,13 +284,24 @@ func (c *cc) convertCreateTableStmt(n *meyer.CreateTableStmt) ast.Node {
 	stmt := &ast.CreateTableStmt{
 		Name:        parseTableName(n.Name),
 		IfNotExists: n.IfNotExists,
+		// The node models none of these, so a statement carrying them has
+		// no faithful rendering and the formatter keeps it as written.
+		Incomplete: n.Temp || n.Select != nil || len(n.Constraints) > 0 || len(n.Options) > 0,
 	}
 	for _, def := range n.Columns {
+		if !representableColumn(def) {
+			stmt.Incomplete = true
+		}
 		stmt.Cols = append(stmt.Cols, &ast.ColumnDef{
-			Colname:   identifier(def.Name),
-			IsNotNull: hasNotNullConstraint(def.Constraints),
-			TypeName:  &ast.TypeName{Name: columnTypeName(def.Type)},
-			Location:  def.Pos(),
+			Colname:    identifier(def.Name),
+			IsNotNull:  hasNotNullConstraint(def.Constraints),
+			PrimaryKey: hasPrimaryKeyConstraint(def.Constraints),
+			TypeName: &ast.TypeName{
+				Name:     columnTypeName(def.Type),
+				Spelling: typeSpelling(def.Type),
+			},
+			Typeless: def.Type == nil,
+			Location: def.Pos(),
 		})
 	}
 	return stmt
@@ -307,7 +324,9 @@ func (c *cc) convertCreateVirtualTableFTS5(n *meyer.CreateVirtualTableStmt) ast.
 	stmt := &ast.CreateTableStmt{
 		Name:        parseTableName(n.Name),
 		IfNotExists: n.IfNotExists,
-		Virtual:     true,
+		// A virtual table's module arguments are parsed away, so the
+		// statement has no faithful rendering.
+		Incomplete: true,
 	}
 
 	// The module arguments of a virtual table are an arbitrary token
@@ -1035,6 +1054,7 @@ func (c *cc) convertCastExpr(n *meyer.CastExpr) ast.Node {
 		Arg: c.convert(n.X),
 		TypeName: &ast.TypeName{
 			Name:        name,
+			Spelling:    typeSpelling(n.Type),
 			Names:       &ast.List{Items: []ast.Node{&ast.String{Str: strings.ToLower(name)}}},
 			ArrayBounds: &ast.List{},
 		},
