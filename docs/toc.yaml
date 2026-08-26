@@ -1,0 +1,71 @@
+# Navigation for the sqlc documentation site.
+#
+# Every page in docs/ must appear exactly once, either in a section or in
+# the unlisted set. Unlisted pages are published but do not appear in the
+# sidebar.
+
+index: index.md
+
+sections:
+  - title: Overview
+    pages:
+      - overview/install.md
+
+  - title: Tutorials
+    pages:
+      - tutorials/getting-started-mysql.md
+      - tutorials/getting-started-postgresql.md
+      - tutorials/getting-started-sqlite.md
+
+  - title: Commands
+    pages:
+      - howto/analyze.md
+      - howto/generate.md
+      - howto/parse.md
+      - howto/push.md
+      - howto/verify.md
+      - howto/vet.md
+
+  - title: How-to Guides
+    pages:
+      - howto/select.md
+      - howto/query_count.md
+      - howto/insert.md
+      - howto/update.md
+      - howto/delete.md
+      - howto/prepared_query.md
+      - howto/transactions.md
+      - howto/named_parameters.md
+      - howto/ddl.md
+      - howto/structs.md
+      - howto/embedding.md
+      - howto/overrides.md
+      - howto/rename.md
+
+  - title: sqlc Cloud
+    pages:
+      - howto/managed-databases.md
+
+  - title: Reference
+    pages:
+      - reference/changelog.md
+      - reference/cli.md
+      - reference/config.md
+      - reference/datatypes.md
+      - reference/environment-variables.md
+      - reference/language-support.md
+      - reference/macros.md
+      - reference/query-annotations.md
+
+  - title: Conceptual Guides
+    pages:
+      - howto/ci-cd.md
+      - guides/using-go-and-pgx.md
+      - guides/plugins.md
+      - guides/development.md
+      - guides/privacy.md
+
+unlisted:
+  - guides/migrating-off-hosted-managed-databases.md
+  - guides/migrating-to-sqlc-gen-kotlin.md
+  - guides/migrating-to-sqlc-gen-python.md
