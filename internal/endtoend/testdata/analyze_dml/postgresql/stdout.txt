@@ -158,5 +158,138 @@
         }
       }
     ]
+  },
+  {
+    "name": "MergeUsers",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "merge_action",
+        "data_type": "text",
+        "not_null": true,
+        "is_array": false
+      },
+      {
+        "name": "id",
+        "data_type": "bigserial",
+        "not_null": false,
+        "is_array": false,
+        "table": "posts"
+      },
+      {
+        "name": "user_id",
+        "data_type": "int8",
+        "not_null": false,
+        "is_array": false,
+        "table": "posts"
+      },
+      {
+        "name": "title",
+        "data_type": "varchar",
+        "not_null": false,
+        "is_array": false,
+        "table": "posts"
+      },
+      {
+        "name": "created",
+        "data_type": "timestamptz",
+        "not_null": false,
+        "is_array": false,
+        "table": "posts"
+      },
+      {
+        "name": "id",
+        "data_type": "bigserial",
+        "not_null": true,
+        "is_array": false,
+        "table": "users"
+      },
+      {
+        "name": "name",
+        "data_type": "text",
+        "not_null": true,
+        "is_array": false,
+        "table": "users"
+      },
+      {
+        "name": "bio",
+        "data_type": "text",
+        "not_null": false,
+        "is_array": false,
+        "table": "users"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "data_type": "bigserial",
+          "not_null": true,
+          "is_array": false,
+          "table": "users"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "id",
+          "data_type": "bigserial",
+          "not_null": true,
+          "is_array": false,
+          "table": "posts"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "name",
+          "data_type": "text",
+          "not_null": true,
+          "is_array": false,
+          "table": "users"
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "name",
+          "data_type": "text",
+          "not_null": true,
+          "is_array": false,
+          "table": "users"
+        }
+      },
+      {
+        "number": 5,
+        "column": {
+          "name": "id",
+          "data_type": "bigserial",
+          "not_null": true,
+          "is_array": false,
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "MergeDerivedSource",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "marker",
+        "data_type": "int4",
+        "not_null": false,
+        "is_array": false
+      },
+      {
+        "name": "id",
+        "data_type": "bigserial",
+        "not_null": true,
+        "is_array": false,
+        "table": "users"
+      }
+    ],
+    "params": []
   }
 ]

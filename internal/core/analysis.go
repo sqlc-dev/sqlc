@@ -7,6 +7,7 @@ const (
 	CommandInsert Command = "INSERT"
 	CommandUpdate Command = "UPDATE"
 	CommandDelete Command = "DELETE"
+	CommandMerge  Command = "MERGE"
 )
 
 type PrepareResult struct {

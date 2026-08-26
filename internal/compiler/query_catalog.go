@@ -21,6 +21,8 @@ func (comp *Compiler) buildQueryCatalog(c *catalog.Catalog, node ast.Node, embed
 		with = n.WithClause
 	case *ast.InsertStmt:
 		with = n.WithClause
+	case *ast.MergeStmt:
+		with = n.WithClause
 	case *ast.UpdateStmt:
 		with = n.WithClause
 	case *ast.SelectStmt:

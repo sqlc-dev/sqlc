@@ -36,6 +36,11 @@ func Prepare(cat *core.Catalog, stmt ast.Node) (core.PrepareResult, error) {
 			return core.PrepareResult{}, err
 		}
 		a.command = core.CommandDelete
+	case *ast.MergeStmt:
+		if err := a.analyzeMerge(s); err != nil {
+			return core.PrepareResult{}, err
+		}
+		a.command = core.CommandMerge
 	default:
 		return core.PrepareResult{}, fmt.Errorf("analyzer: unsupported statement %T", stmt)
 	}

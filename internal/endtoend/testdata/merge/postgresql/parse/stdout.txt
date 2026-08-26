@@ -1,0 +1,211 @@
+[
+  {
+    "name": "SyncInventory",
+    "cmd": ":exec",
+    "ast": {
+      "Stmt": {
+        "Relation": {
+          "Catalogname": null,
+          "Schemaname": null,
+          "Relname": "inventory",
+          "Inh": true,
+          "Relpersistence": 112,
+          "Alias": {
+            "Aliasname": "t",
+            "Colnames": {
+              "Items": null
+            }
+          },
+          "Location": 40
+        },
+        "SourceRelation": {
+          "Catalogname": null,
+          "Schemaname": null,
+          "Relname": "inventory_updates",
+          "Inh": true,
+          "Relpersistence": 112,
+          "Alias": {
+            "Aliasname": "u",
+            "Colnames": {
+              "Items": null
+            }
+          },
+          "Location": 61
+        },
+        "JoinCondition": {
+          "Kind": 1,
+          "Name": {
+            "Items": [
+              {
+                "Str": "="
+              }
+            ]
+          },
+          "Lexpr": {
+            "Name": "",
+            "Fields": {
+              "Items": [
+                {
+                  "Str": "t"
+                },
+                {
+                  "Str": "sku"
+                }
+              ]
+            },
+            "Location": 87
+          },
+          "Rexpr": {
+            "Name": "",
+            "Fields": {
+              "Items": [
+                {
+                  "Str": "u"
+                },
+                {
+                  "Str": "sku"
+                }
+              ]
+            },
+            "Location": 95
+          },
+          "Location": 93
+        },
+        "MergeWhenClauses": {
+          "Items": [
+            {
+              "MatchKind": 1,
+              "CommandType": 5,
+              "Override": 1,
+              "Condition": {
+                "Kind": 1,
+                "Name": {
+                  "Items": [
+                    {
+                      "Str": "\u003c="
+                    }
+                  ]
+                },
+                "Lexpr": {
+                  "Name": "",
+                  "Fields": {
+                    "Items": [
+                      {
+                        "Str": "t"
+                      },
+                      {
+                        "Str": "quantity"
+                      }
+                    ]
+                  },
+                  "Location": 118
+                },
+                "Rexpr": {
+                  "Number": 1,
+                  "Location": 132,
+                  "Dollar": true
+                },
+                "Location": 129
+              },
+              "TargetList": {
+                "Items": null
+              },
+              "Values": {
+                "Items": null
+              }
+            },
+            {
+              "MatchKind": 1,
+              "CommandType": 3,
+              "Override": 1,
+              "Condition": {},
+              "TargetList": {
+                "Items": [
+                  {
+                    "Name": "quantity",
+                    "Indirection": {
+                      "Items": null
+                    },
+                    "Val": {
+                      "Name": "",
+                      "Fields": {
+                        "Items": [
+                          {
+                            "Str": "u"
+                          },
+                          {
+                            "Str": "delta"
+                          }
+                        ]
+                      },
+                      "Location": 187
+                    },
+                    "Location": 176
+                  }
+                ]
+              },
+              "Values": {
+                "Items": null
+              }
+            },
+            {
+              "MatchKind": 3,
+              "CommandType": 4,
+              "Override": 1,
+              "Condition": {},
+              "TargetList": {
+                "Items": [
+                  {
+                    "Name": "sku",
+                    "Indirection": {
+                      "Items": null
+                    },
+                    "Val": {},
+                    "Location": 225
+                  },
+                  {
+                    "Name": "quantity",
+                    "Indirection": {
+                      "Items": null
+                    },
+                    "Val": {},
+                    "Location": 230
+                  }
+                ]
+              },
+              "Values": {
+                "Items": [
+                  {
+                    "Name": "",
+                    "Fields": {
+                      "Items": [
+                        {
+                          "Str": "u"
+                        },
+                        {
+                          "Str": "sku"
+                        }
+                      ]
+                    },
+                    "Location": 248
+                  },
+                  {
+                    "Number": 2,
+                    "Location": 255,
+                    "Dollar": true
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "ReturningList": {
+          "Items": null
+        },
+        "WithClause": null
+      },
+      "StmtLocation": 0,
+      "StmtLen": 258
+    }
+  }
+]

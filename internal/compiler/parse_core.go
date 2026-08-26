@@ -53,7 +53,7 @@ func (c *Compiler) parseQueryCore(raw *ast.RawStmt, src string, pre *preprocess.
 	var cols []*Column
 	var params []Parameter
 	switch raw.Stmt.(type) {
-	case *ast.SelectStmt, *ast.InsertStmt, *ast.UpdateStmt, *ast.DeleteStmt:
+	case *ast.SelectStmt, *ast.InsertStmt, *ast.UpdateStmt, *ast.DeleteStmt, *ast.MergeStmt:
 		res, err := coreanalyzer.Prepare(c.coreCatalog, raw)
 		if err != nil {
 			return nil, err

@@ -5,6 +5,7 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 )
 
 func (a *analyzer) analyzeInsert(s *ast.InsertStmt) error {
@@ -76,6 +77,195 @@ func (a *analyzer) analyzeDelete(s *ast.DeleteStmt) error {
 		}
 	}
 	return a.projectReturning(s.ReturningList)
+}
+
+func (a *analyzer) analyzeMerge(s *ast.MergeStmt) error {
+	if err := a.bindCTEs(s.WithClause); err != nil {
+		return err
+	}
+	if s.Relation == nil {
+		return fmt.Errorf("merge: missing target relation")
+	}
+	if s.SourceRelation == nil {
+		return fmt.Errorf("merge: missing source relation")
+	}
+
+	sourceScope := &scope{}
+	a.scope = sourceScope
+	if err := a.appendFromItem(sourceScope, s.SourceRelation); err != nil {
+		return fmt.Errorf("merge source: %w", err)
+	}
+	if len(sourceScope.rels) == 0 {
+		return fmt.Errorf("merge: empty source relation")
+	}
+	if err := a.typeJoinConditions(s.SourceRelation); err != nil {
+		return fmt.Errorf("merge source join: %w", err)
+	}
+
+	target, err := a.bindRangeVar(s.Relation)
+	if err != nil {
+		return fmt.Errorf("merge target: %w", err)
+	}
+	fullScope := mergeScope(sourceScope, target)
+	targetScope := &scope{rels: []scopeRel{target}}
+
+	a.scope = fullScope
+	if _, err := a.typeExpr(s.JoinCondition); err != nil {
+		return fmt.Errorf("merge ON: %w", err)
+	}
+
+	sourceMayBeMissing := false
+	for i, item := range listItems(s.MergeWhenClauses) {
+		clause, ok := item.(*ast.MergeWhenClause)
+		if !ok {
+			return fmt.Errorf("merge WHEN %d: unsupported clause %T", i+1, item)
+		}
+
+		switch clause.MatchKind {
+		case ast.MergeWhenMatched:
+			a.scope = fullScope
+		case ast.MergeWhenNotMatchedByTarget:
+			a.scope = sourceScope
+		case ast.MergeWhenNotMatchedBySource:
+			a.scope = targetScope
+			sourceMayBeMissing = true
+		default:
+			return fmt.Errorf("merge WHEN %d: unsupported match kind %d", i+1, clause.MatchKind)
+		}
+
+		if _, err := a.typeExpr(clause.Condition); err != nil {
+			return fmt.Errorf("merge WHEN %d condition: %w", i+1, err)
+		}
+		if !mergeActionAllowed(clause.MatchKind, clause.CommandType) {
+			return fmt.Errorf("merge WHEN %d: action %d is invalid for match kind %d", i+1, clause.CommandType, clause.MatchKind)
+		}
+
+		switch clause.CommandType {
+		case ast.CmdTypeUpdate:
+			if err := a.bindMergeUpdate(target, clause.TargetList); err != nil {
+				return err
+			}
+		case ast.CmdTypeInsert:
+			if err := a.bindMergeInsert(target, clause.TargetList, clause.Values); err != nil {
+				return err
+			}
+		case ast.CmdTypeDelete, ast.CmdTypeNothing:
+			// These actions have no values to analyze.
+		}
+	}
+
+	a.scope = mergeReturningScope(sourceScope, target, sourceMayBeMissing)
+	return a.projectReturning(s.ReturningList)
+}
+
+func mergeScope(source *scope, target scopeRel) *scope {
+	sc := &scope{rels: make([]scopeRel, 0, len(source.rels)+1)}
+	sc.rels = append(sc.rels, source.rels...)
+	sc.rels = append(sc.rels, target)
+	return sc
+}
+
+func mergeReturningScope(source *scope, target scopeRel, sourceMayBeMissing bool) *scope {
+	if !sourceMayBeMissing {
+		return mergeScope(source, target)
+	}
+	sc := &scope{rels: make([]scopeRel, 0, len(source.rels)+1)}
+	for _, rel := range source.rels {
+		rel.cols = append([]core.ClassColumn(nil), rel.cols...)
+		for i := range rel.cols {
+			rel.cols[i].NotNull = false
+		}
+		sc.rels = append(sc.rels, rel)
+	}
+	sc.rels = append(sc.rels, target)
+	return sc
+}
+
+func mergeActionAllowed(kind ast.MergeMatchKind, command ast.CmdType) bool {
+	switch kind {
+	case ast.MergeWhenMatched, ast.MergeWhenNotMatchedBySource:
+		return command == ast.CmdTypeUpdate || command == ast.CmdTypeDelete || command == ast.CmdTypeNothing
+	case ast.MergeWhenNotMatchedByTarget:
+		return command == ast.CmdTypeInsert || command == ast.CmdTypeNothing
+	default:
+		return false
+	}
+}
+
+func (a *analyzer) bindMergeUpdate(target scopeRel, targetList *ast.List) error {
+	for i, item := range listItems(targetList) {
+		rt, ok := item.(*ast.ResTarget)
+		if !ok || rt.Name == nil {
+			return fmt.Errorf("merge update target %d: unsupported %T", i+1, item)
+		}
+		col, ok := findColumn(target, *rt.Name)
+		if !ok {
+			return fmt.Errorf("unknown column %q", *rt.Name)
+		}
+		value, err := mergeAssignmentValue(rt.Val)
+		if err != nil {
+			return fmt.Errorf("set %s: %w", *rt.Name, err)
+		}
+		if err := a.bindValue(target, &col, value); err != nil {
+			return fmt.Errorf("set %s: %w", *rt.Name, err)
+		}
+	}
+	return nil
+}
+
+func mergeAssignmentValue(value ast.Node) (ast.Node, error) {
+	multi, ok := value.(*ast.MultiAssignRef)
+	if !ok {
+		return value, nil
+	}
+	row, ok := multi.Source.(*ast.RowExpr)
+	if !ok {
+		return nil, fmt.Errorf("unsupported multi-assignment source %T", multi.Source)
+	}
+	values := listItems(row.Args)
+	if len(values) != multi.Ncolumns {
+		return nil, fmt.Errorf("MERGE UPDATE has %d expressions for %d target columns", len(values), multi.Ncolumns)
+	}
+	index := multi.Colno - 1
+	if index < 0 || index >= len(values) {
+		return nil, fmt.Errorf("multi-assignment column %d is outside row of %d values", multi.Colno, len(values))
+	}
+	return values[index], nil
+}
+
+func (a *analyzer) bindMergeInsert(target scopeRel, targetList, values *ast.List) error {
+	targetItems := listItems(targetList)
+	if len(targetItems) == 0 && hasParamRef(values) {
+		return fmt.Errorf("MERGE INSERT with parameters requires an explicit column list")
+	}
+	targets, err := insertTargets(target, targetList)
+	if err != nil {
+		return err
+	}
+	valueItems := listItems(values)
+	if len(valueItems) > len(targets) {
+		return fmt.Errorf("MERGE INSERT has more expressions than target columns")
+	}
+	if len(targetItems) > 0 && len(valueItems) > 0 && len(valueItems) < len(targets) {
+		return fmt.Errorf("MERGE INSERT has fewer expressions than target columns")
+	}
+	for i, value := range valueItems {
+		if err := a.bindValue(target, &targets[i], value); err != nil {
+			return fmt.Errorf("merge insert value %d for %s: %w", i+1, targets[i].Name, err)
+		}
+	}
+	return nil
+}
+
+func hasParamRef(list *ast.List) bool {
+	if list == nil {
+		return false
+	}
+	found := astutils.Search(list, func(node ast.Node) bool {
+		_, ok := node.(*ast.ParamRef)
+		return ok
+	})
+	return len(found.Items) > 0
 }
 
 // relationScope builds the scope a DML statement operates on: the relations it
@@ -164,6 +354,9 @@ func (a *analyzer) bindInsertValues(n ast.Node, rel scopeRel, targets []core.Cla
 }
 
 func (a *analyzer) bindValue(rel scopeRel, target *core.ClassColumn, v ast.Node) error {
+	if _, ok := v.(*ast.SetToDefault); ok {
+		return nil
+	}
 	if target != nil {
 		switch value := v.(type) {
 		case *ast.ParamRef:

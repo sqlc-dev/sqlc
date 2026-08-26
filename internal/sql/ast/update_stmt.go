@@ -1,10 +1,6 @@
 package ast
 
-import (
-	"strings"
-
-	"github.com/sqlc-dev/sqlc/internal/sql/format"
-)
+import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type UpdateStmt struct {
 	Relations     *List
@@ -23,6 +19,81 @@ func (n *UpdateStmt) Pos() int {
 	return 0
 }
 
+// formatSetClause renders an UPDATE-style SET assignment list (without the
+// leading "SET ") for the given target list. It handles both single-column
+// assignments (col = val) and multi-column assignments ((a, b) = (x, y)), and
+// is shared by UPDATE and MERGE ... WHEN MATCHED THEN UPDATE.
+func formatSetClause(buf *TrackedBuffer, d format.Dialect, targetList *List) {
+	if !items(targetList) {
+		return
+	}
+
+	for i := 0; i < len(targetList.Items); {
+		if i > 0 {
+			buf.WriteString(", ")
+		}
+		target, ok := targetList.Items[i].(*ResTarget)
+		if !ok {
+			buf.astFormat(targetList.Items[i], d)
+			i++
+			continue
+		}
+
+		multi, ok := target.Val.(*MultiAssignRef)
+		if !ok {
+			formatSetTarget(buf, d, target)
+			buf.WriteString(" = ")
+			buf.astFormat(target.Val, d)
+			i++
+			continue
+		}
+
+		count := multi.Ncolumns
+		if count < 1 {
+			count = 1
+		}
+		end := min(i+count, len(targetList.Items))
+		buf.WriteString("(")
+		for j := i; j < end; j++ {
+			if j > i {
+				buf.WriteString(", ")
+			}
+			if grouped, ok := targetList.Items[j].(*ResTarget); ok {
+				formatSetTarget(buf, d, grouped)
+			} else {
+				buf.astFormat(targetList.Items[j], d)
+			}
+		}
+		buf.WriteString(") = ")
+		formatMultiAssignSource(buf, d, multi.Source)
+		i = end
+	}
+}
+
+func formatSetTarget(buf *TrackedBuffer, d format.Dialect, target *ResTarget) {
+	if target.Name != nil {
+		buf.WriteString(d.QuoteIdent(*target.Name))
+	}
+	// Handle array subscript indirection (e.g., names[$1]).
+	if items(target.Indirection) {
+		for _, ind := range target.Indirection.Items {
+			buf.astFormat(ind, d)
+		}
+	}
+}
+
+func formatMultiAssignSource(buf *TrackedBuffer, d format.Dialect, source Node) {
+	if row, ok := source.(*RowExpr); ok {
+		buf.WriteString("(")
+		if items(row.Args) {
+			buf.join(row.Args, d, ", ")
+		}
+		buf.WriteString(")")
+		return
+	}
+	buf.astFormat(source, d)
+}
+
 func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
@@ -39,68 +110,7 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 
 	if items(n.TargetList) {
 		buf.WriteString(" SET ")
-
-		multi := false
-		for _, item := range n.TargetList.Items {
-			switch nn := item.(type) {
-			case *ResTarget:
-				if _, ok := nn.Val.(*MultiAssignRef); ok {
-					multi = true
-				}
-			}
-		}
-		if multi {
-			names := []string{}
-			vals := &List{}
-			for _, item := range n.TargetList.Items {
-				res, ok := item.(*ResTarget)
-				if !ok {
-					continue
-				}
-				if res.Name != nil {
-					names = append(names, *res.Name)
-				}
-				multi, ok := res.Val.(*MultiAssignRef)
-				if !ok {
-					vals.Items = append(vals.Items, res.Val)
-					continue
-				}
-				row, ok := multi.Source.(*RowExpr)
-				if !ok {
-					vals.Items = append(vals.Items, res.Val)
-					continue
-				}
-				vals.Items = append(vals.Items, row.Args.Items[multi.Colno-1])
-			}
-
-			buf.WriteString("(")
-			buf.WriteString(strings.Join(names, ","))
-			buf.WriteString(") = (")
-			buf.join(vals, d, ",")
-			buf.WriteString(")")
-		} else {
-			for i, item := range n.TargetList.Items {
-				if i > 0 {
-					buf.WriteString(", ")
-				}
-				switch nn := item.(type) {
-				case *ResTarget:
-					if nn.Name != nil {
-						buf.WriteString(d.QuoteIdent(*nn.Name))
-					}
-					// Handle array subscript indirection (e.g., names[$1])
-					if items(nn.Indirection) {
-						for _, ind := range nn.Indirection.Items {
-							buf.astFormat(ind, d)
-						}
-					}
-					buf.WriteString(" = ")
-					buf.astFormat(nn.Val, d)
-				default:
-					buf.astFormat(item, d)
-				}
-			}
-		}
+		formatSetClause(buf, d, n.TargetList)
 	}
 
 	if items(n.FromClause) {
