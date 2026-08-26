@@ -14,9 +14,10 @@ import (
 
 // cc converts a meyer syntax tree into sqlc's engine-independent AST. One
 // converter is used per statement; paramCount numbers the anonymous "?"
-// markers within it.
+// markers within it, and src is the source the statement was parsed from.
 type cc struct {
 	paramCount int
+	src        string
 }
 
 func todo(funcname string, n meyer.Node) *ast.TODO {
@@ -324,9 +325,19 @@ func (c *cc) convertCreateVirtualTableFTS5(n *meyer.CreateVirtualTableStmt) ast.
 	stmt := &ast.CreateTableStmt{
 		Name:        parseTableName(n.Name),
 		IfNotExists: n.IfNotExists,
-		// A virtual table's module arguments are parsed away, so the
-		// statement has no faithful rendering.
-		Incomplete: true,
+		Using:       identifier(n.Module),
+	}
+	if n.HasArgs {
+		stmt.ModuleArgs = n.Args
+		if stmt.ModuleArgs == nil {
+			stmt.ModuleArgs = []string{}
+		}
+		// The arguments carry no spans of their own, so the author's exact
+		// breaks cannot be kept; a declaration written across lines keeps
+		// the canonical broken form instead.
+		if n.Pos() >= 0 && n.End() <= len(c.src) {
+			stmt.ModuleArgsMultiline = strings.Contains(c.src[n.Pos():n.End()], "\n")
+		}
 	}
 
 	// The module arguments of a virtual table are an arbitrary token

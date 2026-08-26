@@ -56,3 +56,12 @@ CREATE TABLE   counters (id INTEGER PRIMARY KEY AUTOINCREMENT, hits INTEGER DEFA
 
 -- name: CastLabel :one
 SELECT CAST(bio AS VARYING CHARACTER(120)) FROM authors LIMIT 1;
+
+-- name: MakeSearchIndex :exec
+CREATE  VIRTUAL  TABLE IF NOT EXISTS notes_fts USING fts5(body, tag UNINDEXED, tokenize = 'porter');
+
+-- name: MakeRecipeIndex :exec
+CREATE VIRTUAL TABLE recipes_fts USING fts5(
+  name,
+  ingredients
+);

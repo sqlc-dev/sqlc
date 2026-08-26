@@ -54,7 +54,7 @@ func (p *Parser) ParseFile(r io.Reader) (*ast.File, error) {
 	// reads the "-- name:" annotation out of that range.
 	loc := 0
 	for _, raw := range parsed.Stmts {
-		converter := &cc{}
+		converter := &cc{src: src}
 		out := converter.convert(raw)
 		if _, ok := out.(*ast.TODO); !ok {
 			stmts = append(stmts, ast.Statement{
