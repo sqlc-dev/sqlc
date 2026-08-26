@@ -4,7 +4,7 @@ This tutorial assumes that the latest version of sqlc is
 [installed](../overview/install.md) and ready to use.
 
 We'll generate Go code here, but other
-[language plugins](../reference/language-support.rst) are available. You'll
+[language plugins](../reference/language-support.md) are available. You'll
 naturally need the Go toolchain if you want to build and run a program with the
 code sqlc generates, but sqlc itself has no dependencies.
 
