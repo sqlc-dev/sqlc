@@ -93,7 +93,7 @@ func (c *Compiler) parseQuery(stmt ast.Node, pp *preprocess.Result, o opts.Parse
 			inference.Query = rawSQL
 		}
 
-		result, err := c.analyzer.Analyze(ctx, raw, inference.Query, c.schema, inference.Named)
+		result, err := c.analyzer.Analyze(ctx, raw, inference.Query, c.analyzerMigrations(), inference.Named)
 		if err != nil {
 			return nil, err
 		}
