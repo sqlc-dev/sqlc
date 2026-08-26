@@ -1,4 +1,4 @@
-#### Embedding structs
+# Embedding structs
 
 Embedding allows you to reuse existing model structs in more queries, resulting
 in less manual serialization work. First, imagine we have the following schema

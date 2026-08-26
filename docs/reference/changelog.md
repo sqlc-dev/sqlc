@@ -548,7 +548,7 @@ Like upload, `push` should be run when you tag a release of your application. We
 
 #### MySQL support in `createdb`
 
-The `createdb` command, added in the last release, now supports MySQL. If you have a cloud project configured, you can use `sqlc createdb` to spin up a new ephemeral database with your schema and print its connection string to standard output. This is useful for integrating with other tools. Read more in the [managed databases](../howto/managed-databases.md#with-other-tools) documentation.
+The `createdb` command, added in the last release, now supports MySQL. If you have a cloud project configured, you can use `sqlc createdb` to spin up a new ephemeral database with your schema and print its connection string to standard output. This is useful for integrating with other tools. Read more in the [managed databases](../howto/managed-databases.md) documentation.
 
 #### Plugin interface refactor
 
@@ -628,7 +628,7 @@ When you have a cloud project configured, you can use the new `sqlc createdb`
 command to spin up a new ephemeral database with your schema and print its
 connection string to standard output. This is useful for integrating with other
 tools. Read more in the [managed
-databases](../howto/managed-databases.md#with-other-tools) documentation.
+databases](../howto/managed-databases.md) documentation.
 
 #### Support for pgvector
 
@@ -833,7 +833,7 @@ full list.
 
 #### Plugin access to environment variables
 
-If you're authoring a [sqlc plugin](../guides/plugins.html), you can now configure
+If you're authoring a [sqlc plugin](../guides/plugins.md), you can now configure
 sqlc to pass your plugin the values of specific environment variables.
 
 For example, if your plugin
@@ -1254,7 +1254,7 @@ rules:
 database server. We'll expand this functionality over time, but for now it
 powers the `sqlc/db-prepare` built-in rule.
 
-When a [database](config.html#database) is configured, the
+When a [database](config.md#database) is configured, the
 `sqlc/db-preapre` rule will attempt to prepare each of your
 queries against the connected database and report any failures.
 

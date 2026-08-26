@@ -1,8 +1,7 @@
 # Overriding types
 
-:::{note}
-Type overrides and field renaming are only fully-supported for Go.
-:::
+> [!NOTE]
+> Type overrides and field renaming are only fully-supported for Go.
 
 In many cases it's useful to tell `sqlc` explicitly what Go type you want it to
 use for a query input or output. For instance, by default when you use
@@ -39,11 +38,10 @@ sql:
           go_type: "time.Time"
 ```
 
-:::{tip}
-  A single `db_type` override configuration applies to either nullable or non-nullable
-  columns, but not both. If you want the same Go type to override regardless of
-  nullability, you'll need to configure two overrides: one with `nullable: true` and one without.
-:::
+> [!TIP]
+> A single `db_type` override configuration applies to either nullable or non-nullable
+> columns, but not both. If you want the same Go type to override regardless of
+> nullability, you'll need to configure two overrides: one with `nullable: true` and one without.
 
 ## The `overrides` list
 
@@ -54,7 +52,7 @@ Each element in the `overrides` list has the following keys:
 - `column`:
   - A column name to override. The value should be of the form `table.column` but you can also specify `schema.table.column` or `catalog.schema.table.column`. `column` and `db_type` are mutually exclusive.
 - `go_type`:
-  - The fully-qualified name of a Go type to use in generated code. This is usually a string but can also be [a map](#the-go-type-map) for more complex configurations.
+  - The fully-qualified name of a Go type to use in generated code. This is usually a string but can also be [a map](#the-go_type-map) for more complex configurations.
 - `go_struct_tag`:
   - A reflect-style struct tag to use in generated code, e.g. `a:"b" x:"y,z"`.
     If you want `json` or `db` tags for all fields, configure `emit_json_tags` or `emit_db_tags` instead.
@@ -68,15 +66,13 @@ Each element in the `overrides` list has the following keys:
     Note that this only applies to `db_type` overrides and has no effect on `column` overrides.
     Defaults to `false`.
 
-:::{tip}
-  A single `db_type` override configuration applies to either nullable or non-nullable
-  columns, but not both. If you want the same Go type to override regardless of nullability, you'll
-  need to configure two overrides: one with `nullable: true` and one without.
-:::
+> [!TIP]
+> A single `db_type` override configuration applies to either nullable or non-nullable
+> columns, but not both. If you want the same Go type to override regardless of nullability, you'll
+> need to configure two overrides: one with `nullable: true` and one without.
 
-:::{note}
-When generating code, `column` override configurations take precedence over `db_type` configurations.
-:::
+> [!NOTE]
+> When generating code, `column` override configurations take precedence over `db_type` configurations.
 
 ### The `go_type` map
 
