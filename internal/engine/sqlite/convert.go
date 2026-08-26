@@ -866,9 +866,20 @@ func (c *cc) convertBindParam(n *meyer.BindParam) ast.Node {
 		}
 	default:
 		// A named parameter. sqlc carries the name through as the operand of
-		// a pseudo-operator and resolves it later.
+		// a pseudo-operator and resolves it later. The operator is the
+		// parameter's own sigil, so the formatter can print the spelling the
+		// author chose — SQLite accepts :name, @name and $name, but sqlc
+		// gives them different meanings, so they must never be rewritten
+		// into one another.
+		sigil := "@"
+		switch n.Kind {
+		case meyer.ParamColon:
+			sigil = ":"
+		case meyer.ParamDollar:
+			sigil = "$"
+		}
 		return &ast.A_Expr{
-			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: "@"}}},
+			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: sigil}}},
 			Rexpr:    &ast.String{Str: n.Name},
 			Location: n.Pos(),
 		}

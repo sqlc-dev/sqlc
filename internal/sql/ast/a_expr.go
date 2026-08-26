@@ -18,30 +18,33 @@ func (n *A_Expr) Pos() int {
 	return n.Location
 }
 
-// isNamedParam returns true if this A_Expr represents a named parameter (@name)
-// and extracts the parameter name if so.
-func (n *A_Expr) isNamedParam() (string, bool) {
+// isNamedParam reports whether this A_Expr represents a named parameter,
+// returning its sigil and name. Engines encode a named parameter as a
+// prefix pseudo-operator carrying the sigil the author wrote (@name for
+// most engines; SQLite also spells :name and $name). The spellings mean
+// different things to sqlc, so the printer emits the one it was given.
+func (n *A_Expr) isNamedParam() (sigil, name string, ok bool) {
 	if n.Name == nil || len(n.Name.Items) != 1 {
-		return "", false
+		return "", "", false
 	}
-	s, ok := n.Name.Items[0].(*String)
-	if !ok || s.Str != "@" {
-		return "", false
+	s, sok := n.Name.Items[0].(*String)
+	if !sok || (s.Str != "@" && s.Str != ":" && s.Str != "$") {
+		return "", "", false
 	}
 	if set(n.Lexpr) || !set(n.Rexpr) {
-		return "", false
+		return "", "", false
 	}
-	if nameStr, ok := n.Rexpr.(*String); ok {
-		return nameStr.Str, true
+	if nameStr, sok := n.Rexpr.(*String); sok {
+		return s.Str, nameStr.Str, true
 	}
 	// Before the compiler rewrites named parameters, @name parses as the @
 	// operator applied to a bare column reference.
-	if col, ok := n.Rexpr.(*ColumnRef); ok && col.Fields != nil && len(col.Fields.Items) == 1 {
-		if s, ok := col.Fields.Items[0].(*String); ok {
-			return s.Str, true
+	if col, sok := n.Rexpr.(*ColumnRef); sok && col.Fields != nil && len(col.Fields.Items) == 1 {
+		if f, sok := col.Fields.Items[0].(*String); sok {
+			return s.Str, f.Str, true
 		}
 	}
-	return "", false
+	return "", "", false
 }
 
 // negated returns true when the expression's operator carries the negated
@@ -60,8 +63,9 @@ func (n *A_Expr) Format(buf *TrackedBuffer, d format.Dialect) {
 	}
 
 	// Check for named parameter first (works regardless of Kind)
-	if name, ok := n.isNamedParam(); ok {
-		buf.WriteString(d.NamedParam(name))
+	if sigil, name, ok := n.isNamedParam(); ok {
+		buf.WriteString(sigil)
+		buf.WriteString(name)
 		return
 	}
 

@@ -44,12 +44,6 @@ func (p *Parser) Param(n int) string {
 	return "?"
 }
 
-// NamedParam returns the named parameter placeholder for the given name.
-// SQLite uses :name syntax for named parameters.
-func (p *Parser) NamedParam(name string) string {
-	return ":" + name
-}
-
 // Cast returns a type cast expression.
 // SQLite uses CAST(expr AS type) syntax.
 func (p *Parser) Cast(arg, typeName string) string {

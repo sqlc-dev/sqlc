@@ -22,3 +22,7 @@ ORDER BY name;
 -- name: GetEvent :one
 SELECT "EventName", "order"
 FROM "Events" WHERE id = ? LIMIT 1;
+
+-- name: CountSigils :one
+SELECT count(*) FROM authors
+WHERE id <> @at_param AND id <> :colon_param AND id <> $dollar_param;

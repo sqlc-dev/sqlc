@@ -29,13 +29,6 @@ func (p *Parser) Param(n int) string {
 	return "?"
 }
 
-// NamedParam returns the named parameter placeholder for the given name.
-// MySQL doesn't have native named parameters, so we use ? (positional).
-// The actual parameter names are handled by sqlc's rewrite phase.
-func (p *Parser) NamedParam(name string) string {
-	return "?"
-}
-
 // Cast returns a type cast expression.
 // MySQL uses CAST(expr AS type) syntax.
 func (p *Parser) Cast(arg, typeName string) string {
