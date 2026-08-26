@@ -32,12 +32,12 @@ func (n *CommonTableExpr) Format(buf *TrackedBuffer, d format.Dialect) {
 		buf.WriteString(")")
 	}
 	buf.WriteString(" AS (")
-	buf.group()
-	buf.indent()
-	buf.softline()
+	buf.Group()
+	buf.Indent()
+	buf.Softline()
 	buf.astFormat(n.Ctequery, d)
-	buf.endIndent()
-	buf.softline()
-	buf.endGroup()
+	buf.EndIndent()
+	buf.Softline()
+	buf.EndGroup()
 	buf.WriteString(")")
 }

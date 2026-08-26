@@ -27,12 +27,12 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
-	buf.group()
-	defer buf.endGroup()
+	buf.Group()
+	defer buf.EndGroup()
 
 	if n.WithClause != nil {
 		buf.astFormat(n.WithClause, d)
-		buf.line()
+		buf.Line()
 	}
 
 	buf.WriteString("UPDATE ")
@@ -42,7 +42,7 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 
 	if items(n.TargetList) {
 		buf.beforeClause(n.TargetList, d)
-		buf.line()
+		buf.Line()
 		buf.WriteString("SET ")
 
 		multi := false
@@ -84,12 +84,13 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 			buf.join(vals, d, ",")
 			buf.WriteString(")")
 		} else {
-			buf.group()
-			buf.indent()
+			buf.Group()
+			buf.Indent()
 			for i, item := range n.TargetList.Items {
 				if i > 0 {
 					buf.WriteString(",")
-					buf.line()
+					buf.boundary(item)
+					buf.Line()
 				}
 				switch nn := item.(type) {
 				case *ResTarget:
@@ -108,35 +109,35 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 					buf.astFormat(item, d)
 				}
 			}
-			buf.endIndent()
-			buf.endGroup()
+			buf.EndIndent()
+			buf.EndGroup()
 		}
 	}
 
 	if items(n.FromClause) {
 		buf.beforeClause(n.FromClause, d)
-		buf.line()
+		buf.Line()
 		buf.WriteString("FROM ")
 		buf.astFormat(n.FromClause, d)
 	}
 
 	if set(n.WhereClause) {
 		buf.beforeClause(n.WhereClause, d)
-		buf.line()
+		buf.Line()
 		buf.WriteString("WHERE ")
 		buf.condition(n.WhereClause, d)
 	}
 
 	if set(n.LimitCount) {
 		buf.beforeClause(n.LimitCount, d)
-		buf.line()
+		buf.Line()
 		buf.WriteString("LIMIT ")
 		buf.astFormat(n.LimitCount, d)
 	}
 
 	if items(n.ReturningList) {
 		buf.beforeClause(n.ReturningList, d)
-		buf.line()
+		buf.Line()
 		buf.WriteString("RETURNING ")
 		formatReturningOptions(buf, d, n.ReturningOldAlias, n.ReturningNewAlias)
 		buf.astFormat(n.ReturningList, d)

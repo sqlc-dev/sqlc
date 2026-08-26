@@ -7,7 +7,7 @@ This package defines the Abstract Syntax Tree (AST) nodes used by sqlc to repres
 ### Node Interface
 All AST nodes implement the `Node` interface with:
 - `Pos() int` - returns the source position
-- `Format(buf *TrackedBuffer)` - formats the node back to SQL
+- `Format(buf *TrackedBuffer, d format.Dialect)` - formats the node back to SQL
 
 ### TrackedBuffer
 The `TrackedBuffer` type (`print.go`) handles SQL formatting with dialect-specific behavior:
@@ -18,24 +18,37 @@ The `TrackedBuffer` type (`print.go`) handles SQL formatting with dialect-specif
 - `TypeName(ns, name string)` - formats type names (dialect-specific)
 
 ### Pretty printing
+The doc renderer lives in `ast/printer` (`printer.Buffer`), which knows
+nothing about AST nodes; `TrackedBuffer` embeds it and adds the
+AST-facing layer (`astFormat`, comment emission, anchors).
 `TrackedBuffer` records a Wadler-style document (the model behind Prettier
 and ruff): Format methods emit text plus layout tokens, and the renderer
 decides which break opportunities become newlines.
 
-- `line()` - a space when the group fits on one line, a newline otherwise
-- `softline()` - nothing when the group fits, a newline otherwise
-- `group()` / `endGroup()` - a region laid out flat when its width fits
-- `indent()` / `endIndent()` - one level deeper (2 spaces) after breaks
-- `joinComma(list)` - joins items with `,` + `line()`
+- `Line()` - a space when the group fits on one line, a newline otherwise
+- `Softline()` - nothing when the group fits, a newline otherwise
+- `Group()` / `EndGroup()` - a region laid out flat when its width fits
+- `Indent()` / `EndIndent()` - one level deeper (2 spaces) after breaks
+- `Breaker()` - forces every enclosing group to break (measures as
+  infinitely wide)
+- `joinComma(list)` - joins items with `,` + `Line()`
 - `condition(node)` - clause-level AND/OR chain without outer parentheses,
   one branch per line when broken
 
 `ast.Format(n, d)` renders on a single line (all breaks collapse);
 `ast.Pretty(n, d, width)` breaks lines to fit `width` columns. Statement
-Format methods open a group and put `line()` before each clause keyword
+Format methods open a group and put `Line()` before each clause keyword
 (`FROM`, `WHERE`, ...), so a statement that fits stays on one line and a
 long one breaks at clause boundaries. When adding a Format method, write
 tokens so the flat rendering is correct SQL; layout tokens are optional.
+
+The fmt command does not pass a real width: like gofmt it never rewraps
+on its own, so it prints with an effectively infinite width and defers
+to the author's line breaks instead. `AttachComments` records, for each
+emission-point marker, whether its neighbouring printed nodes sat on
+different source lines; when they did, `boundary()` emits a `Breaker()`
+there on the real print, so the group the author broke stays broken and
+everything else stays flat.
 
 ### Comments
 `ast.File{Stmts, Comments}` is what a comment-surfacing parser returns

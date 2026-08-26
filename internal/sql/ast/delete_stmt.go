@@ -26,12 +26,12 @@ func (n *DeleteStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 		return
 	}
 
-	buf.group()
-	defer buf.endGroup()
+	buf.Group()
+	defer buf.EndGroup()
 
 	if n.WithClause != nil {
 		buf.astFormat(n.WithClause, d)
-		buf.line()
+		buf.Line()
 	}
 
 	buf.WriteString("DELETE ")
@@ -54,28 +54,28 @@ func (n *DeleteStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 
 	if items(n.UsingClause) {
 		buf.beforeClause(n.UsingClause, d)
-		buf.line()
+		buf.Line()
 		buf.WriteString("USING ")
 		buf.join(n.UsingClause, d, ", ")
 	}
 
 	if set(n.WhereClause) {
 		buf.beforeClause(n.WhereClause, d)
-		buf.line()
+		buf.Line()
 		buf.WriteString("WHERE ")
 		buf.condition(n.WhereClause, d)
 	}
 
 	if set(n.LimitCount) {
 		buf.beforeClause(n.LimitCount, d)
-		buf.line()
+		buf.Line()
 		buf.WriteString("LIMIT ")
 		buf.astFormat(n.LimitCount, d)
 	}
 
 	if items(n.ReturningList) {
 		buf.beforeClause(n.ReturningList, d)
-		buf.line()
+		buf.Line()
 		buf.WriteString("RETURNING ")
 		formatReturningOptions(buf, d, n.ReturningOldAlias, n.ReturningNewAlias)
 		buf.astFormat(n.ReturningList, d)

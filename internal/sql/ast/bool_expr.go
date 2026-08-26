@@ -43,9 +43,9 @@ func (n *BoolExpr) Format(buf *TrackedBuffer, d format.Dialect) {
 			op = "OR "
 		}
 		buf.WriteString("(")
-		buf.group()
-		buf.indent()
-		buf.softline()
+		buf.Group()
+		buf.Indent()
+		buf.Softline()
 		if items(n.Args) && op != "" {
 			first := true
 			for _, item := range n.Args.Items {
@@ -53,16 +53,16 @@ func (n *BoolExpr) Format(buf *TrackedBuffer, d format.Dialect) {
 					continue
 				}
 				if !first {
-					buf.line()
+					buf.Line()
 					buf.WriteString(op)
 				}
 				first = false
 				buf.astFormat(item, d)
 			}
 		}
-		buf.endIndent()
-		buf.softline()
-		buf.endGroup()
+		buf.EndIndent()
+		buf.Softline()
+		buf.EndGroup()
 		buf.WriteString(")")
 	}
 }

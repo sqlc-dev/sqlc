@@ -20,11 +20,11 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 )
 
-// fmtLineWidth is the line width formatted queries are wrapped to. A
-// statement whose flat form fits stays on one line; a longer one breaks at
-// clause boundaries, and any list or parenthesized region that still does
-// not fit breaks again one indentation level deeper.
-const fmtLineWidth = 80
+// noLineLimit renders without a maximum line width: like gofmt, fmt never
+// rewraps a line on its own. Breaks come from the author's own line breaks
+// at the boundaries the printer models, and from comments, which cannot
+// share a line with the code after them.
+const noLineLimit = 1 << 30
 
 // queryFormatter is what the fmt command needs from an engine: a parser
 // that surfaces the comments its lexer already scans (so statements and
@@ -51,18 +51,13 @@ func newQueryFormatter(engine config.Engine) queryFormatter {
 func newFmtCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "fmt",
-		Short: "Format query files",
+		Short: "Format SQL queries",
 		Long: `Format the SQL query files referenced by the configuration file.
 
 Each query is parsed with the engine's parser and printed back in a canonical
-form, with its comments kept where they were written. Comments are never
-deleted, and a statement that cannot be proven to survive formatting
-unchanged is left exactly as written. Files are rewritten in place; pass
---diff to print the changes to stdout instead.
-
-Formatting currently supports the sqlite engine; other engines' query files
-are left untouched and gain support as their parsers are updated to surface
-comments.`,
+form, with its comments kept where they were written. A statement that cannot
+be proven to survive formatting unchanged is left exactly as written. Files
+are rewritten in place; pass --diff to print the changes to stdout instead.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			defer trace.StartRegion(cmd.Context(), "fmt").End()
 			stderr := cmd.ErrOrStderr()
@@ -383,23 +378,10 @@ func isCommentLine(line string) bool {
 // original text when formatting cannot be proven to preserve the query.
 func formatStmt(f queryFormatter, raw *ast.RawStmt, orig string, interior []ast.Comment, src string) string {
 	fallback := strings.TrimSuffix(strings.TrimSpace(orig), ";") + ";"
-	if len(interior) > 0 {
-		// The reprinter path: interior comments are woven back in by
-		// position. Any failure to prove the result faithful keeps the
-		// statement as written.
-		if out, ok := formatWithComments(f, raw, interior, src); ok {
-			return out
-		}
-		return fallback
+	if out, ok := formatWithComments(f, raw, interior, src); ok {
+		return out
 	}
-	out := formatRaw(raw, f)
-	if strings.TrimSpace(strings.TrimSuffix(out, ";")) == "" {
-		return fallback
-	}
-	if !verifyFormatted(f, out) {
-		return fallback
-	}
-	return out
+	return fallback
 }
 
 // formatWithComments pretty-prints a statement with its interior comments
@@ -435,7 +417,7 @@ func prettyCommented(raw *ast.RawStmt, f queryFormatter, comments []ast.Comment,
 		}
 	}()
 	ct := ast.AttachComments(raw, f, comments, src)
-	out = ast.PrettyWithComments(raw, f, fmtLineWidth, ct)
+	out = ast.PrettyWithComments(raw, f, noLineLimit, ct)
 	if !ct.Exhausted() {
 		return ""
 	}
@@ -461,27 +443,4 @@ func sameComments(a, b []ast.Comment) bool {
 		}
 	}
 	return true
-}
-
-// formatRaw pretty-prints a statement's AST, turning a formatter panic into
-// an empty string so the caller falls back to the original text.
-func formatRaw(raw *ast.RawStmt, f queryFormatter) (out string) {
-	defer func() {
-		if r := recover(); r != nil {
-			out = ""
-		}
-	}()
-	return ast.Pretty(raw, f, fmtLineWidth)
-}
-
-// verifyFormatted reports whether the formatted SQL provably still means
-// the same thing: it must parse back as a single statement that formats to
-// itself. The comparison ignores case because some parsers normalize
-// keyword and identifier case.
-func verifyFormatted(f queryFormatter, formatted string) bool {
-	file, err := f.ParseFile(strings.NewReader(formatted))
-	if err != nil || len(file.Stmts) != 1 || file.Stmts[0].Raw == nil {
-		return false
-	}
-	return strings.EqualFold(formatRaw(file.Stmts[0].Raw, f), formatted)
 }

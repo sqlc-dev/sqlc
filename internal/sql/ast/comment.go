@@ -64,6 +64,15 @@ type CommentTable struct {
 	end    []int
 	taken  []bool
 	nTaken int
+	// breaks marks the emission points where the author broke the line:
+	// the printer keeps those breaks, gofmt-style, instead of imposing a
+	// line width.
+	breaks map[Node]bool
+}
+
+// breakAt reports whether the author broke the line at this emission point.
+func (t *CommentTable) breakAt(n Node) bool {
+	return t != nil && t.breaks[n]
 }
 
 // Exhausted reports whether every attached comment was printed.
@@ -169,6 +178,33 @@ func AttachComments(raw *RawStmt, d format.Dialect, comments []Comment, src stri
 		}
 	}
 	table.taken = make([]bool, len(table.recs))
+
+	// Record where the author broke the line: an emission point whose
+	// neighbouring printed nodes sit on different source lines. The printer
+	// keeps these breaks (and only imposes new ones for comments), so the
+	// statement's shape stays the author's.
+	table.breaks = make(map[Node]bool)
+	for i, a := range anchors {
+		if !a.marker {
+			continue
+		}
+		prevPos, nextPos := -1, -1
+		for j := i - 1; j >= 0; j-- {
+			if !anchors[j].marker {
+				prevPos = anchors[j].pos
+				break
+			}
+		}
+		for j := i + 1; j < len(anchors); j++ {
+			if !anchors[j].marker {
+				nextPos = anchors[j].pos
+				break
+			}
+		}
+		if prevPos >= 0 && nextPos >= 0 && lineOf(prevPos) != lineOf(nextPos) {
+			table.breaks[a.node] = true
+		}
+	}
 	return table
 }
 
@@ -197,4 +233,3 @@ func collectAnchors(n Node, d format.Dialect) (out []anchor) {
 	}
 	return out
 }
-

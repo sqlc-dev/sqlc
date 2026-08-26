@@ -26,12 +26,12 @@ func (n *InsertStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 		return
 	}
 
-	buf.group()
-	defer buf.endGroup()
+	buf.Group()
+	defer buf.EndGroup()
 
 	if n.WithClause != nil {
 		buf.astFormat(n.WithClause, d)
-		buf.line()
+		buf.Line()
 	}
 
 	buf.WriteString("INSERT INTO ")
@@ -40,13 +40,13 @@ func (n *InsertStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	}
 	if items(n.Cols) {
 		buf.WriteString(" (")
-		buf.group()
-		buf.indent()
-		buf.softline()
+		buf.Group()
+		buf.Indent()
+		buf.Softline()
 		buf.joinComma(n.Cols, d)
-		buf.endIndent()
-		buf.softline()
-		buf.endGroup()
+		buf.EndIndent()
+		buf.Softline()
+		buf.EndGroup()
 		buf.WriteString(")")
 	}
 
@@ -54,23 +54,23 @@ func (n *InsertStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 		buf.WriteString(" DEFAULT VALUES")
 	} else if set(n.SelectStmt) {
 		buf.beforeClause(n.SelectStmt, d)
-		buf.line()
+		buf.Line()
 		buf.astFormat(n.SelectStmt, d)
 	}
 
 	if n.OnConflictClause != nil {
-		buf.line()
+		buf.Line()
 		buf.astFormat(n.OnConflictClause, d)
 	}
 
 	if n.OnDuplicateKeyUpdate != nil {
-		buf.line()
+		buf.Line()
 		buf.astFormat(n.OnDuplicateKeyUpdate, d)
 	}
 
 	if items(n.ReturningList) {
 		buf.beforeClause(n.ReturningList, d)
-		buf.line()
+		buf.Line()
 		buf.WriteString("RETURNING ")
 		formatReturningOptions(buf, d, n.ReturningOldAlias, n.ReturningNewAlias)
 		buf.astFormat(n.ReturningList, d)

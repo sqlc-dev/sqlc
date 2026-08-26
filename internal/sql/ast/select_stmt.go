@@ -42,33 +42,33 @@ func (n *SelectStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 				buf.WriteString(", ")
 			}
 			buf.WriteString("(")
-			buf.group()
-			buf.indent()
-			buf.softline()
+			buf.Group()
+			buf.Indent()
+			buf.Softline()
 			if r, ok := row.(*List); ok {
 				buf.joinComma(r, d)
 			} else {
 				buf.astFormat(row, d)
 			}
-			buf.endIndent()
-			buf.softline()
-			buf.endGroup()
+			buf.EndIndent()
+			buf.Softline()
+			buf.EndGroup()
 			buf.WriteString(")")
 		}
 		return
 	}
 
-	buf.group()
-	defer buf.endGroup()
+	buf.Group()
+	defer buf.EndGroup()
 
 	if n.WithClause != nil {
 		buf.astFormat(n.WithClause, d)
-		buf.line()
+		buf.Line()
 	}
 
 	if n.Larg != nil && n.Rarg != nil {
 		buf.astFormat(n.Larg, d)
-		buf.line()
+		buf.Line()
 		switch n.Op {
 		case Union:
 			buf.WriteString("UNION")
@@ -80,7 +80,7 @@ func (n *SelectStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 		if n.All {
 			buf.WriteString(" ALL")
 		}
-		buf.line()
+		buf.Line()
 		buf.astFormat(n.Rarg, d)
 	} else {
 		buf.WriteString("SELECT")
@@ -92,65 +92,65 @@ func (n *SelectStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 				buf.WriteString(")")
 			}
 		}
-		buf.group()
-		buf.indent()
-		buf.line()
+		buf.Group()
+		buf.Indent()
+		buf.Line()
 		buf.joinComma(n.TargetList, d)
-		buf.endIndent()
-		buf.endGroup()
+		buf.EndIndent()
+		buf.EndGroup()
 	}
 
 	if items(n.FromClause) {
 		buf.beforeClause(n.FromClause, d)
-		buf.line()
+		buf.Line()
 		buf.WriteString("FROM ")
 		buf.astFormat(n.FromClause, d)
 	}
 
 	if set(n.WhereClause) {
 		buf.beforeClause(n.WhereClause, d)
-		buf.line()
+		buf.Line()
 		buf.WriteString("WHERE ")
 		buf.condition(n.WhereClause, d)
 	}
 
 	if items(n.GroupClause) {
 		buf.beforeClause(n.GroupClause, d)
-		buf.line()
+		buf.Line()
 		buf.WriteString("GROUP BY ")
 		buf.astFormat(n.GroupClause, d)
 	}
 
 	if set(n.HavingClause) {
 		buf.beforeClause(n.HavingClause, d)
-		buf.line()
+		buf.Line()
 		buf.WriteString("HAVING ")
 		buf.condition(n.HavingClause, d)
 	}
 
 	if items(n.SortClause) {
 		buf.beforeClause(n.SortClause, d)
-		buf.line()
+		buf.Line()
 		buf.WriteString("ORDER BY ")
 		buf.astFormat(n.SortClause, d)
 	}
 
 	if set(n.LimitCount) {
 		buf.beforeClause(n.LimitCount, d)
-		buf.line()
+		buf.Line()
 		buf.WriteString("LIMIT ")
 		buf.astFormat(n.LimitCount, d)
 	}
 
 	if set(n.LimitOffset) {
 		buf.beforeClause(n.LimitOffset, d)
-		buf.line()
+		buf.Line()
 		buf.WriteString("OFFSET ")
 		buf.astFormat(n.LimitOffset, d)
 	}
 
 	if items(n.LockingClause) {
-		buf.line()
+		buf.Line()
 		buf.astFormat(n.LockingClause, d)
 	}
 

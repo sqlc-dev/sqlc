@@ -5,32 +5,18 @@ canonical format. Each query is parsed with the engine's parser and printed
 back from the syntax tree, so formatting never depends on how the query was
 written — only on what it means.
 
-A statement that fits within 80 columns is printed on a single line. A longer
-statement breaks at clause boundaries (`FROM`, `WHERE`, `ORDER BY`, ...), and
-any part that still does not fit — a column list, an `AND`/`OR` chain, a
-parenthesized subquery — breaks again, indented one level deeper. This is the
-same layout model used by Prettier and by ruff's Python formatter: the printer
-lays each group of the statement out flat when it fits and breaks it when it
-does not.
-
-Comments are never deleted. The comments above each query are kept, including
-the [`-- name:`](../reference/query-annotations.md) annotation and multi-line
-`/* */` blocks, and a comment on the same line as a statement's closing
-semicolon stays attached to it.
+Like `gofmt`, the formatter does not impose a maximum line width. A statement
+written on a single line stays on a single line, and a statement the author
+broke across lines keeps its breaks: the printer notices which clause
+boundaries (`FROM`, `WHERE`, `ORDER BY`, ...) and list boundaries the author
+broke at and preserves them, normalizing indentation and spacing around them.
 
 Comments inside a statement are formatted along with it: each comment is
 anchored to the code around it by source position and printed back there —
 a comment trailing a select-list item stays with that item, a comment above
-a clause stays above its keyword — and a statement carrying comments keeps
-its multi-line shape. Any statement that cannot be proven to survive
-formatting unchanged is left exactly as written.
-
-Formatting currently supports the `sqlite` engine, whose parser surfaces the
-comments its lexer sees; other engines' query files are left untouched and
-gain support as their parsers are updated. Files that cannot be parsed
-without the compiler's preprocessing (for example, files using
-`sqlc.slice()` on engines whose parser rejects it) are also skipped; a
-skipped file is reported on standard error and left unchanged.
+a clause stays above its keyword — and a comment that runs to the end of its
+line breaks the statement open around it. Any statement that cannot be
+proven to survive formatting unchanged is left exactly as written.
 
 ## Usage
 
@@ -60,7 +46,10 @@ running `sqlc fmt` rewrites it to:
 
 ```sql
 -- name: GetAuthor :one
-SELECT id, name, bio FROM authors WHERE id = ? LIMIT 1;
+SELECT id, name, bio
+FROM authors
+WHERE id = ?
+LIMIT 1;
 
 -- name: SearchAuthors :many
 SELECT
@@ -69,10 +58,11 @@ SELECT
   bio,
   created_at
 FROM authors
-WHERE name LIKE ?
-  AND bio IS NOT NULL
-  AND id > ?
-  AND created_at > ?
-  AND name <> ?
+WHERE name LIKE ? AND bio IS NOT NULL AND id > ? AND created_at > ? AND name <> ?
 ORDER BY name;
 ```
+
+`GetAuthor` keeps the line breaks its author wrote; had it been written on
+one line, it would stay on one line. In `SearchAuthors`, the line comment
+cannot share a line with the code after it, so the statement breaks open
+around it, while the `WHERE` chain — written on one line — stays on one.
