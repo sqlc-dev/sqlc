@@ -204,7 +204,7 @@ See [Overriding types](../howto/overrides.md) for an in-depth guide to using typ
 
 #### kotlin
 
-> Removed in v1.17.0 and replaced by the [sqlc-gen-kotlin](https://github.com/sqlc-dev/sqlc-gen-kotlin) plugin. Follow the [migration guide](../guides/migrating-to-sqlc-gen-kotlin) to switch.
+> Removed in v1.17.0 and replaced by the [sqlc-gen-kotlin](https://github.com/sqlc-dev/sqlc-gen-kotlin) plugin. Follow the [migration guide](../guides/migrating-to-sqlc-gen-kotlin.md) to switch.
 
 - `package`:
   - The package name to use for the generated code.
@@ -215,7 +215,7 @@ See [Overriding types](../howto/overrides.md) for an in-depth guide to using typ
 
 #### python
 
-> Removed in v1.17.0 and replaced by the [sqlc-gen-python](https://github.com/sqlc-dev/sqlc-gen-python) plugin. Follow the [migration guide](../guides/migrating-to-sqlc-gen-python) to switch.
+> Removed in v1.17.0 and replaced by the [sqlc-gen-python](https://github.com/sqlc-dev/sqlc-gen-python) plugin. Follow the [migration guide](../guides/migrating-to-sqlc-gen-python.md) to switch.
 
 - `package`:
   - The package name to use for the generated code.

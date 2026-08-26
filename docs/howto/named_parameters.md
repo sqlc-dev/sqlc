@@ -46,9 +46,8 @@ type UpdateAuthorNameParams struct {
 If the `sqlc.arg()` syntax is too verbose for your taste, you can use the `@`
 operator as a shortcut.
 
-```{note}
-The `@` operator as a shortcut for `sqlc.arg()` is not supported in MySQL.
-```
+> [!NOTE]
+> The `@` operator as a shortcut for `sqlc.arg()` is not supported in MySQL.
 
 ```sql
 -- name: UpsertAuthorName :one

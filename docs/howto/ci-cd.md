@@ -38,7 +38,7 @@ database schema.  Learn more about uploading projects [here](push.md)
 
 ## General setup
 
-Install `sqlc` using the [suggested instructions](../overview/install).
+Install `sqlc` using the [suggested instructions](../overview/install.md).
 
 Create three steps in your pipeline for `sqlc diff`, `sqlc vet`, and `sqlc
 verify`. Run `sqlc push` after merge on your `main` branch.
@@ -98,9 +98,8 @@ jobs:
 
 ### push
 
-```{note}
-Pushing a project is powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
-```
+> [!NOTE]
+> Pushing a project is powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
 
 The following GitHub Workflow configuration runs [sqlc push](push.md) on
 every push to `main`. Create an auth token via the
@@ -125,9 +124,8 @@ jobs:
 
 ### verify
 
-```{note}
-Verify database migrations is powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
-```
+> [!NOTE]
+> Verify database migrations is powered by [sqlc Cloud](https://dashboard.sqlc.dev). Sign up for [free](https://dashboard.sqlc.dev) today.
 
 ```yaml
 name: sqlc
