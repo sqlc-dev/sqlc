@@ -24,23 +24,32 @@
       }
     ],
     "ast": {
+      "tag": "RawStmt",
       "Stmt": {
+        "tag": "SelectStmt",
         "DistinctClause": {
+          "tag": "List",
           "Items": null
         },
         "IntoClause": null,
         "TargetList": {
+          "tag": "List",
           "Items": [
             {
+              "tag": "ResTarget",
               "Name": null,
               "Indirection": {
+                "tag": "List",
                 "Items": null
               },
               "Val": {
+                "tag": "ColumnRef",
                 "Name": "",
                 "Fields": {
+                  "tag": "List",
                   "Items": [
                     {
+                      "tag": "String",
                       "Str": "name"
                     }
                   ]
@@ -52,8 +61,10 @@
           ]
         },
         "FromClause": {
+          "tag": "List",
           "Items": [
             {
+              "tag": "RangeVar",
               "Catalogname": null,
               "Schemaname": null,
               "Relname": "authors",
@@ -65,19 +76,25 @@
           ]
         },
         "WhereClause": {
+          "tag": "A_Expr",
           "Kind": 1,
           "Name": {
+            "tag": "List",
             "Items": [
               {
+                "tag": "String",
                 "Str": "="
               }
             ]
           },
           "Lexpr": {
+            "tag": "ColumnRef",
             "Name": "",
             "Fields": {
+              "tag": "List",
               "Items": [
                 {
+                  "tag": "String",
                   "Str": "id"
                 }
               ]
@@ -85,6 +102,7 @@
             "Location": 59
           },
           "Rexpr": {
+            "tag": "ParamRef",
             "Number": 1,
             "Location": 64,
             "Dollar": true
@@ -92,21 +110,32 @@
           "Location": 62
         },
         "GroupClause": {
+          "tag": "List",
           "Items": null
         },
-        "HavingClause": {},
+        "HavingClause": {
+          "tag": "TODO"
+        },
         "WindowClause": {
+          "tag": "List",
           "Items": null
         },
         "ValuesLists": {
+          "tag": "List",
           "Items": null
         },
         "SortClause": {
+          "tag": "List",
           "Items": null
         },
-        "LimitOffset": {},
-        "LimitCount": {},
+        "LimitOffset": {
+          "tag": "TODO"
+        },
+        "LimitCount": {
+          "tag": "TODO"
+        },
         "LockingClause": {
+          "tag": "List",
           "Items": null
         },
         "WithClause": null,
