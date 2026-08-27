@@ -69,8 +69,8 @@ github.com/sqlc-dev/darkwing v0.1.0 h1:P5dtJebmCiy10e6DcnBQ2d7Mwuz636obuSAzTlr/1
 github.com/sqlc-dev/darkwing v0.1.0/go.mod h1:kPb+99a6U+oVWtLhsuvkuDb/YRm8deK6x+W/9mX6uug=
 github.com/sqlc-dev/doubleclick v1.0.0 h1:2/OApfQ2eLgcfa/Fqs8WSMA6atH0G8j9hHbQIgMfAXI=
 github.com/sqlc-dev/doubleclick v1.0.0/go.mod h1:ODHRroSrk/rr5neRHlWMSRijqOak8YmNaO3VAZCNl5Y=
-github.com/sqlc-dev/marino v0.3.1-0.20260827184404-5570fff55472 h1:3GYqckerGVHW5zk4+1KUhzeqdvRR7pKy0XT1c7XVfM8=
-github.com/sqlc-dev/marino v0.3.1-0.20260827184404-5570fff55472/go.mod h1:mQxC2dgDE0DWHMb2B5jZNk7KToJuS6wnxnffBfYnq08=
+github.com/sqlc-dev/marino v0.3.1-0.20260827184608-12180ee3f216 h1:bQO9Lu+Od2gprUsaQrHu9FdTAiwI6IiV+td0Vk3cdK4=
+github.com/sqlc-dev/marino v0.3.1-0.20260827184608-12180ee3f216/go.mod h1:mQxC2dgDE0DWHMb2B5jZNk7KToJuS6wnxnffBfYnq08=
 github.com/sqlc-dev/meyer v0.1.2 h1:40Ng9Glnx7CTf3yOYV7jfvDIN7voIFjrStkIULS+uws=
 github.com/sqlc-dev/meyer v0.1.2/go.mod h1:pS4USCRf/SLjWtaMcnTo4YrEEFKBj8CyyqlxcVUJQH8=
 github.com/sqlc-dev/oliphant v0.2.0 h1:jJ/s2fh4Plj3U1HsdqiY/clw/IHb4FCNaHfqirwxcsI=
