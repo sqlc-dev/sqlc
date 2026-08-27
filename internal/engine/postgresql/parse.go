@@ -150,15 +150,28 @@ type Parser struct {
 var errSkip = errors.New("skip stmt")
 
 func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
-	contents, err := io.ReadAll(r)
+	f, err := p.ParseFile(r)
 	if err != nil {
 		return nil, err
 	}
-	tree, err := Parse(string(contents))
+	return f.Stmts, nil
+}
+
+// ParseFile parses like Parse and also carries the file's comments, which
+// oliphant's parser collects from the same pass its scanner already makes
+// over the input.
+func (p *Parser) ParseFile(r io.Reader) (*ast.File, error) {
+	blob, err := io.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+	contents := string(blob)
+	parsed, err := parser.ParseFile(contents)
 	if err != nil {
 		pErr := normalizeErr(err)
 		return nil, pErr
 	}
+	tree := parsed.ParseResult
 
 	var stmts []ast.Statement
 	// PostgreSQL 18 changed stmt_location to point at the statement's first
@@ -203,7 +216,33 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 			},
 		})
 	}
-	return stmts, nil
+
+	var comments []ast.Comment
+	for _, tok := range parsed.Comments {
+		comments = append(comments, ast.Comment{
+			Text:    strings.TrimRight(contents[tok.Start:tok.End], " \t\r\n"),
+			Start:   int(tok.Start),
+			End:     int(tok.End),
+			OwnLine: ownLine(contents, int(tok.Start)),
+		})
+	}
+	return &ast.File{Stmts: stmts, Comments: comments}, nil
+}
+
+// ownLine reports that only blank space sits between the preceding line
+// break and pos.
+func ownLine(src string, pos int) bool {
+	for j := pos - 1; j >= 0; j-- {
+		switch src[j] {
+		case '\n':
+			return true
+		case ' ', '\t', '\r':
+			continue
+		default:
+			return false
+		}
+	}
+	return true
 }
 
 func normalizeErr(err error) error {

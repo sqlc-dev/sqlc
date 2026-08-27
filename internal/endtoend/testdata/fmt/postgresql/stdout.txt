@@ -1,0 +1,48 @@
+--- a/query.sql
++++ b/query.sql
+@@ -1,7 +1,8 @@
+ -- name: GetAuthor :one
+-select  id,name , bio
+-from   authors
+-where id =  $1 limit 1; -- the primary lookup
++SELECT id, name, bio
++FROM authors
++WHERE id = $1
++LIMIT 1; -- the primary lookup
+ 
+ /* This listing powers the admin page.
+    Keep it ordered by name so the UI stays stable. */
+@@ -8,5 +9,6 @@
+ -- name: ListAuthors :many
+-SELECT id, name, bio FROM authors
++SELECT id, name, bio
++FROM authors
+ ORDER BY name;
+ 
+ -- name: CreateAuthor :one
+@@ -13,8 +15,5 @@
+-INSERT INTO authors (
+-  name, bio
+-) VALUES (
+-  $1, $2
+-)
++INSERT INTO authors (name, bio)
++VALUES ($1, $2)
+ RETURNING *;
+ 
+ -- name: PickyQuery :many
+@@ -21,5 +20,6 @@
+-SELECT id, -- the primary key
+-       name
++SELECT
++  id, -- the primary key
++  name
+ FROM authors
+ WHERE id > $1;
+ 
+@@ -27,4 +27,4 @@
+ SELECT id, name, bio, created_at FROM authors WHERE name LIKE $1 AND bio IS NOT NULL AND id > $2 AND name <> $3 ORDER BY name, id LIMIT $4;
+ 
+ -- name: DeleteAuthor :exec
+-DELETE FROM authors WHERE id = @id
++DELETE FROM authors WHERE id = @id;
