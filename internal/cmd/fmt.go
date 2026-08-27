@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/engine/dolphin"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -38,15 +39,17 @@ type queryFormatter interface {
 }
 
 // newQueryFormatter returns the formatter for engines fmt supports —
-// SQLite and PostgreSQL today. An engine joins by teaching its parser to
-// surface comments (meyer's and oliphant's ParseFile are the templates) and
-// adding its case here.
+// SQLite, PostgreSQL and MySQL today. An engine joins by teaching its
+// parser to surface comments (meyer's, oliphant's and marino's ParseFile
+// are the templates) and adding its case here.
 func newQueryFormatter(engine config.Engine) queryFormatter {
 	switch engine {
 	case config.EnginePostgreSQL:
 		return postgresql.NewParser()
 	case config.EngineSQLite:
 		return sqlite.NewParser()
+	case config.EngineMySQL:
+		return dolphin.NewParser()
 	default:
 		return nil
 	}
@@ -300,7 +303,7 @@ func splitTrailingComment(seg string) (string, string) {
 	line, _, _ := strings.Cut(rest, "\n")
 	trimmed := strings.TrimSpace(line)
 	switch {
-	case strings.HasPrefix(trimmed, "--"):
+	case strings.HasPrefix(trimmed, "--"), strings.HasPrefix(trimmed, "#"):
 		return trimmed, seg[k+len(line):]
 	case strings.HasPrefix(trimmed, "/*") &&
 		strings.HasSuffix(trimmed, "*/") && strings.Count(trimmed, "*/") == 1:
@@ -369,6 +372,11 @@ func isCommentLine(line string) bool {
 		// A blank line between comments.
 		return true
 	case strings.HasPrefix(line, "--"):
+		return true
+	case strings.HasPrefix(line, "#"):
+		// MySQL's line-comment syntax; text that reaches these helpers sits
+		// outside statements, where a # line in a file the engine parsed
+		// can only be a comment.
 		return true
 	case strings.HasPrefix(line, "/*") && strings.HasSuffix(line, "*/") && strings.Count(line, "*/") == 1:
 		// A block comment contained on a single line.
