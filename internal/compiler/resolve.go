@@ -49,6 +49,26 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 		}
 		return nil
 	}
+	indexQueryTable := func(table *Table) error {
+		columns := make([]*catalog.Column, 0, len(table.Columns))
+		for _, column := range table.Columns {
+			columnType := ast.TypeName{Name: column.DataType}
+			if column.Type != nil {
+				columnType = *column.Type
+			}
+			columns = append(columns, &catalog.Column{
+				Name:       column.Name,
+				Type:       columnType,
+				IsNotNull:  column.NotNull,
+				IsUnsigned: column.Unsigned,
+				IsArray:    column.IsArray,
+				ArrayDims:  column.ArrayDims,
+				Comment:    column.Comment,
+				Length:     column.Length,
+			})
+		}
+		return indexTable(catalog.Table{Rel: table.Rel, Columns: columns})
+	}
 
 	for _, rv := range rvs {
 		if rv.Relname == nil {
@@ -66,8 +86,12 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			if qc == nil {
 				continue
 			}
-			// If the table name doesn't exist, first check if it's a CTE
-			if _, qcerr := qc.GetTable(fqn); qcerr != nil {
+			// If the table name doesn't exist, first check if it's a CTE.
+			queryTable, qcerr := qc.GetTable(fqn)
+			if qcerr != nil {
+				return nil, err
+			}
+			if err := indexQueryTable(queryTable); err != nil {
 				return nil, err
 			}
 			continue
