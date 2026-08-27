@@ -70,6 +70,13 @@ func (p *Parser) Cast(arg, typeName string) string {
 	return arg + "::" + typeName
 }
 
+// Fingerprint reduces a query to pg_query's fingerprint, which survives
+// changes in whitespace, case and layout. sqlc fmt uses it to prove a
+// formatted statement still parses to the same query.
+func (p *Parser) Fingerprint(sql string) (string, error) {
+	return Fingerprint(sql)
+}
+
 // https://www.postgresql.org/docs/current/sql-keywords-appendix.html
 func (p *Parser) IsReservedKeyword(s string) bool {
 	switch strings.ToLower(s) {

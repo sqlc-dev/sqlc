@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/format"
@@ -37,10 +38,13 @@ type queryFormatter interface {
 }
 
 // newQueryFormatter returns the formatter for engines fmt supports —
-// SQLite today. An engine joins by teaching its parser to surface comments
-// (meyer's ParseFile is the template) and adding its case here.
+// SQLite and PostgreSQL today. An engine joins by teaching its parser to
+// surface comments (meyer's and oliphant's ParseFile are the templates) and
+// adding its case here.
 func newQueryFormatter(engine config.Engine) queryFormatter {
 	switch engine {
+	case config.EnginePostgreSQL:
+		return postgresql.NewParser()
 	case config.EngineSQLite:
 		return sqlite.NewParser()
 	default:
@@ -374,14 +378,35 @@ func isCommentLine(line string) bool {
 	}
 }
 
+// fingerprinter is implemented by engines that can reduce a query to a
+// fingerprint that survives changes in whitespace, case and layout —
+// PostgreSQL via oliphant's pg_query-compatible Fingerprint. Where it is
+// available, fmt gets a proof the other checks cannot give: the formatted
+// statement still parses to the same query as the original.
+type fingerprinter interface {
+	Fingerprint(string) (string, error)
+}
+
 // formatStmt returns the canonical form of a single statement, or the
 // original text when formatting cannot be proven to preserve the query.
 func formatStmt(f queryFormatter, raw *ast.RawStmt, orig string, interior []ast.Comment, src string) string {
 	fallback := strings.TrimSuffix(strings.TrimSpace(orig), ";") + ";"
 	if out, ok := formatWithComments(f, raw, interior, src); ok {
+		if fp, ok := f.(fingerprinter); ok && !sameFingerprint(fp, orig, out) {
+			return fallback
+		}
 		return out
 	}
 	return fallback
+}
+
+// sameFingerprint reports that both texts fingerprint successfully to the
+// same value. Anything less is not a proof, so the caller keeps the
+// statement as written.
+func sameFingerprint(fp fingerprinter, orig, out string) bool {
+	a, err1 := fp.Fingerprint(orig)
+	b, err2 := fp.Fingerprint(out)
+	return err1 == nil && err2 == nil && a == b
 }
 
 // formatWithComments pretty-prints a statement with its interior comments

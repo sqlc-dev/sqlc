@@ -73,8 +73,8 @@ github.com/sqlc-dev/marino v0.3.0 h1:e9cinBXJFFa3yRpokYNNinWvkewgd6XVDgnlG0bOmTw
 github.com/sqlc-dev/marino v0.3.0/go.mod h1:mQxC2dgDE0DWHMb2B5jZNk7KToJuS6wnxnffBfYnq08=
 github.com/sqlc-dev/meyer v0.1.2 h1:40Ng9Glnx7CTf3yOYV7jfvDIN7voIFjrStkIULS+uws=
 github.com/sqlc-dev/meyer v0.1.2/go.mod h1:pS4USCRf/SLjWtaMcnTo4YrEEFKBj8CyyqlxcVUJQH8=
-github.com/sqlc-dev/oliphant v0.1.0 h1:RAsO6BMitIzB2+swx/qzUR5nf6w4cQ1abgHIu+Fgppo=
-github.com/sqlc-dev/oliphant v0.1.0/go.mod h1:fRM/t4FutRddTIq2YCuS4O9o+2rRwSwELRvLMqtPloo=
+github.com/sqlc-dev/oliphant v0.2.0 h1:jJ/s2fh4Plj3U1HsdqiY/clw/IHb4FCNaHfqirwxcsI=
+github.com/sqlc-dev/oliphant v0.2.0/go.mod h1:fRM/t4FutRddTIq2YCuS4O9o+2rRwSwELRvLMqtPloo=
 github.com/sqlc-dev/teesql v1.1.0 h1:3sVYQ9FGxQVcqrqQOQ27bk0aF4c4yN1H1zLL79uaSxQ=
 github.com/sqlc-dev/teesql v1.1.0/go.mod h1:WwOp9UtnxG17+eNFT5KXu/AGBQ8ucdGc8wIOpnj4XCI=
 github.com/sqlc-dev/zetajones v0.1.0 h1:VeG0atx6lNABr9V2bSI5vL9DvOKTHX0XjMqWUE/rv40=
