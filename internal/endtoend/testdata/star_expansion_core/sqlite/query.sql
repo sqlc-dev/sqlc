@@ -18,3 +18,9 @@ INSERT INTO bar (a, c) VALUES (?, ?) RETURNING *;
 
 -- name: StarExpansionAliasedSubquery :many
 SELECT (SELECT * FROM baz LIMIT 1) AS x FROM foo GROUP BY x;
+
+-- name: StarExpansionHiddenColumns :many
+SELECT * FROM recipes_fts;
+
+-- name: StarExpansionQualifiedHiddenColumns :many
+SELECT recipes_fts.* FROM recipes_fts;

@@ -22,3 +22,12 @@ type Foo struct {
 	B     sql.NullString
 	Group sql.NullString
 }
+
+type Recipe struct {
+	ID   int64
+	Name string
+}
+
+type RecipesFt struct {
+	Name string
+}

@@ -150,11 +150,11 @@ func (c *Compiler) initCore() error {
 		c.selector = newDefaultSelector()
 		dialect = googlesql.Dialect()
 	case config.EngineMSSQL:
-		c.parser = mssql.NewParser()
+		c.newParser = func() Parser { return mssql.NewParser() }
 		c.selector = newDefaultSelector()
 		dialect = mssql.Dialect()
 	case config.EngineDuckDB:
-		c.parser = duckdb.NewParser()
+		c.newParser = func() Parser { return duckdb.NewParser() }
 		c.selector = newDefaultSelector()
 		dialect = duckdb.Dialect()
 	default:
