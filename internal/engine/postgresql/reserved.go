@@ -59,8 +59,8 @@ func (p *Parser) TypeName(ns, name string) string {
 }
 
 // Param returns the parameter placeholder for the given number.
-// PostgreSQL uses $1, $2, etc.
-func (p *Parser) Param(n int) string {
+// PostgreSQL numbers every parameter: $1, $2, etc.
+func (p *Parser) Param(n int, numbered bool) string {
 	return fmt.Sprintf("$%d", n)
 }
 

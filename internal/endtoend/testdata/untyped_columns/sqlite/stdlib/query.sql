@@ -1,2 +1,2 @@
 -- name: GetRepro :one
-select * from repro where id = ? limit 1;
+SELECT * FROM repro WHERE id = ? LIMIT 1;

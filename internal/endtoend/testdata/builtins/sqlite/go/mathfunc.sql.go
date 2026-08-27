@@ -10,7 +10,7 @@ import (
 )
 
 const getAcos = `-- name: GetAcos :one
-select acos(1.0)
+SELECT acos(1.0)
 `
 
 func (q *Queries) GetAcos(ctx context.Context) (float64, error) {
@@ -21,7 +21,7 @@ func (q *Queries) GetAcos(ctx context.Context) (float64, error) {
 }
 
 const getAcosh = `-- name: GetAcosh :one
-select acosh(1.0)
+SELECT acosh(1.0)
 `
 
 func (q *Queries) GetAcosh(ctx context.Context) (float64, error) {
@@ -32,7 +32,7 @@ func (q *Queries) GetAcosh(ctx context.Context) (float64, error) {
 }
 
 const getAsin = `-- name: GetAsin :one
-select asin(1.0)
+SELECT asin(1.0)
 `
 
 func (q *Queries) GetAsin(ctx context.Context) (float64, error) {
@@ -43,7 +43,7 @@ func (q *Queries) GetAsin(ctx context.Context) (float64, error) {
 }
 
 const getAsinh = `-- name: GetAsinh :one
-select asinh(1.0)
+SELECT asinh(1.0)
 `
 
 func (q *Queries) GetAsinh(ctx context.Context) (float64, error) {
@@ -54,7 +54,7 @@ func (q *Queries) GetAsinh(ctx context.Context) (float64, error) {
 }
 
 const getAtan = `-- name: GetAtan :one
-select atan(1.0)
+SELECT atan(1.0)
 `
 
 func (q *Queries) GetAtan(ctx context.Context) (float64, error) {
@@ -65,7 +65,7 @@ func (q *Queries) GetAtan(ctx context.Context) (float64, error) {
 }
 
 const getAtan2 = `-- name: GetAtan2 :one
-select atan2(1.0, 0.5)
+SELECT atan2(1.0, 0.5)
 `
 
 func (q *Queries) GetAtan2(ctx context.Context) (float64, error) {
@@ -76,7 +76,7 @@ func (q *Queries) GetAtan2(ctx context.Context) (float64, error) {
 }
 
 const getAtanh = `-- name: GetAtanh :one
-select atanh(1.0)
+SELECT atanh(1.0)
 `
 
 func (q *Queries) GetAtanh(ctx context.Context) (float64, error) {
@@ -87,7 +87,7 @@ func (q *Queries) GetAtanh(ctx context.Context) (float64, error) {
 }
 
 const getCeil = `-- name: GetCeil :one
-select ceil(1.0)
+SELECT ceil(1.0)
 `
 
 func (q *Queries) GetCeil(ctx context.Context) (int64, error) {
@@ -98,7 +98,7 @@ func (q *Queries) GetCeil(ctx context.Context) (int64, error) {
 }
 
 const getCeilin = `-- name: GetCeilin :one
-select ceiling(1.0)
+SELECT ceiling(1.0)
 `
 
 func (q *Queries) GetCeilin(ctx context.Context) (int64, error) {
@@ -109,7 +109,7 @@ func (q *Queries) GetCeilin(ctx context.Context) (int64, error) {
 }
 
 const getCos = `-- name: GetCos :one
-select cos(1.0)
+SELECT cos(1.0)
 `
 
 func (q *Queries) GetCos(ctx context.Context) (float64, error) {
@@ -120,7 +120,7 @@ func (q *Queries) GetCos(ctx context.Context) (float64, error) {
 }
 
 const getCosh = `-- name: GetCosh :one
-select cosh(1.0)
+SELECT cosh(1.0)
 `
 
 func (q *Queries) GetCosh(ctx context.Context) (float64, error) {
@@ -131,7 +131,7 @@ func (q *Queries) GetCosh(ctx context.Context) (float64, error) {
 }
 
 const getDegrees = `-- name: GetDegrees :one
-select degrees(1.0)
+SELECT degrees(1.0)
 `
 
 func (q *Queries) GetDegrees(ctx context.Context) (float64, error) {
@@ -142,7 +142,7 @@ func (q *Queries) GetDegrees(ctx context.Context) (float64, error) {
 }
 
 const getExp = `-- name: GetExp :one
-select exp(1.0)
+SELECT exp(1.0)
 `
 
 func (q *Queries) GetExp(ctx context.Context) (float64, error) {
@@ -153,7 +153,7 @@ func (q *Queries) GetExp(ctx context.Context) (float64, error) {
 }
 
 const getFloor = `-- name: GetFloor :one
-select floor(1.0)
+SELECT floor(1.0)
 `
 
 func (q *Queries) GetFloor(ctx context.Context) (int64, error) {
@@ -164,7 +164,7 @@ func (q *Queries) GetFloor(ctx context.Context) (int64, error) {
 }
 
 const getLn = `-- name: GetLn :one
-select ln(1.0)
+SELECT ln(1.0)
 `
 
 func (q *Queries) GetLn(ctx context.Context) (float64, error) {
@@ -175,7 +175,7 @@ func (q *Queries) GetLn(ctx context.Context) (float64, error) {
 }
 
 const getLog = `-- name: GetLog :one
-select log(1.0)
+SELECT log(1.0)
 `
 
 func (q *Queries) GetLog(ctx context.Context) (float64, error) {
@@ -186,7 +186,7 @@ func (q *Queries) GetLog(ctx context.Context) (float64, error) {
 }
 
 const getLog10 = `-- name: GetLog10 :one
-select log10(1.0)
+SELECT log10(1.0)
 `
 
 func (q *Queries) GetLog10(ctx context.Context) (float64, error) {
@@ -197,7 +197,7 @@ func (q *Queries) GetLog10(ctx context.Context) (float64, error) {
 }
 
 const getLog2 = `-- name: GetLog2 :one
-select log2(1.0)
+SELECT log2(1.0)
 `
 
 func (q *Queries) GetLog2(ctx context.Context) (float64, error) {
@@ -208,7 +208,7 @@ func (q *Queries) GetLog2(ctx context.Context) (float64, error) {
 }
 
 const getLogBase = `-- name: GetLogBase :one
-select log(1.0, 2.0)
+SELECT log(1.0, 2.0)
 `
 
 func (q *Queries) GetLogBase(ctx context.Context) (float64, error) {
@@ -219,7 +219,7 @@ func (q *Queries) GetLogBase(ctx context.Context) (float64, error) {
 }
 
 const getMod = `-- name: GetMod :one
-select mod(1, 2)
+SELECT mod(1, 2)
 `
 
 func (q *Queries) GetMod(ctx context.Context) (float64, error) {
@@ -230,7 +230,7 @@ func (q *Queries) GetMod(ctx context.Context) (float64, error) {
 }
 
 const getPi = `-- name: GetPi :one
-select pi()
+SELECT pi()
 `
 
 func (q *Queries) GetPi(ctx context.Context) (float64, error) {
@@ -241,7 +241,7 @@ func (q *Queries) GetPi(ctx context.Context) (float64, error) {
 }
 
 const getPow = `-- name: GetPow :one
-select pow(1, 2)
+SELECT pow(1, 2)
 `
 
 func (q *Queries) GetPow(ctx context.Context) (float64, error) {
@@ -252,7 +252,7 @@ func (q *Queries) GetPow(ctx context.Context) (float64, error) {
 }
 
 const getPower = `-- name: GetPower :one
-select power(1, 2)
+SELECT power(1, 2)
 `
 
 func (q *Queries) GetPower(ctx context.Context) (float64, error) {
@@ -263,7 +263,7 @@ func (q *Queries) GetPower(ctx context.Context) (float64, error) {
 }
 
 const getRadians = `-- name: GetRadians :one
-select radians(1)
+SELECT radians(1)
 `
 
 func (q *Queries) GetRadians(ctx context.Context) (float64, error) {
@@ -274,7 +274,7 @@ func (q *Queries) GetRadians(ctx context.Context) (float64, error) {
 }
 
 const getSin = `-- name: GetSin :one
-select sin(1.0)
+SELECT sin(1.0)
 `
 
 func (q *Queries) GetSin(ctx context.Context) (float64, error) {
@@ -285,7 +285,7 @@ func (q *Queries) GetSin(ctx context.Context) (float64, error) {
 }
 
 const getSinh = `-- name: GetSinh :one
-select sinh(1.0)
+SELECT sinh(1.0)
 `
 
 func (q *Queries) GetSinh(ctx context.Context) (float64, error) {
@@ -296,7 +296,7 @@ func (q *Queries) GetSinh(ctx context.Context) (float64, error) {
 }
 
 const getSqrt = `-- name: GetSqrt :one
-select sqrt(1.0)
+SELECT sqrt(1.0)
 `
 
 func (q *Queries) GetSqrt(ctx context.Context) (float64, error) {
@@ -307,7 +307,7 @@ func (q *Queries) GetSqrt(ctx context.Context) (float64, error) {
 }
 
 const getTan = `-- name: GetTan :one
-select tan(1.0)
+SELECT tan(1.0)
 `
 
 func (q *Queries) GetTan(ctx context.Context) (float64, error) {
@@ -318,7 +318,7 @@ func (q *Queries) GetTan(ctx context.Context) (float64, error) {
 }
 
 const getTrunc = `-- name: GetTrunc :one
-select trunc(1.0)
+SELECT trunc(1.0)
 `
 
 func (q *Queries) GetTrunc(ctx context.Context) (int64, error) {

@@ -12,10 +12,10 @@ import (
 
 const insertContact = `-- name: InsertContact :exec
 INSERT INTO contacts (
-    pid,
-    CustomerName
+  pid,
+  customername
 )
-VALUES (?,?)
+VALUES (?, ?)
 `
 
 type InsertContactParams struct {

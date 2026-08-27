@@ -1868,8 +1868,16 @@ func convertJoinExpr(n *pg.JoinExpr) *ast.JoinExpr {
 	if n == nil {
 		return nil
 	}
+	jointype := ast.JoinType(n.Jointype)
+	// PostgreSQL parses CROSS JOIN as an inner join with no condition —
+	// the only inner join its grammar allows without one — so that shape
+	// is CROSS JOIN, and must print as it: a bare JOIN with no ON or
+	// USING is a syntax error in PostgreSQL.
+	if jointype == ast.JoinTypeInner && !n.IsNatural && n.Quals == nil && len(n.UsingClause) == 0 {
+		jointype = ast.JoinTypeCross
+	}
 	return &ast.JoinExpr{
-		Jointype:    ast.JoinType(n.Jointype),
+		Jointype:    jointype,
 		IsNatural:   n.IsNatural,
 		Larg:        convertNode(n.Larg),
 		Rarg:        convertNode(n.Rarg),

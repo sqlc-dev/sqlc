@@ -65,3 +65,43 @@ CREATE VIRTUAL TABLE recipes_fts USING fts5(
   name,
   ingredients
 );
+
+-- name: LoginName :one
+SELECT COALESCE(bio, '') AS login FROM authors WHERE id = ? LIMIT 1;
+
+-- name: SpelledJoins :many
+SELECT a.id
+FROM authors AS a
+INNER JOIN authors AS b ON a.id = b.id
+LEFT OUTER JOIN authors AS c ON a.id = c.id
+WHERE a.id != ? AND b.id == ? AND c.id <> ?;
+
+-- name: CommaJoin :one
+SELECT count(*) FROM authors AS a, authors AS b WHERE a.id = b.id;
+
+-- name: PlannerHint :many
+SELECT a.id FROM authors AS a CROSS JOIN authors AS b;
+
+-- name: NumberedParams :many
+SELECT id FROM authors WHERE name = ?2 AND bio = ?1;
+
+-- name: NewestAndOldest :many
+SELECT id FROM authors
+UNION
+SELECT id FROM authors;
+
+-- name: QuickUnion :many
+SELECT id FROM authors UNION ALL SELECT id FROM authors;
+
+-- name: EnableForeignKeys :exec
+PRAGMA foreign_keys = 1;
+
+-- name: UpsertAuthor :exec
+INSERT INTO authors (id, name)
+VALUES (?, ?)
+ON CONFLICT (id) DO UPDATE SET
+  name = excluded.name
+WHERE excluded.name <> '';
+
+-- name: QuickUpsert :exec
+INSERT INTO authors (id, name) VALUES (?, ?) ON CONFLICT (id) DO UPDATE SET name = excluded.name;

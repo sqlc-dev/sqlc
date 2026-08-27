@@ -1,2 +1,2 @@
 -- name: TestList :many
-SELECT * FROM "test";
+SELECT * FROM test;

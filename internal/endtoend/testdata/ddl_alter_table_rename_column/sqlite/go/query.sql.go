@@ -11,7 +11,7 @@ import (
 )
 
 const placeholder = `-- name: Placeholder :many
-SELECT boo from foo
+SELECT boo FROM foo
 `
 
 func (q *Queries) Placeholder(ctx context.Context) ([]sql.NullString, error) {

@@ -32,7 +32,17 @@ func (p *Parser) Parse(r io.Reader) ([]ast.Statement, error) {
 	if err != nil {
 		return nil, err
 	}
-	return f.Stmts, nil
+	// The compiler skips statements sqlc has no node for (PRAGMA and
+	// friends); the formatter must see them, so the filter lives here,
+	// not in ParseFile.
+	var stmts []ast.Statement
+	for _, stmt := range f.Stmts {
+		if _, ok := stmt.Raw.Stmt.(*ast.TODO); ok {
+			continue
+		}
+		stmts = append(stmts, stmt)
+	}
+	return stmts, nil
 }
 
 // ParseFile parses like Parse and also carries the file's comments, taken
@@ -55,16 +65,16 @@ func (p *Parser) ParseFile(r io.Reader) (*ast.File, error) {
 	loc := 0
 	for _, raw := range parsed.Stmts {
 		converter := &cc{src: src}
-		out := converter.convert(raw)
-		if _, ok := out.(*ast.TODO); !ok {
-			stmts = append(stmts, ast.Statement{
-				Raw: &ast.RawStmt{
-					Stmt:         out,
-					StmtLocation: loc,
-					StmtLen:      trimTerminator(src, raw) - loc,
-				},
-			})
-		}
+		// A statement sqlc has no node for converts to a TODO and stays in
+		// the list: the formatter needs its extent to keep it as written,
+		// and Parse filters it out for the compiler.
+		stmts = append(stmts, ast.Statement{
+			Raw: &ast.RawStmt{
+				Stmt:         converter.convert(raw),
+				StmtLocation: loc,
+				StmtLen:      trimTerminator(src, raw) - loc,
+			},
+		})
 		loc = raw.End()
 	}
 

@@ -54,7 +54,7 @@ func (q *Queries) StarExpansion(ctx context.Context) ([]StarExpansionRow, error)
 }
 
 const starQuotedExpansion = `-- name: StarQuotedExpansion :many
-SELECT t.a, t.b FROM foo "t"
+SELECT t.a, t.b FROM foo AS t
 `
 
 func (q *Queries) StarQuotedExpansion(ctx context.Context) ([]Foo, error) {

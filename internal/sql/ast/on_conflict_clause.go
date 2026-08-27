@@ -35,12 +35,20 @@ func (n *OnConflictClause) Format(buf *TrackedBuffer, d format.Dialect) {
 	case OnConflictActionNothing:
 		buf.WriteString("DO NOTHING")
 	case OnConflictActionUpdate:
-		buf.WriteString("DO UPDATE SET ")
-		// Format as assignment list: name = val
+		buf.WriteString("DO UPDATE SET")
+		buf.Group()
+		buf.Indent()
+		// Format as assignment list: name = val, one per line when the
+		// author broke the list (or a comment forces it open).
 		if n.TargetList != nil {
 			for i, item := range n.TargetList.Items {
-				if i > 0 {
-					buf.WriteString(", ")
+				if i == 0 {
+					buf.boundary(item)
+					buf.Line()
+				} else {
+					buf.WriteString(",")
+					buf.boundary(item)
+					buf.Line()
 				}
 				if rt, ok := item.(*ResTarget); ok {
 					if rt.Name != nil {
@@ -53,9 +61,13 @@ func (n *OnConflictClause) Format(buf *TrackedBuffer, d format.Dialect) {
 				}
 			}
 		}
+		buf.EndIndent()
 		if set(n.WhereClause) {
-			buf.WriteString(" WHERE ")
-			buf.astFormat(n.WhereClause, d)
+			buf.boundary(n.WhereClause)
+			buf.Line()
+			buf.WriteString("WHERE ")
+			buf.condition(n.WhereClause, d)
 		}
+		buf.EndGroup()
 	}
 }

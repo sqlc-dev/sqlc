@@ -1,6 +1,9 @@
 package sqlite
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+)
 
 // QuoteIdent quotes an identifier when printing it bare would change what it
 // names: the parser folds unquoted identifiers to lower case, so any name
@@ -38,9 +41,14 @@ func (p *Parser) TypeName(ns, name string) string {
 	return name
 }
 
-// Param returns the parameter placeholder for the given number.
-// SQLite uses ? for positional parameters.
-func (p *Parser) Param(n int) string {
+// Param returns the parameter placeholder for the given number. SQLite
+// takes both a bare ? (the next index) and an explicit ?N, and they are
+// not interchangeable — reordered ?N parameters bind by their numbers —
+// so the one the author wrote is the one printed.
+func (p *Parser) Param(n int, numbered bool) string {
+	if numbered {
+		return "?" + strconv.Itoa(n)
+	}
 	return "?"
 }
 

@@ -10,9 +10,12 @@ type Dialect interface {
 	// This handles dialect-specific type name mappings (e.g., pg_catalog.int4 -> integer)
 	TypeName(ns, name string) string
 
-	// Param returns the parameter placeholder for the given parameter number.
+	// Param returns the placeholder for the parameter with this number.
+	// numbered reports that the author wrote the number out (SQLite's ?2,
+	// where a bare ? takes the next index), so engines with both forms can
+	// keep the one that was written.
 	// PostgreSQL uses $1, $2, etc. MySQL uses ?
-	Param(n int) string
+	Param(n int, numbered bool) string
 
 	// Cast formats a type cast expression.
 	// PostgreSQL uses expr::type, MySQL uses CAST(expr AS type)

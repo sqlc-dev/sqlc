@@ -2,13 +2,13 @@
 SELECT *, *, foo.* FROM foo;
 
 -- name: StarQuotedExpansion :many
-SELECT "t".* FROM foo "t";
+SELECT t.* FROM foo AS t;
 
 -- name: StarExpansionJoin :many
 SELECT * FROM foo, bar;
 
 -- name: StarExpansionSubquery :many
-SELECT * FROM (SELECT * FROM bar) sub;
+SELECT * FROM (SELECT * FROM bar) AS sub;
 
 -- name: StarExpansionCTE :many
 WITH t AS (SELECT * FROM bar) SELECT * FROM t;

@@ -10,7 +10,7 @@ import (
 )
 
 const getRepro = `-- name: GetRepro :one
-select id, name, seq from repro where id = ? limit 1
+SELECT id, name, seq FROM repro WHERE id = ? LIMIT 1
 `
 
 func (q *Queries) GetRepro(ctx context.Context, id any) (Repro, error) {

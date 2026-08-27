@@ -18,9 +18,3 @@ SELECT count(*) <> 0 FROM bar;
 
 -- name: Equal :many
 SELECT count(*) = 0 FROM bar;
-
-
-
-
-
-

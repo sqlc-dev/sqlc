@@ -20,7 +20,7 @@ func (q *Queries) DeleteAuthor(ctx context.Context, id int64) error {
 }
 
 const deleteBook = `-- name: DeleteBook :exec
-DELETE FROM Books WHERE id = ?
+DELETE FROM books WHERE id = ?
 `
 
 func (q *Queries) DeleteBook(ctx context.Context, id int64) error {
@@ -58,7 +58,7 @@ func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
 }
 
 const getBook = `-- name: GetBook :one
-SELECT id, title FROM Books WHERE id = ?
+SELECT id, title FROM books WHERE id = ?
 `
 
 func (q *Queries) GetBook(ctx context.Context, id int64) (Book, error) {
@@ -100,7 +100,7 @@ func (q *Queries) InsertAuthor(ctx context.Context, name sql.NullString) error {
 }
 
 const insertBook = `-- name: InsertBook :exec
-INSERT INTO Books (title) VALUES (?)
+INSERT INTO books (title) VALUES (?)
 `
 
 func (q *Queries) InsertBook(ctx context.Context, title sql.NullString) error {
@@ -141,7 +141,7 @@ func (q *Queries) UpdateAuthor(ctx context.Context, arg UpdateAuthorParams) erro
 }
 
 const updateBook = `-- name: UpdateBook :exec
-UPDATE Books SET title = ? WHERE id = ?
+UPDATE books SET title = ? WHERE id = ?
 `
 
 type UpdateBookParams struct {

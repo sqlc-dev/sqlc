@@ -12,6 +12,13 @@ const (
 	JoinTypeAnti
 	JoinTypeUniqueOuter
 	JoinTypeUniqueInner
+	// Beyond the libpg_query set: joins SQLite spells (and treats)
+	// distinctly. Both behave as inner joins, but CROSS JOIN carries a
+	// planner hint — SQLite will not reorder the pair — and a
+	// comma-separated FROM item is its own syntax, so neither may be
+	// rewritten into the other.
+	JoinTypeCross
+	JoinTypeComma
 )
 
 type JoinType uint

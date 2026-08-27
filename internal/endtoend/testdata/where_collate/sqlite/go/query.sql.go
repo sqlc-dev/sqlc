@@ -10,8 +10,9 @@ import (
 )
 
 const getAccountByName = `-- name: GetAccountByName :one
-SELECT id, name FROM accounts
-WHERE name = ? COLLATE NOCASE
+SELECT id, name
+FROM accounts
+WHERE name = ? COLLATE nocase
 LIMIT 1
 `
 

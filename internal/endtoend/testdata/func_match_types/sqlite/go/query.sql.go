@@ -11,9 +11,9 @@ import (
 )
 
 const authorPages = `-- name: AuthorPages :many
-select author, count(title) as num_books, sum(pages) as total_pages
-from books
-group by author
+SELECT author, count(title) AS num_books, sum(pages) AS total_pages
+FROM books
+GROUP BY author
 `
 
 type AuthorPagesRow struct {

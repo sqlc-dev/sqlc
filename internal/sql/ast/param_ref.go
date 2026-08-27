@@ -16,5 +16,5 @@ func (n *ParamRef) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
-	buf.WriteString(d.Param(n.Number))
+	buf.WriteString(d.Param(n.Number, n.Dollar))
 }

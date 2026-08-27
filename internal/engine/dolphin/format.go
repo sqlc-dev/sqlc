@@ -25,7 +25,7 @@ func (p *Parser) TypeName(ns, name string) string {
 
 // Param returns the parameter placeholder for the given number.
 // MySQL uses ? for all parameters (positional).
-func (p *Parser) Param(n int) string {
+func (p *Parser) Param(n int, numbered bool) string {
 	return "?"
 }
 

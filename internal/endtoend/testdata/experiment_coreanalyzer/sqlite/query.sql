@@ -1,9 +1,11 @@
 -- name: GetAuthor :one
-SELECT * FROM authors
+SELECT *
+FROM authors
 WHERE id = ?;
 
 -- name: ListAuthors :many
-SELECT id, name FROM authors
+SELECT id, name
+FROM authors
 ORDER BY name;
 
 -- name: CreateAuthor :one

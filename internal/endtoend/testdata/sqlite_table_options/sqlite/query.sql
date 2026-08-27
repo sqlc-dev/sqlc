@@ -1,3 +1,5 @@
 -- name: GetAuthor :one
-SELECT * FROM authors1
-WHERE id = ?1 LIMIT 1;
+SELECT *
+FROM authors1
+WHERE id = ?1
+LIMIT 1;

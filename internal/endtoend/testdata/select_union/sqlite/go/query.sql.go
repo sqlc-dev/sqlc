@@ -129,7 +129,8 @@ const selectUnionWithLimit = `-- name: SelectUnionWithLimit :many
 SELECT a, b FROM foo
 UNION
 SELECT a, b FROM foo
-LIMIT ? OFFSET ?
+LIMIT ?
+OFFSET ?
 `
 
 type SelectUnionWithLimitParams struct {

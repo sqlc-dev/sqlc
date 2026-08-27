@@ -10,7 +10,7 @@ import (
 )
 
 const placeholder = `-- name: Placeholder :many
-SELECT name, location, size from venues
+SELECT name, location, size FROM venues
 `
 
 func (q *Queries) Placeholder(ctx context.Context) ([]Venue, error) {

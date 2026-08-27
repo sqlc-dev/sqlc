@@ -78,6 +78,10 @@ func (n *SelectStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 
 	if n.Larg != nil && n.Rarg != nil {
 		buf.astFormat(n.Larg, d)
+		// The seam between the compound halves: an author who broke the
+		// line around UNION / INTERSECT / EXCEPT keeps the operator on its
+		// own line, and a comment above it prints here.
+		buf.boundary(n.Rarg)
 		buf.Line()
 		switch n.Op {
 		case Union:

@@ -770,7 +770,11 @@ func (c *cc) convertFrom(refs []*meyer.TableRef) []ast.Node {
 				join.Jointype = ast.JoinTypeLeft
 			case right:
 				join.Jointype = ast.JoinTypeRight
-			case op.Type&meyer.JoinComma == 0:
+			case op.Type&meyer.JoinComma != 0:
+				join.Jointype = ast.JoinTypeComma
+			case op.Type&meyer.JoinCross != 0:
+				join.Jointype = ast.JoinTypeCross
+			default:
 				join.Jointype = ast.JoinTypeInner
 			}
 		}
@@ -960,12 +964,36 @@ func (c *cc) convertBinaryExpr(n *meyer.BinaryExpr) ast.Node {
 			Location: n.Pos(),
 		}
 	}
+	// SQLite spells some operators two ways (<> and !=, = and ==) and the
+	// tree keeps only the kind, so read the author's choice back out of the
+	// source between the operands; the compiler recognizes every spelling.
+	op := n.Op.String()
+	switch n.Op {
+	case meyer.OpNe:
+		if strings.Contains(c.operatorText(n.X, n.Y), "!=") {
+			op = "!="
+		}
+	case meyer.OpEq:
+		if strings.Contains(c.operatorText(n.X, n.Y), "==") {
+			op = "=="
+		}
+	}
 	return &ast.A_Expr{
-		Name:     &ast.List{Items: []ast.Node{&ast.String{Str: n.Op.String()}}},
+		Name:     &ast.List{Items: []ast.Node{&ast.String{Str: op}}},
 		Lexpr:    c.convert(n.X),
 		Rexpr:    c.convert(n.Y),
 		Location: n.Pos(),
 	}
+}
+
+// operatorText returns the source text separating two adjacent operands,
+// where the operator token sits.
+func (c *cc) operatorText(x, y meyer.Expr) string {
+	start, end := x.End(), y.Pos()
+	if start < 0 || end > len(c.src) || start > end {
+		return ""
+	}
+	return c.src[start:end]
 }
 
 func (c *cc) convertUnaryExpr(n *meyer.UnaryExpr) ast.Node {

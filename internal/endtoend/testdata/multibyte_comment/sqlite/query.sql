@@ -4,7 +4,9 @@
 -- name: ListItems :many
 -- an em dash right here — must not truncate the ORDER BY below
 SELECT id, name, cap_read
-FROM items WHERE cap_read = 'anonymous' ORDER BY name;
+FROM items
+WHERE cap_read = 'anonymous'
+ORDER BY name;
 
 -- section — divider between queries
 

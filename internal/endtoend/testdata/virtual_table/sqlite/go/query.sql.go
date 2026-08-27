@@ -19,7 +19,7 @@ func (q *Queries) DeleteTblFt(ctx context.Context, b string) error {
 }
 
 const insertTblFt = `-- name: InsertTblFt :exec
-INSERT INTO tbl_ft(b, c) VALUES(?, ?)
+INSERT INTO tbl_ft (b, c) VALUES (?, ?)
 `
 
 type InsertTblFtParams struct {
@@ -33,7 +33,8 @@ func (q *Queries) InsertTblFt(ctx context.Context, arg InsertTblFtParams) error 
 }
 
 const selectAllColsFt = `-- name: SelectAllColsFt :many
-SELECT b FROM ft
+SELECT b
+FROM ft
 WHERE b MATCH ?
 `
 
@@ -61,7 +62,8 @@ func (q *Queries) SelectAllColsFt(ctx context.Context, b string) ([]string, erro
 }
 
 const selectAllColsTblFt = `-- name: SelectAllColsTblFt :many
-SELECT b, c FROM tbl_ft
+SELECT b, c
+FROM tbl_ft
 WHERE b MATCH ?
 `
 
@@ -89,8 +91,10 @@ func (q *Queries) SelectAllColsTblFt(ctx context.Context, b string) ([]TblFt, er
 }
 
 const selectBm25Func = `-- name: SelectBm25Func :many
-SELECT b, c, bm25(tbl_ft, 2.0) FROM tbl_ft
-WHERE b MATCH ? ORDER BY bm25(tbl_ft)
+SELECT b, c, bm25(tbl_ft, 2.0)
+FROM tbl_ft
+WHERE b MATCH ?
+ORDER BY bm25(tbl_ft)
 `
 
 type SelectBm25FuncRow struct {
@@ -123,7 +127,8 @@ func (q *Queries) SelectBm25Func(ctx context.Context, b string) ([]SelectBm25Fun
 }
 
 const selectHightlighFunc = `-- name: SelectHightlighFunc :many
-SELECT highlight(tbl_ft, 0, '<b>', '</b>') FROM tbl_ft
+SELECT highlight(tbl_ft, 0, '<b>', '</b>')
+FROM tbl_ft
 WHERE b MATCH ?
 `
 
@@ -151,7 +156,8 @@ func (q *Queries) SelectHightlighFunc(ctx context.Context, b string) ([]string, 
 }
 
 const selectOneColFt = `-- name: SelectOneColFt :many
-SELECT b FROM ft
+SELECT b
+FROM ft
 WHERE b = ?
 `
 
@@ -179,7 +185,8 @@ func (q *Queries) SelectOneColFt(ctx context.Context, b string) ([]string, error
 }
 
 const selectOneColTblFt = `-- name: SelectOneColTblFt :many
-SELECT c FROM tbl_ft
+SELECT c
+FROM tbl_ft
 WHERE b = ?
 `
 

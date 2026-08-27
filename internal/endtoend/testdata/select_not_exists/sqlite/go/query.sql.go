@@ -11,14 +11,11 @@ import (
 
 const barNotExists = `-- name: BarNotExists :one
 SELECT
-    NOT EXISTS (
-        SELECT
-            1
-        FROM
-            bar
-        WHERE
-            id = ?
-    )
+  NOT EXISTS (
+    SELECT 1
+    FROM bar
+    WHERE id = ?
+  )
 `
 
 func (q *Queries) BarNotExists(ctx context.Context, id int64) (bool, error) {
