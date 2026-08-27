@@ -3,8 +3,12 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type ColumnDef struct {
-	Colname    string
+	Colname string
+	// TypeName is the column's type for the catalog. When Typeless is set
+	// the author wrote no type at all — SQLite allows it — and the column
+	// prints without one, whatever TypeName carries.
 	TypeName   *TypeName
+	Typeless   bool
 	IsNotNull  bool
 	IsUnsigned bool
 	IsArray    bool
@@ -44,8 +48,10 @@ func (n *ColumnDef) Format(buf *TrackedBuffer, d format.Dialect) {
 		return
 	}
 	buf.WriteString(n.Colname)
-	buf.WriteString(" ")
-	buf.astFormat(n.TypeName, d)
+	if !n.Typeless {
+		buf.WriteString(" ")
+		buf.astFormat(n.TypeName, d)
+	}
 	// Use IsArray from ColumnDef since TypeName.ArrayBounds may not be set
 	// (for type resolution compatibility)
 	if n.IsArray && !items(n.TypeName.ArrayBounds) {

@@ -22,12 +22,6 @@ func (p *Parser) Param(n int) string {
 	return "?"
 }
 
-// NamedParam returns the named parameter placeholder for the given name.
-// ClickHouse uses {name:Type} syntax for named parameters.
-func (p *Parser) NamedParam(name string) string {
-	return "{" + name + ":String}"
-}
-
 // Cast returns a type cast expression.
 // ClickHouse uses CAST(expr AS type) syntax, same as MySQL.
 func (p *Parser) Cast(arg, typeName string) string {

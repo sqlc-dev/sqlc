@@ -27,9 +27,18 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
+	buf.Group()
+	defer buf.EndGroup()
+
 	if n.WithClause != nil {
 		buf.astFormat(n.WithClause, d)
-		buf.WriteString(" ")
+		// The boundary between the WITH clause and the statement's own
+		// first keyword; the group keeps a break inside the WITH clause
+		// from forcing the statement body apart clause by clause.
+		buf.boundary(n.Relations)
+		buf.Line()
+		buf.Group()
+		defer buf.EndGroup()
 	}
 
 	buf.WriteString("UPDATE ")
@@ -38,7 +47,9 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	}
 
 	if items(n.TargetList) {
-		buf.WriteString(" SET ")
+		buf.beforeClause(n.TargetList, d)
+		buf.Line()
+		buf.WriteString("SET ")
 
 		multi := false
 		for _, item := range n.TargetList.Items {
@@ -79,9 +90,13 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 			buf.join(vals, d, ",")
 			buf.WriteString(")")
 		} else {
+			buf.Group()
+			buf.Indent()
 			for i, item := range n.TargetList.Items {
 				if i > 0 {
-					buf.WriteString(", ")
+					buf.WriteString(",")
+					buf.boundary(item)
+					buf.Line()
 				}
 				switch nn := item.(type) {
 				case *ResTarget:
@@ -100,26 +115,36 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 					buf.astFormat(item, d)
 				}
 			}
+			buf.EndIndent()
+			buf.EndGroup()
 		}
 	}
 
 	if items(n.FromClause) {
-		buf.WriteString(" FROM ")
+		buf.beforeClause(n.FromClause, d)
+		buf.Line()
+		buf.WriteString("FROM ")
 		buf.astFormat(n.FromClause, d)
 	}
 
 	if set(n.WhereClause) {
-		buf.WriteString(" WHERE ")
-		buf.astFormat(n.WhereClause, d)
+		buf.beforeClause(n.WhereClause, d)
+		buf.Line()
+		buf.WriteString("WHERE ")
+		buf.condition(n.WhereClause, d)
 	}
 
 	if set(n.LimitCount) {
-		buf.WriteString(" LIMIT ")
+		buf.beforeClause(n.LimitCount, d)
+		buf.Line()
+		buf.WriteString("LIMIT ")
 		buf.astFormat(n.LimitCount, d)
 	}
 
 	if items(n.ReturningList) {
-		buf.WriteString(" RETURNING ")
+		buf.beforeClause(n.ReturningList, d)
+		buf.Line()
+		buf.WriteString("RETURNING ")
 		formatReturningOptions(buf, d, n.ReturningOldAlias, n.ReturningNewAlias)
 		buf.astFormat(n.ReturningList, d)
 	}

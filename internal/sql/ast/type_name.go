@@ -6,6 +6,11 @@ type TypeName struct {
 	Catalog string
 	Schema  string
 	Name    string
+	// Spelling is the type as the author wrote it, when that differs from
+	// Name: SQLite folds the spaces out of multi-word type names ("VARYING
+	// CHARACTER" resolves as "VARYINGCHARACTER" in the catalog), so the
+	// formatter prints this back instead of the folded form.
+	Spelling string
 
 	// From pg.TypeName
 	Names       *List
@@ -25,6 +30,10 @@ func (n *TypeName) Pos() int {
 func (n *TypeName) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
+	}
+	if n.Spelling != "" {
+		buf.WriteString(n.Spelling)
+		goto addMods
 	}
 	if items(n.Names) {
 		// Check if this is a qualified type (e.g., pg_catalog.int4)

@@ -76,6 +76,60 @@ func typeName(n *meyer.TypeName) string {
 	return sb.String()
 }
 
+// typeSpelling returns the type as the author wrote it — identifier tokens
+// space-joined, arguments as written — for the formatter to print back.
+// typeName folds the spaces out for catalog matching.
+func typeSpelling(n *meyer.TypeName) string {
+	if n == nil {
+		return ""
+	}
+	var sb strings.Builder
+	sb.WriteString(n.Name)
+	if len(n.Args) > 0 {
+		sb.WriteString("(")
+		sb.WriteString(strings.Join(n.Args, ","))
+		sb.WriteString(")")
+	}
+	return sb.String()
+}
+
+// representableColumn reports whether a column definition round-trips
+// through the fields ast.ColumnDef models: a plain NOT NULL, a plain
+// PRIMARY KEY, or nothing. Anything else — a named constraint, a conflict
+// clause, ASC/DESC or AUTOINCREMENT, DEFAULT, UNIQUE, CHECK, COLLATE,
+// REFERENCES, GENERATED — is parsed away, so a statement printing such a
+// column would lose it. NOT NULL next to PRIMARY KEY is also beyond the
+// node: SQLite's PRIMARY KEY does not imply NOT NULL, and the printed form
+// carries only one of the pair.
+func representableColumn(def *meyer.ColumnDef) bool {
+	var notNull, primary bool
+	for _, con := range def.Constraints {
+		switch {
+		case con.Name != nil:
+			return false
+		case con.Kind == meyer.ColumnNotNull && con.OnConflict == meyer.ConflictDefault:
+			notNull = true
+		case con.Kind == meyer.ColumnPrimaryKey && con.OnConflict == meyer.ConflictDefault &&
+			con.Order == meyer.SortDefault && !con.AutoIncrement:
+			primary = true
+		default:
+			return false
+		}
+	}
+	return !(notNull && primary)
+}
+
+// hasPrimaryKeyConstraint reports whether a column definition carries a
+// PRIMARY KEY constraint.
+func hasPrimaryKeyConstraint(constraints []*meyer.ColumnConstraint) bool {
+	for _, constraint := range constraints {
+		if constraint.Kind == meyer.ColumnPrimaryKey {
+			return true
+		}
+	}
+	return false
+}
+
 // hasNotNullConstraint reports whether a column definition guarantees a
 // value. A PRIMARY KEY implies NOT NULL for the purposes of code
 // generation, matching the behavior of the previous parser.

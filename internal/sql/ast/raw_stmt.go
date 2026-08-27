@@ -16,5 +16,7 @@ func (n *RawStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n.Stmt != nil {
 		buf.astFormat(n.Stmt, d)
 	}
+	// The terminator goes first: a trailing line comment would swallow it.
 	buf.WriteString(";")
+	buf.flushRemaining()
 }

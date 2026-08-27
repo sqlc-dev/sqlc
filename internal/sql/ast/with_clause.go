@@ -20,5 +20,5 @@ func (n *WithClause) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n.Recursive {
 		buf.WriteString("RECURSIVE ")
 	}
-	buf.join(n.Ctes, d, ", ")
+	buf.joinComma(n.Ctes, d)
 }

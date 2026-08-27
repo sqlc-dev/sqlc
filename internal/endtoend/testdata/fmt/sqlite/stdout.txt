@@ -1,0 +1,66 @@
+--- a/query.sql
++++ b/query.sql
+@@ -1,12 +1,15 @@
+ -- name: GetAuthor :one
++SELECT id, name, bio
++FROM authors
++WHERE id = ?
++LIMIT 1;
+-select  id,name , bio from   authors
+-where id =  ? limit 1;
+ 
+ -- name: PickyQuery :many
++SELECT
++  id, -- the primary key
++  name,
++  -- computed downstream
++  bio
+-SELECT id, -- the primary key
+-       name,
+-       -- computed downstream
+-       bio
+ FROM authors
+ -- soft-deleted rows are filtered
+ WHERE bio IS NOT NULL
+@@ -16,7 +19,8 @@
+ SELECT /* inline note */ id, name FROM authors ORDER BY name;
+ 
+ -- name: ListAuthors :many
++SELECT id, name, bio
++FROM authors
+-SELECT id, name, bio FROM authors
+ ORDER BY name;
+ 
+ -- name: GetEvent :one
+@@ -23,8 +27,11 @@
+ SELECT "EventName", "order"
++FROM "Events"
++WHERE id = ?
++LIMIT 1;
+-FROM "Events" WHERE id = ? LIMIT 1;
+ 
+ -- name: CountSigils :one
++SELECT count(*)
++FROM authors
+-SELECT count(*) FROM authors
+ WHERE id <> @at_param AND id <> :colon_param AND id <> $dollar_param;
+ 
+ -- name: TopAuthors :many
+@@ -46,7 +53,7 @@
+ -- name: MakeMeasurements :exec
+ CREATE TABLE IF NOT EXISTS measurements (
+   id INTEGER PRIMARY KEY,
++  label VARYING CHARACTER(120),
+-  label VARYING  CHARACTER(120),
+   ratio DECIMAL(10,5),
+   note
+ );
+@@ -58,7 +65,7 @@
+ SELECT CAST(bio AS VARYING CHARACTER(120)) FROM authors LIMIT 1;
+ 
+ -- name: MakeSearchIndex :exec
++CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(body, tag UNINDEXED, tokenize = 'porter');
+-CREATE  VIRTUAL  TABLE IF NOT EXISTS notes_fts USING fts5(body, tag UNINDEXED, tokenize = 'porter');
+ 
+ -- name: MakeRecipeIndex :exec
+ CREATE VIRTUAL TABLE recipes_fts USING fts5(

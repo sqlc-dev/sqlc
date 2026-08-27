@@ -1,8 +1,6 @@
 package ast
 
 import (
-	"fmt"
-
 	"github.com/sqlc-dev/sqlc/internal/sql/format"
 )
 
@@ -44,82 +42,125 @@ func (n *SelectStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 				buf.WriteString(", ")
 			}
 			buf.WriteString("(")
-			buf.astFormat(row, d)
+			buf.Group()
+			buf.Indent()
+			buf.Softline()
+			if r, ok := row.(*List); ok {
+				buf.joinComma(r, d)
+			} else {
+				buf.astFormat(row, d)
+			}
+			buf.EndIndent()
+			buf.Softline()
+			buf.EndGroup()
 			buf.WriteString(")")
 		}
 		return
 	}
 
+	buf.Group()
+	defer buf.EndGroup()
+
 	if n.WithClause != nil {
 		buf.astFormat(n.WithClause, d)
-		buf.WriteString(" ")
+		// The boundary between the WITH clause and the statement's own
+		// first keyword; the group keeps a break inside the WITH clause
+		// from forcing the statement body apart clause by clause.
+		if n.Larg != nil {
+			buf.boundary(n.Larg)
+		} else {
+			buf.boundary(n.TargetList)
+		}
+		buf.Line()
+		buf.Group()
+		defer buf.EndGroup()
 	}
 
 	if n.Larg != nil && n.Rarg != nil {
 		buf.astFormat(n.Larg, d)
+		buf.Line()
 		switch n.Op {
 		case Union:
-			buf.WriteString(" UNION ")
+			buf.WriteString("UNION")
 		case Except:
-			buf.WriteString(" EXCEPT ")
+			buf.WriteString("EXCEPT")
 		case Intersect:
-			buf.WriteString(" INTERSECT ")
+			buf.WriteString("INTERSECT")
 		}
 		if n.All {
-			buf.WriteString("ALL ")
+			buf.WriteString(" ALL")
 		}
+		buf.Line()
 		buf.astFormat(n.Rarg, d)
 	} else {
-		buf.WriteString("SELECT ")
-	}
-
-	if items(n.DistinctClause) {
-		buf.WriteString("DISTINCT ")
-		if !todo(n.DistinctClause) {
-			fmt.Fprintf(buf, "ON (")
-			buf.astFormat(n.DistinctClause, d)
-			fmt.Fprintf(buf, ")")
+		buf.WriteString("SELECT")
+		if items(n.DistinctClause) {
+			buf.WriteString(" DISTINCT")
+			if !todo(n.DistinctClause) {
+				buf.WriteString(" ON (")
+				buf.astFormat(n.DistinctClause, d)
+				buf.WriteString(")")
+			}
 		}
+		buf.Group()
+		buf.Indent()
+		buf.Line()
+		buf.joinComma(n.TargetList, d)
+		buf.EndIndent()
+		buf.EndGroup()
 	}
-	buf.astFormat(n.TargetList, d)
 
 	if items(n.FromClause) {
-		buf.WriteString(" FROM ")
+		buf.beforeClause(n.FromClause, d)
+		buf.Line()
+		buf.WriteString("FROM ")
 		buf.astFormat(n.FromClause, d)
 	}
 
 	if set(n.WhereClause) {
-		buf.WriteString(" WHERE ")
-		buf.astFormat(n.WhereClause, d)
+		buf.beforeClause(n.WhereClause, d)
+		buf.Line()
+		buf.WriteString("WHERE ")
+		buf.condition(n.WhereClause, d)
 	}
 
 	if items(n.GroupClause) {
-		buf.WriteString(" GROUP BY ")
+		buf.beforeClause(n.GroupClause, d)
+		buf.Line()
+		buf.WriteString("GROUP BY ")
 		buf.astFormat(n.GroupClause, d)
 	}
 
 	if set(n.HavingClause) {
-		buf.WriteString(" HAVING ")
-		buf.astFormat(n.HavingClause, d)
+		buf.beforeClause(n.HavingClause, d)
+		buf.Line()
+		buf.WriteString("HAVING ")
+		buf.condition(n.HavingClause, d)
 	}
 
 	if items(n.SortClause) {
-		buf.WriteString(" ORDER BY ")
+		buf.beforeClause(n.SortClause, d)
+		buf.Line()
+		buf.WriteString("ORDER BY ")
 		buf.astFormat(n.SortClause, d)
 	}
 
 	if set(n.LimitCount) {
-		buf.WriteString(" LIMIT ")
+		buf.beforeClause(n.LimitCount, d)
+		buf.Line()
+		buf.WriteString("LIMIT ")
 		buf.astFormat(n.LimitCount, d)
 	}
 
 	if set(n.LimitOffset) {
-		buf.WriteString(" OFFSET ")
+		buf.beforeClause(n.LimitOffset, d)
+		buf.Line()
+		buf.WriteString("OFFSET ")
 		buf.astFormat(n.LimitOffset, d)
 	}
 
 	if items(n.LockingClause) {
-		buf.WriteString(" ")
+		buf.Line()
 		buf.astFormat(n.LockingClause, d)
 	}
 

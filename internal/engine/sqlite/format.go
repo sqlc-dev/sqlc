@@ -1,11 +1,33 @@
 package sqlite
 
-// QuoteIdent returns a quoted identifier if it needs quoting.
-// SQLite uses double quotes for quoting identifiers (SQL standard),
-// though backticks are also supported for MySQL compatibility.
+import "strings"
+
+// QuoteIdent quotes an identifier when printing it bare would change what it
+// names: the parser folds unquoted identifiers to lower case, so any name
+// that is not already a plain lower-case identifier — or that collides with
+// a keyword — only survives a parse round-trip inside double quotes.
 func (p *Parser) QuoteIdent(s string) string {
-	// For now, don't quote - return as-is
+	if s == "" || p.IsReservedKeyword(s) || !plainIdent(s) {
+		return `"` + strings.ReplaceAll(s, `"`, `""`) + `"`
+	}
 	return s
+}
+
+// plainIdent reports whether s parses back as itself unquoted: ASCII
+// lower-case letters, digits and underscores, not starting with a digit.
+func plainIdent(s string) bool {
+	for i, r := range s {
+		switch {
+		case r >= 'a' && r <= 'z', r == '_':
+		case r >= '0' && r <= '9':
+			if i == 0 {
+				return false
+			}
+		default:
+			return false
+		}
+	}
+	return true
 }
 
 // TypeName returns the SQL type name for the given namespace and name.
@@ -20,12 +42,6 @@ func (p *Parser) TypeName(ns, name string) string {
 // SQLite uses ? for positional parameters.
 func (p *Parser) Param(n int) string {
 	return "?"
-}
-
-// NamedParam returns the named parameter placeholder for the given name.
-// SQLite uses :name syntax for named parameters.
-func (p *Parser) NamedParam(name string) string {
-	return ":" + name
 }
 
 // Cast returns a type cast expression.

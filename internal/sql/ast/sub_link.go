@@ -54,6 +54,12 @@ func (n *SubLink) Format(buf *TrackedBuffer, d format.Dialect) {
 			buf.WriteString("(")
 		}
 	}
+	buf.Group()
+	buf.Indent()
+	buf.Softline()
 	buf.astFormat(n.Subselect, d)
+	buf.EndIndent()
+	buf.Softline()
+	buf.EndGroup()
 	buf.WriteString(")")
 }

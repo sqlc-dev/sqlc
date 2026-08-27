@@ -7,15 +7,66 @@ This package defines the Abstract Syntax Tree (AST) nodes used by sqlc to repres
 ### Node Interface
 All AST nodes implement the `Node` interface with:
 - `Pos() int` - returns the source position
-- `Format(buf *TrackedBuffer)` - formats the node back to SQL
+- `Format(buf *TrackedBuffer, d format.Dialect)` - formats the node back to SQL
 
 ### TrackedBuffer
-The `TrackedBuffer` type (`pg_query.go`) handles SQL formatting with dialect-specific behavior:
+The `TrackedBuffer` type (`print.go`) handles SQL formatting with dialect-specific behavior:
 - `astFormat(node Node)` - formats any AST node
 - `join(list *List, sep string)` - joins list items with separator
 - `WriteString(s string)` - writes raw SQL
 - `QuoteIdent(name string)` - quotes identifiers (dialect-specific)
 - `TypeName(ns, name string)` - formats type names (dialect-specific)
+
+### Pretty printing
+The doc renderer lives in `ast/printer` (`printer.Buffer`), which knows
+nothing about AST nodes; `TrackedBuffer` embeds it and adds the
+AST-facing layer (`astFormat`, comment emission, anchors).
+`TrackedBuffer` records a Wadler-style document (the model behind Prettier
+and ruff): Format methods emit text plus layout tokens, and the renderer
+decides which break opportunities become newlines.
+
+- `Line()` - a space when the group fits on one line, a newline otherwise
+- `Softline()` - nothing when the group fits, a newline otherwise
+- `Group()` / `EndGroup()` - a region laid out flat when its width fits
+- `Indent()` / `EndIndent()` - one level deeper (2 spaces) after breaks
+- `Breaker()` - forces every enclosing group to break (measures as
+  infinitely wide)
+- `joinComma(list)` - joins items with `,` + `Line()`
+- `condition(node)` - clause-level AND/OR chain without outer parentheses,
+  one branch per line when broken
+
+`ast.Format(n, d)` renders on a single line (all breaks collapse);
+`ast.Pretty(n, d, width)` breaks lines to fit `width` columns. Statement
+Format methods open a group and put `Line()` before each clause keyword
+(`FROM`, `WHERE`, ...), so a statement that fits stays on one line and a
+long one breaks at clause boundaries. When adding a Format method, write
+tokens so the flat rendering is correct SQL; layout tokens are optional.
+
+The fmt command does not pass a real width: like gofmt it never rewraps
+on its own, so it prints with an effectively infinite width and defers
+to the author's line breaks instead. `AttachComments` records, for each
+emission-point marker, whether its neighbouring printed nodes sat on
+different source lines; when they did, `boundary()` emits a `Breaker()`
+there on the real print, so the group the author broke stays broken and
+everything else stays flat.
+
+### Comments
+`ast.File{Stmts, Comments}` is what a comment-surfacing parser returns
+(SQLite via meyer's ParseFile). `AttachComments(raw, d, comments, src)`
+classifies each comment once, against a dry-run of the printer: source
+positions and line numbers decide trailing (same line as the code
+before) vs leading, and each comment is attached to the emission point
+— node or clause/list boundary — where the printer will reach it. From
+then on positions are never consulted: `PrettyWithComments(n, d, width,
+table)` emits by node identity, which is what lets edited or synthetic
+trees print their comments correctly (the dave/dst model; each record
+also keeps the node the comment followed, for future rewriting tools).
+A line comment forces every enclosing group to break — `hardline` and
+`breaker` tokens measure as infinitely wide — so commented statements
+format instead of collapsing. Emission points (`beforeClause`,
+`boundary` in joinComma/condition) double as classification markers on
+the dry run, guaranteeing attach-time decisions and print-time emission
+agree.
 
 ### Dialect Interface
 Dialect-specific formatting is handled via the `Dialect` interface:

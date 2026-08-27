@@ -10,6 +10,7 @@ Available Commands:
   completion  Generate the autocompletion script for the specified shell
   createdb    Create an ephemeral database
   diff        Compare the generated files to the existing files
+  fmt         Format SQL queries
   generate    Generate source code from SQL
   help        Help about any command
   init        Create an empty sqlc.yaml settings file

@@ -21,7 +21,7 @@ require (
 	github.com/sqlc-dev/darkwing v0.1.0
 	github.com/sqlc-dev/doubleclick v1.0.0
 	github.com/sqlc-dev/marino v0.3.0
-	github.com/sqlc-dev/meyer v0.1.1
+	github.com/sqlc-dev/meyer v0.1.2
 	github.com/sqlc-dev/oliphant v0.1.0
 	github.com/sqlc-dev/teesql v1.1.0
 	github.com/sqlc-dev/zetajones v0.1.0
