@@ -12,7 +12,8 @@ import (
 const insertSelect = `-- name: InsertSelect :exec
 INSERT INTO foo (name, meta)
 SELECT name, ?
-FROM bar WHERE ready = ?
+FROM bar
+WHERE ready = ?
 `
 
 type InsertSelectParams struct {

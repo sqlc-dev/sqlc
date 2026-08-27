@@ -10,9 +10,9 @@ import (
 )
 
 const getBetweenPrices = `-- name: GetBetweenPrices :many
-SELECT  name, price
-FROM    products
-WHERE   price BETWEEN ? AND ?
+SELECT name, price
+FROM products
+WHERE price BETWEEN ? AND ?
 `
 
 type GetBetweenPricesParams struct {
@@ -44,9 +44,9 @@ func (q *Queries) GetBetweenPrices(ctx context.Context, arg GetBetweenPricesPara
 }
 
 const getBetweenPricesTable = `-- name: GetBetweenPricesTable :many
-SELECT  name, price
-FROM    products
-WHERE   products.price BETWEEN ? AND ?
+SELECT name, price
+FROM products
+WHERE products.price BETWEEN ? AND ?
 `
 
 type GetBetweenPricesTableParams struct {
@@ -78,9 +78,9 @@ func (q *Queries) GetBetweenPricesTable(ctx context.Context, arg GetBetweenPrice
 }
 
 const getBetweenPricesTableAlias = `-- name: GetBetweenPricesTableAlias :many
-SELECT  name, price
-FROM    products as p
-WHERE   p.price BETWEEN ? AND ?
+SELECT name, price
+FROM products AS p
+WHERE p.price BETWEEN ? AND ?
 `
 
 type GetBetweenPricesTableAliasParams struct {

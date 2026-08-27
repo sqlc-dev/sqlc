@@ -21,7 +21,7 @@ func (q *Queries) CountStarLower(ctx context.Context) (int64, error) {
 }
 
 const countStarUpper = `-- name: CountStarUpper :one
-SELECT COUNT(*) FROM bar
+SELECT count(*) FROM bar
 `
 
 func (q *Queries) CountStarUpper(ctx context.Context) (int64, error) {

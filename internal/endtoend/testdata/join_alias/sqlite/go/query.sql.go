@@ -12,8 +12,8 @@ import (
 
 const aliasExpand = `-- name: AliasExpand :many
 SELECT f.id, b.id, title
-FROM foo f
-JOIN bar b ON b.id = f.id
+FROM foo AS f
+JOIN bar AS b ON b.id = f.id
 WHERE f.id = ?
 `
 
@@ -48,8 +48,8 @@ func (q *Queries) AliasExpand(ctx context.Context, id int64) ([]AliasExpandRow, 
 
 const aliasJoin = `-- name: AliasJoin :many
 SELECT f.id, b.title
-FROM foo f
-JOIN bar b ON b.id = f.id
+FROM foo AS f
+JOIN bar AS b ON b.id = f.id
 WHERE f.id = ?
 `
 

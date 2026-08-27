@@ -39,7 +39,9 @@ func (q *Queries) DeleteItem(ctx context.Context, id int64) (Item, error) {
 const listItems = `-- name: ListItems :many
 
 SELECT id, name, cap_read
-FROM items WHERE cap_read = 'anonymous' ORDER BY name
+FROM items
+WHERE cap_read = 'anonymous'
+ORDER BY name
 `
 
 // Multi-byte UTF-8 in comments must not shift the byte offsets used to slice

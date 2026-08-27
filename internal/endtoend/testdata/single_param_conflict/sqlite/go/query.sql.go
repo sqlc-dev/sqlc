@@ -10,10 +10,10 @@ import (
 )
 
 const getAuthorByID = `-- name: GetAuthorByID :one
-SELECT  id, name, bio
-FROM    authors
-WHERE   id = ?
-LIMIT   1
+SELECT id, name, bio
+FROM authors
+WHERE id = ?
+LIMIT 1
 `
 
 func (q *Queries) GetAuthorByID(ctx context.Context, id int64) (Author, error) {
@@ -24,10 +24,10 @@ func (q *Queries) GetAuthorByID(ctx context.Context, id int64) (Author, error) {
 }
 
 const getAuthorIDByID = `-- name: GetAuthorIDByID :one
-SELECT  id
-FROM    authors
-WHERE   id = ?
-LIMIT   1
+SELECT id
+FROM authors
+WHERE id = ?
+LIMIT 1
 `
 
 func (q *Queries) GetAuthorIDByID(ctx context.Context, id int64) (int64, error) {
@@ -38,10 +38,10 @@ func (q *Queries) GetAuthorIDByID(ctx context.Context, id int64) (int64, error) 
 }
 
 const getUser = `-- name: GetUser :one
-SELECT  sub
-FROM    users
-WHERE   sub = ?
-LIMIT   1
+SELECT sub
+FROM users
+WHERE sub = ?
+LIMIT 1
 `
 
 func (q *Queries) GetUser(ctx context.Context, sub string) (string, error) {

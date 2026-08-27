@@ -1,5 +1,5 @@
 -- name: Coalesce :many
-SELECT coalesce(bar, '') as login
+SELECT coalesce(bar, '') AS login
 FROM foo;
 
 -- name: CoalesceColumns :many

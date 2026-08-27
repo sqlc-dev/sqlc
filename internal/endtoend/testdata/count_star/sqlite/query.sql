@@ -2,4 +2,4 @@
 SELECT count(*) FROM bar;
 
 -- name: CountStarUpper :one
-SELECT COUNT(*) FROM bar;
+SELECT count(*) FROM bar;

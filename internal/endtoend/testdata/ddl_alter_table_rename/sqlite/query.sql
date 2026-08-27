@@ -1,2 +1,2 @@
 /* name: Placeholder :many */
-SELECT * from arenas;
+SELECT * FROM arenas;

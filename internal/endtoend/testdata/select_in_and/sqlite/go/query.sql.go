@@ -11,24 +11,16 @@ import (
 )
 
 const deleteAuthor = `-- name: DeleteAuthor :exec
-DELETE FROM
-  books AS b
-WHERE
-  b.author NOT IN (
-    SELECT
-      a.name
-    FROM
-      authors a
-    WHERE
-      a.age >= ?
+DELETE FROM books AS b
+WHERE NOT b.author IN (
+    SELECT a.name
+    FROM authors AS a
+    WHERE a.age >= ?
   )
-  AND b.translator NOT IN (
-    SELECT
-      t.name
-    FROM
-      translators t
-    WHERE
-      t.age >= ?
+  AND NOT b.translator IN (
+    SELECT t.name
+    FROM translators AS t
+    WHERE t.age >= ?
   )
   AND b.year <= ?
 `

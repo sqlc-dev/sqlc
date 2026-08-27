@@ -11,10 +11,13 @@ import (
 )
 
 const getAuthorsWithBooksCount = `-- name: GetAuthorsWithBooksCount :many
-SELECT id, name, bio, (
-  SELECT COUNT(id) FROM books
-  WHERE books.author_id = id
-) AS books_count
+SELECT
+  id, name, bio,
+  (
+    SELECT count(id)
+    FROM books
+    WHERE books.author_id = id
+  ) AS books_count
 FROM authors
 `
 

@@ -40,7 +40,8 @@ func (q *Queries) DeleteAuthor(ctx context.Context, id int64) error {
 }
 
 const getAuthor = `-- name: GetAuthor :one
-SELECT id, name, bio FROM authors
+SELECT id, name, bio
+FROM authors
 WHERE id = ?
 `
 
@@ -52,7 +53,8 @@ func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
 }
 
 const listAuthors = `-- name: ListAuthors :many
-SELECT id, name FROM authors
+SELECT id, name
+FROM authors
 ORDER BY name
 `
 

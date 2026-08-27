@@ -7,7 +7,8 @@ SELECT * FROM foo;
 SELECT * FROM foo
 UNION
 SELECT * FROM foo
-LIMIT ? OFFSET ?;
+LIMIT ?
+OFFSET ?;
 
 -- name: SelectExcept :many
 SELECT * FROM foo

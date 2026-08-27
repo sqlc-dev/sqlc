@@ -10,7 +10,7 @@ import (
 )
 
 const testList = `-- name: TestList :many
-SELECT id FROM "test"
+SELECT id FROM test
 `
 
 func (q *Queries) TestList(ctx context.Context) ([]string, error) {

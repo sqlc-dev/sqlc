@@ -11,7 +11,8 @@ import (
 )
 
 const fooLimit = `-- name: FooLimit :many
-SELECT a FROM foo
+SELECT a
+FROM foo
 LIMIT ?
 `
 
@@ -39,8 +40,10 @@ func (q *Queries) FooLimit(ctx context.Context, limit int64) ([]sql.NullString, 
 }
 
 const fooLimitOffset = `-- name: FooLimitOffset :many
-SELECT a FROM foo
-LIMIT ? OFFSET ?
+SELECT a
+FROM foo
+LIMIT ?
+OFFSET ?
 `
 
 type FooLimitOffsetParams struct {

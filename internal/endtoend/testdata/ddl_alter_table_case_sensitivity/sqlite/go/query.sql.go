@@ -11,7 +11,7 @@ import (
 )
 
 const insertUser = `-- name: InsertUser :exec
-INSERT INTO Users (full_name, "EmailAddress", created_at)
+INSERT INTO users (full_name, "EmailAddress", created_at)
 VALUES (?, ?, ?)
 `
 
@@ -28,7 +28,7 @@ func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) error {
 
 const selectUsers = `-- name: SelectUsers :many
 SELECT id, full_name, "EmailAddress", created_at
-FROM Users
+FROM users
 `
 
 func (q *Queries) SelectUsers(ctx context.Context) ([]User, error) {

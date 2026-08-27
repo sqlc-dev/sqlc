@@ -11,6 +11,6 @@ PRAGMA foreign_keys = 0;
 PRAGMA foreign_keys;
 
 -- name: GetFoo :many
-SELECT * FROM foo
+SELECT *
+FROM foo
 WHERE bar = ?;
-

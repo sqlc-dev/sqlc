@@ -8,7 +8,7 @@ INSERT INTO users (name) VALUES (?);
 INSERT INTO "Authors" (name) VALUES (?);
 
 -- name: InsertBook :exec
-INSERT INTO Books (title) VALUES (?);
+INSERT INTO books (title) VALUES (?);
 
 -- name: UpdateUser :exec
 UPDATE users SET name = ? WHERE id = ?;
@@ -20,7 +20,7 @@ UPDATE users SET name = ? WHERE id = ?;
 UPDATE "Authors" SET name = ? WHERE id = ?;
 
 -- name: UpdateBook :exec
-UPDATE Books SET title = ? WHERE id = ?;
+UPDATE books SET title = ? WHERE id = ?;
 
 -- name: DeleteUser :exec
 DELETE FROM users WHERE id = ?;
@@ -32,7 +32,7 @@ DELETE FROM users WHERE id = ?;
 DELETE FROM "Authors" WHERE id = ?;
 
 -- name: DeleteBook :exec
-DELETE FROM Books WHERE id = ?;
+DELETE FROM books WHERE id = ?;
 
 -- name: GetUser :one
 SELECT * FROM users WHERE id = ?;
@@ -44,4 +44,4 @@ SELECT * FROM users WHERE id = ?;
 SELECT * FROM "Authors" WHERE id = ?;
 
 -- name: GetBook :one
-SELECT * FROM Books WHERE id = ?;
+SELECT * FROM books WHERE id = ?;

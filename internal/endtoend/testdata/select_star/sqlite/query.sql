@@ -2,4 +2,4 @@
 SELECT * FROM users;
 
 /* name: GetIDAll :many */
-SELECT * FROM (SELECT id FROM users) t;
+SELECT * FROM (SELECT id FROM users) AS t;

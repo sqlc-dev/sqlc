@@ -12,10 +12,9 @@ import (
 )
 
 const allAuthors = `-- name: AllAuthors :many
-SELECT  a.id, a.name, a.parent_id, p.id, p.name, p.parent_id
-FROM    authors AS a
-        LEFT JOIN authors AS p
-            ON a.parent_id = p.id
+SELECT a.id, a.name, a.parent_id, p.id, p.name, p.parent_id
+FROM authors AS a
+LEFT JOIN authors AS p ON a.parent_id = p.id
 `
 
 type AllAuthorsRow struct {
@@ -58,10 +57,9 @@ func (q *Queries) AllAuthors(ctx context.Context) ([]AllAuthorsRow, error) {
 }
 
 const allAuthorsAliases = `-- name: AllAuthorsAliases :many
-SELECT  a.id, a.name, a.parent_id, p.id, p.name, p.parent_id
-FROM    authors AS a
-        LEFT JOIN authors AS p
-            ON a.parent_id = p.id
+SELECT a.id, a.name, a.parent_id, p.id, p.name, p.parent_id
+FROM authors AS a
+LEFT JOIN authors AS p ON a.parent_id = p.id
 `
 
 type AllAuthorsAliasesRow struct {
@@ -104,10 +102,9 @@ func (q *Queries) AllAuthorsAliases(ctx context.Context) ([]AllAuthorsAliasesRow
 }
 
 const allAuthorsAliases2 = `-- name: AllAuthorsAliases2 :many
-SELECT  a.id, a.name, a.parent_id, p.id, p.name, p.parent_id
-FROM    authors AS a
-        LEFT JOIN authors AS p
-            ON a.parent_id = p.id
+SELECT a.id, a.name, a.parent_id, p.id, p.name, p.parent_id
+FROM authors AS a
+LEFT JOIN authors AS p ON a.parent_id = p.id
 `
 
 type AllAuthorsAliases2Row struct {
@@ -150,10 +147,9 @@ func (q *Queries) AllAuthorsAliases2(ctx context.Context) ([]AllAuthorsAliases2R
 }
 
 const allSuperAuthors = `-- name: AllSuperAuthors :many
-SELECT  id, name, parent_id, super_id, super_name, super_parent_id
-FROM    authors
-        LEFT JOIN super_authors
-            ON authors.parent_id = super_authors.super_id
+SELECT id, name, parent_id, super_id, super_name, super_parent_id
+FROM authors
+LEFT JOIN super_authors ON authors.parent_id = super_authors.super_id
 `
 
 type AllSuperAuthorsRow struct {
@@ -196,10 +192,9 @@ func (q *Queries) AllSuperAuthors(ctx context.Context) ([]AllSuperAuthorsRow, er
 }
 
 const allSuperAuthorsAliases = `-- name: AllSuperAuthorsAliases :many
-SELECT  id, name, parent_id, super_id, super_name, super_parent_id
-FROM    authors AS a
-        LEFT JOIN super_authors AS sa
-            ON a.parent_id = sa.super_id
+SELECT id, name, parent_id, super_id, super_name, super_parent_id
+FROM authors AS a
+LEFT JOIN super_authors AS sa ON a.parent_id = sa.super_id
 `
 
 type AllSuperAuthorsAliasesRow struct {
@@ -242,10 +237,9 @@ func (q *Queries) AllSuperAuthorsAliases(ctx context.Context) ([]AllSuperAuthors
 }
 
 const allSuperAuthorsAliases2 = `-- name: AllSuperAuthorsAliases2 :many
-SELECT  a.id, a.name, a.parent_id, sa.super_id, sa.super_name, sa.super_parent_id
-FROM    authors AS a
-        LEFT JOIN super_authors AS sa
-            ON a.parent_id = sa.super_id
+SELECT a.id, a.name, a.parent_id, sa.super_id, sa.super_name, sa.super_parent_id
+FROM authors AS a
+LEFT JOIN super_authors AS sa ON a.parent_id = sa.super_id
 `
 
 type AllSuperAuthorsAliases2Row struct {
@@ -289,11 +283,11 @@ func (q *Queries) AllSuperAuthorsAliases2(ctx context.Context) ([]AllSuperAuthor
 
 const getMayors = `-- name: GetMayors :many
 SELECT
-    user_id,
-    mayors.full_name
+  user_id,
+  mayors.full_name
 FROM users
 LEFT JOIN cities USING (city_id)
-INNER JOIN mayors USING (mayor_id)
+JOIN mayors USING (mayor_id)
 `
 
 type GetMayorsRow struct {
@@ -326,9 +320,9 @@ func (q *Queries) GetMayors(ctx context.Context) ([]GetMayorsRow, error) {
 
 const getMayorsOptional = `-- name: GetMayorsOptional :many
 SELECT
-    user_id,
-    cities.city_id,
-    mayors.full_name
+  user_id,
+  cities.city_id,
+  mayors.full_name
 FROM users
 LEFT JOIN cities USING (city_id)
 LEFT JOIN mayors USING (mayor_id)
@@ -364,11 +358,10 @@ func (q *Queries) GetMayorsOptional(ctx context.Context) ([]GetMayorsOptionalRow
 }
 
 const getSuggestedUsersByID = `-- name: GetSuggestedUsersByID :many
-SELECT  DISTINCT u.user_id, u.user_nickname, u.user_email, u.user_display_name, u.user_password, u.user_google_id, u.user_apple_id, u.user_bio, u.user_created_at, u.user_avatar_id, m.media_id, m.media_created_at, m.media_hash, m.media_directory, m.media_author_id, m.media_width, m.media_height
-FROM    users_2 AS u
-        LEFT JOIN media AS m
-            ON u.user_avatar_id = m.media_id
-WHERE   u.user_id != ?1
+SELECT DISTINCT u.user_id, u.user_nickname, u.user_email, u.user_display_name, u.user_password, u.user_google_id, u.user_apple_id, u.user_bio, u.user_created_at, u.user_avatar_id, m.media_id, m.media_created_at, m.media_hash, m.media_directory, m.media_author_id, m.media_width, m.media_height
+FROM users_2 AS u
+LEFT JOIN media AS m ON u.user_avatar_id = m.media_id
+WHERE u.user_id != ?1
 `
 
 type GetSuggestedUsersByIDRow struct {
@@ -433,11 +426,10 @@ func (q *Queries) GetSuggestedUsersByID(ctx context.Context, userID int64) ([]Ge
 }
 
 const getSuggestedUsersByID2 = `-- name: GetSuggestedUsersByID2 :many
-SELECT  users_2.user_id
-FROM    users_2
-            LEFT JOIN media AS m
-                      ON user_avatar_id = m.media_id
-WHERE   user_id != ?1
+SELECT users_2.user_id
+FROM users_2
+LEFT JOIN media AS m ON user_avatar_id = m.media_id
+WHERE user_id != ?1
 `
 
 func (q *Queries) GetSuggestedUsersByID2(ctx context.Context, userID int64) ([]int64, error) {

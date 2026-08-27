@@ -225,7 +225,7 @@ func (q *Queries) StarExpansionReturning(ctx context.Context, arg StarExpansionR
 }
 
 const starExpansionSubquery = `-- name: StarExpansionSubquery :many
-SELECT a, c FROM (SELECT a, c FROM bar) sub
+SELECT a, c FROM (SELECT a, c FROM bar) AS sub
 `
 
 func (q *Queries) StarExpansionSubquery(ctx context.Context) ([]Bar, error) {
@@ -252,7 +252,7 @@ func (q *Queries) StarExpansionSubquery(ctx context.Context) ([]Bar, error) {
 }
 
 const starQuotedExpansion = `-- name: StarQuotedExpansion :many
-SELECT t.a, t.b, t."group" FROM foo "t"
+SELECT t.a, t.b, t."group" FROM foo AS t
 `
 
 func (q *Queries) StarQuotedExpansion(ctx context.Context) ([]Foo, error) {

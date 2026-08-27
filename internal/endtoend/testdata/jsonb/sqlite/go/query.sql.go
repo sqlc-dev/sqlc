@@ -12,24 +12,26 @@ import (
 
 const insertFoo = `-- name: InsertFoo :exec
 INSERT INTO foo (
-    a,
-    b,
-    c,
-    d,
-    e,
-    f,
-    g,
-    h
-) VALUES (
-    ?1,
-    ?2,
-    ?3,
-    ?4,
-    ?5,
-    ?6,
-    ?7,
-    ?8
-) RETURNING a, json(b), c, json(d), e, json(f), g, json(h)
+  a,
+  b,
+  c,
+  d,
+  e,
+  f,
+  g,
+  h
+)
+VALUES (
+  ?1,
+  ?2,
+  ?3,
+  ?4,
+  ?5,
+  ?6,
+  ?7,
+  ?8
+)
+RETURNING a, json(b), c, json(d), e, json(f), g, json(h)
 `
 
 type InsertFooParams struct {

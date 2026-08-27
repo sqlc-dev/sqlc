@@ -11,7 +11,8 @@ import (
 )
 
 const getFoo = `-- name: GetFoo :many
-SELECT bar FROM foo
+SELECT bar
+FROM foo
 WHERE bar = ?
 `
 

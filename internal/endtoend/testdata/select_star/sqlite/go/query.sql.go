@@ -42,7 +42,7 @@ func (q *Queries) GetAll(ctx context.Context) ([]User, error) {
 }
 
 const getIDAll = `-- name: GetIDAll :many
-SELECT id FROM (SELECT id FROM users) t
+SELECT id FROM (SELECT id FROM users) AS t
 `
 
 func (q *Queries) GetIDAll(ctx context.Context) ([]int64, error) {
