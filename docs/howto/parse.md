@@ -1,5 +1,9 @@
 # `parse` - Parsing SQL into an AST
 
+> [!NOTE]
+> `parse` is in beta. Its flags and the shape of the JSON AST it
+> prints may change in a future release.
+
 `sqlc parse` parses SQL from a file or standard input and prints the abstract
 syntax tree (AST) as a single JSON document. It does not require a configuration
 file or a database connection.

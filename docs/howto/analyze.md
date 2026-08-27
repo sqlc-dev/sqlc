@@ -1,5 +1,10 @@
 # `analyze` - Analyzing query result types
 
+> [!NOTE]
+> `analyze` is in beta. Its flags and JSON output may change in a
+> future release, and the types it reports can differ from the ones
+> `generate` produces.
+
 `sqlc analyze` analyzes a query against a schema and prints the inferred result
 columns and parameters as a single JSON document.
 
