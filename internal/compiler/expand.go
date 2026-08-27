@@ -78,6 +78,38 @@ func (c *Compiler) quote(x string) string {
 	}
 }
 
+// starOldFunc measures how much of the query text a star reference occupies,
+// so an edit replaces the reference and nothing else. Each part is measured
+// both bare and quoted: an embed was rewritten to "table.*" in the query text,
+// preserving the way the user quoted the table, so it is measured the same way
+// as a star reference the user wrote.
+func (c *Compiler) starOldFunc(parts []string) func(string) int {
+	old := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if p == "*" {
+			old = append(old, p)
+		} else {
+			old = append(old, c.quoteIdent(p))
+		}
+	}
+	return func(s string) int {
+		length := 0
+		for i, o := range old {
+			if hasSeparator := i > 0; hasSeparator {
+				length++
+			}
+			if strings.HasPrefix(s[length:], o) {
+				length += len(o)
+			} else if quoted := c.quote(o); strings.HasPrefix(s[length:], quoted) {
+				length += len(quoted)
+			} else {
+				length += len(o)
+			}
+		}
+		return length
+	}
+}
+
 func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node) ([]source.Edit, error) {
 	tables, err := c.sourceTables(qc, node)
 	if err != nil {
@@ -168,37 +200,9 @@ func (c *Compiler) expandStmt(qc *QueryCatalog, raw *ast.RawStmt, node ast.Node)
 				cols = append(cols, cname)
 			}
 		}
-		var old []string
-		for _, p := range parts {
-			if p == "*" {
-				old = append(old, p)
-			} else {
-				old = append(old, c.quoteIdent(p))
-			}
-		}
-
-		// An embed was rewritten to "table.*" in the query text, so it is
-		// measured the same way as a star reference the user wrote.
-		oldFunc := func(s string) int {
-			length := 0
-			for i, o := range old {
-				if hasSeparator := i > 0; hasSeparator {
-					length++
-				}
-				if strings.HasPrefix(s[length:], o) {
-					length += len(o)
-				} else if quoted := c.quote(o); strings.HasPrefix(s[length:], quoted) {
-					length += len(quoted)
-				} else {
-					length += len(o)
-				}
-			}
-			return length
-		}
-
 		edits = append(edits, source.Edit{
 			Location: res.Location - raw.StmtLocation,
-			OldFunc:  oldFunc,
+			OldFunc:  c.starOldFunc(parts),
 			New:      strings.Join(cols, ", "),
 		})
 	}

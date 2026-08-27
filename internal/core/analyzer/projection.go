@@ -14,7 +14,7 @@ func (a *analyzer) projectTarget(rt *ast.ResTarget) error {
 	if cr, ok := rt.Val.(*ast.ColumnRef); ok {
 		fields = flattenFields(cr.Fields)
 		if isStar(fields) {
-			a.emitStar(fields)
+			a.emitStar(rt, fields)
 			return nil
 		}
 	}
@@ -79,16 +79,23 @@ func isStar(fields []string) bool {
 	return len(fields) > 0 && fields[len(fields)-1] == "*"
 }
 
-func (a *analyzer) emitStar(fields []string) {
+func (a *analyzer) emitStar(rt *ast.ResTarget, fields []string) {
 	relName := ""
 	if len(fields) > 1 {
 		relName = fields[0]
+	}
+	// The star is reported along with the columns it covers, so the query text
+	// can be rewritten to name them.
+	star := core.StarExpansion{Location: rt.Location, Fields: fields}
+	if rt.Name != nil {
+		star.Alias = *rt.Name
 	}
 	for _, rel := range a.scope.rels {
 		if relName != "" && rel.alias != relName {
 			continue
 		}
 		a.columns = slices.Grow(a.columns, len(rel.cols))
+		star.Columns = slices.Grow(star.Columns, len(rel.cols))
 		for _, c := range rel.cols {
 			if c.Hidden {
 				continue
@@ -103,6 +110,12 @@ func (a *analyzer) emitStar(fields []string) {
 			col.DataType, col.IsArray = a.typeNameOf(exprType{typeOID: c.TypeOID})
 			a.decorateSource(&col, c.AttOID, rel.alias)
 			a.columns = append(a.columns, col)
+			star.Columns = append(star.Columns, core.StarColumn{
+				Relation: rel.alias,
+				Name:     c.Name,
+				DataType: col.DataType,
+			})
 		}
 	}
+	a.recordStar(star)
 }

@@ -15,7 +15,7 @@ import (
 const createAuthor = `-- name: CreateAuthor :one
 INSERT INTO authors (id, name, bio)
 VALUES ($1, $2, $3)
-RETURNING *
+RETURNING id, name, bio, tags
 `
 
 type CreateAuthorParams struct {
@@ -47,7 +47,7 @@ func (q *Queries) DeleteAuthor(ctx context.Context, id int64) error {
 }
 
 const getAuthor = `-- name: GetAuthor :one
-SELECT * FROM authors
+SELECT id, name, bio, tags FROM authors
 WHERE id = $1
 `
 

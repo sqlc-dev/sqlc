@@ -14,6 +14,7 @@ func Prepare(cat *core.Catalog, stmt ast.Node) (core.PrepareResult, error) {
 	a := &analyzer{
 		cat:    cat,
 		params: map[int]core.Parameter{},
+		stars:  &[]core.StarExpansion{},
 	}
 	switch s := stmt.(type) {
 	case *ast.SelectStmt:
@@ -63,6 +64,18 @@ type analyzer struct {
 
 	// resolving guards against an alias that refers to itself.
 	resolving map[string]bool
+
+	// stars are the expansions every star in the statement asked for, shared
+	// with the analyzers of the queries nested in it so one statement reports
+	// all of them.
+	stars *[]core.StarExpansion
+}
+
+func (a *analyzer) recordStar(s core.StarExpansion) {
+	if a.stars == nil {
+		return
+	}
+	*a.stars = append(*a.stars, s)
 }
 
 // subquery analyzes a nested SELECT. It shares the parameter set, so a
@@ -74,6 +87,7 @@ func (a *analyzer) subquery(s *ast.SelectStmt) (*analyzer, error) {
 		params: a.params,
 		outer:  a.scope,
 		ctes:   a.ctes,
+		stars:  a.stars,
 	}
 	if err := sub.analyzeSelect(s); err != nil {
 		return nil, err
@@ -105,11 +119,15 @@ func derivedRel(alias string, cols []core.Column) scopeRel {
 }
 
 func (a *analyzer) result() core.PrepareResult {
-	return core.PrepareResult{
+	res := core.PrepareResult{
 		Command:    a.command,
 		Columns:    a.columns,
 		Parameters: orderedParams(a.params),
 	}
+	if a.stars != nil {
+		res.Stars = *a.stars
+	}
+	return res
 }
 
 func orderedParams(m map[int]core.Parameter) []core.Parameter {
