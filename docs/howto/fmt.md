@@ -1,5 +1,10 @@
 # `fmt` - Formatting queries
 
+> [!NOTE]
+> `fmt` is in beta. It rewrites your query files in place, so commit
+> or back them up first. The formatting it produces may change in a
+> future release.
+
 `sqlc fmt` rewrites the query files referenced by your configuration file in a
 canonical format. Each query is parsed with the engine's parser and printed
 back from the syntax tree, so formatting never depends on how the query was
