@@ -64,3 +64,21 @@
  
  -- name: MakeRecipeIndex :exec
  CREATE VIRTUAL TABLE recipes_fts USING fts5(
+@@ -67,7 +74,7 @@
+ );
+ 
+ -- name: LoginName :one
++SELECT coalesce(bio, '') AS login FROM authors WHERE id = ? LIMIT 1;
+-SELECT COALESCE(bio, '') AS login FROM authors WHERE id = ? LIMIT 1;
+ 
+ -- name: SpelledJoins :many
+ SELECT a.id
+@@ -74,6 +81,6 @@
+ FROM authors AS a
++JOIN authors AS b ON a.id = b.id
++LEFT JOIN authors AS c ON a.id = c.id
+-INNER JOIN authors AS b ON a.id = b.id
+-LEFT OUTER JOIN authors AS c ON a.id = c.id
+ WHERE a.id != ? AND b.id == ? AND c.id <> ?;
+ 
+ -- name: CommaJoin :one

@@ -18,7 +18,9 @@ func (n *CoalesceExpr) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n == nil {
 		return
 	}
-	buf.WriteString("COALESCE(")
+	// Lower case, like every other function name: the printer upper-cases
+	// keywords, and function names are identifiers, which fold lower.
+	buf.WriteString("coalesce(")
 	buf.astFormat(n.Args, d)
 	buf.WriteString(")")
 }

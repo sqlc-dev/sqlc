@@ -7,7 +7,14 @@ import (
 )
 
 type A_Expr struct {
-	Kind     A_Expr_Kind
+	Kind A_Expr_Kind
+	// Name is the operator, as a list of String nodes: PostgreSQL's
+	// operator space is open (user-defined and schema-qualified operators),
+	// so the shared tree keeps pg_query's shape rather than an enum. Each
+	// engine's converter writes the operator as its parser saw it — for an
+	// engine that accepts more than one spelling of the same operator
+	// (SQLite's != for <>, == for =), that is the author's spelling, which
+	// is how the printer preserves it.
 	Name     *List
 	Lexpr    Node
 	Rexpr    Node

@@ -188,12 +188,12 @@ func Format(ctx context.Context, dir, filename string, o *Options) (map[string]s
 			continue
 		}
 		// File-level belt for the reprinter path: no formatting result may
-		// change the file's comments. A violation is a formatter bug; keep
-		// the file as written and say so.
+		// change the file's comments or its statement count. A violation is
+		// a formatter bug; keep the file as written and say so.
 		before, err1 := f.ParseFile(strings.NewReader(string(contents)))
 		after, err2 := f.ParseFile(strings.NewReader(formatted))
-		if err1 == nil && (err2 != nil || !sameComments(before.Comments, after.Comments)) {
-			fmt.Fprintf(stderr, "%s: skipped: formatting would alter comments (this is a bug in sqlc fmt)\n", rel)
+		if err1 == nil && (err2 != nil || len(before.Stmts) != len(after.Stmts) || !sameComments(before.Comments, after.Comments)) {
+			fmt.Fprintf(stderr, "%s: skipped: formatting would alter the file (this is a bug in sqlc fmt)\n", rel)
 			continue
 		}
 		output[file] = formatted
