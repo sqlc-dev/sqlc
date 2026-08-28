@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type LockingClause struct {
+	Tag NodeTag[LockingClause] `json:"tag"`
+
 	LockedRels *List
 	Strength   LockClauseStrength
 	WaitPolicy LockWaitPolicy

@@ -1,6 +1,8 @@
 package ast
 
 type CreatePolicyStmt struct {
+	Tag NodeTag[CreatePolicyStmt] `json:"tag"`
+
 	PolicyName *string
 	Table      *RangeVar
 	CmdName    *string

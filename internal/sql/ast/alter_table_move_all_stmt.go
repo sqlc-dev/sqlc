@@ -1,6 +1,8 @@
 package ast
 
 type AlterTableMoveAllStmt struct {
+	Tag NodeTag[AlterTableMoveAllStmt] `json:"tag"`
+
 	OrigTablespacename *string
 	Objtype            ObjectType
 	Roles              *List

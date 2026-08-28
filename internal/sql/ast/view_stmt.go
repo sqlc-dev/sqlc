@@ -1,6 +1,8 @@
 package ast
 
 type ViewStmt struct {
+	Tag NodeTag[ViewStmt] `json:"tag"`
+
 	View            *RangeVar
 	Aliases         *List
 	Query           Node

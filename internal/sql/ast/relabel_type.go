@@ -1,6 +1,8 @@
 package ast
 
 type RelabelType struct {
+	Tag NodeTag[RelabelType] `json:"tag"`
+
 	Xpr           Node
 	Arg           Node
 	Resulttype    Oid

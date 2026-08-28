@@ -1,6 +1,8 @@
 package ast
 
 type AlterPublicationStmt struct {
+	Tag NodeTag[AlterPublicationStmt] `json:"tag"`
+
 	Pubname      *string
 	Options      *List
 	Tables       *List

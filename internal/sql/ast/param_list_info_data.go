@@ -1,6 +1,8 @@
 package ast
 
 type ParamListInfoData struct {
+	Tag NodeTag[ParamListInfoData] `json:"tag"`
+
 	ParamFetchArg  any
 	ParserSetupArg any
 	NumParams      int

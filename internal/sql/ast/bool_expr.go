@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type BoolExpr struct {
+	Tag NodeTag[BoolExpr] `json:"tag"`
+
 	Xpr      Node
 	Boolop   BoolExprType
 	Args     *List

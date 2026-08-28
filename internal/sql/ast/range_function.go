@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type RangeFunction struct {
+	Tag NodeTag[RangeFunction] `json:"tag"`
+
 	Lateral    bool
 	Ordinality bool
 	IsRowsfrom bool

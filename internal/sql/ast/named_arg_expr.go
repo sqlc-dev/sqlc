@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type NamedArgExpr struct {
+	Tag NodeTag[NamedArgExpr] `json:"tag"`
+
 	Xpr       Node
 	Arg       Node
 	Name      *string

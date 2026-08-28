@@ -1,6 +1,8 @@
 package ast
 
 type CreateTableAsStmt struct {
+	Tag NodeTag[CreateTableAsStmt] `json:"tag"`
+
 	Query        Node
 	Into         *IntoClause
 	Relkind      ObjectType

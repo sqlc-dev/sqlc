@@ -1,6 +1,8 @@
 package ast
 
 type Var struct {
+	Tag NodeTag[Var] `json:"tag"`
+
 	Xpr         Node
 	Varno       Index
 	Varattno    AttrNumber

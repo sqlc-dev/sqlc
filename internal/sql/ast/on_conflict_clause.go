@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type OnConflictClause struct {
+	Tag NodeTag[OnConflictClause] `json:"tag"`
+
 	Action      OnConflictAction
 	Infer       *InferClause
 	TargetList  *List

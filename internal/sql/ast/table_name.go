@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type TableName struct {
+	Tag NodeTag[TableName] `json:"tag"`
+
 	Catalog string
 	Schema  string
 	Name    string

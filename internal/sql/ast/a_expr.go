@@ -7,6 +7,8 @@ import (
 )
 
 type A_Expr struct {
+	Tag NodeTag[A_Expr] `json:"tag"`
+
 	Kind A_Expr_Kind
 	// Name is the operator, as a list of String nodes: PostgreSQL's
 	// operator space is open (user-defined and schema-qualified operators),

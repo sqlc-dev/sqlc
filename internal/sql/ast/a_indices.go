@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type A_Indices struct {
+	Tag NodeTag[A_Indices] `json:"tag"`
+
 	IsSlice bool
 	Lidx    Node
 	Uidx    Node

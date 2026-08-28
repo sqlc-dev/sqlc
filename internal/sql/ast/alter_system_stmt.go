@@ -1,6 +1,8 @@
 package ast
 
 type AlterSystemStmt struct {
+	Tag NodeTag[AlterSystemStmt] `json:"tag"`
+
 	Setstmt *VariableSetStmt
 }
 

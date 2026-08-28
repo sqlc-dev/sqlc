@@ -1,6 +1,8 @@
 package ast
 
 type FuncExpr struct {
+	Tag NodeTag[FuncExpr] `json:"tag"`
+
 	Xpr            Node
 	Funcid         Oid
 	Funcresulttype Oid

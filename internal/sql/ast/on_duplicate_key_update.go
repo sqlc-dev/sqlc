@@ -4,6 +4,8 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 // OnDuplicateKeyUpdate represents MySQL's ON DUPLICATE KEY UPDATE clause
 type OnDuplicateKeyUpdate struct {
+	Tag NodeTag[OnDuplicateKeyUpdate] `json:"tag"`
+
 	// TargetList contains the assignments (column = value pairs)
 	TargetList *List
 	Location   int

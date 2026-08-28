@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type CreateFunctionStmt struct {
+	Tag NodeTag[CreateFunctionStmt] `json:"tag"`
+
 	Replace    bool
 	Params     *List
 	ReturnType *TypeName

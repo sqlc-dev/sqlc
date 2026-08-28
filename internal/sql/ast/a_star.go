@@ -3,6 +3,7 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type A_Star struct {
+	Tag NodeTag[A_Star] `json:"tag"`
 }
 
 func (n *A_Star) Pos() int {

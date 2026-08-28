@@ -1,6 +1,8 @@
 package ast
 
 type A_Indirection struct {
+	Tag NodeTag[A_Indirection] `json:"tag"`
+
 	Arg         Node
 	Indirection *List
 }

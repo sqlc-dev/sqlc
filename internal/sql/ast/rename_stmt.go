@@ -1,6 +1,8 @@
 package ast
 
 type RenameStmt struct {
+	Tag NodeTag[RenameStmt] `json:"tag"`
+
 	RenameType   ObjectType
 	RelationType ObjectType
 	Relation     *RangeVar

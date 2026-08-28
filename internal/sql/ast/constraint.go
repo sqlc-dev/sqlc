@@ -1,6 +1,8 @@
 package ast
 
 type Constraint struct {
+	Tag NodeTag[Constraint] `json:"tag"`
+
 	Contype        ConstrType
 	Conname        *string
 	Deferrable     bool

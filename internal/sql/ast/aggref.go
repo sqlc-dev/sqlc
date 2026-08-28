@@ -1,6 +1,8 @@
 package ast
 
 type Aggref struct {
+	Tag NodeTag[Aggref] `json:"tag"`
+
 	Xpr           Node
 	Aggfnoid      Oid
 	Aggtype       Oid

@@ -1,6 +1,8 @@
 package ast
 
 type RenameTypeStmt struct {
+	Tag NodeTag[RenameTypeStmt] `json:"tag"`
+
 	Type    *TypeName
 	NewName *string
 }

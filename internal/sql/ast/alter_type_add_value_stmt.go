@@ -1,6 +1,8 @@
 package ast
 
 type AlterTypeAddValueStmt struct {
+	Tag NodeTag[AlterTypeAddValueStmt] `json:"tag"`
+
 	Type               *TypeName
 	NewValue           *string
 	NewValHasNeighbor  bool

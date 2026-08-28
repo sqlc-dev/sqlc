@@ -1,6 +1,8 @@
 package ast
 
 type AlterDatabaseStmt struct {
+	Tag NodeTag[AlterDatabaseStmt] `json:"tag"`
+
 	Dbname  *string
 	Options *List
 }

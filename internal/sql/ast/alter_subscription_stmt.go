@@ -1,6 +1,8 @@
 package ast
 
 type AlterSubscriptionStmt struct {
+	Tag NodeTag[AlterSubscriptionStmt] `json:"tag"`
+
 	Kind        AlterSubscriptionType
 	Subname     *string
 	Conninfo    *string

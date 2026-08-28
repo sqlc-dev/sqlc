@@ -1,6 +1,8 @@
 package ast
 
 type CommentOnTableStmt struct {
+	Tag NodeTag[CommentOnTableStmt] `json:"tag"`
+
 	Table   *TableName
 	Comment *string
 }

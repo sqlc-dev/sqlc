@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type RefreshMatViewStmt struct {
+	Tag NodeTag[RefreshMatViewStmt] `json:"tag"`
+
 	Concurrent bool
 	SkipData   bool
 	Relation   *RangeVar

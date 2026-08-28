@@ -1,6 +1,8 @@
 package ast
 
 type AlterObjectSchemaStmt struct {
+	Tag NodeTag[AlterObjectSchemaStmt] `json:"tag"`
+
 	ObjectType ObjectType
 	Relation   *RangeVar
 	Object     Node

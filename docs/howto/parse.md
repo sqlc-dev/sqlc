@@ -48,6 +48,7 @@ The output is a JSON array with one object per statement:
     "name": "GetAuthor",
     "cmd": ":one",
     "ast": {
+      "tag": "RawStmt",
       "Stmt": {
         "...": "..."
       },
@@ -60,3 +61,29 @@ The output is a JSON array with one object per statement:
 
 Statements without a `-- name:` annotation (for example schema DDL) omit the
 `name` and `cmd` fields.
+
+## Node types
+
+Every node in the AST carries a `tag` naming its type. Some nodes have no
+fields of their own, so without it a star, a null literal and an untranslated
+clause would all print as `{}`.
+
+```json
+"Val": {
+  "tag": "ColumnRef",
+  "Name": "",
+  "Fields": {
+    "tag": "List",
+    "Items": [
+      {
+        "tag": "A_Star"
+      }
+    ]
+  },
+  "Location": 93
+}
+```
+
+A `tag` of `TODO` marks a clause the dialect's converter does not translate
+yet. It means the clause was parsed but is not represented in the AST, not that
+the clause was absent from the query.

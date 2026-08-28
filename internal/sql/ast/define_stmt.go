@@ -1,6 +1,8 @@
 package ast
 
 type DefineStmt struct {
+	Tag NodeTag[DefineStmt] `json:"tag"`
+
 	Kind        ObjectType
 	Oldstyle    bool
 	Defnames    *List

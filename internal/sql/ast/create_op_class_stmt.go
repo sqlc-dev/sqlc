@@ -1,6 +1,8 @@
 package ast
 
 type CreateOpClassStmt struct {
+	Tag NodeTag[CreateOpClassStmt] `json:"tag"`
+
 	Opclassname  *List
 	Opfamilyname *List
 	Amname       *string

@@ -1,6 +1,8 @@
 package ast
 
 type CreateUserMappingStmt struct {
+	Tag NodeTag[CreateUserMappingStmt] `json:"tag"`
+
 	User        *RoleSpec
 	Servername  *string
 	IfNotExists bool

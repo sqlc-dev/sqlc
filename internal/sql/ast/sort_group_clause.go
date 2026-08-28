@@ -1,6 +1,8 @@
 package ast
 
 type SortGroupClause struct {
+	Tag NodeTag[SortGroupClause] `json:"tag"`
+
 	TleSortGroupRef Index
 	Eqop            Oid
 	Sortop          Oid

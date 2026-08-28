@@ -1,6 +1,8 @@
 package ast
 
 type DiscardStmt struct {
+	Tag NodeTag[DiscardStmt] `json:"tag"`
+
 	Target DiscardMode
 }
 

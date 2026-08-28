@@ -1,6 +1,8 @@
 package ast
 
 type ConvertRowtypeExpr struct {
+	Tag NodeTag[ConvertRowtypeExpr] `json:"tag"`
+
 	Xpr           Node
 	Arg           Node
 	Resulttype    Oid

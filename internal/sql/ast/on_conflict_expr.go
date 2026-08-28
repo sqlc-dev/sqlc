@@ -1,6 +1,8 @@
 package ast
 
 type OnConflictExpr struct {
+	Tag NodeTag[OnConflictExpr] `json:"tag"`
+
 	Action          OnConflictAction
 	ArbiterElems    *List
 	ArbiterWhere    Node

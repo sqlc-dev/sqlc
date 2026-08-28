@@ -1,6 +1,8 @@
 package ast
 
 type CreateDomainStmt struct {
+	Tag NodeTag[CreateDomainStmt] `json:"tag"`
+
 	Domainname  *List
 	TypeName    *TypeName
 	CollClause  *CollateClause

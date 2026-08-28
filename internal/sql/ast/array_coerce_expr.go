@@ -1,6 +1,8 @@
 package ast
 
 type ArrayCoerceExpr struct {
+	Tag NodeTag[ArrayCoerceExpr] `json:"tag"`
+
 	Xpr          Node
 	Arg          Node
 	Elemfuncid   Oid

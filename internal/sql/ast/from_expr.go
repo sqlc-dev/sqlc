@@ -1,6 +1,8 @@
 package ast
 
 type FromExpr struct {
+	Tag NodeTag[FromExpr] `json:"tag"`
+
 	Fromlist *List
 	Quals    Node
 }

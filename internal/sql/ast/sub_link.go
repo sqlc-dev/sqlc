@@ -16,6 +16,8 @@ const (
 )
 
 type SubLink struct {
+	Tag NodeTag[SubLink] `json:"tag"`
+
 	Xpr         Node
 	SubLinkType SubLinkType
 	SubLinkId   int

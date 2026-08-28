@@ -1,6 +1,8 @@
 package ast
 
 type CaseTestExpr struct {
+	Tag NodeTag[CaseTestExpr] `json:"tag"`
+
 	Xpr       Node
 	TypeId    Oid
 	TypeMod   int32

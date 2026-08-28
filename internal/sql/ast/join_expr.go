@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type JoinExpr struct {
+	Tag NodeTag[JoinExpr] `json:"tag"`
+
 	Jointype    JoinType
 	IsNatural   bool
 	Larg        Node

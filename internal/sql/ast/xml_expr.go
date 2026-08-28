@@ -1,6 +1,8 @@
 package ast
 
 type XmlExpr struct {
+	Tag NodeTag[XmlExpr] `json:"tag"`
+
 	Xpr       Node
 	Op        XmlExprOp
 	Name      *string

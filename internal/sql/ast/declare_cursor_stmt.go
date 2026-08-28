@@ -1,6 +1,8 @@
 package ast
 
 type DeclareCursorStmt struct {
+	Tag NodeTag[DeclareCursorStmt] `json:"tag"`
+
 	Portalname *string
 	Options    int
 	Query      Node

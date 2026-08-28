@@ -1,6 +1,8 @@
 package ast
 
 type CopyStmt struct {
+	Tag NodeTag[CopyStmt] `json:"tag"`
+
 	Relation  *RangeVar
 	Query     Node
 	Attlist   *List

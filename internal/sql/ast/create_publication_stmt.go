@@ -1,6 +1,8 @@
 package ast
 
 type CreatePublicationStmt struct {
+	Tag NodeTag[CreatePublicationStmt] `json:"tag"`
+
 	Pubname      *string
 	Options      *List
 	Tables       *List

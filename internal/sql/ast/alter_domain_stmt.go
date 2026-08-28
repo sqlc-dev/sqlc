@@ -1,6 +1,8 @@
 package ast
 
 type AlterDomainStmt struct {
+	Tag NodeTag[AlterDomainStmt] `json:"tag"`
+
 	Subtype   byte
 	TypeName  *List
 	Name      *string

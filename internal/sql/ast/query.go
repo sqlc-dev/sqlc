@@ -1,6 +1,8 @@
 package ast
 
 type Query struct {
+	Tag NodeTag[Query] `json:"tag"`
+
 	CommandType      CmdType
 	QuerySource      QuerySource
 	QueryId          uint32

@@ -3,20 +3,28 @@
     "name": "GetValue",
     "cmd": ":one",
     "ast": {
+      "tag": "RawStmt",
       "Stmt": {
+        "tag": "SelectStmt",
         "DistinctClause": {
+          "tag": "List",
           "Items": null
         },
         "IntoClause": null,
         "TargetList": {
+          "tag": "List",
           "Items": [
             {
+              "tag": "ResTarget",
               "Name": null,
               "Indirection": {
+                "tag": "List",
                 "Items": null
               },
               "Val": {
+                "tag": "A_Const",
                 "Val": {
+                  "tag": "Integer",
                   "Ival": 1
                 },
                 "Location": 30
@@ -26,25 +34,39 @@
           ]
         },
         "FromClause": {
+          "tag": "List",
           "Items": null
         },
-        "WhereClause": {},
+        "WhereClause": {
+          "tag": "TODO"
+        },
         "GroupClause": {
+          "tag": "List",
           "Items": null
         },
-        "HavingClause": {},
+        "HavingClause": {
+          "tag": "TODO"
+        },
         "WindowClause": {
+          "tag": "List",
           "Items": null
         },
         "ValuesLists": {
+          "tag": "List",
           "Items": null
         },
         "SortClause": {
+          "tag": "List",
           "Items": null
         },
-        "LimitOffset": {},
-        "LimitCount": {},
+        "LimitOffset": {
+          "tag": "TODO"
+        },
+        "LimitCount": {
+          "tag": "TODO"
+        },
         "LockingClause": {
+          "tag": "List",
           "Items": null
         },
         "WithClause": null,

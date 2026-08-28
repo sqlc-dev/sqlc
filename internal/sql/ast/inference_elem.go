@@ -1,6 +1,8 @@
 package ast
 
 type InferenceElem struct {
+	Tag NodeTag[InferenceElem] `json:"tag"`
+
 	Xpr          Node
 	Expr         Node
 	Infercollid  Oid

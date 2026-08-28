@@ -1,6 +1,8 @@
 package ast
 
 type OpExpr struct {
+	Tag NodeTag[OpExpr] `json:"tag"`
+
 	Xpr          Node
 	Opno         Oid
 	Opresulttype Oid

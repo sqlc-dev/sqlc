@@ -1,6 +1,8 @@
 package ast
 
 type WindowClause struct {
+	Tag NodeTag[WindowClause] `json:"tag"`
+
 	Name            *string
 	Refname         *string
 	PartitionClause *List

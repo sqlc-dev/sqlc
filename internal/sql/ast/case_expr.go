@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type CaseExpr struct {
+	Tag NodeTag[CaseExpr] `json:"tag"`
+
 	Xpr        Node
 	Casetype   Oid
 	Casecollid Oid

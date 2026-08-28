@@ -1,6 +1,8 @@
 package ast
 
 type DeallocateStmt struct {
+	Tag NodeTag[DeallocateStmt] `json:"tag"`
+
 	Name *string
 }
 

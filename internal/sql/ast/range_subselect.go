@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type RangeSubselect struct {
+	Tag NodeTag[RangeSubselect] `json:"tag"`
+
 	Lateral  bool
 	Subquery Node
 	Alias    *Alias

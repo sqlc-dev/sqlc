@@ -1,6 +1,8 @@
 package ast
 
 type CreateEventTrigStmt struct {
+	Tag NodeTag[CreateEventTrigStmt] `json:"tag"`
+
 	Trigname   *string
 	Eventname  *string
 	Whenclause *List

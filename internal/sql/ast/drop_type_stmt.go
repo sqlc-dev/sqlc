@@ -1,6 +1,8 @@
 package ast
 
 type DropTypeStmt struct {
+	Tag NodeTag[DropTypeStmt] `json:"tag"`
+
 	IfExists bool
 	Types    []*TypeName
 }

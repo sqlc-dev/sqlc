@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type ResTarget struct {
+	Tag NodeTag[ResTarget] `json:"tag"`
+
 	Name        *string
 	Indirection *List
 	Val         Node

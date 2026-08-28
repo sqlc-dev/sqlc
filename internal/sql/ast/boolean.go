@@ -7,6 +7,8 @@ import (
 )
 
 type Boolean struct {
+	Tag NodeTag[Boolean] `json:"tag"`
+
 	Boolval bool
 }
 

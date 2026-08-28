@@ -1,6 +1,8 @@
 package ast
 
 type CreateTrigStmt struct {
+	Tag NodeTag[CreateTrigStmt] `json:"tag"`
+
 	Trigname       *string
 	Relation       *RangeVar
 	Funcname       *List

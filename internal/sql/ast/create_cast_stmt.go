@@ -1,6 +1,8 @@
 package ast
 
 type CreateCastStmt struct {
+	Tag NodeTag[CreateCastStmt] `json:"tag"`
+
 	Sourcetype *TypeName
 	Targettype *TypeName
 	Func       *ObjectWithArgs

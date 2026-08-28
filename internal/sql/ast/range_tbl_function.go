@@ -1,6 +1,8 @@
 package ast
 
 type RangeTblFunction struct {
+	Tag NodeTag[RangeTblFunction] `json:"tag"`
+
 	Funcexpr          Node
 	Funccolcount      int
 	Funccolnames      *List

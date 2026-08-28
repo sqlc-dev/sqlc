@@ -7,6 +7,8 @@ import (
 )
 
 type ColumnRef struct {
+	Tag NodeTag[ColumnRef] `json:"tag"`
+
 	Name string
 
 	// From pg.ColumnRef

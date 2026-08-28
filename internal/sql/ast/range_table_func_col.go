@@ -1,6 +1,8 @@
 package ast
 
 type RangeTableFuncCol struct {
+	Tag NodeTag[RangeTableFuncCol] `json:"tag"`
+
 	Colname       *string
 	TypeName      *TypeName
 	ForOrdinality bool

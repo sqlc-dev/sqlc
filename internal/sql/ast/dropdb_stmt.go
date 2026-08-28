@@ -1,6 +1,8 @@
 package ast
 
 type DropdbStmt struct {
+	Tag NodeTag[DropdbStmt] `json:"tag"`
+
 	Dbname    *string
 	MissingOk bool
 }

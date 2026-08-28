@@ -106,4 +106,6 @@ reports the result columns and parameters:
 ]
 ```
 
-Pass `--ast` to also include each statement's parsed AST under an `ast` key.
+Pass `--ast` to also include each statement's parsed AST under an `ast` key. It
+has the same shape as the output of [`parse`](parse.md), with every node tagged
+by type.

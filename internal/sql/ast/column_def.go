@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type ColumnDef struct {
+	Tag NodeTag[ColumnDef] `json:"tag"`
+
 	Colname string
 	// TypeName is the column's type for the catalog. When Typeless is set
 	// the author wrote no type at all — SQLite allows it — and the column

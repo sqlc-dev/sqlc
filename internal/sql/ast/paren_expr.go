@@ -4,6 +4,8 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 // ParenExpr represents a parenthesized expression
 type ParenExpr struct {
+	Tag NodeTag[ParenExpr] `json:"tag"`
+
 	Expr     Node
 	Location int
 }

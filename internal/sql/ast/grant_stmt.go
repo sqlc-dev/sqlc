@@ -1,6 +1,8 @@
 package ast
 
 type GrantStmt struct {
+	Tag NodeTag[GrantStmt] `json:"tag"`
+
 	IsGrant     bool
 	Targtype    GrantTargetType
 	Objtype     GrantObjectType

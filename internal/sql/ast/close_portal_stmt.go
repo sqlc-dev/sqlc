@@ -1,6 +1,8 @@
 package ast
 
 type ClosePortalStmt struct {
+	Tag NodeTag[ClosePortalStmt] `json:"tag"`
+
 	Portalname *string
 }
 

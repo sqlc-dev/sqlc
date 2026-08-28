@@ -1,6 +1,8 @@
 package ast
 
 type ExecuteStmt struct {
+	Tag NodeTag[ExecuteStmt] `json:"tag"`
+
 	Name   *string
 	Params *List
 }

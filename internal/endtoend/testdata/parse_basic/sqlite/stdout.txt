@@ -3,16 +3,22 @@
     "name": "GetValue",
     "cmd": ":one",
     "ast": {
+      "tag": "RawStmt",
       "Stmt": {
+        "tag": "SelectStmt",
         "DistinctClause": null,
         "IntoClause": null,
         "TargetList": {
+          "tag": "List",
           "Items": [
             {
+              "tag": "ResTarget",
               "Name": null,
               "Indirection": null,
               "Val": {
+                "tag": "A_Const",
                 "Val": {
+                  "tag": "Integer",
                   "Ival": 1
                 },
                 "Location": 30
@@ -22,17 +28,21 @@
           ]
         },
         "FromClause": {
+          "tag": "List",
           "Items": null
         },
         "WhereClause": null,
         "GroupClause": {
+          "tag": "List",
           "Items": null
         },
         "HavingClause": null,
         "WindowClause": {
+          "tag": "List",
           "Items": null
         },
         "ValuesLists": {
+          "tag": "List",
           "Items": null
         },
         "SortClause": null,

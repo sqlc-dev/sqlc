@@ -1,6 +1,8 @@
 package ast
 
 type CreateRangeStmt struct {
+	Tag NodeTag[CreateRangeStmt] `json:"tag"`
+
 	TypeName *List
 	Params   *List
 }

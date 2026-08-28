@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type WindowDef struct {
+	Tag NodeTag[WindowDef] `json:"tag"`
+
 	Name            *string
 	Refname         *string
 	PartitionClause *List

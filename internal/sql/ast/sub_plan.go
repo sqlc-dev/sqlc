@@ -1,6 +1,8 @@
 package ast
 
 type SubPlan struct {
+	Tag NodeTag[SubPlan] `json:"tag"`
+
 	Xpr               Node
 	SubLinkType       SubLinkType
 	Testexpr          Node

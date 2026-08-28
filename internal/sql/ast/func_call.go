@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type FuncCall struct {
+	Tag NodeTag[FuncCall] `json:"tag"`
+
 	Func           *FuncName
 	Funcname       *List
 	Args           *List

@@ -1,6 +1,8 @@
 package ast
 
 type IndexStmt struct {
+	Tag NodeTag[IndexStmt] `json:"tag"`
+
 	Idxname        *string
 	Relation       *RangeVar
 	AccessMethod   *string

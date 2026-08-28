@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type CreateExtensionStmt struct {
+	Tag NodeTag[CreateExtensionStmt] `json:"tag"`
+
 	Extname     *string
 	IfNotExists bool
 	Options     *List

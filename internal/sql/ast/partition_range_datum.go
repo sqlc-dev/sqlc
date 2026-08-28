@@ -1,6 +1,8 @@
 package ast
 
 type PartitionRangeDatum struct {
+	Tag NodeTag[PartitionRangeDatum] `json:"tag"`
+
 	Kind     PartitionRangeDatumKind
 	Value    Node
 	Location int

@@ -1,6 +1,8 @@
 package ast
 
 type RangeTblRef struct {
+	Tag NodeTag[RangeTblRef] `json:"tag"`
+
 	Rtindex int
 }
 

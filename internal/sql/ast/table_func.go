@@ -1,6 +1,8 @@
 package ast
 
 type TableFunc struct {
+	Tag NodeTag[TableFunc] `json:"tag"`
+
 	NsUris        *List
 	NsNames       *List
 	Docexpr       Node

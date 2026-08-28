@@ -1,6 +1,8 @@
 package ast
 
 type WithCheckOption struct {
+	Tag NodeTag[WithCheckOption] `json:"tag"`
+
 	Kind     WCOKind
 	Relname  *string
 	Polname  *string

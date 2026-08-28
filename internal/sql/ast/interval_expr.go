@@ -4,6 +4,8 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 // IntervalExpr represents a MySQL INTERVAL expression like "INTERVAL 1 DAY"
 type IntervalExpr struct {
+	Tag NodeTag[IntervalExpr] `json:"tag"`
+
 	Value    Node
 	Unit     string
 	Location int

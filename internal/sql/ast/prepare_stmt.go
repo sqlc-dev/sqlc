@@ -1,6 +1,8 @@
 package ast
 
 type PrepareStmt struct {
+	Tag NodeTag[PrepareStmt] `json:"tag"`
+
 	Name     *string
 	Argtypes *List
 	Query    Node

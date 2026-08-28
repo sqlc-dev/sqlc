@@ -1,6 +1,8 @@
 package ast
 
 type Statement struct {
+	Tag NodeTag[Statement] `json:"tag"`
+
 	Raw *RawStmt
 }
 

@@ -1,6 +1,8 @@
 package ast
 
 type WindowFunc struct {
+	Tag NodeTag[WindowFunc] `json:"tag"`
+
 	Xpr         Node
 	Winfnoid    Oid
 	Wintype     Oid

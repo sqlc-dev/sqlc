@@ -1,6 +1,8 @@
 package ast
 
 type CreatedbStmt struct {
+	Tag NodeTag[CreatedbStmt] `json:"tag"`
+
 	Dbname  *string
 	Options *List
 }

@@ -1,6 +1,8 @@
 package ast
 
 type AlterCollationStmt struct {
+	Tag NodeTag[AlterCollationStmt] `json:"tag"`
+
 	Collname *List
 }
 

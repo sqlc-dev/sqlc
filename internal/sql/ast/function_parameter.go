@@ -1,6 +1,8 @@
 package ast
 
 type FunctionParameter struct {
+	Tag NodeTag[FunctionParameter] `json:"tag"`
+
 	Name    *string
 	ArgType *TypeName
 	Mode    FunctionParameterMode

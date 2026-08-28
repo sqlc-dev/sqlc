@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type NotifyStmt struct {
+	Tag NodeTag[NotifyStmt] `json:"tag"`
+
 	Conditionname *string
 	Payload       *string
 }

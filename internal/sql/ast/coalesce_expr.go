@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type CoalesceExpr struct {
+	Tag NodeTag[CoalesceExpr] `json:"tag"`
+
 	Xpr            Node
 	Coalescetype   Oid
 	Coalescecollid Oid

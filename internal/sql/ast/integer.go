@@ -7,6 +7,8 @@ import (
 )
 
 type Integer struct {
+	Tag NodeTag[Integer] `json:"tag"`
+
 	Ival int64
 }
 

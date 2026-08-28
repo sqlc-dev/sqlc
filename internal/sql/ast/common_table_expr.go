@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type CommonTableExpr struct {
+	Tag NodeTag[CommonTableExpr] `json:"tag"`
+
 	Ctename          *string
 	Aliascolnames    *List
 	Ctequery         Node

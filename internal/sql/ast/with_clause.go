@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type WithClause struct {
+	Tag NodeTag[WithClause] `json:"tag"`
+
 	Ctes      *List
 	Recursive bool
 	Location  int

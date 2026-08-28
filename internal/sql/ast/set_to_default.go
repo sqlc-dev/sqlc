@@ -1,6 +1,8 @@
 package ast
 
 type SetToDefault struct {
+	Tag NodeTag[SetToDefault] `json:"tag"`
+
 	Xpr       Node
 	TypeId    Oid
 	TypeMod   int32

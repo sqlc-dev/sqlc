@@ -1,6 +1,8 @@
 package ast
 
 type CurrentOfExpr struct {
+	Tag NodeTag[CurrentOfExpr] `json:"tag"`
+
 	Xpr         Node
 	Cvarno      Index
 	CursorName  *string

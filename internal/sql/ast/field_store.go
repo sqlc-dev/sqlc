@@ -1,6 +1,8 @@
 package ast
 
 type FieldStore struct {
+	Tag NodeTag[FieldStore] `json:"tag"`
+
 	Xpr        Node
 	Arg        Node
 	Newvals    *List

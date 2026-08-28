@@ -1,6 +1,8 @@
 package ast
 
 type RangeTableFunc struct {
+	Tag NodeTag[RangeTableFunc] `json:"tag"`
+
 	Lateral    bool
 	Docexpr    Node
 	Rowexpr    Node

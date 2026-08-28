@@ -1,6 +1,8 @@
 package ast
 
 type CoerceToDomain struct {
+	Tag NodeTag[CoerceToDomain] `json:"tag"`
+
 	Xpr            Node
 	Arg            Node
 	Resulttype     Oid

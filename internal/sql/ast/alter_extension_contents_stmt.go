@@ -1,6 +1,8 @@
 package ast
 
 type AlterExtensionContentsStmt struct {
+	Tag NodeTag[AlterExtensionContentsStmt] `json:"tag"`
+
 	Extname *string
 	Action  int
 	Objtype ObjectType

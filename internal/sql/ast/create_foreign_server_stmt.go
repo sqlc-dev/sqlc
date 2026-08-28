@@ -1,6 +1,8 @@
 package ast
 
 type CreateForeignServerStmt struct {
+	Tag NodeTag[CreateForeignServerStmt] `json:"tag"`
+
 	Servername  *string
 	Servertype  *string
 	Version     *string

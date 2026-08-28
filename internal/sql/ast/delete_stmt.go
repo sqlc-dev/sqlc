@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type DeleteStmt struct {
+	Tag NodeTag[DeleteStmt] `json:"tag"`
+
 	Relations     *List
 	UsingClause   *List
 	WhereClause   Node

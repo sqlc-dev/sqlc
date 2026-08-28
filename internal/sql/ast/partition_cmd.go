@@ -1,6 +1,8 @@
 package ast
 
 type PartitionCmd struct {
+	Tag NodeTag[PartitionCmd] `json:"tag"`
+
 	Name  *RangeVar
 	Bound *PartitionBoundSpec
 }

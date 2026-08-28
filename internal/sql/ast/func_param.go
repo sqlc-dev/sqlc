@@ -14,6 +14,8 @@ const (
 )
 
 type FuncParam struct {
+	Tag NodeTag[FuncParam] `json:"tag"`
+
 	Name    *string
 	Type    *TypeName
 	DefExpr Node // Will always be &ast.TODO

@@ -5,6 +5,8 @@ import (
 )
 
 type SelectStmt struct {
+	Tag NodeTag[SelectStmt] `json:"tag"`
+
 	DistinctClause *List
 	IntoClause     *IntoClause
 	TargetList     *List

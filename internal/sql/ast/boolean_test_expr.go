@@ -1,6 +1,8 @@
 package ast
 
 type BooleanTest struct {
+	Tag NodeTag[BooleanTest] `json:"tag"`
+
 	Xpr          Node
 	Arg          Node
 	Booltesttype BoolTestType

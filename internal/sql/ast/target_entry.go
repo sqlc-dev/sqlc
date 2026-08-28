@@ -1,6 +1,8 @@
 package ast
 
 type TargetEntry struct {
+	Tag NodeTag[TargetEntry] `json:"tag"`
+
 	Xpr             Node
 	Expr            Node
 	Resno           AttrNumber

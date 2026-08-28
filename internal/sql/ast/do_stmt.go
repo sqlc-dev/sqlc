@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type DoStmt struct {
+	Tag NodeTag[DoStmt] `json:"tag"`
+
 	Args *List
 }
 

@@ -7,6 +7,8 @@ import (
 )
 
 type UpdateStmt struct {
+	Tag NodeTag[UpdateStmt] `json:"tag"`
+
 	Relations     *List
 	TargetList    *List
 	WhereClause   Node

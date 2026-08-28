@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type InsertStmt struct {
+	Tag NodeTag[InsertStmt] `json:"tag"`
+
 	Relation             *RangeVar
 	Cols                 *List
 	SelectStmt           Node

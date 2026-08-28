@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type RowExpr struct {
+	Tag NodeTag[RowExpr] `json:"tag"`
+
 	Xpr       Node
 	Args      *List
 	RowTypeid Oid

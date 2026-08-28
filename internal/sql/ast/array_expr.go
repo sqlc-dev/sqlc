@@ -1,6 +1,8 @@
 package ast
 
 type ArrayExpr struct {
+	Tag NodeTag[ArrayExpr] `json:"tag"`
+
 	Xpr           Node
 	ArrayTypeid   Oid
 	ArrayCollid   Oid

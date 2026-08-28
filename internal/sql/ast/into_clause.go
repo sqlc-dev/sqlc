@@ -1,6 +1,8 @@
 package ast
 
 type IntoClause struct {
+	Tag NodeTag[IntoClause] `json:"tag"`
+
 	Rel            *RangeVar
 	ColNames       *List
 	Options        *List

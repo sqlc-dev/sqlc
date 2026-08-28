@@ -1,6 +1,8 @@
 package ast
 
 type CreateEnumStmt struct {
+	Tag NodeTag[CreateEnumStmt] `json:"tag"`
+
 	TypeName *TypeName
 	Vals     *List
 }

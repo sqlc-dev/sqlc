@@ -1,6 +1,8 @@
 package ast
 
 type Const struct {
+	Tag NodeTag[Const] `json:"tag"`
+
 	Xpr         Node
 	Consttype   Oid
 	Consttypmod int32

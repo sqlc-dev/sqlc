@@ -4,6 +4,8 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 // In describes a 'select foo in (bar, baz)' type statement, though there are multiple important variants handled.
 type In struct {
+	Tag NodeTag[In] `json:"tag"`
+
 	// Expr is the value expression to be compared.
 	Expr Node
 	// List is the list expression in compare list.

@@ -1,6 +1,8 @@
 package ast
 
 type ConstraintsSetStmt struct {
+	Tag NodeTag[ConstraintsSetStmt] `json:"tag"`
+
 	Constraints *List
 	Deferred    bool
 }

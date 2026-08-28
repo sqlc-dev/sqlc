@@ -1,6 +1,8 @@
 package ast
 
 type RangeTblEntry struct {
+	Tag NodeTag[RangeTblEntry] `json:"tag"`
+
 	Rtekind         RTEKind
 	Relid           Oid
 	Relkind         byte

@@ -1,6 +1,8 @@
 package ast
 
 type RowCompareExpr struct {
+	Tag NodeTag[RowCompareExpr] `json:"tag"`
+
 	Xpr          Node
 	Rctype       RowCompareType
 	Opnos        *List

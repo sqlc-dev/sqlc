@@ -30,6 +30,8 @@ func (t AlterTableType) String() string {
 }
 
 type AlterTableCmd struct {
+	Tag NodeTag[AlterTableCmd] `json:"tag"`
+
 	Subtype   AlterTableType
 	Name      *string
 	Def       *ColumnDef

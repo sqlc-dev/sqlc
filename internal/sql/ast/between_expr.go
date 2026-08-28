@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type BetweenExpr struct {
+	Tag NodeTag[BetweenExpr] `json:"tag"`
+
 	// Expr is the value expression to be compared.
 	Expr Node
 	// Left is the left expression in the between statement.

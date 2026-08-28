@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type ParamRef struct {
+	Tag NodeTag[ParamRef] `json:"tag"`
+
 	Number   int
 	Location int
 	Dollar   bool

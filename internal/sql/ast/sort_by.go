@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type SortBy struct {
+	Tag NodeTag[SortBy] `json:"tag"`
+
 	Node        Node
 	SortbyDir   SortByDir
 	SortbyNulls SortByNulls

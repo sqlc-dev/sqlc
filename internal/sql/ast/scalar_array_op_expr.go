@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type ScalarArrayOpExpr struct {
+	Tag NodeTag[ScalarArrayOpExpr] `json:"tag"`
+
 	Xpr         Node
 	Opno        Oid
 	UseOr       bool

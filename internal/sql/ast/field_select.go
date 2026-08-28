@@ -1,6 +1,8 @@
 package ast
 
 type FieldSelect struct {
+	Tag NodeTag[FieldSelect] `json:"tag"`
+
 	Xpr          Node
 	Arg          Node
 	Fieldnum     AttrNumber

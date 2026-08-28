@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type RangeVar struct {
+	Tag NodeTag[RangeVar] `json:"tag"`
+
 	Catalogname    *string
 	Schemaname     *string
 	Relname        *string

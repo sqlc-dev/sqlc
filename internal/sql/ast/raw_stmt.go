@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type RawStmt struct {
+	Tag NodeTag[RawStmt] `json:"tag"`
+
 	Stmt         Node
 	StmtLocation int
 	StmtLen      int

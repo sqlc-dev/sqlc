@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type NullTest struct {
+	Tag NodeTag[NullTest] `json:"tag"`
+
 	Xpr          Node
 	Arg          Node
 	Nulltesttype NullTestType

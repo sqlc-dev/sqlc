@@ -1,6 +1,8 @@
 package ast
 
 type AlterSeqStmt struct {
+	Tag NodeTag[AlterSeqStmt] `json:"tag"`
+
 	Sequence    *RangeVar
 	Options     *List
 	ForIdentity bool

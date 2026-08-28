@@ -1,6 +1,8 @@
 package ast
 
 type LockStmt struct {
+	Tag NodeTag[LockStmt] `json:"tag"`
+
 	Relations *List
 	Mode      int
 	Nowait    bool

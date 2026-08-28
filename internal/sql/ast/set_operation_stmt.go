@@ -1,6 +1,8 @@
 package ast
 
 type SetOperationStmt struct {
+	Tag NodeTag[SetOperationStmt] `json:"tag"`
+
 	Op            SetOperation
 	All           bool
 	Larg          Node

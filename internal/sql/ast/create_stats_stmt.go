@@ -1,6 +1,8 @@
 package ast
 
 type CreateStatsStmt struct {
+	Tag NodeTag[CreateStatsStmt] `json:"tag"`
+
 	Defnames    *List
 	StatTypes   *List
 	Exprs       *List

@@ -1,6 +1,8 @@
 package ast
 
 type NextValueExpr struct {
+	Tag NodeTag[NextValueExpr] `json:"tag"`
+
 	Xpr    Node
 	Seqid  Oid
 	TypeId Oid

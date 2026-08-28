@@ -1,6 +1,8 @@
 package ast
 
 type ParamExternData struct {
+	Tag NodeTag[ParamExternData] `json:"tag"`
+
 	Value  Datum
 	Isnull bool
 	Pflags uint16

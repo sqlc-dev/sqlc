@@ -1,6 +1,8 @@
 package ast
 
 type AlterUserMappingStmt struct {
+	Tag NodeTag[AlterUserMappingStmt] `json:"tag"`
+
 	User       *RoleSpec
 	Servername *string
 	Options    *List

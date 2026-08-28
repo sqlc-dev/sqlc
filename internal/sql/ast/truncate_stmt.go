@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type TruncateStmt struct {
+	Tag NodeTag[TruncateStmt] `json:"tag"`
+
 	Relations   *List
 	RestartSeqs bool
 	Behavior    DropBehavior

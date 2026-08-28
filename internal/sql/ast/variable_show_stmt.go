@@ -1,6 +1,8 @@
 package ast
 
 type VariableShowStmt struct {
+	Tag NodeTag[VariableShowStmt] `json:"tag"`
+
 	Name *string
 }
 

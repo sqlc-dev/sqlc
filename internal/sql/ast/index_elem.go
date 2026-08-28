@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type IndexElem struct {
+	Tag NodeTag[IndexElem] `json:"tag"`
+
 	Name          *string
 	Expr          Node
 	Indexcolname  *string

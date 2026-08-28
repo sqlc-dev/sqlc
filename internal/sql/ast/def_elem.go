@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type DefElem struct {
+	Tag NodeTag[DefElem] `json:"tag"`
+
 	Defnamespace *string
 	Defname      *string
 	Arg          Node

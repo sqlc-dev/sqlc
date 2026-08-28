@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type SQLValueFunction struct {
+	Tag NodeTag[SQLValueFunction] `json:"tag"`
+
 	Xpr      Node
 	Op       SQLValueFunctionOp
 	Type     Oid

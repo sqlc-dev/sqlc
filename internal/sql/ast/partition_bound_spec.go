@@ -1,6 +1,8 @@
 package ast
 
 type PartitionBoundSpec struct {
+	Tag NodeTag[PartitionBoundSpec] `json:"tag"`
+
 	Strategy    byte
 	Listdatums  *List
 	Lowerdatums *List

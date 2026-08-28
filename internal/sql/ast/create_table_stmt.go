@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type CreateTableStmt struct {
+	Tag NodeTag[CreateTableStmt] `json:"tag"`
+
 	IfNotExists bool
 	Name        *TableName
 	Cols        []*ColumnDef

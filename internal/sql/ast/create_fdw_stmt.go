@@ -1,6 +1,8 @@
 package ast
 
 type CreateFdwStmt struct {
+	Tag NodeTag[CreateFdwStmt] `json:"tag"`
+
 	Fdwname     *string
 	FuncOptions *List
 	Options     *List

@@ -1,6 +1,8 @@
 package ast
 
 type ImportForeignSchemaStmt struct {
+	Tag NodeTag[ImportForeignSchemaStmt] `json:"tag"`
+
 	ServerName   *string
 	RemoteSchema *string
 	LocalSchema  *string

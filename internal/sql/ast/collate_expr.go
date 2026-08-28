@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type CollateExpr struct {
+	Tag NodeTag[CollateExpr] `json:"tag"`
+
 	Xpr      Node
 	Arg      Node
 	CollOid  Oid

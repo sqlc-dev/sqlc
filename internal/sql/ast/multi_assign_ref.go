@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type MultiAssignRef struct {
+	Tag NodeTag[MultiAssignRef] `json:"tag"`
+
 	Source   Node
 	Colno    int
 	Ncolumns int

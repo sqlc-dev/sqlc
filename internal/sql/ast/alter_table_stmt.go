@@ -3,6 +3,8 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type AlterTableStmt struct {
+	Tag NodeTag[AlterTableStmt] `json:"tag"`
+
 	// TODO: Only TableName or Relation should be defined
 	Relation  *RangeVar
 	Table     *TableName

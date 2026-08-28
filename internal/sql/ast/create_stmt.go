@@ -1,6 +1,8 @@
 package ast
 
 type CreateStmt struct {
+	Tag NodeTag[CreateStmt] `json:"tag"`
+
 	Relation       *RangeVar
 	TableElts      *List
 	InhRelations   *List

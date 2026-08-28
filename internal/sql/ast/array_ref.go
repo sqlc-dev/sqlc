@@ -1,6 +1,8 @@
 package ast
 
 type ArrayRef struct {
+	Tag NodeTag[ArrayRef] `json:"tag"`
+
 	Xpr             Node
 	Refarraytype    Oid
 	Refelemtype     Oid

@@ -1,6 +1,8 @@
 package ast
 
 type Param struct {
+	Tag NodeTag[Param] `json:"tag"`
+
 	Xpr         Node
 	Paramkind   ParamKind
 	Paramid     int

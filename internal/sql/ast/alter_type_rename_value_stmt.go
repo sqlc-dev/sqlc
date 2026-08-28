@@ -1,6 +1,8 @@
 package ast
 
 type AlterTypeRenameValueStmt struct {
+	Tag NodeTag[AlterTypeRenameValueStmt] `json:"tag"`
+
 	Type     *TypeName
 	OldValue *string
 	NewValue *string

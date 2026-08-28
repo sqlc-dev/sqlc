@@ -1,6 +1,8 @@
 package ast
 
 type AlterTypeSetSchemaStmt struct {
+	Tag NodeTag[AlterTypeSetSchemaStmt] `json:"tag"`
+
 	Type      *TypeName
 	NewSchema *string
 }

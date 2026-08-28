@@ -1,6 +1,8 @@
 package ast
 
 type DropStmt struct {
+	Tag NodeTag[DropStmt] `json:"tag"`
+
 	Objects    *List
 	RemoveType ObjectType
 	Behavior   DropBehavior

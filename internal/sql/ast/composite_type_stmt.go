@@ -1,6 +1,8 @@
 package ast
 
 type CompositeTypeStmt struct {
+	Tag NodeTag[CompositeTypeStmt] `json:"tag"`
+
 	TypeName *TypeName
 }
 

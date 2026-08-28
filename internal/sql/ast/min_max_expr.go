@@ -1,6 +1,8 @@
 package ast
 
 type MinMaxExpr struct {
+	Tag NodeTag[MinMaxExpr] `json:"tag"`
+
 	Xpr          Node
 	Minmaxtype   Oid
 	Minmaxcollid Oid

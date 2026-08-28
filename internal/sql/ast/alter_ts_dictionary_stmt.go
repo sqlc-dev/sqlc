@@ -1,6 +1,8 @@
 package ast
 
 type AlterTSDictionaryStmt struct {
+	Tag NodeTag[AlterTSDictionaryStmt] `json:"tag"`
+
 	Dictname *List
 	Options  *List
 }

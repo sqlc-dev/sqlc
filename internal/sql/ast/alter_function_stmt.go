@@ -1,6 +1,8 @@
 package ast
 
 type AlterFunctionStmt struct {
+	Tag NodeTag[AlterFunctionStmt] `json:"tag"`
+
 	Func    *ObjectWithArgs
 	Actions *List
 }
