@@ -18,8 +18,7 @@ import (
 // as its first field, with T the node's own type. The field is zero-sized and
 // its zero value is valid, so constructing nodes as struct literals is
 // unaffected; encoding/json calls MarshalJSON on the field, and the type
-// parameter carries the node's identity to it at compile time. A test checks
-// that every node declares the field and that its type parameter matches.
+// parameter carries the node's identity to it at compile time.
 type NodeTag[T any] struct{}
 
 func (NodeTag[T]) MarshalJSON() ([]byte, error) {
