@@ -87,3 +87,23 @@ clause would all print as `{}`.
 A `tag` of `TODO` marks a clause the dialect's converter does not translate
 yet. It means the clause was parsed but is not represented in the AST, not that
 the clause was absent from the query.
+
+## Absent fields
+
+A field the statement does not use is left out rather than printed as `null`.
+An `A_Const` carrying an integer reports only what it has:
+
+```json
+"Val": {
+  "tag": "A_Const",
+  "Val": {
+    "tag": "Integer",
+    "Ival": 1
+  },
+  "Location": 30
+}
+```
+
+Only absent fields are omitted. A zero keeps its place, because zero is a value
+the parser can find: `StmtLocation` is 0 for the first statement in a file, and
+`LIMIT 0` parses to an `Ival` of 0.

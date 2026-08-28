@@ -7,19 +7,15 @@
       "Stmt": {
         "tag": "SelectStmt",
         "DistinctClause": {
-          "tag": "List",
-          "Items": null
+          "tag": "List"
         },
-        "IntoClause": null,
         "TargetList": {
           "tag": "List",
           "Items": [
             {
               "tag": "ResTarget",
-              "Name": null,
               "Indirection": {
-                "tag": "List",
-                "Items": null
+                "tag": "List"
               },
               "Val": {
                 "tag": "A_Const",
@@ -34,30 +30,25 @@
           ]
         },
         "FromClause": {
-          "tag": "List",
-          "Items": null
+          "tag": "List"
         },
         "WhereClause": {
           "tag": "TODO"
         },
         "GroupClause": {
-          "tag": "List",
-          "Items": null
+          "tag": "List"
         },
         "HavingClause": {
           "tag": "TODO"
         },
         "WindowClause": {
-          "tag": "List",
-          "Items": null
+          "tag": "List"
         },
         "ValuesLists": {
-          "tag": "List",
-          "Items": null
+          "tag": "List"
         },
         "SortClause": {
-          "tag": "List",
-          "Items": null
+          "tag": "List"
         },
         "LimitOffset": {
           "tag": "TODO"
@@ -66,14 +57,10 @@
           "tag": "TODO"
         },
         "LockingClause": {
-          "tag": "List",
-          "Items": null
+          "tag": "List"
         },
-        "WithClause": null,
         "Op": 0,
-        "All": false,
-        "Larg": null,
-        "Rarg": null
+        "All": false
       },
       "StmtLocation": 0,
       "StmtLen": 31

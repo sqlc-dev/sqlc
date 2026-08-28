@@ -83,6 +83,9 @@ func marshalStruct(v reflect.Value) ([]byte, error) {
 				name = tagName
 			}
 		}
+		if isNil(v.Field(i)) {
+			continue
+		}
 		value, err := marshalValue(v.Field(i))
 		if err != nil {
 			return nil, err
@@ -96,6 +99,18 @@ func marshalStruct(v reflect.Value) ([]byte, error) {
 
 	buf.WriteByte('}')
 	return buf.Bytes(), nil
+}
+
+// isNil reports whether a field is absent from the tree, which is the only
+// thing left out of the encoding. Zero-valued scalars are kept: a Location of 0
+// is the start of the file and an Ival of 0 is the literal in "LIMIT 0", so
+// dropping them would lose what the parser found.
+func isNil(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Pointer, reflect.Interface, reflect.Slice, reflect.Map:
+		return v.IsNil()
+	}
+	return false
 }
 
 func marshalArray(v reflect.Value) ([]byte, error) {
