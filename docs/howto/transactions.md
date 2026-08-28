@@ -99,3 +99,29 @@ func bumpCounter(ctx context.Context, db *pgx.Conn, queries *tutorial.Queries, i
 	return tx.Commit(ctx)
 }
 ```
+
+## Concurrent read-modify-write
+
+The `bumpCounter` example reads a row and then writes a value derived from it.
+Under the default isolation level (`READ COMMITTED`), two transactions running
+`bumpCounter` concurrently can both read the same `counter`, both write
+`counter + 1`, and one update is lost.
+
+When a write depends on a value read earlier in the same transaction, lock the
+row on read with `SELECT ... FOR UPDATE` (supported by PostgreSQL and
+MySQL/InnoDB):
+
+```sql
+-- name: GetRecordForUpdate :one
+SELECT * FROM records
+WHERE id = $1
+FOR UPDATE;
+```
+
+Call `GetRecordForUpdate` in place of `GetRecord`; the second transaction then
+blocks until the first commits, and reads the updated value.
+
+Alternatively, run the transaction at `SERIALIZABLE` isolation and retry on
+serialization failures. sqlc does not manage isolation levels or retries — set
+the isolation level when you begin the transaction and handle the retry loop in
+your application code.
