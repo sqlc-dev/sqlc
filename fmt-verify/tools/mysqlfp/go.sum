@@ -1,0 +1,4 @@
+github.com/sqlc-dev/marino v0.3.1 h1:5LkfxftC+drpX1NE6ULTSJlRQ3FzvaFgmXSik+s0Q1Y=
+github.com/sqlc-dev/marino v0.3.1/go.mod h1:mQxC2dgDE0DWHMb2B5jZNk7KToJuS6wnxnffBfYnq08=
+golang.org/x/text v0.19.0 h1:kTxAhCbGbxhK0IwgSKiMO5awPoDQ0RpfiVYBfK860YM=
+golang.org/x/text v0.19.0/go.mod h1:BuEKDfySbSR4drPmRPG/7iBdf8hvFMuRexcpahXilzY=
