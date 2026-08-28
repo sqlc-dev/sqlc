@@ -5,11 +5,11 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type CoalesceExpr struct {
 	Tag NodeTag[CoalesceExpr] `json:"tag"`
 
-	Xpr            Node `json:",omitempty"`
-	Coalescetype   Oid
-	Coalescecollid Oid
-	Args           *List `json:",omitempty"`
-	Location       int
+	Xpr            Node  `json:"xpr,omitempty"`
+	Coalescetype   Oid   `json:"coalescetype"`
+	Coalescecollid Oid   `json:"coalescecollid"`
+	Args           *List `json:"args,omitempty"`
+	Location       int   `json:"location"`
 }
 
 func (n *CoalesceExpr) Pos() int {

@@ -3,37 +3,37 @@ package ast
 type RangeTblEntry struct {
 	Tag NodeTag[RangeTblEntry] `json:"tag"`
 
-	Rtekind         RTEKind
-	Relid           Oid
-	Relkind         byte
-	Tablesample     *TableSampleClause `json:",omitempty"`
-	Subquery        *Query             `json:",omitempty"`
-	SecurityBarrier bool
-	Jointype        JoinType
-	Joinaliasvars   *List `json:",omitempty"`
-	Functions       *List `json:",omitempty"`
-	Funcordinality  bool
-	Tablefunc       *TableFunc `json:",omitempty"`
-	ValuesLists     *List      `json:",omitempty"`
-	Ctename         *string    `json:",omitempty"`
-	Ctelevelsup     Index
-	SelfReference   bool
-	Coltypes        *List   `json:",omitempty"`
-	Coltypmods      *List   `json:",omitempty"`
-	Colcollations   *List   `json:",omitempty"`
-	Enrname         *string `json:",omitempty"`
-	Enrtuples       float64
-	Alias           *Alias `json:",omitempty"`
-	Eref            *Alias `json:",omitempty"`
-	Lateral         bool
-	Inh             bool
-	InFromCl        bool
-	RequiredPerms   AclMode
-	CheckAsUser     Oid
-	SelectedCols    []uint32 `json:",omitempty"`
-	InsertedCols    []uint32 `json:",omitempty"`
-	UpdatedCols     []uint32 `json:",omitempty"`
-	SecurityQuals   *List    `json:",omitempty"`
+	Rtekind         RTEKind            `json:"rtekind"`
+	Relid           Oid                `json:"relid"`
+	Relkind         byte               `json:"relkind"`
+	Tablesample     *TableSampleClause `json:"tablesample,omitempty"`
+	Subquery        *Query             `json:"subquery,omitempty"`
+	SecurityBarrier bool               `json:"security_barrier"`
+	Jointype        JoinType           `json:"jointype"`
+	Joinaliasvars   *List              `json:"joinaliasvars,omitempty"`
+	Functions       *List              `json:"functions,omitempty"`
+	Funcordinality  bool               `json:"funcordinality"`
+	Tablefunc       *TableFunc         `json:"tablefunc,omitempty"`
+	ValuesLists     *List              `json:"values_lists,omitempty"`
+	Ctename         *string            `json:"ctename,omitempty"`
+	Ctelevelsup     Index              `json:"ctelevelsup"`
+	SelfReference   bool               `json:"self_reference"`
+	Coltypes        *List              `json:"coltypes,omitempty"`
+	Coltypmods      *List              `json:"coltypmods,omitempty"`
+	Colcollations   *List              `json:"colcollations,omitempty"`
+	Enrname         *string            `json:"enrname,omitempty"`
+	Enrtuples       float64            `json:"enrtuples"`
+	Alias           *Alias             `json:"alias,omitempty"`
+	Eref            *Alias             `json:"eref,omitempty"`
+	Lateral         bool               `json:"lateral"`
+	Inh             bool               `json:"inh"`
+	InFromCl        bool               `json:"in_from_cl"`
+	RequiredPerms   AclMode            `json:"required_perms"`
+	CheckAsUser     Oid                `json:"check_as_user"`
+	SelectedCols    []uint32           `json:"selected_cols,omitempty"`
+	InsertedCols    []uint32           `json:"inserted_cols,omitempty"`
+	UpdatedCols     []uint32           `json:"updated_cols,omitempty"`
+	SecurityQuals   *List              `json:"security_quals,omitempty"`
 }
 
 func (n *RangeTblEntry) Pos() int {

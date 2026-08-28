@@ -3,10 +3,10 @@ package ast
 type FetchStmt struct {
 	Tag NodeTag[FetchStmt] `json:"tag"`
 
-	Direction  FetchDirection
-	HowMany    int64
-	Portalname *string `json:",omitempty"`
-	Ismove     bool
+	Direction  FetchDirection `json:"direction"`
+	HowMany    int64          `json:"how_many"`
+	Portalname *string        `json:"portalname,omitempty"`
+	Ismove     bool           `json:"ismove"`
 }
 
 func (n *FetchStmt) Pos() int {

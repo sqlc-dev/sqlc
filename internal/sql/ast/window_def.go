@@ -5,14 +5,14 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type WindowDef struct {
 	Tag NodeTag[WindowDef] `json:"tag"`
 
-	Name            *string `json:",omitempty"`
-	Refname         *string `json:",omitempty"`
-	PartitionClause *List   `json:",omitempty"`
-	OrderClause     *List   `json:",omitempty"`
-	FrameOptions    int
-	StartOffset     Node `json:",omitempty"`
-	EndOffset       Node `json:",omitempty"`
-	Location        int
+	Name            *string `json:"name,omitempty"`
+	Refname         *string `json:"refname,omitempty"`
+	PartitionClause *List   `json:"partition_clause,omitempty"`
+	OrderClause     *List   `json:"order_clause,omitempty"`
+	FrameOptions    int     `json:"frame_options"`
+	StartOffset     Node    `json:"start_offset,omitempty"`
+	EndOffset       Node    `json:"end_offset,omitempty"`
+	Location        int     `json:"location"`
 }
 
 func (n *WindowDef) Pos() int {

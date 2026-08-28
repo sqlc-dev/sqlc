@@ -3,11 +3,11 @@ package ast
 type AlterPolicyStmt struct {
 	Tag NodeTag[AlterPolicyStmt] `json:"tag"`
 
-	PolicyName *string   `json:",omitempty"`
-	Table      *RangeVar `json:",omitempty"`
-	Roles      *List     `json:",omitempty"`
-	Qual       Node      `json:",omitempty"`
-	WithCheck  Node      `json:",omitempty"`
+	PolicyName *string   `json:"policy_name,omitempty"`
+	Table      *RangeVar `json:"table,omitempty"`
+	Roles      *List     `json:"roles,omitempty"`
+	Qual       Node      `json:"qual,omitempty"`
+	WithCheck  Node      `json:"with_check,omitempty"`
 }
 
 func (n *AlterPolicyStmt) Pos() int {

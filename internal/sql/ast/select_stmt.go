@@ -7,24 +7,24 @@ import (
 type SelectStmt struct {
 	Tag NodeTag[SelectStmt] `json:"tag"`
 
-	DistinctClause *List       `json:",omitempty"`
-	IntoClause     *IntoClause `json:",omitempty"`
-	TargetList     *List       `json:",omitempty"`
-	FromClause     *List       `json:",omitempty"`
-	WhereClause    Node        `json:",omitempty"`
-	GroupClause    *List       `json:",omitempty"`
-	HavingClause   Node        `json:",omitempty"`
-	WindowClause   *List       `json:",omitempty"`
-	ValuesLists    *List       `json:",omitempty"`
-	SortClause     *List       `json:",omitempty"`
-	LimitOffset    Node        `json:",omitempty"`
-	LimitCount     Node        `json:",omitempty"`
-	LockingClause  *List       `json:",omitempty"`
-	WithClause     *WithClause `json:",omitempty"`
-	Op             SetOperation
-	All            bool
-	Larg           *SelectStmt `json:",omitempty"`
-	Rarg           *SelectStmt `json:",omitempty"`
+	DistinctClause *List        `json:"distinct_clause,omitempty"`
+	IntoClause     *IntoClause  `json:"into_clause,omitempty"`
+	TargetList     *List        `json:"target_list,omitempty"`
+	FromClause     *List        `json:"from_clause,omitempty"`
+	WhereClause    Node         `json:"where_clause,omitempty"`
+	GroupClause    *List        `json:"group_clause,omitempty"`
+	HavingClause   Node         `json:"having_clause,omitempty"`
+	WindowClause   *List        `json:"window_clause,omitempty"`
+	ValuesLists    *List        `json:"values_lists,omitempty"`
+	SortClause     *List        `json:"sort_clause,omitempty"`
+	LimitOffset    Node         `json:"limit_offset,omitempty"`
+	LimitCount     Node         `json:"limit_count,omitempty"`
+	LockingClause  *List        `json:"locking_clause,omitempty"`
+	WithClause     *WithClause  `json:"with_clause,omitempty"`
+	Op             SetOperation `json:"op"`
+	All            bool         `json:"all"`
+	Larg           *SelectStmt  `json:"larg,omitempty"`
+	Rarg           *SelectStmt  `json:"rarg,omitempty"`
 }
 
 func (n *SelectStmt) Pos() int {

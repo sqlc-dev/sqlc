@@ -5,9 +5,9 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type A_Indices struct {
 	Tag NodeTag[A_Indices] `json:"tag"`
 
-	IsSlice bool
-	Lidx    Node `json:",omitempty"`
-	Uidx    Node `json:",omitempty"`
+	IsSlice bool `json:"is_slice"`
+	Lidx    Node `json:"lidx,omitempty"`
+	Uidx    Node `json:"uidx,omitempty"`
 }
 
 func (n *A_Indices) Pos() int {

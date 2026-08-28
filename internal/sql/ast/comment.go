@@ -12,8 +12,8 @@ import (
 // Roslyn's terminology — return it from ParseFile, so the formatter gets
 // statements and comments from one lexer pass.
 type File struct {
-	Stmts    []Statement `json:",omitempty"`
-	Comments []Comment   `json:",omitempty"`
+	Stmts    []Statement
+	Comments []Comment
 }
 
 // Comment is a single SQL comment, positioned by byte offsets into the

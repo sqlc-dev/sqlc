@@ -7,8 +7,8 @@ type OnDuplicateKeyUpdate struct {
 	Tag NodeTag[OnDuplicateKeyUpdate] `json:"tag"`
 
 	// TargetList contains the assignments (column = value pairs)
-	TargetList *List `json:",omitempty"`
-	Location   int
+	TargetList *List `json:"target_list,omitempty"`
+	Location   int   `json:"location"`
 }
 
 func (n *OnDuplicateKeyUpdate) Pos() int {

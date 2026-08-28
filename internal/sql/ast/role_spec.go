@@ -3,9 +3,9 @@ package ast
 type RoleSpec struct {
 	Tag NodeTag[RoleSpec] `json:"tag"`
 
-	Roletype RoleSpecType
-	Rolename *string `json:",omitempty"`
-	Location int
+	Roletype RoleSpecType `json:"roletype"`
+	Rolename *string      `json:"rolename,omitempty"`
+	Location int          `json:"location"`
 }
 
 func (n *RoleSpec) Pos() int {

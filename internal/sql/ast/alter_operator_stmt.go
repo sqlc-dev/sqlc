@@ -3,8 +3,8 @@ package ast
 type AlterOperatorStmt struct {
 	Tag NodeTag[AlterOperatorStmt] `json:"tag"`
 
-	Opername *ObjectWithArgs `json:",omitempty"`
-	Options  *List           `json:",omitempty"`
+	Opername *ObjectWithArgs `json:"opername,omitempty"`
+	Options  *List           `json:"options,omitempty"`
 }
 
 func (n *AlterOperatorStmt) Pos() int {

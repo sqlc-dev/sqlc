@@ -25,112 +25,112 @@
     ],
     "ast": {
       "tag": "RawStmt",
-      "Stmt": {
+      "stmt": {
         "tag": "SelectStmt",
-        "DistinctClause": {
+        "distinct_clause": {
           "tag": "List"
         },
-        "TargetList": {
+        "target_list": {
           "tag": "List",
-          "Items": [
+          "items": [
             {
               "tag": "ResTarget",
-              "Indirection": {
+              "indirection": {
                 "tag": "List"
               },
-              "Val": {
+              "val": {
                 "tag": "ColumnRef",
-                "Name": "",
-                "Fields": {
+                "name": "",
+                "fields": {
                   "tag": "List",
-                  "Items": [
+                  "items": [
                     {
                       "tag": "String",
-                      "Str": "name"
+                      "str": "name"
                     }
                   ]
                 },
-                "Location": 35
+                "location": 35
               },
-              "Location": 35
+              "location": 35
             }
           ]
         },
-        "FromClause": {
+        "from_clause": {
           "tag": "List",
-          "Items": [
+          "items": [
             {
               "tag": "RangeVar",
-              "Relname": "authors",
-              "Inh": true,
-              "Relpersistence": 112,
-              "Location": 45
+              "relname": "authors",
+              "inh": true,
+              "relpersistence": 112,
+              "location": 45
             }
           ]
         },
-        "WhereClause": {
+        "where_clause": {
           "tag": "A_Expr",
-          "Kind": 1,
-          "Name": {
+          "kind": 1,
+          "name": {
             "tag": "List",
-            "Items": [
+            "items": [
               {
                 "tag": "String",
-                "Str": "="
+                "str": "="
               }
             ]
           },
-          "Lexpr": {
+          "lexpr": {
             "tag": "ColumnRef",
-            "Name": "",
-            "Fields": {
+            "name": "",
+            "fields": {
               "tag": "List",
-              "Items": [
+              "items": [
                 {
                   "tag": "String",
-                  "Str": "id"
+                  "str": "id"
                 }
               ]
             },
-            "Location": 59
+            "location": 59
           },
-          "Rexpr": {
+          "rexpr": {
             "tag": "ParamRef",
-            "Number": 1,
-            "Location": 64,
-            "Dollar": true
+            "number": 1,
+            "location": 64,
+            "dollar": true
           },
-          "Location": 62
+          "location": 62
         },
-        "GroupClause": {
+        "group_clause": {
           "tag": "List"
         },
-        "HavingClause": {
+        "having_clause": {
           "tag": "TODO"
         },
-        "WindowClause": {
+        "window_clause": {
           "tag": "List"
         },
-        "ValuesLists": {
+        "values_lists": {
           "tag": "List"
         },
-        "SortClause": {
+        "sort_clause": {
           "tag": "List"
         },
-        "LimitOffset": {
+        "limit_offset": {
           "tag": "TODO"
         },
-        "LimitCount": {
+        "limit_count": {
           "tag": "TODO"
         },
-        "LockingClause": {
+        "locking_clause": {
           "tag": "List"
         },
-        "Op": 0,
-        "All": false
+        "op": 0,
+        "all": false
       },
-      "StmtLocation": 0,
-      "StmtLen": 66
+      "stmt_location": 0,
+      "stmt_len": 66
     }
   }
 ]

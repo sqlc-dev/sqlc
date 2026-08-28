@@ -4,30 +4,30 @@
     "cmd": ":one",
     "ast": {
       "tag": "RawStmt",
-      "Stmt": {
+      "stmt": {
         "tag": "SelectStmt",
-        "TargetList": {
+        "target_list": {
           "tag": "List",
-          "Items": [
+          "items": [
             {
               "tag": "ResTarget",
-              "Val": {
+              "val": {
                 "tag": "A_Const",
-                "Val": {
+                "val": {
                   "tag": "Integer",
-                  "Ival": 1
+                  "ival": 1
                 },
-                "Location": 30
+                "location": 30
               },
-              "Location": 30
+              "location": 30
             }
           ]
         },
-        "Op": 0,
-        "All": false
+        "op": 0,
+        "all": false
       },
-      "StmtLocation": 0,
-      "StmtLen": 32
+      "stmt_location": 0,
+      "stmt_len": 32
     }
   }
 ]

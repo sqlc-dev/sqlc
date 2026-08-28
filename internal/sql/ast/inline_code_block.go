@@ -3,9 +3,9 @@ package ast
 type InlineCodeBlock struct {
 	Tag NodeTag[InlineCodeBlock] `json:"tag"`
 
-	SourceText    *string `json:",omitempty"`
-	LangOid       Oid
-	LangIsTrusted bool
+	SourceText    *string `json:"source_text,omitempty"`
+	LangOid       Oid     `json:"lang_oid"`
+	LangIsTrusted bool    `json:"lang_is_trusted"`
 }
 
 func (n *InlineCodeBlock) Pos() int {

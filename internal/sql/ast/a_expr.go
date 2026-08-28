@@ -9,7 +9,7 @@ import (
 type A_Expr struct {
 	Tag NodeTag[A_Expr] `json:"tag"`
 
-	Kind A_Expr_Kind
+	Kind A_Expr_Kind `json:"kind"`
 	// Name is the operator, as a list of String nodes: PostgreSQL's
 	// operator space is open (user-defined and schema-qualified operators),
 	// so the shared tree keeps pg_query's shape rather than an enum. Each
@@ -17,10 +17,10 @@ type A_Expr struct {
 	// engine that accepts more than one spelling of the same operator
 	// (SQLite's != for <>, == for =), that is the author's spelling, which
 	// is how the printer preserves it.
-	Name     *List `json:",omitempty"`
-	Lexpr    Node  `json:",omitempty"`
-	Rexpr    Node  `json:",omitempty"`
-	Location int
+	Name     *List `json:"name,omitempty"`
+	Lexpr    Node  `json:"lexpr,omitempty"`
+	Rexpr    Node  `json:"rexpr,omitempty"`
+	Location int   `json:"location"`
 }
 
 func (n *A_Expr) Pos() int {

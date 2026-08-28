@@ -3,12 +3,12 @@ package ast
 type CreateForeignServerStmt struct {
 	Tag NodeTag[CreateForeignServerStmt] `json:"tag"`
 
-	Servername  *string `json:",omitempty"`
-	Servertype  *string `json:",omitempty"`
-	Version     *string `json:",omitempty"`
-	Fdwname     *string `json:",omitempty"`
-	IfNotExists bool
-	Options     *List `json:",omitempty"`
+	Servername  *string `json:"servername,omitempty"`
+	Servertype  *string `json:"servertype,omitempty"`
+	Version     *string `json:"version,omitempty"`
+	Fdwname     *string `json:"fdwname,omitempty"`
+	IfNotExists bool    `json:"if_not_exists"`
+	Options     *List   `json:"options,omitempty"`
 }
 
 func (n *CreateForeignServerStmt) Pos() int {

@@ -3,19 +3,19 @@ package ast
 type TableFunc struct {
 	Tag NodeTag[TableFunc] `json:"tag"`
 
-	NsUris        *List    `json:",omitempty"`
-	NsNames       *List    `json:",omitempty"`
-	Docexpr       Node     `json:",omitempty"`
-	Rowexpr       Node     `json:",omitempty"`
-	Colnames      *List    `json:",omitempty"`
-	Coltypes      *List    `json:",omitempty"`
-	Coltypmods    *List    `json:",omitempty"`
-	Colcollations *List    `json:",omitempty"`
-	Colexprs      *List    `json:",omitempty"`
-	Coldefexprs   *List    `json:",omitempty"`
-	Notnulls      []uint32 `json:",omitempty"`
-	Ordinalitycol int
-	Location      int
+	NsUris        *List    `json:"ns_uris,omitempty"`
+	NsNames       *List    `json:"ns_names,omitempty"`
+	Docexpr       Node     `json:"docexpr,omitempty"`
+	Rowexpr       Node     `json:"rowexpr,omitempty"`
+	Colnames      *List    `json:"colnames,omitempty"`
+	Coltypes      *List    `json:"coltypes,omitempty"`
+	Coltypmods    *List    `json:"coltypmods,omitempty"`
+	Colcollations *List    `json:"colcollations,omitempty"`
+	Colexprs      *List    `json:"colexprs,omitempty"`
+	Coldefexprs   *List    `json:"coldefexprs,omitempty"`
+	Notnulls      []uint32 `json:"notnulls,omitempty"`
+	Ordinalitycol int      `json:"ordinalitycol"`
+	Location      int      `json:"location"`
 }
 
 func (n *TableFunc) Pos() int {

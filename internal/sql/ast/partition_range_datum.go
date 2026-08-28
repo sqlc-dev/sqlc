@@ -3,9 +3,9 @@ package ast
 type PartitionRangeDatum struct {
 	Tag NodeTag[PartitionRangeDatum] `json:"tag"`
 
-	Kind     PartitionRangeDatumKind
-	Value    Node `json:",omitempty"`
-	Location int
+	Kind     PartitionRangeDatumKind `json:"kind"`
+	Value    Node                    `json:"value,omitempty"`
+	Location int                     `json:"location"`
 }
 
 func (n *PartitionRangeDatum) Pos() int {

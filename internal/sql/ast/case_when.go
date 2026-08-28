@@ -5,10 +5,10 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type CaseWhen struct {
 	Tag NodeTag[CaseWhen] `json:"tag"`
 
-	Xpr      Node `json:",omitempty"`
-	Expr     Node `json:",omitempty"`
-	Result   Node `json:",omitempty"`
-	Location int
+	Xpr      Node `json:"xpr,omitempty"`
+	Expr     Node `json:"expr,omitempty"`
+	Result   Node `json:"result,omitempty"`
+	Location int  `json:"location"`
 }
 
 func (n *CaseWhen) Pos() int {

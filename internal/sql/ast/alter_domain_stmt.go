@@ -3,12 +3,12 @@ package ast
 type AlterDomainStmt struct {
 	Tag NodeTag[AlterDomainStmt] `json:"tag"`
 
-	Subtype   byte
-	TypeName  *List   `json:",omitempty"`
-	Name      *string `json:",omitempty"`
-	Def       Node    `json:",omitempty"`
-	Behavior  DropBehavior
-	MissingOk bool
+	Subtype   byte         `json:"subtype"`
+	TypeName  *List        `json:"type_name,omitempty"`
+	Name      *string      `json:"name,omitempty"`
+	Def       Node         `json:"def,omitempty"`
+	Behavior  DropBehavior `json:"behavior"`
+	MissingOk bool         `json:"missing_ok"`
 }
 
 func (n *AlterDomainStmt) Pos() int {

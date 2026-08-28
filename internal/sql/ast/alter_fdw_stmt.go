@@ -3,9 +3,9 @@ package ast
 type AlterFdwStmt struct {
 	Tag NodeTag[AlterFdwStmt] `json:"tag"`
 
-	Fdwname     *string `json:",omitempty"`
-	FuncOptions *List   `json:",omitempty"`
-	Options     *List   `json:",omitempty"`
+	Fdwname     *string `json:"fdwname,omitempty"`
+	FuncOptions *List   `json:"func_options,omitempty"`
+	Options     *List   `json:"options,omitempty"`
 }
 
 func (n *AlterFdwStmt) Pos() int {

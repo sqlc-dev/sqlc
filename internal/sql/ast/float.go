@@ -5,7 +5,7 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type Float struct {
 	Tag NodeTag[Float] `json:"tag"`
 
-	Str string
+	Str string `json:"str"`
 }
 
 func (n *Float) Pos() int {

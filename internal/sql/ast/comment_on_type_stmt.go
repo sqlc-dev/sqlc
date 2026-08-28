@@ -3,8 +3,8 @@ package ast
 type CommentOnTypeStmt struct {
 	Tag NodeTag[CommentOnTypeStmt] `json:"tag"`
 
-	Type    *TypeName `json:",omitempty"`
-	Comment *string   `json:",omitempty"`
+	Type    *TypeName `json:"type,omitempty"`
+	Comment *string   `json:"comment,omitempty"`
 }
 
 func (n *CommentOnTypeStmt) Pos() int {

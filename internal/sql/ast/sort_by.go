@@ -5,11 +5,11 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type SortBy struct {
 	Tag NodeTag[SortBy] `json:"tag"`
 
-	Node        Node `json:",omitempty"`
-	SortbyDir   SortByDir
-	SortbyNulls SortByNulls
-	UseOp       *List `json:",omitempty"`
-	Location    int
+	Node        Node        `json:"node,omitempty"`
+	SortbyDir   SortByDir   `json:"sortby_dir"`
+	SortbyNulls SortByNulls `json:"sortby_nulls"`
+	UseOp       *List       `json:"use_op,omitempty"`
+	Location    int         `json:"location"`
 }
 
 func (n *SortBy) Pos() int {

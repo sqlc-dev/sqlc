@@ -5,11 +5,11 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type OnConflictClause struct {
 	Tag NodeTag[OnConflictClause] `json:"tag"`
 
-	Action      OnConflictAction
-	Infer       *InferClause `json:",omitempty"`
-	TargetList  *List        `json:",omitempty"`
-	WhereClause Node         `json:",omitempty"`
-	Location    int
+	Action      OnConflictAction `json:"action"`
+	Infer       *InferClause     `json:"infer,omitempty"`
+	TargetList  *List            `json:"target_list,omitempty"`
+	WhereClause Node             `json:"where_clause,omitempty"`
+	Location    int              `json:"location"`
 }
 
 func (n *OnConflictClause) Pos() int {

@@ -3,13 +3,13 @@ package ast
 type RangeTableFunc struct {
 	Tag NodeTag[RangeTableFunc] `json:"tag"`
 
-	Lateral    bool
-	Docexpr    Node   `json:",omitempty"`
-	Rowexpr    Node   `json:",omitempty"`
-	Namespaces *List  `json:",omitempty"`
-	Columns    *List  `json:",omitempty"`
-	Alias      *Alias `json:",omitempty"`
-	Location   int
+	Lateral    bool   `json:"lateral"`
+	Docexpr    Node   `json:"docexpr,omitempty"`
+	Rowexpr    Node   `json:"rowexpr,omitempty"`
+	Namespaces *List  `json:"namespaces,omitempty"`
+	Columns    *List  `json:"columns,omitempty"`
+	Alias      *Alias `json:"alias,omitempty"`
+	Location   int    `json:"location"`
 }
 
 func (n *RangeTableFunc) Pos() int {

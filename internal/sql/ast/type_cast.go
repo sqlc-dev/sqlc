@@ -5,9 +5,9 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type TypeCast struct {
 	Tag NodeTag[TypeCast] `json:"tag"`
 
-	Arg      Node      `json:",omitempty"`
-	TypeName *TypeName `json:",omitempty"`
-	Location int
+	Arg      Node      `json:"arg,omitempty"`
+	TypeName *TypeName `json:"type_name,omitempty"`
+	Location int       `json:"location"`
 }
 
 func (n *TypeCast) Pos() int {

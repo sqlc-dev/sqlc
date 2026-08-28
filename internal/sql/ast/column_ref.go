@@ -9,11 +9,11 @@ import (
 type ColumnRef struct {
 	Tag NodeTag[ColumnRef] `json:"tag"`
 
-	Name string
+	Name string `json:"name"`
 
 	// From pg.ColumnRef
-	Fields   *List `json:",omitempty"`
-	Location int
+	Fields   *List `json:"fields,omitempty"`
+	Location int   `json:"location"`
 }
 
 func (n *ColumnRef) Pos() int {

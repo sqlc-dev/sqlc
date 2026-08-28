@@ -5,9 +5,9 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type MultiAssignRef struct {
 	Tag NodeTag[MultiAssignRef] `json:"tag"`
 
-	Source   Node `json:",omitempty"`
-	Colno    int
-	Ncolumns int
+	Source   Node `json:"source,omitempty"`
+	Colno    int  `json:"colno"`
+	Ncolumns int  `json:"ncolumns"`
 }
 
 func (n *MultiAssignRef) Pos() int {

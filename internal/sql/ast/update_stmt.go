@@ -9,16 +9,16 @@ import (
 type UpdateStmt struct {
 	Tag NodeTag[UpdateStmt] `json:"tag"`
 
-	Relations     *List       `json:",omitempty"`
-	TargetList    *List       `json:",omitempty"`
-	WhereClause   Node        `json:",omitempty"`
-	FromClause    *List       `json:",omitempty"`
-	LimitCount    Node        `json:",omitempty"`
-	ReturningList *List       `json:",omitempty"`
-	WithClause    *WithClause `json:",omitempty"`
+	Relations     *List       `json:"relations,omitempty"`
+	TargetList    *List       `json:"target_list,omitempty"`
+	WhereClause   Node        `json:"where_clause,omitempty"`
+	FromClause    *List       `json:"from_clause,omitempty"`
+	LimitCount    Node        `json:"limit_count,omitempty"`
+	ReturningList *List       `json:"returning_list,omitempty"`
+	WithClause    *WithClause `json:"with_clause,omitempty"`
 	// PostgreSQL 18 RETURNING WITH (OLD AS ..., NEW AS ...) aliases
-	ReturningOldAlias string
-	ReturningNewAlias string
+	ReturningOldAlias string `json:"returning_old_alias"`
+	ReturningNewAlias string `json:"returning_new_alias"`
 }
 
 func (n *UpdateStmt) Pos() int {

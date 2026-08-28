@@ -5,9 +5,9 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type RefreshMatViewStmt struct {
 	Tag NodeTag[RefreshMatViewStmt] `json:"tag"`
 
-	Concurrent bool
-	SkipData   bool
-	Relation   *RangeVar `json:",omitempty"`
+	Concurrent bool      `json:"concurrent"`
+	SkipData   bool      `json:"skip_data"`
+	Relation   *RangeVar `json:"relation,omitempty"`
 }
 
 func (n *RefreshMatViewStmt) Pos() int {

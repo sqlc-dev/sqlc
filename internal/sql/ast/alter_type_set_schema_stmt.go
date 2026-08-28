@@ -3,8 +3,8 @@ package ast
 type AlterTypeSetSchemaStmt struct {
 	Tag NodeTag[AlterTypeSetSchemaStmt] `json:"tag"`
 
-	Type      *TypeName `json:",omitempty"`
-	NewSchema *string   `json:",omitempty"`
+	Type      *TypeName `json:"type,omitempty"`
+	NewSchema *string   `json:"new_schema,omitempty"`
 }
 
 func (n *AlterTypeSetSchemaStmt) Pos() int {

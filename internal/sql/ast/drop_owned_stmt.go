@@ -3,8 +3,8 @@ package ast
 type DropOwnedStmt struct {
 	Tag NodeTag[DropOwnedStmt] `json:"tag"`
 
-	Roles    *List `json:",omitempty"`
-	Behavior DropBehavior
+	Roles    *List        `json:"roles,omitempty"`
+	Behavior DropBehavior `json:"behavior"`
 }
 
 func (n *DropOwnedStmt) Pos() int {

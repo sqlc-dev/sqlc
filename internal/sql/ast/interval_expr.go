@@ -6,9 +6,9 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type IntervalExpr struct {
 	Tag NodeTag[IntervalExpr] `json:"tag"`
 
-	Value    Node `json:",omitempty"`
-	Unit     string
-	Location int
+	Value    Node   `json:"value,omitempty"`
+	Unit     string `json:"unit"`
+	Location int    `json:"location"`
 }
 
 func (n *IntervalExpr) Pos() int {

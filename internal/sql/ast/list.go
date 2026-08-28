@@ -5,7 +5,7 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type List struct {
 	Tag NodeTag[List] `json:"tag"`
 
-	Items []Node `json:",omitempty"`
+	Items []Node `json:"items,omitempty"`
 }
 
 func (n *List) Pos() int {

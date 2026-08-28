@@ -5,9 +5,9 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type RawStmt struct {
 	Tag NodeTag[RawStmt] `json:"tag"`
 
-	Stmt         Node `json:",omitempty"`
-	StmtLocation int
-	StmtLen      int
+	Stmt         Node `json:"stmt,omitempty"`
+	StmtLocation int  `json:"stmt_location"`
+	StmtLen      int  `json:"stmt_len"`
 }
 
 func (n *RawStmt) Pos() int {

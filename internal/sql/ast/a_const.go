@@ -5,8 +5,8 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type A_Const struct {
 	Tag NodeTag[A_Const] `json:"tag"`
 
-	Val      Node `json:",omitempty"`
-	Location int
+	Val      Node `json:"val,omitempty"`
+	Location int  `json:"location"`
 }
 
 func (n *A_Const) Pos() int {

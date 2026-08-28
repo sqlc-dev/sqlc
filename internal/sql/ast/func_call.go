@@ -5,18 +5,18 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type FuncCall struct {
 	Tag NodeTag[FuncCall] `json:"tag"`
 
-	Func           *FuncName `json:",omitempty"`
-	Funcname       *List     `json:",omitempty"`
-	Args           *List     `json:",omitempty"`
-	AggOrder       *List     `json:",omitempty"`
-	AggFilter      Node      `json:",omitempty"`
-	AggWithinGroup bool
-	AggStar        bool
-	AggDistinct    bool
-	FuncVariadic   bool
-	Over           *WindowDef `json:",omitempty"`
-	Separator      *string    `json:",omitempty"` // MySQL GROUP_CONCAT SEPARATOR
-	Location       int
+	Func           *FuncName  `json:"func,omitempty"`
+	Funcname       *List      `json:"funcname,omitempty"`
+	Args           *List      `json:"args,omitempty"`
+	AggOrder       *List      `json:"agg_order,omitempty"`
+	AggFilter      Node       `json:"agg_filter,omitempty"`
+	AggWithinGroup bool       `json:"agg_within_group"`
+	AggStar        bool       `json:"agg_star"`
+	AggDistinct    bool       `json:"agg_distinct"`
+	FuncVariadic   bool       `json:"func_variadic"`
+	Over           *WindowDef `json:"over,omitempty"`
+	Separator      *string    `json:"separator,omitempty"` // MySQL GROUP_CONCAT SEPARATOR
+	Location       int        `json:"location"`
 }
 
 func (n *FuncCall) Pos() int {

@@ -3,9 +3,9 @@ package ast
 type AlterUserMappingStmt struct {
 	Tag NodeTag[AlterUserMappingStmt] `json:"tag"`
 
-	User       *RoleSpec `json:",omitempty"`
-	Servername *string   `json:",omitempty"`
-	Options    *List     `json:",omitempty"`
+	User       *RoleSpec `json:"user,omitempty"`
+	Servername *string   `json:"servername,omitempty"`
+	Options    *List     `json:"options,omitempty"`
 }
 
 func (n *AlterUserMappingStmt) Pos() int {

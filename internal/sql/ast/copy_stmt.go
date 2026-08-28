@@ -3,13 +3,13 @@ package ast
 type CopyStmt struct {
 	Tag NodeTag[CopyStmt] `json:"tag"`
 
-	Relation  *RangeVar `json:",omitempty"`
-	Query     Node      `json:",omitempty"`
-	Attlist   *List     `json:",omitempty"`
-	IsFrom    bool
-	IsProgram bool
-	Filename  *string `json:",omitempty"`
-	Options   *List   `json:",omitempty"`
+	Relation  *RangeVar `json:"relation,omitempty"`
+	Query     Node      `json:"query,omitempty"`
+	Attlist   *List     `json:"attlist,omitempty"`
+	IsFrom    bool      `json:"is_from"`
+	IsProgram bool      `json:"is_program"`
+	Filename  *string   `json:"filename,omitempty"`
+	Options   *List     `json:"options,omitempty"`
 }
 
 func (n *CopyStmt) Pos() int {

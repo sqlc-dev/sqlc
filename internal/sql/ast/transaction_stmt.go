@@ -3,9 +3,9 @@ package ast
 type TransactionStmt struct {
 	Tag NodeTag[TransactionStmt] `json:"tag"`
 
-	Kind    TransactionStmtKind
-	Options *List   `json:",omitempty"`
-	Gid     *string `json:",omitempty"`
+	Kind    TransactionStmtKind `json:"kind"`
+	Options *List               `json:"options,omitempty"`
+	Gid     *string             `json:"gid,omitempty"`
 }
 
 func (n *TransactionStmt) Pos() int {

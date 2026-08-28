@@ -3,9 +3,9 @@ package ast
 type CommentOnColumnStmt struct {
 	Tag NodeTag[CommentOnColumnStmt] `json:"tag"`
 
-	Table   *TableName `json:",omitempty"`
-	Col     *ColumnRef `json:",omitempty"`
-	Comment *string    `json:",omitempty"`
+	Table   *TableName `json:"table,omitempty"`
+	Col     *ColumnRef `json:"col,omitempty"`
+	Comment *string    `json:"comment,omitempty"`
 }
 
 func (n *CommentOnColumnStmt) Pos() int {

@@ -5,11 +5,11 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type NullTest struct {
 	Tag NodeTag[NullTest] `json:"tag"`
 
-	Xpr          Node `json:",omitempty"`
-	Arg          Node `json:",omitempty"`
-	Nulltesttype NullTestType
-	Argisrow     bool
-	Location     int
+	Xpr          Node         `json:"xpr,omitempty"`
+	Arg          Node         `json:"arg,omitempty"`
+	Nulltesttype NullTestType `json:"nulltesttype"`
+	Argisrow     bool         `json:"argisrow"`
+	Location     int          `json:"location"`
 }
 
 func (n *NullTest) Pos() int {

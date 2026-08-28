@@ -5,9 +5,9 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type FuncName struct {
 	Tag NodeTag[FuncName] `json:"tag"`
 
-	Catalog string
-	Schema  string
-	Name    string
+	Catalog string `json:"catalog"`
+	Schema  string `json:"schema"`
+	Name    string `json:"name"`
 }
 
 func (n *FuncName) Pos() int {

@@ -3,15 +3,15 @@ package ast
 type Const struct {
 	Tag NodeTag[Const] `json:"tag"`
 
-	Xpr         Node `json:",omitempty"`
-	Consttype   Oid
-	Consttypmod int32
-	Constcollid Oid
-	Constlen    int
-	Constvalue  Datum
-	Constisnull bool
-	Constbyval  bool
-	Location    int
+	Xpr         Node  `json:"xpr,omitempty"`
+	Consttype   Oid   `json:"consttype"`
+	Consttypmod int32 `json:"consttypmod"`
+	Constcollid Oid   `json:"constcollid"`
+	Constlen    int   `json:"constlen"`
+	Constvalue  Datum `json:"constvalue"`
+	Constisnull bool  `json:"constisnull"`
+	Constbyval  bool  `json:"constbyval"`
+	Location    int   `json:"location"`
 }
 
 func (n *Const) Pos() int {

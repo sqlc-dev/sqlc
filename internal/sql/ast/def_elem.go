@@ -5,11 +5,11 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type DefElem struct {
 	Tag NodeTag[DefElem] `json:"tag"`
 
-	Defnamespace *string `json:",omitempty"`
-	Defname      *string `json:",omitempty"`
-	Arg          Node    `json:",omitempty"`
-	Defaction    DefElemAction
-	Location     int
+	Defnamespace *string       `json:"defnamespace,omitempty"`
+	Defname      *string       `json:"defname,omitempty"`
+	Arg          Node          `json:"arg,omitempty"`
+	Defaction    DefElemAction `json:"defaction"`
+	Location     int           `json:"location"`
 }
 
 func (n *DefElem) Pos() int {

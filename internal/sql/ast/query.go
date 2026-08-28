@@ -3,42 +3,42 @@ package ast
 type Query struct {
 	Tag NodeTag[Query] `json:"tag"`
 
-	CommandType      CmdType
-	QuerySource      QuerySource
-	QueryId          uint32
-	CanSetTag        bool
-	UtilityStmt      Node `json:",omitempty"`
-	ResultRelation   int
-	HasAggs          bool
-	HasWindowFuncs   bool
-	HasTargetSrfs    bool
-	HasSubLinks      bool
-	HasDistinctOn    bool
-	HasRecursive     bool
-	HasModifyingCte  bool
-	HasForUpdate     bool
-	HasRowSecurity   bool
-	CteList          *List     `json:",omitempty"`
-	Rtable           *List     `json:",omitempty"`
-	Jointree         *FromExpr `json:",omitempty"`
-	TargetList       *List     `json:",omitempty"`
-	Override         OverridingKind
-	OnConflict       *OnConflictExpr `json:",omitempty"`
-	ReturningList    *List           `json:",omitempty"`
-	GroupClause      *List           `json:",omitempty"`
-	GroupingSets     *List           `json:",omitempty"`
-	HavingQual       Node            `json:",omitempty"`
-	WindowClause     *List           `json:",omitempty"`
-	DistinctClause   *List           `json:",omitempty"`
-	SortClause       *List           `json:",omitempty"`
-	LimitOffset      Node            `json:",omitempty"`
-	LimitCount       Node            `json:",omitempty"`
-	RowMarks         *List           `json:",omitempty"`
-	SetOperations    Node            `json:",omitempty"`
-	ConstraintDeps   *List           `json:",omitempty"`
-	WithCheckOptions *List           `json:",omitempty"`
-	StmtLocation     int
-	StmtLen          int
+	CommandType      CmdType         `json:"command_type"`
+	QuerySource      QuerySource     `json:"query_source"`
+	QueryId          uint32          `json:"query_id"`
+	CanSetTag        bool            `json:"can_set_tag"`
+	UtilityStmt      Node            `json:"utility_stmt,omitempty"`
+	ResultRelation   int             `json:"result_relation"`
+	HasAggs          bool            `json:"has_aggs"`
+	HasWindowFuncs   bool            `json:"has_window_funcs"`
+	HasTargetSrfs    bool            `json:"has_target_srfs"`
+	HasSubLinks      bool            `json:"has_sub_links"`
+	HasDistinctOn    bool            `json:"has_distinct_on"`
+	HasRecursive     bool            `json:"has_recursive"`
+	HasModifyingCte  bool            `json:"has_modifying_cte"`
+	HasForUpdate     bool            `json:"has_for_update"`
+	HasRowSecurity   bool            `json:"has_row_security"`
+	CteList          *List           `json:"cte_list,omitempty"`
+	Rtable           *List           `json:"rtable,omitempty"`
+	Jointree         *FromExpr       `json:"jointree,omitempty"`
+	TargetList       *List           `json:"target_list,omitempty"`
+	Override         OverridingKind  `json:"override"`
+	OnConflict       *OnConflictExpr `json:"on_conflict,omitempty"`
+	ReturningList    *List           `json:"returning_list,omitempty"`
+	GroupClause      *List           `json:"group_clause,omitempty"`
+	GroupingSets     *List           `json:"grouping_sets,omitempty"`
+	HavingQual       Node            `json:"having_qual,omitempty"`
+	WindowClause     *List           `json:"window_clause,omitempty"`
+	DistinctClause   *List           `json:"distinct_clause,omitempty"`
+	SortClause       *List           `json:"sort_clause,omitempty"`
+	LimitOffset      Node            `json:"limit_offset,omitempty"`
+	LimitCount       Node            `json:"limit_count,omitempty"`
+	RowMarks         *List           `json:"row_marks,omitempty"`
+	SetOperations    Node            `json:"set_operations,omitempty"`
+	ConstraintDeps   *List           `json:"constraint_deps,omitempty"`
+	WithCheckOptions *List           `json:"with_check_options,omitempty"`
+	StmtLocation     int             `json:"stmt_location"`
+	StmtLen          int             `json:"stmt_len"`
 }
 
 func (n *Query) Pos() int {

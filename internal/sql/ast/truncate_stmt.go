@@ -5,9 +5,9 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type TruncateStmt struct {
 	Tag NodeTag[TruncateStmt] `json:"tag"`
 
-	Relations   *List `json:",omitempty"`
-	RestartSeqs bool
-	Behavior    DropBehavior
+	Relations   *List        `json:"relations,omitempty"`
+	RestartSeqs bool         `json:"restart_seqs"`
+	Behavior    DropBehavior `json:"behavior"`
 }
 
 func (n *TruncateStmt) Pos() int {

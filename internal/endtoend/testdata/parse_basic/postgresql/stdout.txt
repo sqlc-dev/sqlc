@@ -4,66 +4,66 @@
     "cmd": ":one",
     "ast": {
       "tag": "RawStmt",
-      "Stmt": {
+      "stmt": {
         "tag": "SelectStmt",
-        "DistinctClause": {
+        "distinct_clause": {
           "tag": "List"
         },
-        "TargetList": {
+        "target_list": {
           "tag": "List",
-          "Items": [
+          "items": [
             {
               "tag": "ResTarget",
-              "Indirection": {
+              "indirection": {
                 "tag": "List"
               },
-              "Val": {
+              "val": {
                 "tag": "A_Const",
-                "Val": {
+                "val": {
                   "tag": "Integer",
-                  "Ival": 1
+                  "ival": 1
                 },
-                "Location": 30
+                "location": 30
               },
-              "Location": 30
+              "location": 30
             }
           ]
         },
-        "FromClause": {
+        "from_clause": {
           "tag": "List"
         },
-        "WhereClause": {
+        "where_clause": {
           "tag": "TODO"
         },
-        "GroupClause": {
+        "group_clause": {
           "tag": "List"
         },
-        "HavingClause": {
+        "having_clause": {
           "tag": "TODO"
         },
-        "WindowClause": {
+        "window_clause": {
           "tag": "List"
         },
-        "ValuesLists": {
+        "values_lists": {
           "tag": "List"
         },
-        "SortClause": {
+        "sort_clause": {
           "tag": "List"
         },
-        "LimitOffset": {
+        "limit_offset": {
           "tag": "TODO"
         },
-        "LimitCount": {
+        "limit_count": {
           "tag": "TODO"
         },
-        "LockingClause": {
+        "locking_clause": {
           "tag": "List"
         },
-        "Op": 0,
-        "All": false
+        "op": 0,
+        "all": false
       },
-      "StmtLocation": 0,
-      "StmtLen": 31
+      "stmt_location": 0,
+      "stmt_len": 31
     }
   }
 ]

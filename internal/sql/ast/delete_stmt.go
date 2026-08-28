@@ -5,18 +5,18 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type DeleteStmt struct {
 	Tag NodeTag[DeleteStmt] `json:"tag"`
 
-	Relations     *List       `json:",omitempty"`
-	UsingClause   *List       `json:",omitempty"`
-	WhereClause   Node        `json:",omitempty"`
-	LimitCount    Node        `json:",omitempty"`
-	ReturningList *List       `json:",omitempty"`
-	WithClause    *WithClause `json:",omitempty"`
+	Relations     *List       `json:"relations,omitempty"`
+	UsingClause   *List       `json:"using_clause,omitempty"`
+	WhereClause   Node        `json:"where_clause,omitempty"`
+	LimitCount    Node        `json:"limit_count,omitempty"`
+	ReturningList *List       `json:"returning_list,omitempty"`
+	WithClause    *WithClause `json:"with_clause,omitempty"`
 	// MySQL multi-table DELETE support
-	Targets    *List `json:",omitempty"` // Tables to delete from (e.g., jt.*, pt.*)
-	FromClause Node  `json:",omitempty"` // FROM clause with JOINs (Node to support JoinExpr)
+	Targets    *List `json:"targets,omitempty"`     // Tables to delete from (e.g., jt.*, pt.*)
+	FromClause Node  `json:"from_clause,omitempty"` // FROM clause with JOINs (Node to support JoinExpr)
 	// PostgreSQL 18 RETURNING WITH (OLD AS ..., NEW AS ...) aliases
-	ReturningOldAlias string
-	ReturningNewAlias string
+	ReturningOldAlias string `json:"returning_old_alias"`
+	ReturningNewAlias string `json:"returning_new_alias"`
 }
 
 func (n *DeleteStmt) Pos() int {

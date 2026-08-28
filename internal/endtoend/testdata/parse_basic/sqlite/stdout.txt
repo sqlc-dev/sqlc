@@ -4,42 +4,42 @@
     "cmd": ":one",
     "ast": {
       "tag": "RawStmt",
-      "Stmt": {
+      "stmt": {
         "tag": "SelectStmt",
-        "TargetList": {
+        "target_list": {
           "tag": "List",
-          "Items": [
+          "items": [
             {
               "tag": "ResTarget",
-              "Val": {
+              "val": {
                 "tag": "A_Const",
-                "Val": {
+                "val": {
                   "tag": "Integer",
-                  "Ival": 1
+                  "ival": 1
                 },
-                "Location": 30
+                "location": 30
               },
-              "Location": 30
+              "location": 30
             }
           ]
         },
-        "FromClause": {
+        "from_clause": {
           "tag": "List"
         },
-        "GroupClause": {
+        "group_clause": {
           "tag": "List"
         },
-        "WindowClause": {
+        "window_clause": {
           "tag": "List"
         },
-        "ValuesLists": {
+        "values_lists": {
           "tag": "List"
         },
-        "Op": 0,
-        "All": false
+        "op": 0,
+        "all": false
       },
-      "StmtLocation": 0,
-      "StmtLen": 31
+      "stmt_location": 0,
+      "stmt_len": 31
     }
   }
 ]

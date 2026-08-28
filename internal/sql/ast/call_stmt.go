@@ -5,7 +5,7 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type CallStmt struct {
 	Tag NodeTag[CallStmt] `json:"tag"`
 
-	FuncCall *FuncCall `json:",omitempty"`
+	FuncCall *FuncCall `json:"func_call,omitempty"`
 }
 
 func (n *CallStmt) Pos() int {

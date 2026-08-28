@@ -3,10 +3,10 @@ package ast
 type CreatePublicationStmt struct {
 	Tag NodeTag[CreatePublicationStmt] `json:"tag"`
 
-	Pubname      *string `json:",omitempty"`
-	Options      *List   `json:",omitempty"`
-	Tables       *List   `json:",omitempty"`
-	ForAllTables bool
+	Pubname      *string `json:"pubname,omitempty"`
+	Options      *List   `json:"options,omitempty"`
+	Tables       *List   `json:"tables,omitempty"`
+	ForAllTables bool    `json:"for_all_tables"`
 }
 
 func (n *CreatePublicationStmt) Pos() int {

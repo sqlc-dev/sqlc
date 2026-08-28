@@ -3,8 +3,8 @@ package ast
 type TableLikeClause struct {
 	Tag NodeTag[TableLikeClause] `json:"tag"`
 
-	Relation *RangeVar `json:",omitempty"`
-	Options  uint32
+	Relation *RangeVar `json:"relation,omitempty"`
+	Options  uint32    `json:"options"`
 }
 
 func (n *TableLikeClause) Pos() int {

@@ -3,12 +3,12 @@ package ast
 type CreatePLangStmt struct {
 	Tag NodeTag[CreatePLangStmt] `json:"tag"`
 
-	Replace     bool
-	Plname      *string `json:",omitempty"`
-	Plhandler   *List   `json:",omitempty"`
-	Plinline    *List   `json:",omitempty"`
-	Plvalidator *List   `json:",omitempty"`
-	Pltrusted   bool
+	Replace     bool    `json:"replace"`
+	Plname      *string `json:"plname,omitempty"`
+	Plhandler   *List   `json:"plhandler,omitempty"`
+	Plinline    *List   `json:"plinline,omitempty"`
+	Plvalidator *List   `json:"plvalidator,omitempty"`
+	Pltrusted   bool    `json:"pltrusted"`
 }
 
 func (n *CreatePLangStmt) Pos() int {

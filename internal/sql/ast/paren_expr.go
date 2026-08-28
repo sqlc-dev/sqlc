@@ -6,8 +6,8 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type ParenExpr struct {
 	Tag NodeTag[ParenExpr] `json:"tag"`
 
-	Expr     Node `json:",omitempty"`
-	Location int
+	Expr     Node `json:"expr,omitempty"`
+	Location int  `json:"location"`
 }
 
 func (n *ParenExpr) Pos() int {

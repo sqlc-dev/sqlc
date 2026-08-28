@@ -3,15 +3,15 @@ package ast
 type ArrayRef struct {
 	Tag NodeTag[ArrayRef] `json:"tag"`
 
-	Xpr             Node `json:",omitempty"`
-	Refarraytype    Oid
-	Refelemtype     Oid
-	Reftypmod       int32
-	Refcollid       Oid
-	Refupperindexpr *List `json:",omitempty"`
-	Reflowerindexpr *List `json:",omitempty"`
-	Refexpr         Node  `json:",omitempty"`
-	Refassgnexpr    Node  `json:",omitempty"`
+	Xpr             Node  `json:"xpr,omitempty"`
+	Refarraytype    Oid   `json:"refarraytype"`
+	Refelemtype     Oid   `json:"refelemtype"`
+	Reftypmod       int32 `json:"reftypmod"`
+	Refcollid       Oid   `json:"refcollid"`
+	Refupperindexpr *List `json:"refupperindexpr,omitempty"`
+	Reflowerindexpr *List `json:"reflowerindexpr,omitempty"`
+	Refexpr         Node  `json:"refexpr,omitempty"`
+	Refassgnexpr    Node  `json:"refassgnexpr,omitempty"`
 }
 
 func (n *ArrayRef) Pos() int {

@@ -3,11 +3,11 @@ package ast
 type AlterSubscriptionStmt struct {
 	Tag NodeTag[AlterSubscriptionStmt] `json:"tag"`
 
-	Kind        AlterSubscriptionType
-	Subname     *string `json:",omitempty"`
-	Conninfo    *string `json:",omitempty"`
-	Publication *List   `json:",omitempty"`
-	Options     *List   `json:",omitempty"`
+	Kind        AlterSubscriptionType `json:"kind"`
+	Subname     *string               `json:"subname,omitempty"`
+	Conninfo    *string               `json:"conninfo,omitempty"`
+	Publication *List                 `json:"publication,omitempty"`
+	Options     *List                 `json:"options,omitempty"`
 }
 
 func (n *AlterSubscriptionStmt) Pos() int {

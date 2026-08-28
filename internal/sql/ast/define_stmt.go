@@ -3,12 +3,12 @@ package ast
 type DefineStmt struct {
 	Tag NodeTag[DefineStmt] `json:"tag"`
 
-	Kind        ObjectType
-	Oldstyle    bool
-	Defnames    *List `json:",omitempty"`
-	Args        *List `json:",omitempty"`
-	Definition  *List `json:",omitempty"`
-	IfNotExists bool
+	Kind        ObjectType `json:"kind"`
+	Oldstyle    bool       `json:"oldstyle"`
+	Defnames    *List      `json:"defnames,omitempty"`
+	Args        *List      `json:"args,omitempty"`
+	Definition  *List      `json:"definition,omitempty"`
+	IfNotExists bool       `json:"if_not_exists"`
 }
 
 func (n *DefineStmt) Pos() int {

@@ -3,13 +3,13 @@ package ast
 type IntoClause struct {
 	Tag NodeTag[IntoClause] `json:"tag"`
 
-	Rel            *RangeVar `json:",omitempty"`
-	ColNames       *List     `json:",omitempty"`
-	Options        *List     `json:",omitempty"`
-	OnCommit       OnCommitAction
-	TableSpaceName *string `json:",omitempty"`
-	ViewQuery      Node    `json:",omitempty"`
-	SkipData       bool
+	Rel            *RangeVar      `json:"rel,omitempty"`
+	ColNames       *List          `json:"col_names,omitempty"`
+	Options        *List          `json:"options,omitempty"`
+	OnCommit       OnCommitAction `json:"on_commit"`
+	TableSpaceName *string        `json:"table_space_name,omitempty"`
+	ViewQuery      Node           `json:"view_query,omitempty"`
+	SkipData       bool           `json:"skip_data"`
 }
 
 func (n *IntoClause) Pos() int {

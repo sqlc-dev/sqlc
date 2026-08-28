@@ -5,7 +5,7 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type DoStmt struct {
 	Tag NodeTag[DoStmt] `json:"tag"`
 
-	Args *List `json:",omitempty"`
+	Args *List `json:"args,omitempty"`
 }
 
 func (n *DoStmt) Pos() int {

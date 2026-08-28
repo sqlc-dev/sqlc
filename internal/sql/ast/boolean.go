@@ -9,7 +9,7 @@ import (
 type Boolean struct {
 	Tag NodeTag[Boolean] `json:"tag"`
 
-	Boolval bool
+	Boolval bool `json:"boolval"`
 }
 
 func (n *Boolean) Pos() int {

@@ -5,10 +5,10 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type BoolExpr struct {
 	Tag NodeTag[BoolExpr] `json:"tag"`
 
-	Xpr      Node `json:",omitempty"`
-	Boolop   BoolExprType
-	Args     *List `json:",omitempty"`
-	Location int
+	Xpr      Node         `json:"xpr,omitempty"`
+	Boolop   BoolExprType `json:"boolop"`
+	Args     *List        `json:"args,omitempty"`
+	Location int          `json:"location"`
 }
 
 func (n *BoolExpr) Pos() int {

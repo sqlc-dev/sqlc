@@ -7,8 +7,8 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type VariableExpr struct {
 	Tag NodeTag[VariableExpr] `json:"tag"`
 
-	Name     string
-	Location int
+	Name     string `json:"name"`
+	Location int    `json:"location"`
 }
 
 func (n *VariableExpr) Pos() int {

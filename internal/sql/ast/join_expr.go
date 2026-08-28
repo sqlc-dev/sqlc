@@ -5,14 +5,14 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type JoinExpr struct {
 	Tag NodeTag[JoinExpr] `json:"tag"`
 
-	Jointype    JoinType
-	IsNatural   bool
-	Larg        Node   `json:",omitempty"`
-	Rarg        Node   `json:",omitempty"`
-	UsingClause *List  `json:",omitempty"`
-	Quals       Node   `json:",omitempty"`
-	Alias       *Alias `json:",omitempty"`
-	Rtindex     int
+	Jointype    JoinType `json:"jointype"`
+	IsNatural   bool     `json:"is_natural"`
+	Larg        Node     `json:"larg,omitempty"`
+	Rarg        Node     `json:"rarg,omitempty"`
+	UsingClause *List    `json:"using_clause,omitempty"`
+	Quals       Node     `json:"quals,omitempty"`
+	Alias       *Alias   `json:"alias,omitempty"`
+	Rtindex     int      `json:"rtindex"`
 }
 
 func (n *JoinExpr) Pos() int {

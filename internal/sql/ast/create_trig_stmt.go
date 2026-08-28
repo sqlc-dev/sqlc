@@ -3,20 +3,20 @@ package ast
 type CreateTrigStmt struct {
 	Tag NodeTag[CreateTrigStmt] `json:"tag"`
 
-	Trigname       *string   `json:",omitempty"`
-	Relation       *RangeVar `json:",omitempty"`
-	Funcname       *List     `json:",omitempty"`
-	Args           *List     `json:",omitempty"`
-	Row            bool
-	Timing         int16
-	Events         int16
-	Columns        *List `json:",omitempty"`
-	WhenClause     Node  `json:",omitempty"`
-	Isconstraint   bool
-	TransitionRels *List `json:",omitempty"`
-	Deferrable     bool
-	Initdeferred   bool
-	Constrrel      *RangeVar `json:",omitempty"`
+	Trigname       *string   `json:"trigname,omitempty"`
+	Relation       *RangeVar `json:"relation,omitempty"`
+	Funcname       *List     `json:"funcname,omitempty"`
+	Args           *List     `json:"args,omitempty"`
+	Row            bool      `json:"row"`
+	Timing         int16     `json:"timing"`
+	Events         int16     `json:"events"`
+	Columns        *List     `json:"columns,omitempty"`
+	WhenClause     Node      `json:"when_clause,omitempty"`
+	Isconstraint   bool      `json:"isconstraint"`
+	TransitionRels *List     `json:"transition_rels,omitempty"`
+	Deferrable     bool      `json:"deferrable"`
+	Initdeferred   bool      `json:"initdeferred"`
+	Constrrel      *RangeVar `json:"constrrel,omitempty"`
 }
 
 func (n *CreateTrigStmt) Pos() int {

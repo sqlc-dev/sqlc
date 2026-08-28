@@ -18,13 +18,13 @@ const (
 type SubLink struct {
 	Tag NodeTag[SubLink] `json:"tag"`
 
-	Xpr         Node `json:",omitempty"`
-	SubLinkType SubLinkType
-	SubLinkId   int
-	Testexpr    Node  `json:",omitempty"`
-	OperName    *List `json:",omitempty"`
-	Subselect   Node  `json:",omitempty"`
-	Location    int
+	Xpr         Node        `json:"xpr,omitempty"`
+	SubLinkType SubLinkType `json:"sub_link_type"`
+	SubLinkId   int         `json:"sub_link_id"`
+	Testexpr    Node        `json:"testexpr,omitempty"`
+	OperName    *List       `json:"oper_name,omitempty"`
+	Subselect   Node        `json:"subselect,omitempty"`
+	Location    int         `json:"location"`
 }
 
 func (n *SubLink) Pos() int {

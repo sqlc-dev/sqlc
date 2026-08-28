@@ -5,10 +5,10 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type ResTarget struct {
 	Tag NodeTag[ResTarget] `json:"tag"`
 
-	Name        *string `json:",omitempty"`
-	Indirection *List   `json:",omitempty"`
-	Val         Node    `json:",omitempty"`
-	Location    int
+	Name        *string `json:"name,omitempty"`
+	Indirection *List   `json:"indirection,omitempty"`
+	Val         Node    `json:"val,omitempty"`
+	Location    int     `json:"location"`
 }
 
 func (n *ResTarget) Pos() int {

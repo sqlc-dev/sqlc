@@ -5,9 +5,9 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type RangeSubselect struct {
 	Tag NodeTag[RangeSubselect] `json:"tag"`
 
-	Lateral  bool
-	Subquery Node   `json:",omitempty"`
-	Alias    *Alias `json:",omitempty"`
+	Lateral  bool   `json:"lateral"`
+	Subquery Node   `json:"subquery,omitempty"`
+	Alias    *Alias `json:"alias,omitempty"`
 }
 
 func (n *RangeSubselect) Pos() int {

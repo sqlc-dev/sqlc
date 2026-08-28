@@ -3,10 +3,10 @@ package ast
 type AlterObjectDependsStmt struct {
 	Tag NodeTag[AlterObjectDependsStmt] `json:"tag"`
 
-	ObjectType ObjectType
-	Relation   *RangeVar `json:",omitempty"`
-	Object     Node      `json:",omitempty"`
-	Extname    Node      `json:",omitempty"`
+	ObjectType ObjectType `json:"object_type"`
+	Relation   *RangeVar  `json:"relation,omitempty"`
+	Object     Node       `json:"object,omitempty"`
+	Extname    Node       `json:"extname,omitempty"`
 }
 
 func (n *AlterObjectDependsStmt) Pos() int {

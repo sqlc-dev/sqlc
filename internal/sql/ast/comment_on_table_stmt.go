@@ -3,8 +3,8 @@ package ast
 type CommentOnTableStmt struct {
 	Tag NodeTag[CommentOnTableStmt] `json:"tag"`
 
-	Table   *TableName `json:",omitempty"`
-	Comment *string    `json:",omitempty"`
+	Table   *TableName `json:"table,omitempty"`
+	Comment *string    `json:"comment,omitempty"`
 }
 
 func (n *CommentOnTableStmt) Pos() int {
