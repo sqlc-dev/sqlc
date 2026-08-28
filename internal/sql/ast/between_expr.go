@@ -3,15 +3,17 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type BetweenExpr struct {
+	Tag NodeTag[BetweenExpr] `json:"tag"`
+
 	// Expr is the value expression to be compared.
-	Expr Node
+	Expr Node `json:"expr,omitempty"`
 	// Left is the left expression in the between statement.
-	Left Node
+	Left Node `json:"left,omitempty"`
 	// Right is the right expression in the between statement.
-	Right Node
+	Right Node `json:"right,omitempty"`
 	// Not is true, the expression is "not between".
-	Not      bool
-	Location int
+	Not      bool `json:"not"`
+	Location int  `json:"location"`
 }
 
 func (n *BetweenExpr) Pos() int {

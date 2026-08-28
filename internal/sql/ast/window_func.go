@@ -1,17 +1,19 @@
 package ast
 
 type WindowFunc struct {
-	Xpr         Node
-	Winfnoid    Oid
-	Wintype     Oid
-	Wincollid   Oid
-	Inputcollid Oid
-	Args        *List
-	Aggfilter   Node
-	Winref      Index
-	Winstar     bool
-	Winagg      bool
-	Location    int
+	Tag NodeTag[WindowFunc] `json:"tag"`
+
+	Xpr         Node  `json:"xpr,omitempty"`
+	Winfnoid    Oid   `json:"winfnoid"`
+	Wintype     Oid   `json:"wintype"`
+	Wincollid   Oid   `json:"wincollid"`
+	Inputcollid Oid   `json:"inputcollid"`
+	Args        *List `json:"args,omitempty"`
+	Aggfilter   Node  `json:"aggfilter,omitempty"`
+	Winref      Index `json:"winref"`
+	Winstar     bool  `json:"winstar"`
+	Winagg      bool  `json:"winagg"`
+	Location    int   `json:"location"`
 }
 
 func (n *WindowFunc) Pos() int {

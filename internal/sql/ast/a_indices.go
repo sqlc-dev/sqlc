@@ -3,9 +3,11 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type A_Indices struct {
-	IsSlice bool
-	Lidx    Node
-	Uidx    Node
+	Tag NodeTag[A_Indices] `json:"tag"`
+
+	IsSlice bool `json:"is_slice"`
+	Lidx    Node `json:"lidx,omitempty"`
+	Uidx    Node `json:"uidx,omitempty"`
 }
 
 func (n *A_Indices) Pos() int {

@@ -3,11 +3,13 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type SQLValueFunction struct {
-	Xpr      Node
-	Op       SQLValueFunctionOp
-	Type     Oid
-	Typmod   int32
-	Location int
+	Tag NodeTag[SQLValueFunction] `json:"tag"`
+
+	Xpr      Node               `json:"xpr,omitempty"`
+	Op       SQLValueFunctionOp `json:"op"`
+	Type     Oid                `json:"type"`
+	Typmod   int32              `json:"typmod"`
+	Location int                `json:"location"`
 }
 
 func (n *SQLValueFunction) Pos() int {

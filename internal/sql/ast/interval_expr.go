@@ -4,9 +4,11 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 // IntervalExpr represents a MySQL INTERVAL expression like "INTERVAL 1 DAY"
 type IntervalExpr struct {
-	Value    Node
-	Unit     string
-	Location int
+	Tag NodeTag[IntervalExpr] `json:"tag"`
+
+	Value    Node   `json:"value,omitempty"`
+	Unit     string `json:"unit"`
+	Location int    `json:"location"`
 }
 
 func (n *IntervalExpr) Pos() int {

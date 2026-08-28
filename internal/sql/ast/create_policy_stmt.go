@@ -1,13 +1,15 @@
 package ast
 
 type CreatePolicyStmt struct {
-	PolicyName *string
-	Table      *RangeVar
-	CmdName    *string
-	Permissive bool
-	Roles      *List
-	Qual       Node
-	WithCheck  Node
+	Tag NodeTag[CreatePolicyStmt] `json:"tag"`
+
+	PolicyName *string   `json:"policy_name,omitempty"`
+	Table      *RangeVar `json:"table,omitempty"`
+	CmdName    *string   `json:"cmd_name,omitempty"`
+	Permissive bool      `json:"permissive"`
+	Roles      *List     `json:"roles,omitempty"`
+	Qual       Node      `json:"qual,omitempty"`
+	WithCheck  Node      `json:"with_check,omitempty"`
 }
 
 func (n *CreatePolicyStmt) Pos() int {

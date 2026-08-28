@@ -1,7 +1,9 @@
 package ast
 
 type BitString struct {
-	Str string
+	Tag NodeTag[BitString] `json:"tag"`
+
+	Str string `json:"str"`
 }
 
 func (n *BitString) Pos() int {

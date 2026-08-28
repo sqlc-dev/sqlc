@@ -3,13 +3,15 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type RangeVar struct {
-	Catalogname    *string
-	Schemaname     *string
-	Relname        *string
-	Inh            bool
-	Relpersistence byte
-	Alias          *Alias
-	Location       int
+	Tag NodeTag[RangeVar] `json:"tag"`
+
+	Catalogname    *string `json:"catalogname,omitempty"`
+	Schemaname     *string `json:"schemaname,omitempty"`
+	Relname        *string `json:"relname,omitempty"`
+	Inh            bool    `json:"inh"`
+	Relpersistence byte    `json:"relpersistence"`
+	Alias          *Alias  `json:"alias,omitempty"`
+	Location       int     `json:"location"`
 }
 
 func (n *RangeVar) Pos() int {

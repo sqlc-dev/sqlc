@@ -1,11 +1,13 @@
 package ast
 
 type GrantRoleStmt struct {
-	GrantedRoles *List
-	GranteeRoles *List
-	IsGrant      bool
-	Grantor      *RoleSpec
-	Behavior     DropBehavior
+	Tag NodeTag[GrantRoleStmt] `json:"tag"`
+
+	GrantedRoles *List        `json:"granted_roles,omitempty"`
+	GranteeRoles *List        `json:"grantee_roles,omitempty"`
+	IsGrant      bool         `json:"is_grant"`
+	Grantor      *RoleSpec    `json:"grantor,omitempty"`
+	Behavior     DropBehavior `json:"behavior"`
 }
 
 func (n *GrantRoleStmt) Pos() int {

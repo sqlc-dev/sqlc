@@ -1,9 +1,11 @@
 package ast
 
 type AlterRoleSetStmt struct {
-	Role     *RoleSpec
-	Database *string
-	Setstmt  *VariableSetStmt
+	Tag NodeTag[AlterRoleSetStmt] `json:"tag"`
+
+	Role     *RoleSpec        `json:"role,omitempty"`
+	Database *string          `json:"database,omitempty"`
+	Setstmt  *VariableSetStmt `json:"setstmt,omitempty"`
 }
 
 func (n *AlterRoleSetStmt) Pos() int {

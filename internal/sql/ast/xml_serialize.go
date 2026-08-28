@@ -1,10 +1,12 @@
 package ast
 
 type XmlSerialize struct {
-	Xmloption XmlOptionType
-	Expr      Node
-	TypeName  *TypeName
-	Location  int
+	Tag NodeTag[XmlSerialize] `json:"tag"`
+
+	Xmloption XmlOptionType `json:"xmloption"`
+	Expr      Node          `json:"expr,omitempty"`
+	TypeName  *TypeName     `json:"type_name,omitempty"`
+	Location  int           `json:"location"`
 }
 
 func (n *XmlSerialize) Pos() int {

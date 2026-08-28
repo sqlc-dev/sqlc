@@ -3,8 +3,10 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type Alias struct {
-	Aliasname *string
-	Colnames  *List
+	Tag NodeTag[Alias] `json:"tag"`
+
+	Aliasname *string `json:"aliasname,omitempty"`
+	Colnames  *List   `json:"colnames,omitempty"`
 }
 
 func (n *Alias) Pos() int {

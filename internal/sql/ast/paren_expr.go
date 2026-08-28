@@ -4,8 +4,10 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 // ParenExpr represents a parenthesized expression
 type ParenExpr struct {
-	Expr     Node
-	Location int
+	Tag NodeTag[ParenExpr] `json:"tag"`
+
+	Expr     Node `json:"expr,omitempty"`
+	Location int  `json:"location"`
 }
 
 func (n *ParenExpr) Pos() int {

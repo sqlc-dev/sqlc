@@ -1,7 +1,9 @@
 package ast
 
 type RangeTblRef struct {
-	Rtindex int
+	Tag NodeTag[RangeTblRef] `json:"tag"`
+
+	Rtindex int `json:"rtindex"`
 }
 
 func (n *RangeTblRef) Pos() int {

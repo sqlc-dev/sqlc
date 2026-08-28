@@ -1,14 +1,16 @@
 package ast
 
 type TargetEntry struct {
-	Xpr             Node
-	Expr            Node
-	Resno           AttrNumber
-	Resname         *string
-	Ressortgroupref Index
-	Resorigtbl      Oid
-	Resorigcol      AttrNumber
-	Resjunk         bool
+	Tag NodeTag[TargetEntry] `json:"tag"`
+
+	Xpr             Node       `json:"xpr,omitempty"`
+	Expr            Node       `json:"expr,omitempty"`
+	Resno           AttrNumber `json:"resno"`
+	Resname         *string    `json:"resname,omitempty"`
+	Ressortgroupref Index      `json:"ressortgroupref"`
+	Resorigtbl      Oid        `json:"resorigtbl"`
+	Resorigcol      AttrNumber `json:"resorigcol"`
+	Resjunk         bool       `json:"resjunk"`
 }
 
 func (n *TargetEntry) Pos() int {

@@ -1,9 +1,11 @@
 package ast
 
 type CollateClause struct {
-	Arg      Node
-	Collname *List
-	Location int
+	Tag NodeTag[CollateClause] `json:"tag"`
+
+	Arg      Node  `json:"arg,omitempty"`
+	Collname *List `json:"collname,omitempty"`
+	Location int   `json:"location"`
 }
 
 func (n *CollateClause) Pos() int {

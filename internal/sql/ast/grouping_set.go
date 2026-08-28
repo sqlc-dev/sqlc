@@ -1,9 +1,11 @@
 package ast
 
 type GroupingSet struct {
-	Kind     GroupingSetKind
-	Content  *List
-	Location int
+	Tag NodeTag[GroupingSet] `json:"tag"`
+
+	Kind     GroupingSetKind `json:"kind"`
+	Content  *List           `json:"content,omitempty"`
+	Location int             `json:"location"`
 }
 
 func (n *GroupingSet) Pos() int {

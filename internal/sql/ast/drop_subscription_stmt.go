@@ -1,9 +1,11 @@
 package ast
 
 type DropSubscriptionStmt struct {
-	Subname   *string
-	MissingOk bool
-	Behavior  DropBehavior
+	Tag NodeTag[DropSubscriptionStmt] `json:"tag"`
+
+	Subname   *string      `json:"subname,omitempty"`
+	MissingOk bool         `json:"missing_ok"`
+	Behavior  DropBehavior `json:"behavior"`
 }
 
 func (n *DropSubscriptionStmt) Pos() int {

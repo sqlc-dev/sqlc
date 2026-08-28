@@ -1,8 +1,10 @@
 package ast
 
 type AlterFunctionStmt struct {
-	Func    *ObjectWithArgs
-	Actions *List
+	Tag NodeTag[AlterFunctionStmt] `json:"tag"`
+
+	Func    *ObjectWithArgs `json:"func,omitempty"`
+	Actions *List           `json:"actions,omitempty"`
 }
 
 func (n *AlterFunctionStmt) Pos() int {

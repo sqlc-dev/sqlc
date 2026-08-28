@@ -3,18 +3,20 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type InsertStmt struct {
-	Relation             *RangeVar
-	Cols                 *List
-	SelectStmt           Node
-	OnConflictClause     *OnConflictClause
-	OnDuplicateKeyUpdate *OnDuplicateKeyUpdate // MySQL-specific
-	ReturningList        *List
-	WithClause           *WithClause
-	Override             OverridingKind
-	DefaultValues        bool // SQLite-specific: INSERT INTO ... DEFAULT VALUES
+	Tag NodeTag[InsertStmt] `json:"tag"`
+
+	Relation             *RangeVar             `json:"relation,omitempty"`
+	Cols                 *List                 `json:"cols,omitempty"`
+	SelectStmt           Node                  `json:"select_stmt,omitempty"`
+	OnConflictClause     *OnConflictClause     `json:"on_conflict_clause,omitempty"`
+	OnDuplicateKeyUpdate *OnDuplicateKeyUpdate `json:"on_duplicate_key_update,omitempty"` // MySQL-specific
+	ReturningList        *List                 `json:"returning_list,omitempty"`
+	WithClause           *WithClause           `json:"with_clause,omitempty"`
+	Override             OverridingKind        `json:"override"`
+	DefaultValues        bool                  `json:"default_values"` // SQLite-specific: INSERT INTO ... DEFAULT VALUES
 	// PostgreSQL 18 RETURNING WITH (OLD AS ..., NEW AS ...) aliases
-	ReturningOldAlias string
-	ReturningNewAlias string
+	ReturningOldAlias string `json:"returning_old_alias"`
+	ReturningNewAlias string `json:"returning_new_alias"`
 }
 
 func (n *InsertStmt) Pos() int {

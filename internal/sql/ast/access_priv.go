@@ -1,8 +1,10 @@
 package ast
 
 type AccessPriv struct {
-	PrivName *string
-	Cols     *List
+	Tag NodeTag[AccessPriv] `json:"tag"`
+
+	PrivName *string `json:"priv_name,omitempty"`
+	Cols     *List   `json:"cols,omitempty"`
 }
 
 func (n *AccessPriv) Pos() int {

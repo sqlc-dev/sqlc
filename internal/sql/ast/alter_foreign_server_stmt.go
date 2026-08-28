@@ -1,10 +1,12 @@
 package ast
 
 type AlterForeignServerStmt struct {
-	Servername *string
-	Version    *string
-	Options    *List
-	HasVersion bool
+	Tag NodeTag[AlterForeignServerStmt] `json:"tag"`
+
+	Servername *string `json:"servername,omitempty"`
+	Version    *string `json:"version,omitempty"`
+	Options    *List   `json:"options,omitempty"`
+	HasVersion bool    `json:"has_version"`
 }
 
 func (n *AlterForeignServerStmt) Pos() int {

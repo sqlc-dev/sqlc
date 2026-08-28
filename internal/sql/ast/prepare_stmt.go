@@ -1,9 +1,11 @@
 package ast
 
 type PrepareStmt struct {
-	Name     *string
-	Argtypes *List
-	Query    Node
+	Tag NodeTag[PrepareStmt] `json:"tag"`
+
+	Name     *string `json:"name,omitempty"`
+	Argtypes *List   `json:"argtypes,omitempty"`
+	Query    Node    `json:"query,omitempty"`
 }
 
 func (n *PrepareStmt) Pos() int {

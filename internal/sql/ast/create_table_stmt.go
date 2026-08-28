@@ -3,12 +3,14 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type CreateTableStmt struct {
-	IfNotExists bool
-	Name        *TableName
-	Cols        []*ColumnDef
-	ReferTable  *TableName
-	Comment     string
-	Inherits    []*TableName
+	Tag NodeTag[CreateTableStmt] `json:"tag"`
+
+	IfNotExists bool         `json:"if_not_exists"`
+	Name        *TableName   `json:"name,omitempty"`
+	Cols        []*ColumnDef `json:"cols,omitempty"`
+	ReferTable  *TableName   `json:"refer_table,omitempty"`
+	Comment     string       `json:"comment"`
+	Inherits    []*TableName `json:"inherits,omitempty"`
 	// Using names the module of a virtual table (SQLite's CREATE VIRTUAL
 	// TABLE ... USING module(...)), and ModuleArgs carries the module's
 	// argument list as written — its grammar belongs to the module, so the
@@ -16,18 +18,18 @@ type CreateTableStmt struct {
 	// argument list at all. Cols still holds the columns sqlc derives from
 	// the arguments for the catalog; the statement prints as its
 	// declaration, not as those columns.
-	Using      string
-	ModuleArgs []string
+	Using      string   `json:"using"`
+	ModuleArgs []string `json:"module_args,omitempty"`
 	// ModuleArgsMultiline records that the declaration was written across
 	// lines. The arguments carry no positions, so the printer cannot keep
 	// the author's exact breaks and prints the canonical broken form — one
 	// argument per line — instead.
-	ModuleArgsMultiline bool
+	ModuleArgsMultiline bool `json:"module_args_multiline"`
 	// Incomplete marks a statement whose source carried syntax this node
 	// does not model — column or table constraints beyond plain NOT NULL
 	// and PRIMARY KEY, table options, TEMP, or an AS SELECT body. No
 	// faithful rendering exists for it.
-	Incomplete bool
+	Incomplete bool `json:"incomplete"`
 }
 
 func (n *CreateTableStmt) Pos() int {

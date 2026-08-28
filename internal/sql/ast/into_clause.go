@@ -1,13 +1,15 @@
 package ast
 
 type IntoClause struct {
-	Rel            *RangeVar
-	ColNames       *List
-	Options        *List
-	OnCommit       OnCommitAction
-	TableSpaceName *string
-	ViewQuery      Node
-	SkipData       bool
+	Tag NodeTag[IntoClause] `json:"tag"`
+
+	Rel            *RangeVar      `json:"rel,omitempty"`
+	ColNames       *List          `json:"col_names,omitempty"`
+	Options        *List          `json:"options,omitempty"`
+	OnCommit       OnCommitAction `json:"on_commit"`
+	TableSpaceName *string        `json:"table_space_name,omitempty"`
+	ViewQuery      Node           `json:"view_query,omitempty"`
+	SkipData       bool           `json:"skip_data"`
 }
 
 func (n *IntoClause) Pos() int {

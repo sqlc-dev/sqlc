@@ -1,7 +1,9 @@
 package ast
 
 type LoadStmt struct {
-	Filename *string
+	Tag NodeTag[LoadStmt] `json:"tag"`
+
+	Filename *string `json:"filename,omitempty"`
 }
 
 func (n *LoadStmt) Pos() int {

@@ -1,12 +1,14 @@
 package ast
 
 type FieldSelect struct {
-	Xpr          Node
-	Arg          Node
-	Fieldnum     AttrNumber
-	Resulttype   Oid
-	Resulttypmod int32
-	Resultcollid Oid
+	Tag NodeTag[FieldSelect] `json:"tag"`
+
+	Xpr          Node       `json:"xpr,omitempty"`
+	Arg          Node       `json:"arg,omitempty"`
+	Fieldnum     AttrNumber `json:"fieldnum"`
+	Resulttype   Oid        `json:"resulttype"`
+	Resulttypmod int32      `json:"resulttypmod"`
+	Resultcollid Oid        `json:"resultcollid"`
 }
 
 func (n *FieldSelect) Pos() int {

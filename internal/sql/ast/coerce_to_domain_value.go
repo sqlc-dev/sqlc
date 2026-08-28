@@ -1,11 +1,13 @@
 package ast
 
 type CoerceToDomainValue struct {
-	Xpr       Node
-	TypeId    Oid
-	TypeMod   int32
-	Collation Oid
-	Location  int
+	Tag NodeTag[CoerceToDomainValue] `json:"tag"`
+
+	Xpr       Node  `json:"xpr,omitempty"`
+	TypeId    Oid   `json:"type_id"`
+	TypeMod   int32 `json:"type_mod"`
+	Collation Oid   `json:"collation"`
+	Location  int   `json:"location"`
 }
 
 func (n *CoerceToDomainValue) Pos() int {

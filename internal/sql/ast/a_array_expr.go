@@ -3,8 +3,10 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type A_ArrayExpr struct {
-	Elements *List
-	Location int
+	Tag NodeTag[A_ArrayExpr] `json:"tag"`
+
+	Elements *List `json:"elements,omitempty"`
+	Location int   `json:"location"`
 }
 
 func (n *A_ArrayExpr) Pos() int {

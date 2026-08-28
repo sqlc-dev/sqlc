@@ -1,8 +1,10 @@
 package ast
 
 type CreateOpFamilyStmt struct {
-	Opfamilyname *List
-	Amname       *string
+	Tag NodeTag[CreateOpFamilyStmt] `json:"tag"`
+
+	Opfamilyname *List   `json:"opfamilyname,omitempty"`
+	Amname       *string `json:"amname,omitempty"`
 }
 
 func (n *CreateOpFamilyStmt) Pos() int {

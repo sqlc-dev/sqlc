@@ -1,13 +1,15 @@
 package ast
 
 type RuleStmt struct {
-	Relation    *RangeVar
-	Rulename    *string
-	WhereClause Node
-	Event       CmdType
-	Instead     bool
-	Actions     *List
-	Replace     bool
+	Tag NodeTag[RuleStmt] `json:"tag"`
+
+	Relation    *RangeVar `json:"relation,omitempty"`
+	Rulename    *string   `json:"rulename,omitempty"`
+	WhereClause Node      `json:"where_clause,omitempty"`
+	Event       CmdType   `json:"event"`
+	Instead     bool      `json:"instead"`
+	Actions     *List     `json:"actions,omitempty"`
+	Replace     bool      `json:"replace"`
 }
 
 func (n *RuleStmt) Pos() int {

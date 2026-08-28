@@ -1,10 +1,12 @@
 package ast
 
 type SecLabelStmt struct {
-	Objtype  ObjectType
-	Object   Node
-	Provider *string
-	Label    *string
+	Tag NodeTag[SecLabelStmt] `json:"tag"`
+
+	Objtype  ObjectType `json:"objtype"`
+	Object   Node       `json:"object,omitempty"`
+	Provider *string    `json:"provider,omitempty"`
+	Label    *string    `json:"label,omitempty"`
 }
 
 func (n *SecLabelStmt) Pos() int {

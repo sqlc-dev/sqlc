@@ -1,10 +1,12 @@
 package ast
 
 type FunctionParameter struct {
-	Name    *string
-	ArgType *TypeName
-	Mode    FunctionParameterMode
-	Defexpr Node
+	Tag NodeTag[FunctionParameter] `json:"tag"`
+
+	Name    *string               `json:"name,omitempty"`
+	ArgType *TypeName             `json:"arg_type,omitempty"`
+	Mode    FunctionParameterMode `json:"mode"`
+	Defexpr Node                  `json:"defexpr,omitempty"`
 }
 
 func (n *FunctionParameter) Pos() int {

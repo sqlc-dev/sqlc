@@ -3,16 +3,18 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type CommonTableExpr struct {
-	Ctename          *string
-	Aliascolnames    *List
-	Ctequery         Node
-	Location         int
-	Cterecursive     bool
-	Cterefcount      int
-	Ctecolnames      *List
-	Ctecoltypes      *List
-	Ctecoltypmods    *List
-	Ctecolcollations *List
+	Tag NodeTag[CommonTableExpr] `json:"tag"`
+
+	Ctename          *string `json:"ctename,omitempty"`
+	Aliascolnames    *List   `json:"aliascolnames,omitempty"`
+	Ctequery         Node    `json:"ctequery,omitempty"`
+	Location         int     `json:"location"`
+	Cterecursive     bool    `json:"cterecursive"`
+	Cterefcount      int     `json:"cterefcount"`
+	Ctecolnames      *List   `json:"ctecolnames,omitempty"`
+	Ctecoltypes      *List   `json:"ctecoltypes,omitempty"`
+	Ctecoltypmods    *List   `json:"ctecoltypmods,omitempty"`
+	Ctecolcollations *List   `json:"ctecolcollations,omitempty"`
 }
 
 func (n *CommonTableExpr) Pos() int {

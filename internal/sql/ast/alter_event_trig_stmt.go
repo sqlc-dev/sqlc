@@ -1,8 +1,10 @@
 package ast
 
 type AlterEventTrigStmt struct {
-	Trigname  *string
-	Tgenabled byte
+	Tag NodeTag[AlterEventTrigStmt] `json:"tag"`
+
+	Trigname  *string `json:"trigname,omitempty"`
+	Tgenabled byte    `json:"tgenabled"`
 }
 
 func (n *AlterEventTrigStmt) Pos() int {

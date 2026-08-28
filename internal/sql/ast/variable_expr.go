@@ -5,8 +5,10 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 // VariableExpr represents a MySQL user variable (e.g., @user_id)
 // This is distinct from sqlc's @param named parameter syntax.
 type VariableExpr struct {
-	Name     string
-	Location int
+	Tag NodeTag[VariableExpr] `json:"tag"`
+
+	Name     string `json:"name"`
+	Location int    `json:"location"`
 }
 
 func (n *VariableExpr) Pos() int {

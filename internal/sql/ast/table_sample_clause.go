@@ -1,9 +1,11 @@
 package ast
 
 type TableSampleClause struct {
-	Tsmhandler Oid
-	Args       *List
-	Repeatable Node
+	Tag NodeTag[TableSampleClause] `json:"tag"`
+
+	Tsmhandler Oid   `json:"tsmhandler"`
+	Args       *List `json:"args,omitempty"`
+	Repeatable Node  `json:"repeatable,omitempty"`
 }
 
 func (n *TableSampleClause) Pos() int {

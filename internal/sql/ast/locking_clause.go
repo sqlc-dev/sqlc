@@ -3,9 +3,11 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type LockingClause struct {
-	LockedRels *List
-	Strength   LockClauseStrength
-	WaitPolicy LockWaitPolicy
+	Tag NodeTag[LockingClause] `json:"tag"`
+
+	LockedRels *List              `json:"locked_rels,omitempty"`
+	Strength   LockClauseStrength `json:"strength"`
+	WaitPolicy LockWaitPolicy     `json:"wait_policy"`
 }
 
 func (n *LockingClause) Pos() int {

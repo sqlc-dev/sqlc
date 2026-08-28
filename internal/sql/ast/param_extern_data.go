@@ -1,10 +1,12 @@
 package ast
 
 type ParamExternData struct {
-	Value  Datum
-	Isnull bool
-	Pflags uint16
-	Ptype  Oid
+	Tag NodeTag[ParamExternData] `json:"tag"`
+
+	Value  Datum  `json:"value"`
+	Isnull bool   `json:"isnull"`
+	Pflags uint16 `json:"pflags"`
+	Ptype  Oid    `json:"ptype"`
 }
 
 func (n *ParamExternData) Pos() int {

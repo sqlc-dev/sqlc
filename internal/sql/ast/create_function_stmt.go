@@ -3,13 +3,15 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type CreateFunctionStmt struct {
-	Replace    bool
-	Params     *List
-	ReturnType *TypeName
-	Func       *FuncName
+	Tag NodeTag[CreateFunctionStmt] `json:"tag"`
+
+	Replace    bool      `json:"replace"`
+	Params     *List     `json:"params,omitempty"`
+	ReturnType *TypeName `json:"return_type,omitempty"`
+	Func       *FuncName `json:"func,omitempty"`
 	// TODO: Understand these two fields
-	Options    *List
-	WithClause *List
+	Options    *List `json:"options,omitempty"`
+	WithClause *List `json:"with_clause,omitempty"`
 }
 
 func (n *CreateFunctionStmt) Pos() int {

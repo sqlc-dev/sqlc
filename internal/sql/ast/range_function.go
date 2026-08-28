@@ -3,12 +3,14 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type RangeFunction struct {
-	Lateral    bool
-	Ordinality bool
-	IsRowsfrom bool
-	Functions  *List
-	Alias      *Alias
-	Coldeflist *List
+	Tag NodeTag[RangeFunction] `json:"tag"`
+
+	Lateral    bool   `json:"lateral"`
+	Ordinality bool   `json:"ordinality"`
+	IsRowsfrom bool   `json:"is_rowsfrom"`
+	Functions  *List  `json:"functions,omitempty"`
+	Alias      *Alias `json:"alias,omitempty"`
+	Coldeflist *List  `json:"coldeflist,omitempty"`
 }
 
 func (n *RangeFunction) Pos() int {

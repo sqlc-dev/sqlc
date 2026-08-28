@@ -1,8 +1,10 @@
 package ast
 
 type AlterExtensionStmt struct {
-	Extname *string
-	Options *List
+	Tag NodeTag[AlterExtensionStmt] `json:"tag"`
+
+	Extname *string `json:"extname,omitempty"`
+	Options *List   `json:"options,omitempty"`
 }
 
 func (n *AlterExtensionStmt) Pos() int {

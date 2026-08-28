@@ -1,8 +1,10 @@
 package ast
 
 type AlterDatabaseStmt struct {
-	Dbname  *string
-	Options *List
+	Tag NodeTag[AlterDatabaseStmt] `json:"tag"`
+
+	Dbname  *string `json:"dbname,omitempty"`
+	Options *List   `json:"options,omitempty"`
 }
 
 func (n *AlterDatabaseStmt) Pos() int {

@@ -24,99 +24,113 @@
       }
     ],
     "ast": {
-      "Stmt": {
-        "DistinctClause": {
-          "Items": null
+      "tag": "RawStmt",
+      "stmt": {
+        "tag": "SelectStmt",
+        "distinct_clause": {
+          "tag": "List"
         },
-        "IntoClause": null,
-        "TargetList": {
-          "Items": [
+        "target_list": {
+          "tag": "List",
+          "items": [
             {
-              "Name": null,
-              "Indirection": {
-                "Items": null
+              "tag": "ResTarget",
+              "indirection": {
+                "tag": "List"
               },
-              "Val": {
-                "Name": "",
-                "Fields": {
-                  "Items": [
+              "val": {
+                "tag": "ColumnRef",
+                "name": "",
+                "fields": {
+                  "tag": "List",
+                  "items": [
                     {
-                      "Str": "name"
+                      "tag": "String",
+                      "str": "name"
                     }
                   ]
                 },
-                "Location": 35
+                "location": 35
               },
-              "Location": 35
+              "location": 35
             }
           ]
         },
-        "FromClause": {
-          "Items": [
+        "from_clause": {
+          "tag": "List",
+          "items": [
             {
-              "Catalogname": null,
-              "Schemaname": null,
-              "Relname": "authors",
-              "Inh": true,
-              "Relpersistence": 112,
-              "Alias": null,
-              "Location": 45
+              "tag": "RangeVar",
+              "relname": "authors",
+              "inh": true,
+              "relpersistence": 112,
+              "location": 45
             }
           ]
         },
-        "WhereClause": {
-          "Kind": 1,
-          "Name": {
-            "Items": [
+        "where_clause": {
+          "tag": "A_Expr",
+          "kind": 1,
+          "name": {
+            "tag": "List",
+            "items": [
               {
-                "Str": "="
+                "tag": "String",
+                "str": "="
               }
             ]
           },
-          "Lexpr": {
-            "Name": "",
-            "Fields": {
-              "Items": [
+          "lexpr": {
+            "tag": "ColumnRef",
+            "name": "",
+            "fields": {
+              "tag": "List",
+              "items": [
                 {
-                  "Str": "id"
+                  "tag": "String",
+                  "str": "id"
                 }
               ]
             },
-            "Location": 59
+            "location": 59
           },
-          "Rexpr": {
-            "Number": 1,
-            "Location": 64,
-            "Dollar": true
+          "rexpr": {
+            "tag": "ParamRef",
+            "number": 1,
+            "location": 64,
+            "dollar": true
           },
-          "Location": 62
+          "location": 62
         },
-        "GroupClause": {
-          "Items": null
+        "group_clause": {
+          "tag": "List"
         },
-        "HavingClause": {},
-        "WindowClause": {
-          "Items": null
+        "having_clause": {
+          "tag": "TODO"
         },
-        "ValuesLists": {
-          "Items": null
+        "window_clause": {
+          "tag": "List"
         },
-        "SortClause": {
-          "Items": null
+        "values_lists": {
+          "tag": "List"
         },
-        "LimitOffset": {},
-        "LimitCount": {},
-        "LockingClause": {
-          "Items": null
+        "sort_clause": {
+          "tag": "List"
         },
-        "WithClause": null,
-        "Op": 0,
-        "All": false,
-        "Larg": null,
-        "Rarg": null
+        "limit_offset": {
+          "tag": "TODO"
+        },
+        "limit_count": {
+          "tag": "TODO"
+        },
+        "locking_clause": {
+          "tag": "List"
+        },
+        "op": 0,
+        "all": false
       },
-      "StmtLocation": 0,
-      "StmtLen": 66
+      "stmt_location": 0,
+      "stmt_len": 66
     }
   }
 ]

@@ -3,13 +3,15 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type IndexElem struct {
-	Name          *string
-	Expr          Node
-	Indexcolname  *string
-	Collation     *List
-	Opclass       *List
-	Ordering      SortByDir
-	NullsOrdering SortByNulls
+	Tag NodeTag[IndexElem] `json:"tag"`
+
+	Name          *string     `json:"name,omitempty"`
+	Expr          Node        `json:"expr,omitempty"`
+	Indexcolname  *string     `json:"indexcolname,omitempty"`
+	Collation     *List       `json:"collation,omitempty"`
+	Opclass       *List       `json:"opclass,omitempty"`
+	Ordering      SortByDir   `json:"ordering"`
+	NullsOrdering SortByNulls `json:"nulls_ordering"`
 }
 
 func (n *IndexElem) Pos() int {

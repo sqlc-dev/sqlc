@@ -1,10 +1,12 @@
 package ast
 
 type BooleanTest struct {
-	Xpr          Node
-	Arg          Node
-	Booltesttype BoolTestType
-	Location     int
+	Tag NodeTag[BooleanTest] `json:"tag"`
+
+	Xpr          Node         `json:"xpr,omitempty"`
+	Arg          Node         `json:"arg,omitempty"`
+	Booltesttype BoolTestType `json:"booltesttype"`
+	Location     int          `json:"location"`
 }
 
 func (n *BooleanTest) Pos() int {

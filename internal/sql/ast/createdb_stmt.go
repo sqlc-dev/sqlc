@@ -1,8 +1,10 @@
 package ast
 
 type CreatedbStmt struct {
-	Dbname  *string
-	Options *List
+	Tag NodeTag[CreatedbStmt] `json:"tag"`
+
+	Dbname  *string `json:"dbname,omitempty"`
+	Options *List   `json:"options,omitempty"`
 }
 
 func (n *CreatedbStmt) Pos() int {

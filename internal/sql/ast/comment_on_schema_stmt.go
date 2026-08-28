@@ -1,8 +1,10 @@
 package ast
 
 type CommentOnSchemaStmt struct {
-	Schema  *String
-	Comment *string
+	Tag NodeTag[CommentOnSchemaStmt] `json:"tag"`
+
+	Schema  *String `json:"schema,omitempty"`
+	Comment *string `json:"comment,omitempty"`
 }
 
 func (n *CommentOnSchemaStmt) Pos() int {

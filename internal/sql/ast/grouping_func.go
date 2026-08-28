@@ -1,12 +1,14 @@
 package ast
 
 type GroupingFunc struct {
-	Xpr         Node
-	Args        *List
-	Refs        *List
-	Cols        *List
-	Agglevelsup Index
-	Location    int
+	Tag NodeTag[GroupingFunc] `json:"tag"`
+
+	Xpr         Node  `json:"xpr,omitempty"`
+	Args        *List `json:"args,omitempty"`
+	Refs        *List `json:"refs,omitempty"`
+	Cols        *List `json:"cols,omitempty"`
+	Agglevelsup Index `json:"agglevelsup"`
+	Location    int   `json:"location"`
 }
 
 func (n *GroupingFunc) Pos() int {

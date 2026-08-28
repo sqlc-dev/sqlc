@@ -1,7 +1,9 @@
 package ast
 
 type Statement struct {
-	Raw *RawStmt
+	Tag NodeTag[Statement] `json:"tag"`
+
+	Raw *RawStmt `json:"raw,omitempty"`
 }
 
 func (n *Statement) Pos() int {

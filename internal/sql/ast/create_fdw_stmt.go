@@ -1,9 +1,11 @@
 package ast
 
 type CreateFdwStmt struct {
-	Fdwname     *string
-	FuncOptions *List
-	Options     *List
+	Tag NodeTag[CreateFdwStmt] `json:"tag"`
+
+	Fdwname     *string `json:"fdwname,omitempty"`
+	FuncOptions *List   `json:"func_options,omitempty"`
+	Options     *List   `json:"options,omitempty"`
 }
 
 func (n *CreateFdwStmt) Pos() int {

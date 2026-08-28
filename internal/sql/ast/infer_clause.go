@@ -3,10 +3,12 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type InferClause struct {
-	IndexElems  *List
-	WhereClause Node
-	Conname     *string
-	Location    int
+	Tag NodeTag[InferClause] `json:"tag"`
+
+	IndexElems  *List   `json:"index_elems,omitempty"`
+	WhereClause Node    `json:"where_clause,omitempty"`
+	Conname     *string `json:"conname,omitempty"`
+	Location    int     `json:"location"`
 }
 
 func (n *InferClause) Pos() int {

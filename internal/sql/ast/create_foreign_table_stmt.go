@@ -1,9 +1,11 @@
 package ast
 
 type CreateForeignTableStmt struct {
-	Base       *CreateStmt
-	Servername *string
-	Options    *List
+	Tag NodeTag[CreateForeignTableStmt] `json:"tag"`
+
+	Base       *CreateStmt `json:"base,omitempty"`
+	Servername *string     `json:"servername,omitempty"`
+	Options    *List       `json:"options,omitempty"`
 }
 
 func (n *CreateForeignTableStmt) Pos() int {

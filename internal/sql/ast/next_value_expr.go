@@ -1,9 +1,11 @@
 package ast
 
 type NextValueExpr struct {
-	Xpr    Node
-	Seqid  Oid
-	TypeId Oid
+	Tag NodeTag[NextValueExpr] `json:"tag"`
+
+	Xpr    Node `json:"xpr,omitempty"`
+	Seqid  Oid  `json:"seqid"`
+	TypeId Oid  `json:"type_id"`
 }
 
 func (n *NextValueExpr) Pos() int {

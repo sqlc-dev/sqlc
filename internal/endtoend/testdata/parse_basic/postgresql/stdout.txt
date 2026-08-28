@@ -3,58 +3,67 @@
     "name": "GetValue",
     "cmd": ":one",
     "ast": {
-      "Stmt": {
-        "DistinctClause": {
-          "Items": null
+      "tag": "RawStmt",
+      "stmt": {
+        "tag": "SelectStmt",
+        "distinct_clause": {
+          "tag": "List"
         },
-        "IntoClause": null,
-        "TargetList": {
-          "Items": [
+        "target_list": {
+          "tag": "List",
+          "items": [
             {
-              "Name": null,
-              "Indirection": {
-                "Items": null
+              "tag": "ResTarget",
+              "indirection": {
+                "tag": "List"
               },
-              "Val": {
-                "Val": {
-                  "Ival": 1
+              "val": {
+                "tag": "A_Const",
+                "val": {
+                  "tag": "Integer",
+                  "ival": 1
                 },
-                "Location": 30
+                "location": 30
               },
-              "Location": 30
+              "location": 30
             }
           ]
         },
-        "FromClause": {
-          "Items": null
+        "from_clause": {
+          "tag": "List"
         },
-        "WhereClause": {},
-        "GroupClause": {
-          "Items": null
+        "where_clause": {
+          "tag": "TODO"
         },
-        "HavingClause": {},
-        "WindowClause": {
-          "Items": null
+        "group_clause": {
+          "tag": "List"
         },
-        "ValuesLists": {
-          "Items": null
+        "having_clause": {
+          "tag": "TODO"
         },
-        "SortClause": {
-          "Items": null
+        "window_clause": {
+          "tag": "List"
         },
-        "LimitOffset": {},
-        "LimitCount": {},
-        "LockingClause": {
-          "Items": null
+        "values_lists": {
+          "tag": "List"
         },
-        "WithClause": null,
-        "Op": 0,
-        "All": false,
-        "Larg": null,
-        "Rarg": null
+        "sort_clause": {
+          "tag": "List"
+        },
+        "limit_offset": {
+          "tag": "TODO"
+        },
+        "limit_count": {
+          "tag": "TODO"
+        },
+        "locking_clause": {
+          "tag": "List"
+        },
+        "op": 0,
+        "all": false
       },
-      "StmtLocation": 0,
-      "StmtLen": 31
+      "stmt_location": 0,
+      "stmt_len": 31
     }
   }
 ]

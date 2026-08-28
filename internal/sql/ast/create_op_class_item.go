@@ -1,12 +1,14 @@
 package ast
 
 type CreateOpClassItem struct {
-	Itemtype    int
-	Name        *ObjectWithArgs
-	Number      int
-	OrderFamily *List
-	ClassArgs   *List
-	Storedtype  *TypeName
+	Tag NodeTag[CreateOpClassItem] `json:"tag"`
+
+	Itemtype    int             `json:"itemtype"`
+	Name        *ObjectWithArgs `json:"name,omitempty"`
+	Number      int             `json:"number"`
+	OrderFamily *List           `json:"order_family,omitempty"`
+	ClassArgs   *List           `json:"class_args,omitempty"`
+	Storedtype  *TypeName       `json:"storedtype,omitempty"`
 }
 
 func (n *CreateOpClassItem) Pos() int {

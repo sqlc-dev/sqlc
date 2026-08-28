@@ -30,12 +30,14 @@ func (t AlterTableType) String() string {
 }
 
 type AlterTableCmd struct {
-	Subtype   AlterTableType
-	Name      *string
-	Def       *ColumnDef
-	Newowner  *RoleSpec
-	Behavior  DropBehavior
-	MissingOk bool
+	Tag NodeTag[AlterTableCmd] `json:"tag"`
+
+	Subtype   AlterTableType `json:"subtype"`
+	Name      *string        `json:"name,omitempty"`
+	Def       *ColumnDef     `json:"def,omitempty"`
+	Newowner  *RoleSpec      `json:"newowner,omitempty"`
+	Behavior  DropBehavior   `json:"behavior"`
+	MissingOk bool           `json:"missing_ok"`
 }
 
 func (n *AlterTableCmd) Pos() int {

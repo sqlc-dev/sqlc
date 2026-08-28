@@ -3,12 +3,14 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type ScalarArrayOpExpr struct {
-	Xpr         Node
-	Opno        Oid
-	UseOr       bool
-	Inputcollid Oid
-	Args        *List
-	Location    int
+	Tag NodeTag[ScalarArrayOpExpr] `json:"tag"`
+
+	Xpr         Node  `json:"xpr,omitempty"`
+	Opno        Oid   `json:"opno"`
+	UseOr       bool  `json:"use_or"`
+	Inputcollid Oid   `json:"inputcollid"`
+	Args        *List `json:"args,omitempty"`
+	Location    int   `json:"location"`
 }
 
 func (n *ScalarArrayOpExpr) Pos() int {

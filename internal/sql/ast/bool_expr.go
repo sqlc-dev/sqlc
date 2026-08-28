@@ -3,10 +3,12 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type BoolExpr struct {
-	Xpr      Node
-	Boolop   BoolExprType
-	Args     *List
-	Location int
+	Tag NodeTag[BoolExpr] `json:"tag"`
+
+	Xpr      Node         `json:"xpr,omitempty"`
+	Boolop   BoolExprType `json:"boolop"`
+	Args     *List        `json:"args,omitempty"`
+	Location int          `json:"location"`
 }
 
 func (n *BoolExpr) Pos() int {

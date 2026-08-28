@@ -1,13 +1,15 @@
 package ast
 
 type RangeTableFuncCol struct {
-	Colname       *string
-	TypeName      *TypeName
-	ForOrdinality bool
-	IsNotNull     bool
-	Colexpr       Node
-	Coldefexpr    Node
-	Location      int
+	Tag NodeTag[RangeTableFuncCol] `json:"tag"`
+
+	Colname       *string   `json:"colname,omitempty"`
+	TypeName      *TypeName `json:"type_name,omitempty"`
+	ForOrdinality bool      `json:"for_ordinality"`
+	IsNotNull     bool      `json:"is_not_null"`
+	Colexpr       Node      `json:"colexpr,omitempty"`
+	Coldefexpr    Node      `json:"coldefexpr,omitempty"`
+	Location      int       `json:"location"`
 }
 
 func (n *RangeTableFuncCol) Pos() int {

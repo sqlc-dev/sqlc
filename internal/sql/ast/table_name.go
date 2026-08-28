@@ -3,9 +3,11 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type TableName struct {
-	Catalog string
-	Schema  string
-	Name    string
+	Tag NodeTag[TableName] `json:"tag"`
+
+	Catalog string `json:"catalog"`
+	Schema  string `json:"schema"`
+	Name    string `json:"name"`
 }
 
 func (n *TableName) Pos() int {

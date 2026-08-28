@@ -1,8 +1,10 @@
 package ast
 
 type DropOwnedStmt struct {
-	Roles    *List
-	Behavior DropBehavior
+	Tag NodeTag[DropOwnedStmt] `json:"tag"`
+
+	Roles    *List        `json:"roles,omitempty"`
+	Behavior DropBehavior `json:"behavior"`
 }
 
 func (n *DropOwnedStmt) Pos() int {

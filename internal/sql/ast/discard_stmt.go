@@ -1,7 +1,9 @@
 package ast
 
 type DiscardStmt struct {
-	Target DiscardMode
+	Tag NodeTag[DiscardStmt] `json:"tag"`
+
+	Target DiscardMode `json:"target"`
 }
 
 func (n *DiscardStmt) Pos() int {

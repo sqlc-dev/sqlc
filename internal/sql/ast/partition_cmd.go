@@ -1,8 +1,10 @@
 package ast
 
 type PartitionCmd struct {
-	Name  *RangeVar
-	Bound *PartitionBoundSpec
+	Tag NodeTag[PartitionCmd] `json:"tag"`
+
+	Name  *RangeVar           `json:"name,omitempty"`
+	Bound *PartitionBoundSpec `json:"bound,omitempty"`
 }
 
 func (n *PartitionCmd) Pos() int {

@@ -1,8 +1,10 @@
 package ast
 
 type AlterTSDictionaryStmt struct {
-	Dictname *List
-	Options  *List
+	Tag NodeTag[AlterTSDictionaryStmt] `json:"tag"`
+
+	Dictname *List `json:"dictname,omitempty"`
+	Options  *List `json:"options,omitempty"`
 }
 
 func (n *AlterTSDictionaryStmt) Pos() int {

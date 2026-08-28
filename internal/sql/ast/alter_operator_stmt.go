@@ -1,8 +1,10 @@
 package ast
 
 type AlterOperatorStmt struct {
-	Opername *ObjectWithArgs
-	Options  *List
+	Tag NodeTag[AlterOperatorStmt] `json:"tag"`
+
+	Opername *ObjectWithArgs `json:"opername,omitempty"`
+	Options  *List           `json:"options,omitempty"`
 }
 
 func (n *AlterOperatorStmt) Pos() int {

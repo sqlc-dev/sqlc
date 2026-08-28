@@ -3,9 +3,11 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type TruncateStmt struct {
-	Relations   *List
-	RestartSeqs bool
-	Behavior    DropBehavior
+	Tag NodeTag[TruncateStmt] `json:"tag"`
+
+	Relations   *List        `json:"relations,omitempty"`
+	RestartSeqs bool         `json:"restart_seqs"`
+	Behavior    DropBehavior `json:"behavior"`
 }
 
 func (n *TruncateStmt) Pos() int {

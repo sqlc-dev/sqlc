@@ -1,8 +1,10 @@
 package ast
 
 type DropSchemaStmt struct {
-	Schemas   []*String
-	MissingOk bool
+	Tag NodeTag[DropSchemaStmt] `json:"tag"`
+
+	Schemas   []*String `json:"schemas,omitempty"`
+	MissingOk bool      `json:"missing_ok"`
 }
 
 func (n *DropSchemaStmt) Pos() int {

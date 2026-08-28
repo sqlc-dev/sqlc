@@ -1,10 +1,12 @@
 package ast
 
 type InferenceElem struct {
-	Xpr          Node
-	Expr         Node
-	Infercollid  Oid
-	Inferopclass Oid
+	Tag NodeTag[InferenceElem] `json:"tag"`
+
+	Xpr          Node `json:"xpr,omitempty"`
+	Expr         Node `json:"expr,omitempty"`
+	Infercollid  Oid  `json:"infercollid"`
+	Inferopclass Oid  `json:"inferopclass"`
 }
 
 func (n *InferenceElem) Pos() int {

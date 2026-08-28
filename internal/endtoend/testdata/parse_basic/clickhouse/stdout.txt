@@ -3,42 +3,31 @@
     "name": "GetValue",
     "cmd": ":one",
     "ast": {
-      "Stmt": {
-        "DistinctClause": null,
-        "IntoClause": null,
-        "TargetList": {
-          "Items": [
+      "tag": "RawStmt",
+      "stmt": {
+        "tag": "SelectStmt",
+        "target_list": {
+          "tag": "List",
+          "items": [
             {
-              "Name": null,
-              "Indirection": null,
-              "Val": {
-                "Val": {
-                  "Ival": 1
+              "tag": "ResTarget",
+              "val": {
+                "tag": "A_Const",
+                "val": {
+                  "tag": "Integer",
+                  "ival": 1
                 },
-                "Location": 31
+                "location": 31
               },
-              "Location": 31
+              "location": 31
             }
           ]
         },
-        "FromClause": null,
-        "WhereClause": null,
-        "GroupClause": null,
-        "HavingClause": null,
-        "WindowClause": null,
-        "ValuesLists": null,
-        "SortClause": null,
-        "LimitOffset": null,
-        "LimitCount": null,
-        "LockingClause": null,
-        "WithClause": null,
-        "Op": 0,
-        "All": false,
-        "Larg": null,
-        "Rarg": null
+        "op": 0,
+        "all": false
       },
-      "StmtLocation": 0,
-      "StmtLen": 32
+      "stmt_location": 0,
+      "stmt_len": 32
     }
   }
 ]

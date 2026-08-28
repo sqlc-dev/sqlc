@@ -1,8 +1,10 @@
 package ast
 
 type ConstraintsSetStmt struct {
-	Constraints *List
-	Deferred    bool
+	Tag NodeTag[ConstraintsSetStmt] `json:"tag"`
+
+	Constraints *List `json:"constraints,omitempty"`
+	Deferred    bool  `json:"deferred"`
 }
 
 func (n *ConstraintsSetStmt) Pos() int {

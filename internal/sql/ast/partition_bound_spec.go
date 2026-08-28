@@ -1,11 +1,13 @@
 package ast
 
 type PartitionBoundSpec struct {
-	Strategy    byte
-	Listdatums  *List
-	Lowerdatums *List
-	Upperdatums *List
-	Location    int
+	Tag NodeTag[PartitionBoundSpec] `json:"tag"`
+
+	Strategy    byte  `json:"strategy"`
+	Listdatums  *List `json:"listdatums,omitempty"`
+	Lowerdatums *List `json:"lowerdatums,omitempty"`
+	Upperdatums *List `json:"upperdatums,omitempty"`
+	Location    int   `json:"location"`
 }
 
 func (n *PartitionBoundSpec) Pos() int {

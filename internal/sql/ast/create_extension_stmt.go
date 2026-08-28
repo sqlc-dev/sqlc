@@ -3,9 +3,11 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type CreateExtensionStmt struct {
-	Extname     *string
-	IfNotExists bool
-	Options     *List
+	Tag NodeTag[CreateExtensionStmt] `json:"tag"`
+
+	Extname     *string `json:"extname,omitempty"`
+	IfNotExists bool    `json:"if_not_exists"`
+	Options     *List   `json:"options,omitempty"`
 }
 
 func (n *CreateExtensionStmt) Pos() int {

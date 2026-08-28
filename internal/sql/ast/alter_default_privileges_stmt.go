@@ -1,8 +1,10 @@
 package ast
 
 type AlterDefaultPrivilegesStmt struct {
-	Options *List
-	Action  *GrantStmt
+	Tag NodeTag[AlterDefaultPrivilegesStmt] `json:"tag"`
+
+	Options *List      `json:"options,omitempty"`
+	Action  *GrantStmt `json:"action,omitempty"`
 }
 
 func (n *AlterDefaultPrivilegesStmt) Pos() int {

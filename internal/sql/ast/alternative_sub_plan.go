@@ -1,8 +1,10 @@
 package ast
 
 type AlternativeSubPlan struct {
-	Xpr      Node
-	Subplans *List
+	Tag NodeTag[AlternativeSubPlan] `json:"tag"`
+
+	Xpr      Node  `json:"xpr,omitempty"`
+	Subplans *List `json:"subplans,omitempty"`
 }
 
 func (n *AlternativeSubPlan) Pos() int {

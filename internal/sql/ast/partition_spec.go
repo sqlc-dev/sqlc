@@ -1,9 +1,11 @@
 package ast
 
 type PartitionSpec struct {
-	Strategy   *string
-	PartParams *List
-	Location   int
+	Tag NodeTag[PartitionSpec] `json:"tag"`
+
+	Strategy   *string `json:"strategy,omitempty"`
+	PartParams *List   `json:"part_params,omitempty"`
+	Location   int     `json:"location"`
 }
 
 func (n *PartitionSpec) Pos() int {

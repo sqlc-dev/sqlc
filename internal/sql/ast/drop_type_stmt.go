@@ -1,8 +1,10 @@
 package ast
 
 type DropTypeStmt struct {
-	IfExists bool
-	Types    []*TypeName
+	Tag NodeTag[DropTypeStmt] `json:"tag"`
+
+	IfExists bool        `json:"if_exists"`
+	Types    []*TypeName `json:"types,omitempty"`
 }
 
 func (n *DropTypeStmt) Pos() int {

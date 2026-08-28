@@ -1,10 +1,12 @@
 package ast
 
 type AlterOpFamilyStmt struct {
-	Opfamilyname *List
-	Amname       *string
-	IsDrop       bool
-	Items        *List
+	Tag NodeTag[AlterOpFamilyStmt] `json:"tag"`
+
+	Opfamilyname *List   `json:"opfamilyname,omitempty"`
+	Amname       *string `json:"amname,omitempty"`
+	IsDrop       bool    `json:"is_drop"`
+	Items        *List   `json:"items,omitempty"`
 }
 
 func (n *AlterOpFamilyStmt) Pos() int {

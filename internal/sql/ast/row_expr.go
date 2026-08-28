@@ -3,12 +3,14 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type RowExpr struct {
-	Xpr       Node
-	Args      *List
-	RowTypeid Oid
-	RowFormat CoercionForm
-	Colnames  *List
-	Location  int
+	Tag NodeTag[RowExpr] `json:"tag"`
+
+	Xpr       Node         `json:"xpr,omitempty"`
+	Args      *List        `json:"args,omitempty"`
+	RowTypeid Oid          `json:"row_typeid"`
+	RowFormat CoercionForm `json:"row_format"`
+	Colnames  *List        `json:"colnames,omitempty"`
+	Location  int          `json:"location"`
 }
 
 func (n *RowExpr) Pos() int {

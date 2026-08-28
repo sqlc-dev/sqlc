@@ -5,24 +5,26 @@ import (
 )
 
 type SelectStmt struct {
-	DistinctClause *List
-	IntoClause     *IntoClause
-	TargetList     *List
-	FromClause     *List
-	WhereClause    Node
-	GroupClause    *List
-	HavingClause   Node
-	WindowClause   *List
-	ValuesLists    *List
-	SortClause     *List
-	LimitOffset    Node
-	LimitCount     Node
-	LockingClause  *List
-	WithClause     *WithClause
-	Op             SetOperation
-	All            bool
-	Larg           *SelectStmt
-	Rarg           *SelectStmt
+	Tag NodeTag[SelectStmt] `json:"tag"`
+
+	DistinctClause *List        `json:"distinct_clause,omitempty"`
+	IntoClause     *IntoClause  `json:"into_clause,omitempty"`
+	TargetList     *List        `json:"target_list,omitempty"`
+	FromClause     *List        `json:"from_clause,omitempty"`
+	WhereClause    Node         `json:"where_clause,omitempty"`
+	GroupClause    *List        `json:"group_clause,omitempty"`
+	HavingClause   Node         `json:"having_clause,omitempty"`
+	WindowClause   *List        `json:"window_clause,omitempty"`
+	ValuesLists    *List        `json:"values_lists,omitempty"`
+	SortClause     *List        `json:"sort_clause,omitempty"`
+	LimitOffset    Node         `json:"limit_offset,omitempty"`
+	LimitCount     Node         `json:"limit_count,omitempty"`
+	LockingClause  *List        `json:"locking_clause,omitempty"`
+	WithClause     *WithClause  `json:"with_clause,omitempty"`
+	Op             SetOperation `json:"op"`
+	All            bool         `json:"all"`
+	Larg           *SelectStmt  `json:"larg,omitempty"`
+	Rarg           *SelectStmt  `json:"rarg,omitempty"`
 }
 
 func (n *SelectStmt) Pos() int {

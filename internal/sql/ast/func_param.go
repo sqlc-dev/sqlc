@@ -14,10 +14,12 @@ const (
 )
 
 type FuncParam struct {
-	Name    *string
-	Type    *TypeName
-	DefExpr Node // Will always be &ast.TODO
-	Mode    FuncParamMode
+	Tag NodeTag[FuncParam] `json:"tag"`
+
+	Name    *string       `json:"name,omitempty"`
+	Type    *TypeName     `json:"type,omitempty"`
+	DefExpr Node          `json:"def_expr,omitempty"` // Will always be &ast.TODO
+	Mode    FuncParamMode `json:"mode"`
 }
 
 func (n *FuncParam) Pos() int {

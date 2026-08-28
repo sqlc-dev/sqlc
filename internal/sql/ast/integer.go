@@ -7,7 +7,9 @@ import (
 )
 
 type Integer struct {
-	Ival int64
+	Tag NodeTag[Integer] `json:"tag"`
+
+	Ival int64 `json:"ival"`
 }
 
 func (n *Integer) Pos() int {

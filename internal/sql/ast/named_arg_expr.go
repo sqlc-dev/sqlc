@@ -3,11 +3,13 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type NamedArgExpr struct {
-	Xpr       Node
-	Arg       Node
-	Name      *string
-	Argnumber int
-	Location  int
+	Tag NodeTag[NamedArgExpr] `json:"tag"`
+
+	Xpr       Node    `json:"xpr,omitempty"`
+	Arg       Node    `json:"arg,omitempty"`
+	Name      *string `json:"name,omitempty"`
+	Argnumber int     `json:"argnumber"`
+	Location  int     `json:"location"`
 }
 
 func (n *NamedArgExpr) Pos() int {

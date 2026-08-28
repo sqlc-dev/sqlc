@@ -1,16 +1,18 @@
 package ast
 
 type Var struct {
-	Xpr         Node
-	Varno       Index
-	Varattno    AttrNumber
-	Vartype     Oid
-	Vartypmod   int32
-	Varcollid   Oid
-	Varlevelsup Index
-	Varnoold    Index
-	Varoattno   AttrNumber
-	Location    int
+	Tag NodeTag[Var] `json:"tag"`
+
+	Xpr         Node       `json:"xpr,omitempty"`
+	Varno       Index      `json:"varno"`
+	Varattno    AttrNumber `json:"varattno"`
+	Vartype     Oid        `json:"vartype"`
+	Vartypmod   int32      `json:"vartypmod"`
+	Varcollid   Oid        `json:"varcollid"`
+	Varlevelsup Index      `json:"varlevelsup"`
+	Varnoold    Index      `json:"varnoold"`
+	Varoattno   AttrNumber `json:"varoattno"`
+	Location    int        `json:"location"`
 }
 
 func (n *Var) Pos() int {

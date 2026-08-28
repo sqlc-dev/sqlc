@@ -1,8 +1,10 @@
 package ast
 
 type ReassignOwnedStmt struct {
-	Roles   *List
-	Newrole *RoleSpec
+	Tag NodeTag[ReassignOwnedStmt] `json:"tag"`
+
+	Roles   *List     `json:"roles,omitempty"`
+	Newrole *RoleSpec `json:"newrole,omitempty"`
 }
 
 func (n *ReassignOwnedStmt) Pos() int {

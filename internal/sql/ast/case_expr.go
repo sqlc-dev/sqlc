@@ -3,13 +3,15 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type CaseExpr struct {
-	Xpr        Node
-	Casetype   Oid
-	Casecollid Oid
-	Arg        Node
-	Args       *List
-	Defresult  Node
-	Location   int
+	Tag NodeTag[CaseExpr] `json:"tag"`
+
+	Xpr        Node  `json:"xpr,omitempty"`
+	Casetype   Oid   `json:"casetype"`
+	Casecollid Oid   `json:"casecollid"`
+	Arg        Node  `json:"arg,omitempty"`
+	Args       *List `json:"args,omitempty"`
+	Defresult  Node  `json:"defresult,omitempty"`
+	Location   int   `json:"location"`
 }
 
 func (n *CaseExpr) Pos() int {

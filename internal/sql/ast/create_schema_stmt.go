@@ -1,10 +1,12 @@
 package ast
 
 type CreateSchemaStmt struct {
-	Name        *string
-	SchemaElts  *List
-	Authrole    *RoleSpec
-	IfNotExists bool
+	Tag NodeTag[CreateSchemaStmt] `json:"tag"`
+
+	Name        *string   `json:"name,omitempty"`
+	SchemaElts  *List     `json:"schema_elts,omitempty"`
+	Authrole    *RoleSpec `json:"authrole,omitempty"`
+	IfNotExists bool      `json:"if_not_exists"`
 }
 
 func (n *CreateSchemaStmt) Pos() int {

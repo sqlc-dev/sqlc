@@ -3,10 +3,12 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type CollateExpr struct {
-	Xpr      Node
-	Arg      Node
-	CollOid  Oid
-	Location int
+	Tag NodeTag[CollateExpr] `json:"tag"`
+
+	Xpr      Node `json:"xpr,omitempty"`
+	Arg      Node `json:"arg,omitempty"`
+	CollOid  Oid  `json:"coll_oid"`
+	Location int  `json:"location"`
 }
 
 func (n *CollateExpr) Pos() int {

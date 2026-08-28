@@ -3,9 +3,11 @@ package ast
 import "github.com/sqlc-dev/sqlc/internal/sql/format"
 
 type ParamRef struct {
-	Number   int
-	Location int
-	Dollar   bool
+	Tag NodeTag[ParamRef] `json:"tag"`
+
+	Number   int  `json:"number"`
+	Location int  `json:"location"`
+	Dollar   bool `json:"dollar"`
 }
 
 func (n *ParamRef) Pos() int {
