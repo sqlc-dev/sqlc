@@ -1,0 +1,56 @@
+--- a/query.sql
++++ b/query.sql
+@@ -1,6 +1,8 @@
+ -- name: GetAuthor :one
++SELECT id, name, bio
++FROM authors
++WHERE id = ?
++LIMIT 1;
+-select  id,name , bio from   authors
+-where id =  ? limit 1;
+ 
+ # hash comment
+ -- name: ListAuthors :many
+@@ -7,4 +9,5 @@
++SELECT id, name, bio
++FROM authors
+-SELECT id, name, bio FROM authors
+ ORDER BY name DESC;
+ 
+ -- name: PickyQuery :many
+@@ -11,7 +14,8 @@
++SELECT
++  id, -- the primary key
++  name,
++  -- computed downstream
++  bio
+-SELECT id, -- the primary key
+-       name,
+-       -- computed downstream
+-       bio
+ FROM authors
+ -- soft-deleted rows are filtered
+ WHERE bio IS NOT NULL
+@@ -21,8 +25,9 @@
+ SELECT /* inline note */ id, name FROM authors ORDER BY name;
+ 
+ -- name: CountSigils :one
++SELECT count(*)
++FROM authors
++WHERE id != ? AND name != @user_name; # session variable stays
+-SELECT count(*) FROM authors
+-WHERE id <> ? AND name <> @user_name; # session variable stays
+ 
+ -- name: CastUnsigned :one
+ SELECT CAST(id AS UNSIGNED) FROM authors LIMIT 1;
+@@ -34,8 +39,5 @@
+ SELECT id FROM authors LIMIT 1;
+ 
+ -- name: CreateAuthor :execresult
++INSERT INTO authors (name, bio)
++VALUES (?, ?);
+-insert into authors (
+-  name, bio
+-) values (
+-  ?, ?
+-);

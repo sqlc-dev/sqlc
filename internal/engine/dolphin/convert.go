@@ -201,6 +201,7 @@ func (c *cc) convertBinaryOperationExpr(n *pcast.BinaryOperationExpr) ast.Node {
 					c.convert(n.R),
 				},
 			},
+			Location: n.OriginTextPosition(),
 		}
 	} else {
 		return &ast.A_Expr{
@@ -210,8 +211,9 @@ func (c *cc) convertBinaryOperationExpr(n *pcast.BinaryOperationExpr) ast.Node {
 					&ast.String{Str: opToName(n.Op)},
 				},
 			},
-			Lexpr: c.convert(n.L),
-			Rexpr: c.convert(n.R),
+			Lexpr:    c.convert(n.L),
+			Rexpr:    c.convert(n.R),
+			Location: n.OriginTextPosition(),
 		}
 	}
 }
@@ -320,7 +322,8 @@ func (c *cc) convertColumnNames(cols []*pcast.ColumnName) *ast.List {
 	for i := range cols {
 		name := identifier(cols[i].Name.String())
 		list.Items = append(list.Items, &ast.ResTarget{
-			Name: &name,
+			Name:     &name,
+			Location: cols[i].OriginTextPosition(),
 		})
 	}
 	return list
@@ -1089,6 +1092,7 @@ func (c *cc) convertIsNullExpr(n *pcast.IsNullExpr) ast.Node {
 				c.convert(n.Expr),
 			},
 		},
+		Location: n.OriginTextPosition(),
 	}
 }
 
@@ -1523,6 +1527,7 @@ func (c *cc) convertTableName(n *pcast.TableName) *ast.RangeVar {
 	return &ast.RangeVar{
 		Schemaname: &schema,
 		Relname:    &rel,
+		Location:   n.OriginTextPosition(),
 	}
 }
 

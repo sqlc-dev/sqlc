@@ -8,7 +8,8 @@
 `sqlc fmt` rewrites the query files referenced by your configuration file in a
 canonical format. Each query is parsed with the engine's parser and printed
 back from the syntax tree, so formatting never depends on how the query was
-written — only on what it means.
+written — only on what it means. PostgreSQL, MySQL and SQLite are supported;
+query files for other engines are left unchanged.
 
 Like `gofmt`, the formatter does not impose a maximum line width. A statement
 written on a single line stays on a single line, and a statement the author
