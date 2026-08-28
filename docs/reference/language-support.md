@@ -20,7 +20,7 @@ New languages can be added via [plugins](../guides/plugins.md).
 | PHP      | [lcarilla/sqlc-plugin-php-dbal](https://github.com/lcarilla/sqlc-plugin-php-dbal)      | Beta   | N/A        | N/A    |
 | Ruby     | [DaredevilOSS/sqlc-gen-ruby](https://github.com/DaredevilOSS/sqlc-gen-ruby)            | Beta   | Beta       | Beta   |
 | Zig      | [tinyzimmer/sqlc-gen-zig](https://github.com/tinyzimmer/sqlc-gen-zig)                  | N/A    | Beta       | Beta   |
-| Python   | [rayakame/sqlc-gen-better-python](https://github.com/rayakame/sqlc-gen-better-python)  | N/A    | Beta       | Beta   |
+| Python   | [rayakame/sqlc-gen-better-python](https://github.com/rayakame/sqlc-gen-better-python)  | Beta   | Stable     | Stable |
 | Rust     | [mathematic-inc/sqlc-gen-sqlx](https://github.com/mathematic-inc/sqlc-gen-sqlx)        | N/A    | Beta       | N/A    |
 | \[Any\]  | [fdietze/sqlc-gen-from-template](https://github.com/fdietze/sqlc-gen-from-template)    | Stable | Stable     | Stable |
 
