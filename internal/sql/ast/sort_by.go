@@ -5,10 +5,10 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type SortBy struct {
 	Tag NodeTag[SortBy] `json:"tag"`
 
-	Node        Node
+	Node        Node `json:",omitempty"`
 	SortbyDir   SortByDir
 	SortbyNulls SortByNulls
-	UseOp       *List
+	UseOp       *List `json:",omitempty"`
 	Location    int
 }
 

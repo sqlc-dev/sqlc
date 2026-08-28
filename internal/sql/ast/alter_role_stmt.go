@@ -3,8 +3,8 @@ package ast
 type AlterRoleStmt struct {
 	Tag NodeTag[AlterRoleStmt] `json:"tag"`
 
-	Role    *RoleSpec
-	Options *List
+	Role    *RoleSpec `json:",omitempty"`
+	Options *List     `json:",omitempty"`
 	Action  int
 }
 

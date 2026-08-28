@@ -5,11 +5,11 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type IndexElem struct {
 	Tag NodeTag[IndexElem] `json:"tag"`
 
-	Name          *string
-	Expr          Node
-	Indexcolname  *string
-	Collation     *List
-	Opclass       *List
+	Name          *string `json:",omitempty"`
+	Expr          Node    `json:",omitempty"`
+	Indexcolname  *string `json:",omitempty"`
+	Collation     *List   `json:",omitempty"`
+	Opclass       *List   `json:",omitempty"`
 	Ordering      SortByDir
 	NullsOrdering SortByNulls
 }

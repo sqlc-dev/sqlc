@@ -5,7 +5,7 @@ type FetchStmt struct {
 
 	Direction  FetchDirection
 	HowMany    int64
-	Portalname *string
+	Portalname *string `json:",omitempty"`
 	Ismove     bool
 }
 

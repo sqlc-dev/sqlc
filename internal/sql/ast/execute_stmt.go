@@ -3,8 +3,8 @@ package ast
 type ExecuteStmt struct {
 	Tag NodeTag[ExecuteStmt] `json:"tag"`
 
-	Name   *string
-	Params *List
+	Name   *string `json:",omitempty"`
+	Params *List   `json:",omitempty"`
 }
 
 func (n *ExecuteStmt) Pos() int {

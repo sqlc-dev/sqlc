@@ -5,11 +5,11 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type ScalarArrayOpExpr struct {
 	Tag NodeTag[ScalarArrayOpExpr] `json:"tag"`
 
-	Xpr         Node
+	Xpr         Node `json:",omitempty"`
 	Opno        Oid
 	UseOr       bool
 	Inputcollid Oid
-	Args        *List
+	Args        *List `json:",omitempty"`
 	Location    int
 }
 

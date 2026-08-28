@@ -6,9 +6,9 @@ type OnConflictClause struct {
 	Tag NodeTag[OnConflictClause] `json:"tag"`
 
 	Action      OnConflictAction
-	Infer       *InferClause
-	TargetList  *List
-	WhereClause Node
+	Infer       *InferClause `json:",omitempty"`
+	TargetList  *List        `json:",omitempty"`
+	WhereClause Node         `json:",omitempty"`
 	Location    int
 }
 

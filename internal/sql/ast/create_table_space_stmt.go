@@ -3,10 +3,10 @@ package ast
 type CreateTableSpaceStmt struct {
 	Tag NodeTag[CreateTableSpaceStmt] `json:"tag"`
 
-	Tablespacename *string
-	Owner          *RoleSpec
-	Location       *string
-	Options        *List
+	Tablespacename *string   `json:",omitempty"`
+	Owner          *RoleSpec `json:",omitempty"`
+	Location       *string   `json:",omitempty"`
+	Options        *List     `json:",omitempty"`
 }
 
 func (n *CreateTableSpaceStmt) Pos() int {

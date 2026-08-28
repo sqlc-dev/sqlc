@@ -18,12 +18,12 @@ const (
 type SubLink struct {
 	Tag NodeTag[SubLink] `json:"tag"`
 
-	Xpr         Node
+	Xpr         Node `json:",omitempty"`
 	SubLinkType SubLinkType
 	SubLinkId   int
-	Testexpr    Node
-	OperName    *List
-	Subselect   Node
+	Testexpr    Node  `json:",omitempty"`
+	OperName    *List `json:",omitempty"`
+	Subselect   Node  `json:",omitempty"`
 	Location    int
 }
 

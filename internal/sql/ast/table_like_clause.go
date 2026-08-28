@@ -3,7 +3,7 @@ package ast
 type TableLikeClause struct {
 	Tag NodeTag[TableLikeClause] `json:"tag"`
 
-	Relation *RangeVar
+	Relation *RangeVar `json:",omitempty"`
 	Options  uint32
 }
 

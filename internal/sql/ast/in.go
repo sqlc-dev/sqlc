@@ -7,13 +7,13 @@ type In struct {
 	Tag NodeTag[In] `json:"tag"`
 
 	// Expr is the value expression to be compared.
-	Expr Node
+	Expr Node `json:",omitempty"`
 	// List is the list expression in compare list.
-	List []Node
+	List []Node `json:",omitempty"`
 	// Not is true, the expression is "not in".
 	Not bool
 	// Sel is the subquery, may be rewritten to other type of expression.
-	Sel      Node
+	Sel      Node `json:",omitempty"`
 	Location int
 }
 

@@ -5,9 +5,9 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type InferClause struct {
 	Tag NodeTag[InferClause] `json:"tag"`
 
-	IndexElems  *List
-	WhereClause Node
-	Conname     *string
+	IndexElems  *List   `json:",omitempty"`
+	WhereClause Node    `json:",omitempty"`
+	Conname     *string `json:",omitempty"`
 	Location    int
 }
 

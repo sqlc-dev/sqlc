@@ -3,7 +3,7 @@ package ast
 type DropSubscriptionStmt struct {
 	Tag NodeTag[DropSubscriptionStmt] `json:"tag"`
 
-	Subname   *string
+	Subname   *string `json:",omitempty"`
 	MissingOk bool
 	Behavior  DropBehavior
 }

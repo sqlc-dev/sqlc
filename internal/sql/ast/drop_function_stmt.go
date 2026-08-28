@@ -3,7 +3,7 @@ package ast
 type DropFunctionStmt struct {
 	Tag NodeTag[DropFunctionStmt] `json:"tag"`
 
-	Funcs     []*FuncSpec
+	Funcs     []*FuncSpec `json:",omitempty"`
 	MissingOk bool
 }
 

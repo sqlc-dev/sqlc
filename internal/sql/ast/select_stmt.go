@@ -7,24 +7,24 @@ import (
 type SelectStmt struct {
 	Tag NodeTag[SelectStmt] `json:"tag"`
 
-	DistinctClause *List
-	IntoClause     *IntoClause
-	TargetList     *List
-	FromClause     *List
-	WhereClause    Node
-	GroupClause    *List
-	HavingClause   Node
-	WindowClause   *List
-	ValuesLists    *List
-	SortClause     *List
-	LimitOffset    Node
-	LimitCount     Node
-	LockingClause  *List
-	WithClause     *WithClause
+	DistinctClause *List       `json:",omitempty"`
+	IntoClause     *IntoClause `json:",omitempty"`
+	TargetList     *List       `json:",omitempty"`
+	FromClause     *List       `json:",omitempty"`
+	WhereClause    Node        `json:",omitempty"`
+	GroupClause    *List       `json:",omitempty"`
+	HavingClause   Node        `json:",omitempty"`
+	WindowClause   *List       `json:",omitempty"`
+	ValuesLists    *List       `json:",omitempty"`
+	SortClause     *List       `json:",omitempty"`
+	LimitOffset    Node        `json:",omitempty"`
+	LimitCount     Node        `json:",omitempty"`
+	LockingClause  *List       `json:",omitempty"`
+	WithClause     *WithClause `json:",omitempty"`
 	Op             SetOperation
 	All            bool
-	Larg           *SelectStmt
-	Rarg           *SelectStmt
+	Larg           *SelectStmt `json:",omitempty"`
+	Rarg           *SelectStmt `json:",omitempty"`
 }
 
 func (n *SelectStmt) Pos() int {

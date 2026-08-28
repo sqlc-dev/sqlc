@@ -3,7 +3,7 @@ package ast
 type DropSchemaStmt struct {
 	Tag NodeTag[DropSchemaStmt] `json:"tag"`
 
-	Schemas   []*String
+	Schemas   []*String `json:",omitempty"`
 	MissingOk bool
 }
 

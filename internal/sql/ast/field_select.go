@@ -3,8 +3,8 @@ package ast
 type FieldSelect struct {
 	Tag NodeTag[FieldSelect] `json:"tag"`
 
-	Xpr          Node
-	Arg          Node
+	Xpr          Node `json:",omitempty"`
+	Arg          Node `json:",omitempty"`
 	Fieldnum     AttrNumber
 	Resulttype   Oid
 	Resulttypmod int32

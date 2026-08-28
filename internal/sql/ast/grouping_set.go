@@ -4,7 +4,7 @@ type GroupingSet struct {
 	Tag NodeTag[GroupingSet] `json:"tag"`
 
 	Kind     GroupingSetKind
-	Content  *List
+	Content  *List `json:",omitempty"`
 	Location int
 }
 

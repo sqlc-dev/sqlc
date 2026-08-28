@@ -6,9 +6,9 @@ type AlterTableStmt struct {
 	Tag NodeTag[AlterTableStmt] `json:"tag"`
 
 	// TODO: Only TableName or Relation should be defined
-	Relation  *RangeVar
-	Table     *TableName
-	Cmds      *List
+	Relation  *RangeVar  `json:",omitempty"`
+	Table     *TableName `json:",omitempty"`
+	Cmds      *List      `json:",omitempty"`
 	MissingOk bool
 	Relkind   ObjectType
 	// Incomplete marks a statement whose source carried syntax this node

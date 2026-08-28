@@ -4,8 +4,8 @@ type VariableSetStmt struct {
 	Tag NodeTag[VariableSetStmt] `json:"tag"`
 
 	Kind    VariableSetKind
-	Name    *string
-	Args    *List
+	Name    *string `json:",omitempty"`
+	Args    *List   `json:",omitempty"`
 	IsLocal bool
 }
 

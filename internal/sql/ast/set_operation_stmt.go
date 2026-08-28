@@ -5,12 +5,12 @@ type SetOperationStmt struct {
 
 	Op            SetOperation
 	All           bool
-	Larg          Node
-	Rarg          Node
-	ColTypes      *List
-	ColTypmods    *List
-	ColCollations *List
-	GroupClauses  *List
+	Larg          Node  `json:",omitempty"`
+	Rarg          Node  `json:",omitempty"`
+	ColTypes      *List `json:",omitempty"`
+	ColTypmods    *List `json:",omitempty"`
+	ColCollations *List `json:",omitempty"`
+	GroupClauses  *List `json:",omitempty"`
 }
 
 func (n *SetOperationStmt) Pos() int {

@@ -3,10 +3,10 @@ package ast
 type GrantRoleStmt struct {
 	Tag NodeTag[GrantRoleStmt] `json:"tag"`
 
-	GrantedRoles *List
-	GranteeRoles *List
+	GrantedRoles *List `json:",omitempty"`
+	GranteeRoles *List `json:",omitempty"`
 	IsGrant      bool
-	Grantor      *RoleSpec
+	Grantor      *RoleSpec `json:",omitempty"`
 	Behavior     DropBehavior
 }
 

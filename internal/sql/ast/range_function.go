@@ -8,9 +8,9 @@ type RangeFunction struct {
 	Lateral    bool
 	Ordinality bool
 	IsRowsfrom bool
-	Functions  *List
-	Alias      *Alias
-	Coldeflist *List
+	Functions  *List  `json:",omitempty"`
+	Alias      *Alias `json:",omitempty"`
+	Coldeflist *List  `json:",omitempty"`
 }
 
 func (n *RangeFunction) Pos() int {

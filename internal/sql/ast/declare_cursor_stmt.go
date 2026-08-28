@@ -3,9 +3,9 @@ package ast
 type DeclareCursorStmt struct {
 	Tag NodeTag[DeclareCursorStmt] `json:"tag"`
 
-	Portalname *string
+	Portalname *string `json:",omitempty"`
 	Options    int
-	Query      Node
+	Query      Node `json:",omitempty"`
 }
 
 func (n *DeclareCursorStmt) Pos() int {

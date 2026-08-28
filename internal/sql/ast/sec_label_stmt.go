@@ -4,9 +4,9 @@ type SecLabelStmt struct {
 	Tag NodeTag[SecLabelStmt] `json:"tag"`
 
 	Objtype  ObjectType
-	Object   Node
-	Provider *string
-	Label    *string
+	Object   Node    `json:",omitempty"`
+	Provider *string `json:",omitempty"`
+	Label    *string `json:",omitempty"`
 }
 
 func (n *SecLabelStmt) Pos() int {

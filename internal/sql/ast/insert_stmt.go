@@ -5,13 +5,13 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type InsertStmt struct {
 	Tag NodeTag[InsertStmt] `json:"tag"`
 
-	Relation             *RangeVar
-	Cols                 *List
-	SelectStmt           Node
-	OnConflictClause     *OnConflictClause
-	OnDuplicateKeyUpdate *OnDuplicateKeyUpdate // MySQL-specific
-	ReturningList        *List
-	WithClause           *WithClause
+	Relation             *RangeVar             `json:",omitempty"`
+	Cols                 *List                 `json:",omitempty"`
+	SelectStmt           Node                  `json:",omitempty"`
+	OnConflictClause     *OnConflictClause     `json:",omitempty"`
+	OnDuplicateKeyUpdate *OnDuplicateKeyUpdate `json:",omitempty"` // MySQL-specific
+	ReturningList        *List                 `json:",omitempty"`
+	WithClause           *WithClause           `json:",omitempty"`
 	Override             OverridingKind
 	DefaultValues        bool // SQLite-specific: INSERT INTO ... DEFAULT VALUES
 	// PostgreSQL 18 RETURNING WITH (OLD AS ..., NEW AS ...) aliases

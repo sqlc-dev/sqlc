@@ -4,8 +4,8 @@ type ReindexStmt struct {
 	Tag NodeTag[ReindexStmt] `json:"tag"`
 
 	Kind     ReindexObjectType
-	Relation *RangeVar
-	Name     *string
+	Relation *RangeVar `json:",omitempty"`
+	Name     *string   `json:",omitempty"`
 	Options  int
 }
 

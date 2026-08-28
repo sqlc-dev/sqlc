@@ -9,14 +9,14 @@ type ColumnDef struct {
 	// TypeName is the column's type for the catalog. When Typeless is set
 	// the author wrote no type at all — SQLite allows it — and the column
 	// prints without one, whatever TypeName carries.
-	TypeName   *TypeName
+	TypeName   *TypeName `json:",omitempty"`
 	Typeless   bool
 	IsNotNull  bool
 	IsUnsigned bool
 	IsArray    bool
 	ArrayDims  int
-	Vals       *List
-	Length     *int
+	Vals       *List `json:",omitempty"`
+	Length     *int  `json:",omitempty"`
 	PrimaryKey bool
 	// IsHidden marks a column a relation offers by name without listing it,
 	// like the column an sqlite fts5 table names after itself. The legacy
@@ -30,13 +30,13 @@ type ColumnDef struct {
 	IsFromType    bool
 	IsFromParent  bool
 	Storage       byte
-	RawDefault    Node
-	CookedDefault Node
+	RawDefault    Node `json:",omitempty"`
+	CookedDefault Node `json:",omitempty"`
 	Identity      byte
-	CollClause    *CollateClause
+	CollClause    *CollateClause `json:",omitempty"`
 	CollOid       Oid
-	Constraints   *List
-	Fdwoptions    *List
+	Constraints   *List `json:",omitempty"`
+	Fdwoptions    *List `json:",omitempty"`
 	Location      int
 	Comment       string
 }

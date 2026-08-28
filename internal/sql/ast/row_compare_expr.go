@@ -3,13 +3,13 @@ package ast
 type RowCompareExpr struct {
 	Tag NodeTag[RowCompareExpr] `json:"tag"`
 
-	Xpr          Node
+	Xpr          Node `json:",omitempty"`
 	Rctype       RowCompareType
-	Opnos        *List
-	Opfamilies   *List
-	Inputcollids *List
-	Largs        *List
-	Rargs        *List
+	Opnos        *List `json:",omitempty"`
+	Opfamilies   *List `json:",omitempty"`
+	Inputcollids *List `json:",omitempty"`
+	Largs        *List `json:",omitempty"`
+	Rargs        *List `json:",omitempty"`
 }
 
 func (n *RowCompareExpr) Pos() int {

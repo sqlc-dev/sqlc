@@ -3,7 +3,7 @@ package ast
 type DropStmt struct {
 	Tag NodeTag[DropStmt] `json:"tag"`
 
-	Objects    *List
+	Objects    *List `json:",omitempty"`
 	RemoveType ObjectType
 	Behavior   DropBehavior
 	MissingOk  bool

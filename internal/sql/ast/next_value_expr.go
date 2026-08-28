@@ -3,7 +3,7 @@ package ast
 type NextValueExpr struct {
 	Tag NodeTag[NextValueExpr] `json:"tag"`
 
-	Xpr    Node
+	Xpr    Node `json:",omitempty"`
 	Seqid  Oid
 	TypeId Oid
 }

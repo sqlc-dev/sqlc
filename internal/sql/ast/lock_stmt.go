@@ -3,7 +3,7 @@ package ast
 type LockStmt struct {
 	Tag NodeTag[LockStmt] `json:"tag"`
 
-	Relations *List
+	Relations *List `json:",omitempty"`
 	Mode      int
 	Nowait    bool
 }

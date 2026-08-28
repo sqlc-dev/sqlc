@@ -3,7 +3,7 @@ package ast
 type CaseTestExpr struct {
 	Tag NodeTag[CaseTestExpr] `json:"tag"`
 
-	Xpr       Node
+	Xpr       Node `json:",omitempty"`
 	TypeId    Oid
 	TypeMod   int32
 	Collation Oid

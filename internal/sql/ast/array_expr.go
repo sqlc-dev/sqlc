@@ -3,11 +3,11 @@ package ast
 type ArrayExpr struct {
 	Tag NodeTag[ArrayExpr] `json:"tag"`
 
-	Xpr           Node
+	Xpr           Node `json:",omitempty"`
 	ArrayTypeid   Oid
 	ArrayCollid   Oid
 	ElementTypeid Oid
-	Elements      *List
+	Elements      *List `json:",omitempty"`
 	Multidims     bool
 	Location      int
 }

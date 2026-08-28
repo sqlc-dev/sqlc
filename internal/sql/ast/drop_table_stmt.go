@@ -4,7 +4,7 @@ type DropTableStmt struct {
 	Tag NodeTag[DropTableStmt] `json:"tag"`
 
 	IfExists bool
-	Tables   []*TableName
+	Tables   []*TableName `json:",omitempty"`
 }
 
 func (n *DropTableStmt) Pos() int {

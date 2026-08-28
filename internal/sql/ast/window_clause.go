@@ -3,13 +3,13 @@ package ast
 type WindowClause struct {
 	Tag NodeTag[WindowClause] `json:"tag"`
 
-	Name            *string
-	Refname         *string
-	PartitionClause *List
-	OrderClause     *List
+	Name            *string `json:",omitempty"`
+	Refname         *string `json:",omitempty"`
+	PartitionClause *List   `json:",omitempty"`
+	OrderClause     *List   `json:",omitempty"`
 	FrameOptions    int
-	StartOffset     Node
-	EndOffset       Node
+	StartOffset     Node `json:",omitempty"`
+	EndOffset       Node `json:",omitempty"`
 	Winref          Index
 	CopiedOrder     bool
 }

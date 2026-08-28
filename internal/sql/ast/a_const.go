@@ -5,7 +5,7 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type A_Const struct {
 	Tag NodeTag[A_Const] `json:"tag"`
 
-	Val      Node
+	Val      Node `json:",omitempty"`
 	Location int
 }
 

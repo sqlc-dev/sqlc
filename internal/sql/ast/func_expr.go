@@ -3,7 +3,7 @@ package ast
 type FuncExpr struct {
 	Tag NodeTag[FuncExpr] `json:"tag"`
 
-	Xpr            Node
+	Xpr            Node `json:",omitempty"`
 	Funcid         Oid
 	Funcresulttype Oid
 	Funcretset     bool
@@ -11,7 +11,7 @@ type FuncExpr struct {
 	Funcformat     CoercionForm
 	Funccollid     Oid
 	Inputcollid    Oid
-	Args           *List
+	Args           *List `json:",omitempty"`
 	Location       int
 }
 

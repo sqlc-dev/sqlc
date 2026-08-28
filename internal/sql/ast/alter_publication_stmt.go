@@ -3,9 +3,9 @@ package ast
 type AlterPublicationStmt struct {
 	Tag NodeTag[AlterPublicationStmt] `json:"tag"`
 
-	Pubname      *string
-	Options      *List
-	Tables       *List
+	Pubname      *string `json:",omitempty"`
+	Options      *List   `json:",omitempty"`
+	Tables       *List   `json:",omitempty"`
 	ForAllTables bool
 	TableAction  DefElemAction
 }

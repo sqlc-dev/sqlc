@@ -3,9 +3,9 @@ package ast
 type AlterForeignServerStmt struct {
 	Tag NodeTag[AlterForeignServerStmt] `json:"tag"`
 
-	Servername *string
-	Version    *string
-	Options    *List
+	Servername *string `json:",omitempty"`
+	Version    *string `json:",omitempty"`
+	Options    *List   `json:",omitempty"`
 	HasVersion bool
 }
 

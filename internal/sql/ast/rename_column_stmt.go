@@ -3,9 +3,9 @@ package ast
 type RenameColumnStmt struct {
 	Tag NodeTag[RenameColumnStmt] `json:"tag"`
 
-	Table     *TableName
-	Col       *ColumnRef
-	NewName   *string
+	Table     *TableName `json:",omitempty"`
+	Col       *ColumnRef `json:",omitempty"`
+	NewName   *string    `json:",omitempty"`
 	MissingOk bool
 }
 

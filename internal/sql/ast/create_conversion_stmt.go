@@ -3,10 +3,10 @@ package ast
 type CreateConversionStmt struct {
 	Tag NodeTag[CreateConversionStmt] `json:"tag"`
 
-	ConversionName  *List
-	ForEncodingName *string
-	ToEncodingName  *string
-	FuncName        *List
+	ConversionName  *List   `json:",omitempty"`
+	ForEncodingName *string `json:",omitempty"`
+	ToEncodingName  *string `json:",omitempty"`
+	FuncName        *List   `json:",omitempty"`
 	Def             bool
 }
 

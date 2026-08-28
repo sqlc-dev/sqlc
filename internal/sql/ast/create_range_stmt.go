@@ -3,8 +3,8 @@ package ast
 type CreateRangeStmt struct {
 	Tag NodeTag[CreateRangeStmt] `json:"tag"`
 
-	TypeName *List
-	Params   *List
+	TypeName *List `json:",omitempty"`
+	Params   *List `json:",omitempty"`
 }
 
 func (n *CreateRangeStmt) Pos() int {

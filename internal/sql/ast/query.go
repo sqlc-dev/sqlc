@@ -7,7 +7,7 @@ type Query struct {
 	QuerySource      QuerySource
 	QueryId          uint32
 	CanSetTag        bool
-	UtilityStmt      Node
+	UtilityStmt      Node `json:",omitempty"`
 	ResultRelation   int
 	HasAggs          bool
 	HasWindowFuncs   bool
@@ -18,25 +18,25 @@ type Query struct {
 	HasModifyingCte  bool
 	HasForUpdate     bool
 	HasRowSecurity   bool
-	CteList          *List
-	Rtable           *List
-	Jointree         *FromExpr
-	TargetList       *List
+	CteList          *List     `json:",omitempty"`
+	Rtable           *List     `json:",omitempty"`
+	Jointree         *FromExpr `json:",omitempty"`
+	TargetList       *List     `json:",omitempty"`
 	Override         OverridingKind
-	OnConflict       *OnConflictExpr
-	ReturningList    *List
-	GroupClause      *List
-	GroupingSets     *List
-	HavingQual       Node
-	WindowClause     *List
-	DistinctClause   *List
-	SortClause       *List
-	LimitOffset      Node
-	LimitCount       Node
-	RowMarks         *List
-	SetOperations    Node
-	ConstraintDeps   *List
-	WithCheckOptions *List
+	OnConflict       *OnConflictExpr `json:",omitempty"`
+	ReturningList    *List           `json:",omitempty"`
+	GroupClause      *List           `json:",omitempty"`
+	GroupingSets     *List           `json:",omitempty"`
+	HavingQual       Node            `json:",omitempty"`
+	WindowClause     *List           `json:",omitempty"`
+	DistinctClause   *List           `json:",omitempty"`
+	SortClause       *List           `json:",omitempty"`
+	LimitOffset      Node            `json:",omitempty"`
+	LimitCount       Node            `json:",omitempty"`
+	RowMarks         *List           `json:",omitempty"`
+	SetOperations    Node            `json:",omitempty"`
+	ConstraintDeps   *List           `json:",omitempty"`
+	WithCheckOptions *List           `json:",omitempty"`
 	StmtLocation     int
 	StmtLen          int
 }

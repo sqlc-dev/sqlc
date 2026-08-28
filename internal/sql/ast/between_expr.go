@@ -6,11 +6,11 @@ type BetweenExpr struct {
 	Tag NodeTag[BetweenExpr] `json:"tag"`
 
 	// Expr is the value expression to be compared.
-	Expr Node
+	Expr Node `json:",omitempty"`
 	// Left is the left expression in the between statement.
-	Left Node
+	Left Node `json:",omitempty"`
 	// Right is the right expression in the between statement.
-	Right Node
+	Right Node `json:",omitempty"`
 	// Not is true, the expression is "not between".
 	Not      bool
 	Location int

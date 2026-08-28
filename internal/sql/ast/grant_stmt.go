@@ -6,9 +6,9 @@ type GrantStmt struct {
 	IsGrant     bool
 	Targtype    GrantTargetType
 	Objtype     GrantObjectType
-	Objects     *List
-	Privileges  *List
-	Grantees    *List
+	Objects     *List `json:",omitempty"`
+	Privileges  *List `json:",omitempty"`
+	Grantees    *List `json:",omitempty"`
 	GrantOption bool
 	Behavior    DropBehavior
 }

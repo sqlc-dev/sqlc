@@ -7,11 +7,11 @@ type JoinExpr struct {
 
 	Jointype    JoinType
 	IsNatural   bool
-	Larg        Node
-	Rarg        Node
-	UsingClause *List
-	Quals       Node
-	Alias       *Alias
+	Larg        Node   `json:",omitempty"`
+	Rarg        Node   `json:",omitempty"`
+	UsingClause *List  `json:",omitempty"`
+	Quals       Node   `json:",omitempty"`
+	Alias       *Alias `json:",omitempty"`
 	Rtindex     int
 }
 

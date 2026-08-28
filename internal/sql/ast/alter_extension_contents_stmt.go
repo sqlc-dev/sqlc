@@ -3,10 +3,10 @@ package ast
 type AlterExtensionContentsStmt struct {
 	Tag NodeTag[AlterExtensionContentsStmt] `json:"tag"`
 
-	Extname *string
+	Extname *string `json:",omitempty"`
 	Action  int
 	Objtype ObjectType
-	Object  Node
+	Object  Node `json:",omitempty"`
 }
 
 func (n *AlterExtensionContentsStmt) Pos() int {

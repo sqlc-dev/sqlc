@@ -4,8 +4,8 @@ type VacuumStmt struct {
 	Tag NodeTag[VacuumStmt] `json:"tag"`
 
 	Options  int
-	Relation *RangeVar
-	VaCols   *List
+	Relation *RangeVar `json:",omitempty"`
+	VaCols   *List     `json:",omitempty"`
 }
 
 func (n *VacuumStmt) Pos() int {

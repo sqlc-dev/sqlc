@@ -5,7 +5,7 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type TruncateStmt struct {
 	Tag NodeTag[TruncateStmt] `json:"tag"`
 
-	Relations   *List
+	Relations   *List `json:",omitempty"`
 	RestartSeqs bool
 	Behavior    DropBehavior
 }

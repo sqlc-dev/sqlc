@@ -12,7 +12,7 @@ type ColumnRef struct {
 	Name string
 
 	// From pg.ColumnRef
-	Fields   *List
+	Fields   *List `json:",omitempty"`
 	Location int
 }
 

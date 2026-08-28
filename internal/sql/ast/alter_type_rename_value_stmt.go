@@ -3,9 +3,9 @@ package ast
 type AlterTypeRenameValueStmt struct {
 	Tag NodeTag[AlterTypeRenameValueStmt] `json:"tag"`
 
-	Type     *TypeName
-	OldValue *string
-	NewValue *string
+	Type     *TypeName `json:",omitempty"`
+	OldValue *string   `json:",omitempty"`
+	NewValue *string   `json:",omitempty"`
 }
 
 func (n *AlterTypeRenameValueStmt) Pos() int {

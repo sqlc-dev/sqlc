@@ -3,9 +3,9 @@ package ast
 type PrepareStmt struct {
 	Tag NodeTag[PrepareStmt] `json:"tag"`
 
-	Name     *string
-	Argtypes *List
-	Query    Node
+	Name     *string `json:",omitempty"`
+	Argtypes *List   `json:",omitempty"`
+	Query    Node    `json:",omitempty"`
 }
 
 func (n *PrepareStmt) Pos() int {

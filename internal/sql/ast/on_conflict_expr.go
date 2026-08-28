@@ -4,13 +4,13 @@ type OnConflictExpr struct {
 	Tag NodeTag[OnConflictExpr] `json:"tag"`
 
 	Action          OnConflictAction
-	ArbiterElems    *List
-	ArbiterWhere    Node
+	ArbiterElems    *List `json:",omitempty"`
+	ArbiterWhere    Node  `json:",omitempty"`
 	Constraint      Oid
-	OnConflictSet   *List
-	OnConflictWhere Node
+	OnConflictSet   *List `json:",omitempty"`
+	OnConflictWhere Node  `json:",omitempty"`
 	ExclRelIndex    int
-	ExclRelTlist    *List
+	ExclRelTlist    *List `json:",omitempty"`
 }
 
 func (n *OnConflictExpr) Pos() int {

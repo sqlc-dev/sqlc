@@ -5,7 +5,7 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type ListenStmt struct {
 	Tag NodeTag[ListenStmt] `json:"tag"`
 
-	Conditionname *string
+	Conditionname *string `json:",omitempty"`
 }
 
 func (n *ListenStmt) Pos() int {

@@ -3,8 +3,8 @@ package ast
 type CreateSeqStmt struct {
 	Tag NodeTag[CreateSeqStmt] `json:"tag"`
 
-	Sequence    *RangeVar
-	Options     *List
+	Sequence    *RangeVar `json:",omitempty"`
+	Options     *List     `json:",omitempty"`
 	OwnerId     Oid
 	ForIdentity bool
 	IfNotExists bool

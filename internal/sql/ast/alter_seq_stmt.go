@@ -3,8 +3,8 @@ package ast
 type AlterSeqStmt struct {
 	Tag NodeTag[AlterSeqStmt] `json:"tag"`
 
-	Sequence    *RangeVar
-	Options     *List
+	Sequence    *RangeVar `json:",omitempty"`
+	Options     *List     `json:",omitempty"`
 	ForIdentity bool
 	MissingOk   bool
 }

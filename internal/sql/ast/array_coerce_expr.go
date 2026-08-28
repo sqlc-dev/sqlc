@@ -3,8 +3,8 @@ package ast
 type ArrayCoerceExpr struct {
 	Tag NodeTag[ArrayCoerceExpr] `json:"tag"`
 
-	Xpr          Node
-	Arg          Node
+	Xpr          Node `json:",omitempty"`
+	Arg          Node `json:",omitempty"`
 	Elemfuncid   Oid
 	Resulttype   Oid
 	Resulttypmod int32

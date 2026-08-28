@@ -33,9 +33,9 @@ type AlterTableCmd struct {
 	Tag NodeTag[AlterTableCmd] `json:"tag"`
 
 	Subtype   AlterTableType
-	Name      *string
-	Def       *ColumnDef
-	Newowner  *RoleSpec
+	Name      *string    `json:",omitempty"`
+	Def       *ColumnDef `json:",omitempty"`
+	Newowner  *RoleSpec  `json:",omitempty"`
 	Behavior  DropBehavior
 	MissingOk bool
 }

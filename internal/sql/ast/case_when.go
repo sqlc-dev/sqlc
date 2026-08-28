@@ -5,9 +5,9 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type CaseWhen struct {
 	Tag NodeTag[CaseWhen] `json:"tag"`
 
-	Xpr      Node
-	Expr     Node
-	Result   Node
+	Xpr      Node `json:",omitempty"`
+	Expr     Node `json:",omitempty"`
+	Result   Node `json:",omitempty"`
 	Location int
 }
 

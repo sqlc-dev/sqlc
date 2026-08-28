@@ -3,15 +3,15 @@ package ast
 type IndexStmt struct {
 	Tag NodeTag[IndexStmt] `json:"tag"`
 
-	Idxname        *string
-	Relation       *RangeVar
-	AccessMethod   *string
-	TableSpace     *string
-	IndexParams    *List
-	Options        *List
-	WhereClause    Node
-	ExcludeOpNames *List
-	Idxcomment     *string
+	Idxname        *string   `json:",omitempty"`
+	Relation       *RangeVar `json:",omitempty"`
+	AccessMethod   *string   `json:",omitempty"`
+	TableSpace     *string   `json:",omitempty"`
+	IndexParams    *List     `json:",omitempty"`
+	Options        *List     `json:",omitempty"`
+	WhereClause    Node      `json:",omitempty"`
+	ExcludeOpNames *List     `json:",omitempty"`
+	Idxcomment     *string   `json:",omitempty"`
 	IndexOid       Oid
 	Unique         bool
 	Primary        bool

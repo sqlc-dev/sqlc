@@ -3,7 +3,7 @@ package ast
 type DropTableSpaceStmt struct {
 	Tag NodeTag[DropTableSpaceStmt] `json:"tag"`
 
-	Tablespacename *string
+	Tablespacename *string `json:",omitempty"`
 	MissingOk      bool
 }
 

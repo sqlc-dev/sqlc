@@ -3,10 +3,10 @@ package ast
 type CreateStatsStmt struct {
 	Tag NodeTag[CreateStatsStmt] `json:"tag"`
 
-	Defnames    *List
-	StatTypes   *List
-	Exprs       *List
-	Relations   *List
+	Defnames    *List `json:",omitempty"`
+	StatTypes   *List `json:",omitempty"`
+	Exprs       *List `json:",omitempty"`
+	Relations   *List `json:",omitempty"`
 	IfNotExists bool
 }
 

@@ -6,7 +6,7 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type ParenExpr struct {
 	Tag NodeTag[ParenExpr] `json:"tag"`
 
-	Expr     Node
+	Expr     Node `json:",omitempty"`
 	Location int
 }
 

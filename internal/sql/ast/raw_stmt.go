@@ -5,7 +5,7 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type RawStmt struct {
 	Tag NodeTag[RawStmt] `json:"tag"`
 
-	Stmt         Node
+	Stmt         Node `json:",omitempty"`
 	StmtLocation int
 	StmtLen      int
 }

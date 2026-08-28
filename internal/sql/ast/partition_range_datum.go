@@ -4,7 +4,7 @@ type PartitionRangeDatum struct {
 	Tag NodeTag[PartitionRangeDatum] `json:"tag"`
 
 	Kind     PartitionRangeDatumKind
-	Value    Node
+	Value    Node `json:",omitempty"`
 	Location int
 }
 

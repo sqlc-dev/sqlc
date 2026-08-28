@@ -5,11 +5,11 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type RowExpr struct {
 	Tag NodeTag[RowExpr] `json:"tag"`
 
-	Xpr       Node
-	Args      *List
+	Xpr       Node  `json:",omitempty"`
+	Args      *List `json:",omitempty"`
 	RowTypeid Oid
 	RowFormat CoercionForm
-	Colnames  *List
+	Colnames  *List `json:",omitempty"`
 	Location  int
 }
 

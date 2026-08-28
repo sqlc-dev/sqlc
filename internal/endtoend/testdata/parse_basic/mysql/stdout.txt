@@ -6,15 +6,11 @@
       "tag": "RawStmt",
       "Stmt": {
         "tag": "SelectStmt",
-        "DistinctClause": null,
-        "IntoClause": null,
         "TargetList": {
           "tag": "List",
           "Items": [
             {
               "tag": "ResTarget",
-              "Name": null,
-              "Indirection": null,
               "Val": {
                 "tag": "A_Const",
                 "Val": {
@@ -28,29 +24,16 @@
           ]
         },
         "FromClause": {
-          "tag": "List",
-          "Items": null
+          "tag": "List"
         },
-        "WhereClause": null,
         "GroupClause": {
-          "tag": "List",
-          "Items": null
+          "tag": "List"
         },
-        "HavingClause": null,
         "WindowClause": {
-          "tag": "List",
-          "Items": []
+          "tag": "List"
         },
-        "ValuesLists": null,
-        "SortClause": null,
-        "LimitOffset": null,
-        "LimitCount": null,
-        "LockingClause": null,
-        "WithClause": null,
         "Op": 0,
-        "All": false,
-        "Larg": null,
-        "Rarg": null
+        "All": false
       },
       "StmtLocation": 0,
       "StmtLen": 31

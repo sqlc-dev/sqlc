@@ -4,9 +4,9 @@ type AlterTSConfigurationStmt struct {
 	Tag NodeTag[AlterTSConfigurationStmt] `json:"tag"`
 
 	Kind      AlterTSConfigType
-	Cfgname   *List
-	Tokentype *List
-	Dicts     *List
+	Cfgname   *List `json:",omitempty"`
+	Tokentype *List `json:",omitempty"`
+	Dicts     *List `json:",omitempty"`
 	Override  bool
 	Replace   bool
 	MissingOk bool

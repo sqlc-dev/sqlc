@@ -6,11 +6,11 @@ type CreateTableStmt struct {
 	Tag NodeTag[CreateTableStmt] `json:"tag"`
 
 	IfNotExists bool
-	Name        *TableName
-	Cols        []*ColumnDef
-	ReferTable  *TableName
+	Name        *TableName   `json:",omitempty"`
+	Cols        []*ColumnDef `json:",omitempty"`
+	ReferTable  *TableName   `json:",omitempty"`
 	Comment     string
-	Inherits    []*TableName
+	Inherits    []*TableName `json:",omitempty"`
 	// Using names the module of a virtual table (SQLite's CREATE VIRTUAL
 	// TABLE ... USING module(...)), and ModuleArgs carries the module's
 	// argument list as written — its grammar belongs to the module, so the
@@ -19,7 +19,7 @@ type CreateTableStmt struct {
 	// the arguments for the catalog; the statement prints as its
 	// declaration, not as those columns.
 	Using      string
-	ModuleArgs []string
+	ModuleArgs []string `json:",omitempty"`
 	// ModuleArgsMultiline records that the declaration was written across
 	// lines. The arguments carry no positions, so the printer cannot keep
 	// the author's exact breaks and prints the canonical broken form — one

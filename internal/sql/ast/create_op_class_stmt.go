@@ -3,11 +3,11 @@ package ast
 type CreateOpClassStmt struct {
 	Tag NodeTag[CreateOpClassStmt] `json:"tag"`
 
-	Opclassname  *List
-	Opfamilyname *List
-	Amname       *string
-	Datatype     *TypeName
-	Items        *List
+	Opclassname  *List     `json:",omitempty"`
+	Opfamilyname *List     `json:",omitempty"`
+	Amname       *string   `json:",omitempty"`
+	Datatype     *TypeName `json:",omitempty"`
+	Items        *List     `json:",omitempty"`
 	IsDefault    bool
 }
 

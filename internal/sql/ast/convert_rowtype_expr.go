@@ -3,8 +3,8 @@ package ast
 type ConvertRowtypeExpr struct {
 	Tag NodeTag[ConvertRowtypeExpr] `json:"tag"`
 
-	Xpr           Node
-	Arg           Node
+	Xpr           Node `json:",omitempty"`
+	Arg           Node `json:",omitempty"`
 	Resulttype    Oid
 	Convertformat CoercionForm
 	Location      int

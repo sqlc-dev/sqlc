@@ -3,8 +3,8 @@ package ast
 type RenameTableStmt struct {
 	Tag NodeTag[RenameTableStmt] `json:"tag"`
 
-	Table     *TableName
-	NewName   *string
+	Table     *TableName `json:",omitempty"`
+	NewName   *string    `json:",omitempty"`
 	MissingOk bool
 }
 

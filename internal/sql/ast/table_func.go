@@ -3,17 +3,17 @@ package ast
 type TableFunc struct {
 	Tag NodeTag[TableFunc] `json:"tag"`
 
-	NsUris        *List
-	NsNames       *List
-	Docexpr       Node
-	Rowexpr       Node
-	Colnames      *List
-	Coltypes      *List
-	Coltypmods    *List
-	Colcollations *List
-	Colexprs      *List
-	Coldefexprs   *List
-	Notnulls      []uint32
+	NsUris        *List    `json:",omitempty"`
+	NsNames       *List    `json:",omitempty"`
+	Docexpr       Node     `json:",omitempty"`
+	Rowexpr       Node     `json:",omitempty"`
+	Colnames      *List    `json:",omitempty"`
+	Coltypes      *List    `json:",omitempty"`
+	Coltypmods    *List    `json:",omitempty"`
+	Colcollations *List    `json:",omitempty"`
+	Colexprs      *List    `json:",omitempty"`
+	Coldefexprs   *List    `json:",omitempty"`
+	Notnulls      []uint32 `json:",omitempty"`
 	Ordinalitycol int
 	Location      int
 }

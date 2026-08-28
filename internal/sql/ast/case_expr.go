@@ -5,12 +5,12 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type CaseExpr struct {
 	Tag NodeTag[CaseExpr] `json:"tag"`
 
-	Xpr        Node
+	Xpr        Node `json:",omitempty"`
 	Casetype   Oid
 	Casecollid Oid
-	Arg        Node
-	Args       *List
-	Defresult  Node
+	Arg        Node  `json:",omitempty"`
+	Args       *List `json:",omitempty"`
+	Defresult  Node  `json:",omitempty"`
 	Location   int
 }
 

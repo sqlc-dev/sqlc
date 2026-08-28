@@ -3,8 +3,8 @@ package ast
 type RelabelType struct {
 	Tag NodeTag[RelabelType] `json:"tag"`
 
-	Xpr           Node
-	Arg           Node
+	Xpr           Node `json:",omitempty"`
+	Arg           Node `json:",omitempty"`
 	Resulttype    Oid
 	Resulttypmod  int32
 	Resultcollid  Oid

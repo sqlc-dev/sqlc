@@ -4,9 +4,9 @@ type AlterDomainStmt struct {
 	Tag NodeTag[AlterDomainStmt] `json:"tag"`
 
 	Subtype   byte
-	TypeName  *List
-	Name      *string
-	Def       Node
+	TypeName  *List   `json:",omitempty"`
+	Name      *string `json:",omitempty"`
+	Def       Node    `json:",omitempty"`
 	Behavior  DropBehavior
 	MissingOk bool
 }

@@ -3,8 +3,8 @@ package ast
 type BooleanTest struct {
 	Tag NodeTag[BooleanTest] `json:"tag"`
 
-	Xpr          Node
-	Arg          Node
+	Xpr          Node `json:",omitempty"`
+	Arg          Node `json:",omitempty"`
 	Booltesttype BoolTestType
 	Location     int
 }

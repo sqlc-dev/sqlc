@@ -3,7 +3,7 @@ package ast
 type ClosePortalStmt struct {
 	Tag NodeTag[ClosePortalStmt] `json:"tag"`
 
-	Portalname *string
+	Portalname *string `json:",omitempty"`
 }
 
 func (n *ClosePortalStmt) Pos() int {

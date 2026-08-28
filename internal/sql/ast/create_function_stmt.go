@@ -6,12 +6,12 @@ type CreateFunctionStmt struct {
 	Tag NodeTag[CreateFunctionStmt] `json:"tag"`
 
 	Replace    bool
-	Params     *List
-	ReturnType *TypeName
-	Func       *FuncName
+	Params     *List     `json:",omitempty"`
+	ReturnType *TypeName `json:",omitempty"`
+	Func       *FuncName `json:",omitempty"`
 	// TODO: Understand these two fields
-	Options    *List
-	WithClause *List
+	Options    *List `json:",omitempty"`
+	WithClause *List `json:",omitempty"`
 }
 
 func (n *CreateFunctionStmt) Pos() int {

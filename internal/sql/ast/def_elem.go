@@ -5,9 +5,9 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type DefElem struct {
 	Tag NodeTag[DefElem] `json:"tag"`
 
-	Defnamespace *string
-	Defname      *string
-	Arg          Node
+	Defnamespace *string `json:",omitempty"`
+	Defname      *string `json:",omitempty"`
+	Arg          Node    `json:",omitempty"`
 	Defaction    DefElemAction
 	Location     int
 }

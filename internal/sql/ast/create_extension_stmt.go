@@ -5,9 +5,9 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type CreateExtensionStmt struct {
 	Tag NodeTag[CreateExtensionStmt] `json:"tag"`
 
-	Extname     *string
+	Extname     *string `json:",omitempty"`
 	IfNotExists bool
-	Options     *List
+	Options     *List `json:",omitempty"`
 }
 
 func (n *CreateExtensionStmt) Pos() int {

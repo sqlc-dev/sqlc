@@ -3,7 +3,7 @@ package ast
 type Const struct {
 	Tag NodeTag[Const] `json:"tag"`
 
-	Xpr         Node
+	Xpr         Node `json:",omitempty"`
 	Consttype   Oid
 	Consttypmod int32
 	Constcollid Oid

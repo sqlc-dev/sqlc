@@ -3,9 +3,9 @@ package ast
 type CreateCastStmt struct {
 	Tag NodeTag[CreateCastStmt] `json:"tag"`
 
-	Sourcetype *TypeName
-	Targettype *TypeName
-	Func       *ObjectWithArgs
+	Sourcetype *TypeName       `json:",omitempty"`
+	Targettype *TypeName       `json:",omitempty"`
+	Func       *ObjectWithArgs `json:",omitempty"`
 	Context    CoercionContext
 	Inout      bool
 }

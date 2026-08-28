@@ -3,8 +3,8 @@ package ast
 type PartitionSpec struct {
 	Tag NodeTag[PartitionSpec] `json:"tag"`
 
-	Strategy   *string
-	PartParams *List
+	Strategy   *string `json:",omitempty"`
+	PartParams *List   `json:",omitempty"`
 	Location   int
 }
 

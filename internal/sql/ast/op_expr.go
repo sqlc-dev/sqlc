@@ -3,13 +3,13 @@ package ast
 type OpExpr struct {
 	Tag NodeTag[OpExpr] `json:"tag"`
 
-	Xpr          Node
+	Xpr          Node `json:",omitempty"`
 	Opno         Oid
 	Opresulttype Oid
 	Opretset     bool
 	Opcollid     Oid
 	Inputcollid  Oid
-	Args         *List
+	Args         *List `json:",omitempty"`
 	Location     int
 }
 

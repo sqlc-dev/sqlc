@@ -4,8 +4,8 @@ type CreateRoleStmt struct {
 	Tag NodeTag[CreateRoleStmt] `json:"tag"`
 
 	StmtType RoleStmtType
-	Role     *string
-	Options  *List
+	Role     *string `json:",omitempty"`
+	Options  *List   `json:",omitempty"`
 }
 
 func (n *CreateRoleStmt) Pos() int {

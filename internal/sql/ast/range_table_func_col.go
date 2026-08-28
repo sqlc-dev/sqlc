@@ -3,12 +3,12 @@ package ast
 type RangeTableFuncCol struct {
 	Tag NodeTag[RangeTableFuncCol] `json:"tag"`
 
-	Colname       *string
-	TypeName      *TypeName
+	Colname       *string   `json:",omitempty"`
+	TypeName      *TypeName `json:",omitempty"`
 	ForOrdinality bool
 	IsNotNull     bool
-	Colexpr       Node
-	Coldefexpr    Node
+	Colexpr       Node `json:",omitempty"`
+	Coldefexpr    Node `json:",omitempty"`
 	Location      int
 }
 

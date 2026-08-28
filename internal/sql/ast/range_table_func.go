@@ -4,11 +4,11 @@ type RangeTableFunc struct {
 	Tag NodeTag[RangeTableFunc] `json:"tag"`
 
 	Lateral    bool
-	Docexpr    Node
-	Rowexpr    Node
-	Namespaces *List
-	Columns    *List
-	Alias      *Alias
+	Docexpr    Node   `json:",omitempty"`
+	Rowexpr    Node   `json:",omitempty"`
+	Namespaces *List  `json:",omitempty"`
+	Columns    *List  `json:",omitempty"`
+	Alias      *Alias `json:",omitempty"`
 	Location   int
 }
 

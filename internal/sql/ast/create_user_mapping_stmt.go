@@ -3,10 +3,10 @@ package ast
 type CreateUserMappingStmt struct {
 	Tag NodeTag[CreateUserMappingStmt] `json:"tag"`
 
-	User        *RoleSpec
-	Servername  *string
+	User        *RoleSpec `json:",omitempty"`
+	Servername  *string   `json:",omitempty"`
 	IfNotExists bool
-	Options     *List
+	Options     *List `json:",omitempty"`
 }
 
 func (n *CreateUserMappingStmt) Pos() int {

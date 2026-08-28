@@ -7,7 +7,7 @@ type OnDuplicateKeyUpdate struct {
 	Tag NodeTag[OnDuplicateKeyUpdate] `json:"tag"`
 
 	// TargetList contains the assignments (column = value pairs)
-	TargetList *List
+	TargetList *List `json:",omitempty"`
 	Location   int
 }
 

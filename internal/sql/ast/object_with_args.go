@@ -3,8 +3,8 @@ package ast
 type ObjectWithArgs struct {
 	Tag NodeTag[ObjectWithArgs] `json:"tag"`
 
-	Objname         *List
-	Objargs         *List
+	Objname         *List `json:",omitempty"`
+	Objargs         *List `json:",omitempty"`
 	ArgsUnspecified bool
 }
 

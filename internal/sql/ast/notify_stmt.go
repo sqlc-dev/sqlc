@@ -5,8 +5,8 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type NotifyStmt struct {
 	Tag NodeTag[NotifyStmt] `json:"tag"`
 
-	Conditionname *string
-	Payload       *string
+	Conditionname *string `json:",omitempty"`
+	Payload       *string `json:",omitempty"`
 }
 
 func (n *NotifyStmt) Pos() int {

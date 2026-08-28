@@ -3,8 +3,8 @@ package ast
 type ExplainStmt struct {
 	Tag NodeTag[ExplainStmt] `json:"tag"`
 
-	Query   Node
-	Options *List
+	Query   Node  `json:",omitempty"`
+	Options *List `json:",omitempty"`
 }
 
 func (n *ExplainStmt) Pos() int {

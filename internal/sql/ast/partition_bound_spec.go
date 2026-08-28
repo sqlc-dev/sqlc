@@ -4,9 +4,9 @@ type PartitionBoundSpec struct {
 	Tag NodeTag[PartitionBoundSpec] `json:"tag"`
 
 	Strategy    byte
-	Listdatums  *List
-	Lowerdatums *List
-	Upperdatums *List
+	Listdatums  *List `json:",omitempty"`
+	Lowerdatums *List `json:",omitempty"`
+	Upperdatums *List `json:",omitempty"`
 	Location    int
 }
 

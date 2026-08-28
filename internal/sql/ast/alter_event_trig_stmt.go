@@ -3,7 +3,7 @@ package ast
 type AlterEventTrigStmt struct {
 	Tag NodeTag[AlterEventTrigStmt] `json:"tag"`
 
-	Trigname  *string
+	Trigname  *string `json:",omitempty"`
 	Tgenabled byte
 }
 

@@ -3,10 +3,10 @@ package ast
 type TargetEntry struct {
 	Tag NodeTag[TargetEntry] `json:"tag"`
 
-	Xpr             Node
-	Expr            Node
+	Xpr             Node `json:",omitempty"`
+	Expr            Node `json:",omitempty"`
 	Resno           AttrNumber
-	Resname         *string
+	Resname         *string `json:",omitempty"`
 	Ressortgroupref Index
 	Resorigtbl      Oid
 	Resorigcol      AttrNumber

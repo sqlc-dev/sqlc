@@ -5,8 +5,8 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type NullTest struct {
 	Tag NodeTag[NullTest] `json:"tag"`
 
-	Xpr          Node
-	Arg          Node
+	Xpr          Node `json:",omitempty"`
+	Arg          Node `json:",omitempty"`
 	Nulltesttype NullTestType
 	Argisrow     bool
 	Location     int

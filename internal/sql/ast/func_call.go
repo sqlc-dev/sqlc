@@ -5,17 +5,17 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type FuncCall struct {
 	Tag NodeTag[FuncCall] `json:"tag"`
 
-	Func           *FuncName
-	Funcname       *List
-	Args           *List
-	AggOrder       *List
-	AggFilter      Node
+	Func           *FuncName `json:",omitempty"`
+	Funcname       *List     `json:",omitempty"`
+	Args           *List     `json:",omitempty"`
+	AggOrder       *List     `json:",omitempty"`
+	AggFilter      Node      `json:",omitempty"`
 	AggWithinGroup bool
 	AggStar        bool
 	AggDistinct    bool
 	FuncVariadic   bool
-	Over           *WindowDef
-	Separator      *string // MySQL GROUP_CONCAT SEPARATOR
+	Over           *WindowDef `json:",omitempty"`
+	Separator      *string    `json:",omitempty"` // MySQL GROUP_CONCAT SEPARATOR
 	Location       int
 }
 

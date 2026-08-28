@@ -3,7 +3,7 @@ package ast
 type Var struct {
 	Tag NodeTag[Var] `json:"tag"`
 
-	Xpr         Node
+	Xpr         Node `json:",omitempty"`
 	Varno       Index
 	Varattno    AttrNumber
 	Vartype     Oid

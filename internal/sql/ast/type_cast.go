@@ -5,8 +5,8 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type TypeCast struct {
 	Tag NodeTag[TypeCast] `json:"tag"`
 
-	Arg      Node
-	TypeName *TypeName
+	Arg      Node      `json:",omitempty"`
+	TypeName *TypeName `json:",omitempty"`
 	Location int
 }
 

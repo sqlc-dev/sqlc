@@ -3,10 +3,10 @@ package ast
 type AlterTableMoveAllStmt struct {
 	Tag NodeTag[AlterTableMoveAllStmt] `json:"tag"`
 
-	OrigTablespacename *string
+	OrigTablespacename *string `json:",omitempty"`
 	Objtype            ObjectType
-	Roles              *List
-	NewTablespacename  *string
+	Roles              *List   `json:",omitempty"`
+	NewTablespacename  *string `json:",omitempty"`
 	Nowait             bool
 }
 

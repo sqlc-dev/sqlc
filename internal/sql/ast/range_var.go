@@ -5,12 +5,12 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type RangeVar struct {
 	Tag NodeTag[RangeVar] `json:"tag"`
 
-	Catalogname    *string
-	Schemaname     *string
-	Relname        *string
+	Catalogname    *string `json:",omitempty"`
+	Schemaname     *string `json:",omitempty"`
+	Relname        *string `json:",omitempty"`
 	Inh            bool
 	Relpersistence byte
-	Alias          *Alias
+	Alias          *Alias `json:",omitempty"`
 	Location       int
 }
 

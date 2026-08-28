@@ -3,7 +3,7 @@ package ast
 type Param struct {
 	Tag NodeTag[Param] `json:"tag"`
 
-	Xpr         Node
+	Xpr         Node `json:",omitempty"`
 	Paramkind   ParamKind
 	Paramid     int
 	Paramtype   Oid

@@ -5,8 +5,8 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type CollateExpr struct {
 	Tag NodeTag[CollateExpr] `json:"tag"`
 
-	Xpr      Node
-	Arg      Node
+	Xpr      Node `json:",omitempty"`
+	Arg      Node `json:",omitempty"`
 	CollOid  Oid
 	Location int
 }

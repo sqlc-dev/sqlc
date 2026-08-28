@@ -5,9 +5,9 @@ type DefineStmt struct {
 
 	Kind        ObjectType
 	Oldstyle    bool
-	Defnames    *List
-	Args        *List
-	Definition  *List
+	Defnames    *List `json:",omitempty"`
+	Args        *List `json:",omitempty"`
+	Definition  *List `json:",omitempty"`
 	IfNotExists bool
 }
 

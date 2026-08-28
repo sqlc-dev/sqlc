@@ -5,15 +5,15 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type DeleteStmt struct {
 	Tag NodeTag[DeleteStmt] `json:"tag"`
 
-	Relations     *List
-	UsingClause   *List
-	WhereClause   Node
-	LimitCount    Node
-	ReturningList *List
-	WithClause    *WithClause
+	Relations     *List       `json:",omitempty"`
+	UsingClause   *List       `json:",omitempty"`
+	WhereClause   Node        `json:",omitempty"`
+	LimitCount    Node        `json:",omitempty"`
+	ReturningList *List       `json:",omitempty"`
+	WithClause    *WithClause `json:",omitempty"`
 	// MySQL multi-table DELETE support
-	Targets    *List // Tables to delete from (e.g., jt.*, pt.*)
-	FromClause Node  // FROM clause with JOINs (Node to support JoinExpr)
+	Targets    *List `json:",omitempty"` // Tables to delete from (e.g., jt.*, pt.*)
+	FromClause Node  `json:",omitempty"` // FROM clause with JOINs (Node to support JoinExpr)
 	// PostgreSQL 18 RETURNING WITH (OLD AS ..., NEW AS ...) aliases
 	ReturningOldAlias string
 	ReturningNewAlias string

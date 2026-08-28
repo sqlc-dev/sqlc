@@ -6,34 +6,34 @@ type RangeTblEntry struct {
 	Rtekind         RTEKind
 	Relid           Oid
 	Relkind         byte
-	Tablesample     *TableSampleClause
-	Subquery        *Query
+	Tablesample     *TableSampleClause `json:",omitempty"`
+	Subquery        *Query             `json:",omitempty"`
 	SecurityBarrier bool
 	Jointype        JoinType
-	Joinaliasvars   *List
-	Functions       *List
+	Joinaliasvars   *List `json:",omitempty"`
+	Functions       *List `json:",omitempty"`
 	Funcordinality  bool
-	Tablefunc       *TableFunc
-	ValuesLists     *List
-	Ctename         *string
+	Tablefunc       *TableFunc `json:",omitempty"`
+	ValuesLists     *List      `json:",omitempty"`
+	Ctename         *string    `json:",omitempty"`
 	Ctelevelsup     Index
 	SelfReference   bool
-	Coltypes        *List
-	Coltypmods      *List
-	Colcollations   *List
-	Enrname         *string
+	Coltypes        *List   `json:",omitempty"`
+	Coltypmods      *List   `json:",omitempty"`
+	Colcollations   *List   `json:",omitempty"`
+	Enrname         *string `json:",omitempty"`
 	Enrtuples       float64
-	Alias           *Alias
-	Eref            *Alias
+	Alias           *Alias `json:",omitempty"`
+	Eref            *Alias `json:",omitempty"`
 	Lateral         bool
 	Inh             bool
 	InFromCl        bool
 	RequiredPerms   AclMode
 	CheckAsUser     Oid
-	SelectedCols    []uint32
-	InsertedCols    []uint32
-	UpdatedCols     []uint32
-	SecurityQuals   *List
+	SelectedCols    []uint32 `json:",omitempty"`
+	InsertedCols    []uint32 `json:",omitempty"`
+	UpdatedCols     []uint32 `json:",omitempty"`
+	SecurityQuals   *List    `json:",omitempty"`
 }
 
 func (n *RangeTblEntry) Pos() int {

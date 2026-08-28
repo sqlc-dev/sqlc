@@ -3,7 +3,7 @@ package ast
 type DropOwnedStmt struct {
 	Tag NodeTag[DropOwnedStmt] `json:"tag"`
 
-	Roles    *List
+	Roles    *List `json:",omitempty"`
 	Behavior DropBehavior
 }
 

@@ -6,8 +6,8 @@ type RangeSubselect struct {
 	Tag NodeTag[RangeSubselect] `json:"tag"`
 
 	Lateral  bool
-	Subquery Node
-	Alias    *Alias
+	Subquery Node   `json:",omitempty"`
+	Alias    *Alias `json:",omitempty"`
 }
 
 func (n *RangeSubselect) Pos() int {

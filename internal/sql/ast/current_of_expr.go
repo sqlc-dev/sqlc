@@ -3,9 +3,9 @@ package ast
 type CurrentOfExpr struct {
 	Tag NodeTag[CurrentOfExpr] `json:"tag"`
 
-	Xpr         Node
+	Xpr         Node `json:",omitempty"`
 	Cvarno      Index
-	CursorName  *string
+	CursorName  *string `json:",omitempty"`
 	CursorParam int
 }
 

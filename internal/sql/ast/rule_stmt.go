@@ -3,12 +3,12 @@ package ast
 type RuleStmt struct {
 	Tag NodeTag[RuleStmt] `json:"tag"`
 
-	Relation    *RangeVar
-	Rulename    *string
-	WhereClause Node
+	Relation    *RangeVar `json:",omitempty"`
+	Rulename    *string   `json:",omitempty"`
+	WhereClause Node      `json:",omitempty"`
 	Event       CmdType
 	Instead     bool
-	Actions     *List
+	Actions     *List `json:",omitempty"`
 	Replace     bool
 }
 

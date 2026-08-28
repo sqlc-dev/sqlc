@@ -5,13 +5,13 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type WindowDef struct {
 	Tag NodeTag[WindowDef] `json:"tag"`
 
-	Name            *string
-	Refname         *string
-	PartitionClause *List
-	OrderClause     *List
+	Name            *string `json:",omitempty"`
+	Refname         *string `json:",omitempty"`
+	PartitionClause *List   `json:",omitempty"`
+	OrderClause     *List   `json:",omitempty"`
 	FrameOptions    int
-	StartOffset     Node
-	EndOffset       Node
+	StartOffset     Node `json:",omitempty"`
+	EndOffset       Node `json:",omitempty"`
 	Location        int
 }
 

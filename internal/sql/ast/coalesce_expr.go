@@ -5,10 +5,10 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type CoalesceExpr struct {
 	Tag NodeTag[CoalesceExpr] `json:"tag"`
 
-	Xpr            Node
+	Xpr            Node `json:",omitempty"`
 	Coalescetype   Oid
 	Coalescecollid Oid
-	Args           *List
+	Args           *List `json:",omitempty"`
 	Location       int
 }
 

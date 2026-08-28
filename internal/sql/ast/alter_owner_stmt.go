@@ -4,9 +4,9 @@ type AlterOwnerStmt struct {
 	Tag NodeTag[AlterOwnerStmt] `json:"tag"`
 
 	ObjectType ObjectType
-	Relation   *RangeVar
-	Object     Node
-	Newowner   *RoleSpec
+	Relation   *RangeVar `json:",omitempty"`
+	Object     Node      `json:",omitempty"`
+	Newowner   *RoleSpec `json:",omitempty"`
 }
 
 func (n *AlterOwnerStmt) Pos() int {

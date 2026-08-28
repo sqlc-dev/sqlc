@@ -3,13 +3,13 @@ package ast
 type WindowFunc struct {
 	Tag NodeTag[WindowFunc] `json:"tag"`
 
-	Xpr         Node
+	Xpr         Node `json:",omitempty"`
 	Winfnoid    Oid
 	Wintype     Oid
 	Wincollid   Oid
 	Inputcollid Oid
-	Args        *List
-	Aggfilter   Node
+	Args        *List `json:",omitempty"`
+	Aggfilter   Node  `json:",omitempty"`
 	Winref      Index
 	Winstar     bool
 	Winagg      bool

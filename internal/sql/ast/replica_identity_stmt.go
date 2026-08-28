@@ -4,7 +4,7 @@ type ReplicaIdentityStmt struct {
 	Tag NodeTag[ReplicaIdentityStmt] `json:"tag"`
 
 	IdentityType byte
-	Name         *string
+	Name         *string `json:",omitempty"`
 }
 
 func (n *ReplicaIdentityStmt) Pos() int {

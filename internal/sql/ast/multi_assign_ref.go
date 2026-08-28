@@ -5,7 +5,7 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type MultiAssignRef struct {
 	Tag NodeTag[MultiAssignRef] `json:"tag"`
 
-	Source   Node
+	Source   Node `json:",omitempty"`
 	Colno    int
 	Ncolumns int
 }

@@ -3,12 +3,12 @@ package ast
 type IntoClause struct {
 	Tag NodeTag[IntoClause] `json:"tag"`
 
-	Rel            *RangeVar
-	ColNames       *List
-	Options        *List
+	Rel            *RangeVar `json:",omitempty"`
+	ColNames       *List     `json:",omitempty"`
+	Options        *List     `json:",omitempty"`
 	OnCommit       OnCommitAction
-	TableSpaceName *string
-	ViewQuery      Node
+	TableSpaceName *string `json:",omitempty"`
+	ViewQuery      Node    `json:",omitempty"`
 	SkipData       bool
 }
 

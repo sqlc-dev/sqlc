@@ -3,7 +3,7 @@ package ast
 type TriggerTransition struct {
 	Tag NodeTag[TriggerTransition] `json:"tag"`
 
-	Name    *string
+	Name    *string `json:",omitempty"`
 	IsNew   bool
 	IsTable bool
 }

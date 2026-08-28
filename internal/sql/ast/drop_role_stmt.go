@@ -3,7 +3,7 @@ package ast
 type DropRoleStmt struct {
 	Tag NodeTag[DropRoleStmt] `json:"tag"`
 
-	Roles     *List
+	Roles     *List `json:",omitempty"`
 	MissingOk bool
 }
 

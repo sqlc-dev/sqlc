@@ -17,9 +17,9 @@ type A_Expr struct {
 	// engine that accepts more than one spelling of the same operator
 	// (SQLite's != for <>, == for =), that is the author's spelling, which
 	// is how the printer preserves it.
-	Name     *List
-	Lexpr    Node
-	Rexpr    Node
+	Name     *List `json:",omitempty"`
+	Lexpr    Node  `json:",omitempty"`
+	Rexpr    Node  `json:",omitempty"`
 	Location int
 }
 

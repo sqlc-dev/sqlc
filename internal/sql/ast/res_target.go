@@ -5,9 +5,9 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type ResTarget struct {
 	Tag NodeTag[ResTarget] `json:"tag"`
 
-	Name        *string
-	Indirection *List
-	Val         Node
+	Name        *string `json:",omitempty"`
+	Indirection *List   `json:",omitempty"`
+	Val         Node    `json:",omitempty"`
 	Location    int
 }
 

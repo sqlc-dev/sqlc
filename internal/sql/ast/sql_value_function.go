@@ -5,7 +5,7 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type SQLValueFunction struct {
 	Tag NodeTag[SQLValueFunction] `json:"tag"`
 
-	Xpr      Node
+	Xpr      Node `json:",omitempty"`
 	Op       SQLValueFunctionOp
 	Type     Oid
 	Typmod   int32

@@ -15,13 +15,13 @@ type TypeName struct {
 	Spelling string
 
 	// From pg.TypeName
-	Names       *List
+	Names       *List `json:",omitempty"`
 	TypeOid     Oid
 	Setof       bool
 	PctType     bool
-	Typmods     *List
+	Typmods     *List `json:",omitempty"`
 	Typemod     int32
-	ArrayBounds *List
+	ArrayBounds *List `json:",omitempty"`
 	Location    int
 }
 

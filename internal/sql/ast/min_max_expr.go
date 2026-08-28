@@ -3,12 +3,12 @@ package ast
 type MinMaxExpr struct {
 	Tag NodeTag[MinMaxExpr] `json:"tag"`
 
-	Xpr          Node
+	Xpr          Node `json:",omitempty"`
 	Minmaxtype   Oid
 	Minmaxcollid Oid
 	Inputcollid  Oid
 	Op           MinMaxOp
-	Args         *List
+	Args         *List `json:",omitempty"`
 	Location     int
 }
 

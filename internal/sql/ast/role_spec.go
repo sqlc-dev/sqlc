@@ -4,7 +4,7 @@ type RoleSpec struct {
 	Tag NodeTag[RoleSpec] `json:"tag"`
 
 	Roletype RoleSpecType
-	Rolename *string
+	Rolename *string `json:",omitempty"`
 	Location int
 }
 

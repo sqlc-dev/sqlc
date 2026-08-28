@@ -3,7 +3,7 @@ package ast
 type AlterCollationStmt struct {
 	Tag NodeTag[AlterCollationStmt] `json:"tag"`
 
-	Collname *List
+	Collname *List `json:",omitempty"`
 }
 
 func (n *AlterCollationStmt) Pos() int {

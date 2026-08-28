@@ -5,10 +5,10 @@ type RenameStmt struct {
 
 	RenameType   ObjectType
 	RelationType ObjectType
-	Relation     *RangeVar
-	Object       Node
-	Subname      *string
-	Newname      *string
+	Relation     *RangeVar `json:",omitempty"`
+	Object       Node      `json:",omitempty"`
+	Subname      *string   `json:",omitempty"`
+	Newname      *string   `json:",omitempty"`
 	Behavior     DropBehavior
 	MissingOk    bool
 }

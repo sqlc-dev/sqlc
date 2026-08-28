@@ -3,7 +3,7 @@ package ast
 type DeallocateStmt struct {
 	Tag NodeTag[DeallocateStmt] `json:"tag"`
 
-	Name *string
+	Name *string `json:",omitempty"`
 }
 
 func (n *DeallocateStmt) Pos() int {

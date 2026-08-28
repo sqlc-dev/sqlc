@@ -3,10 +3,10 @@ package ast
 type GroupingFunc struct {
 	Tag NodeTag[GroupingFunc] `json:"tag"`
 
-	Xpr         Node
-	Args        *List
-	Refs        *List
-	Cols        *List
+	Xpr         Node  `json:",omitempty"`
+	Args        *List `json:",omitempty"`
+	Refs        *List `json:",omitempty"`
+	Cols        *List `json:",omitempty"`
 	Agglevelsup Index
 	Location    int
 }

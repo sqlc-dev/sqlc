@@ -5,7 +5,7 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type WithClause struct {
 	Tag NodeTag[WithClause] `json:"tag"`
 
-	Ctes      *List
+	Ctes      *List `json:",omitempty"`
 	Recursive bool
 	Location  int
 }

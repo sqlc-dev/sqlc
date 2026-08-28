@@ -5,9 +5,9 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type BoolExpr struct {
 	Tag NodeTag[BoolExpr] `json:"tag"`
 
-	Xpr      Node
+	Xpr      Node `json:",omitempty"`
 	Boolop   BoolExprType
-	Args     *List
+	Args     *List `json:",omitempty"`
 	Location int
 }
 

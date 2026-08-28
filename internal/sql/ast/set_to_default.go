@@ -3,7 +3,7 @@ package ast
 type SetToDefault struct {
 	Tag NodeTag[SetToDefault] `json:"tag"`
 
-	Xpr       Node
+	Xpr       Node `json:",omitempty"`
 	TypeId    Oid
 	TypeMod   int32
 	Collation Oid

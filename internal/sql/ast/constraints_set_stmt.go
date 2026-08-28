@@ -3,7 +3,7 @@ package ast
 type ConstraintsSetStmt struct {
 	Tag NodeTag[ConstraintsSetStmt] `json:"tag"`
 
-	Constraints *List
+	Constraints *List `json:",omitempty"`
 	Deferred    bool
 }
 

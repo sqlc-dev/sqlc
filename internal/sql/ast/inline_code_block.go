@@ -3,7 +3,7 @@ package ast
 type InlineCodeBlock struct {
 	Tag NodeTag[InlineCodeBlock] `json:"tag"`
 
-	SourceText    *string
+	SourceText    *string `json:",omitempty"`
 	LangOid       Oid
 	LangIsTrusted bool
 }

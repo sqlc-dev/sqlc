@@ -3,7 +3,7 @@ package ast
 type VariableShowStmt struct {
 	Tag NodeTag[VariableShowStmt] `json:"tag"`
 
-	Name *string
+	Name *string `json:",omitempty"`
 }
 
 func (n *VariableShowStmt) Pos() int {

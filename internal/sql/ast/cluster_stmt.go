@@ -3,8 +3,8 @@ package ast
 type ClusterStmt struct {
 	Tag NodeTag[ClusterStmt] `json:"tag"`
 
-	Relation  *RangeVar
-	Indexname *string
+	Relation  *RangeVar `json:",omitempty"`
+	Indexname *string   `json:",omitempty"`
 	Verbose   bool
 }
 

@@ -6,8 +6,8 @@ type A_Indices struct {
 	Tag NodeTag[A_Indices] `json:"tag"`
 
 	IsSlice bool
-	Lidx    Node
-	Uidx    Node
+	Lidx    Node `json:",omitempty"`
+	Uidx    Node `json:",omitempty"`
 }
 
 func (n *A_Indices) Pos() int {

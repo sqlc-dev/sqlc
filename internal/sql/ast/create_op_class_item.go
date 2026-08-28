@@ -4,11 +4,11 @@ type CreateOpClassItem struct {
 	Tag NodeTag[CreateOpClassItem] `json:"tag"`
 
 	Itemtype    int
-	Name        *ObjectWithArgs
+	Name        *ObjectWithArgs `json:",omitempty"`
 	Number      int
-	OrderFamily *List
-	ClassArgs   *List
-	Storedtype  *TypeName
+	OrderFamily *List     `json:",omitempty"`
+	ClassArgs   *List     `json:",omitempty"`
+	Storedtype  *TypeName `json:",omitempty"`
 }
 
 func (n *CreateOpClassItem) Pos() int {

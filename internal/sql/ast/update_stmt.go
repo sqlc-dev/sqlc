@@ -9,13 +9,13 @@ import (
 type UpdateStmt struct {
 	Tag NodeTag[UpdateStmt] `json:"tag"`
 
-	Relations     *List
-	TargetList    *List
-	WhereClause   Node
-	FromClause    *List
-	LimitCount    Node
-	ReturningList *List
-	WithClause    *WithClause
+	Relations     *List       `json:",omitempty"`
+	TargetList    *List       `json:",omitempty"`
+	WhereClause   Node        `json:",omitempty"`
+	FromClause    *List       `json:",omitempty"`
+	LimitCount    Node        `json:",omitempty"`
+	ReturningList *List       `json:",omitempty"`
+	WithClause    *WithClause `json:",omitempty"`
 	// PostgreSQL 18 RETURNING WITH (OLD AS ..., NEW AS ...) aliases
 	ReturningOldAlias string
 	ReturningNewAlias string

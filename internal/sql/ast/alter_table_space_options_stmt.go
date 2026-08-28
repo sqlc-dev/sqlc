@@ -3,8 +3,8 @@ package ast
 type AlterTableSpaceOptionsStmt struct {
 	Tag NodeTag[AlterTableSpaceOptionsStmt] `json:"tag"`
 
-	Tablespacename *string
-	Options        *List
+	Tablespacename *string `json:",omitempty"`
+	Options        *List   `json:",omitempty"`
 	IsReset        bool
 }
 

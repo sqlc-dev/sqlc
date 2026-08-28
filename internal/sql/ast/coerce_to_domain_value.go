@@ -3,7 +3,7 @@ package ast
 type CoerceToDomainValue struct {
 	Tag NodeTag[CoerceToDomainValue] `json:"tag"`
 
-	Xpr       Node
+	Xpr       Node `json:",omitempty"`
 	TypeId    Oid
 	TypeMod   int32
 	Collation Oid

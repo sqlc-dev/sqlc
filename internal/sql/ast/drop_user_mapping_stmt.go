@@ -3,8 +3,8 @@ package ast
 type DropUserMappingStmt struct {
 	Tag NodeTag[DropUserMappingStmt] `json:"tag"`
 
-	User       *RoleSpec
-	Servername *string
+	User       *RoleSpec `json:",omitempty"`
+	Servername *string   `json:",omitempty"`
 	MissingOk  bool
 }
 

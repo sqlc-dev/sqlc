@@ -3,11 +3,11 @@ package ast
 type ViewStmt struct {
 	Tag NodeTag[ViewStmt] `json:"tag"`
 
-	View            *RangeVar
-	Aliases         *List
-	Query           Node
+	View            *RangeVar `json:",omitempty"`
+	Aliases         *List     `json:",omitempty"`
+	Query           Node      `json:",omitempty"`
 	Replace         bool
-	Options         *List
+	Options         *List `json:",omitempty"`
 	WithCheckOption ViewCheckOption
 }
 

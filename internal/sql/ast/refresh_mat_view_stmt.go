@@ -7,7 +7,7 @@ type RefreshMatViewStmt struct {
 
 	Concurrent bool
 	SkipData   bool
-	Relation   *RangeVar
+	Relation   *RangeVar `json:",omitempty"`
 }
 
 func (n *RefreshMatViewStmt) Pos() int {
