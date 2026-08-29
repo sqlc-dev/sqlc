@@ -1,5 +1,13 @@
 # sqlc fmt verification against the endtoend corpus
 
+> **Status: all six root causes below are fixed** (see the commit "Fix sqlc
+> fmt corruption in PostgreSQL and MySQL formatters" on this branch). The
+> harness re-run after the fixes reports **zero cases needing fixes**: of the
+> 800 configs, 456 are left unchanged by fmt (including statements fmt now
+> declines to format because the new MySQL fingerprint cannot prove them, e.g.
+> `SHOW WARNINGS` and comma-join multi-table UPDATEs) and 344 reformat and
+> verify clean. The findings below are kept as the record of the original run.
+
 `sqlc fmt` was run over every PostgreSQL and MySQL endtoend test case, and the
 result verified against what those tests already pin down. This report includes
 **only the cases whose changed outcome needs to be fixed**; formatting changes
