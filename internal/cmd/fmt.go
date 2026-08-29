@@ -49,7 +49,9 @@ func newQueryFormatter(engine config.Engine) queryFormatter {
 	case config.EngineSQLite:
 		return sqlite.NewParser()
 	case config.EngineMySQL:
-		return dolphin.NewParser()
+		// The format parser preserves identifier case and proves every
+		// statement via Fingerprint, the way oliphant does for PostgreSQL.
+		return dolphin.NewFormatParser()
 	default:
 		return nil
 	}

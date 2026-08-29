@@ -9,6 +9,10 @@ type ResTarget struct {
 	Indirection *List   `json:"indirection,omitempty"`
 	Val         Node    `json:"val,omitempty"`
 	Location    int     `json:"location"`
+	// Relation qualifies Name in a multi-table UPDATE's SET list (MySQL:
+	// SET t.col = ...). Analysis matches on Name alone; printing needs the
+	// qualifier to keep the assignment on the table the author named.
+	Relation *string `json:"relation,omitempty"`
 }
 
 func (n *ResTarget) Pos() int {

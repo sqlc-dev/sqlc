@@ -26,5 +26,8 @@ WHERE id > $1;
 -- name: SearchAuthors :many
 SELECT id, name, bio, created_at FROM authors WHERE name LIKE $1 AND bio IS NOT NULL AND id > $2 AND name <> $3 ORDER BY name, id LIMIT $4;
 
+-- name: AtParamsGlued :many
+SELECT name FROM authors WHERE name = @slug AND @filter::bool;
+
 -- name: DeleteAuthor :exec
 DELETE FROM authors WHERE id = @id

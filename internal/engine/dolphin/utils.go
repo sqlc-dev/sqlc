@@ -7,21 +7,21 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
-func parseTableName(n *pcast.TableName) *ast.TableName {
+func (c *cc) parseTableName(n *pcast.TableName) *ast.TableName {
 	return &ast.TableName{
-		Schema: identifier(n.Schema.String()),
-		Name:   identifier(n.Name.String()),
+		Schema: c.identifier(n.Schema.String()),
+		Name:   c.identifier(n.Name.String()),
 	}
 }
 
-func toList(node pcast.Node) *ast.List {
+func (c *cc) toList(node pcast.Node) *ast.List {
 	var items []ast.Node
 	switch n := node.(type) {
 	case *pcast.TableName:
 		if schema := n.Schema.String(); schema != "" {
-			items = append(items, NewIdentifier(schema))
+			items = append(items, c.NewIdentifier(schema))
 		}
-		items = append(items, NewIdentifier(n.Name.String()))
+		items = append(items, c.NewIdentifier(n.Name.String()))
 	default:
 		return nil
 	}

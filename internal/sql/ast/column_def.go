@@ -53,6 +53,10 @@ func (n *ColumnDef) Format(buf *TrackedBuffer, d format.Dialect) {
 	if !n.Typeless {
 		buf.WriteString(" ")
 		buf.astFormat(n.TypeName, d)
+		// MySQL integer types: signedness is part of the type.
+		if n.IsUnsigned {
+			buf.WriteString(" unsigned")
+		}
 	}
 	// Use IsArray from ColumnDef since TypeName.ArrayBounds may not be set
 	// (for type resolution compatibility)
