@@ -19,6 +19,11 @@ type UpdateStmt struct {
 	// PostgreSQL 18 RETURNING WITH (OLD AS ..., NEW AS ...) aliases
 	ReturningOldAlias string `json:"returning_old_alias"`
 	ReturningNewAlias string `json:"returning_new_alias"`
+	// TableRefs is the statement's table-reference tree as the author wrote
+	// it (MySQL: UPDATE a JOIN b ON ...). Relations flattens that tree to
+	// bare tables for analysis; printing prefers TableRefs when it is set,
+	// so a join's ON condition survives formatting.
+	TableRefs *List `json:"table_refs,omitempty"`
 }
 
 func (n *UpdateStmt) Pos() int {
@@ -44,7 +49,9 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	}
 
 	buf.WriteString("UPDATE ")
-	if items(n.Relations) {
+	if items(n.TableRefs) {
+		buf.astFormat(n.TableRefs, d)
+	} else if items(n.Relations) {
 		buf.astFormat(n.Relations, d)
 	}
 
@@ -102,6 +109,10 @@ func (n *UpdateStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 				}
 				switch nn := item.(type) {
 				case *ResTarget:
+					if nn.Relation != nil {
+						buf.WriteString(d.QuoteIdent(*nn.Relation))
+						buf.WriteString(".")
+					}
 					if nn.Name != nil {
 						buf.WriteString(d.QuoteIdent(*nn.Name))
 					}

@@ -25,6 +25,11 @@ type SelectStmt struct {
 	All            bool         `json:"all"`
 	Larg           *SelectStmt  `json:"larg,omitempty"`
 	Rarg           *SelectStmt  `json:"rarg,omitempty"`
+	// TableHints is the text inside a MySQL optimizer-hint comment
+	// (SELECT /*+ MAX_EXECUTION_TIME(1000) */ ...). The compiler ignores
+	// hints; printing keeps them because they change how the server runs
+	// the query.
+	TableHints string `json:"table_hints,omitempty"`
 }
 
 func (n *SelectStmt) Pos() int {
@@ -100,6 +105,11 @@ func (n *SelectStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 		buf.astFormat(n.Rarg, d)
 	} else {
 		buf.WriteString("SELECT")
+		if n.TableHints != "" {
+			buf.WriteString(" /*+ ")
+			buf.WriteString(n.TableHints)
+			buf.WriteString(" */")
+		}
 		if items(n.DistinctClause) {
 			buf.WriteString(" DISTINCT")
 			if !todo(n.DistinctClause) {

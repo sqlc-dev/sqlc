@@ -16,11 +16,21 @@ import (
 )
 
 func NewParser() *Parser {
-	return &Parser{parser.New()}
+	return &Parser{pingcap: parser.New()}
+}
+
+// NewFormatParser returns the parser sqlc fmt uses. It differs from the
+// compiler's parser in one way: identifiers keep the case the author wrote.
+// The compiler lowercases them so catalog lookups are case-insensitive, but
+// a formatter that prints `Event` as `event` renames a table on the many
+// servers where table names are case-sensitive.
+func NewFormatParser() *Parser {
+	return &Parser{pingcap: parser.New(), preserveCase: true}
 }
 
 type Parser struct {
-	pingcap *parser.Parser
+	pingcap      *parser.Parser
+	preserveCase bool
 }
 
 var lineColumn = regexp.MustCompile(`^line (\d+) column (\d+) (.*)`)
@@ -86,7 +96,7 @@ func (p *Parser) ParseFile(r io.Reader) (*ast.File, error) {
 	// own occurrence even when two statements read the same.
 	searchFrom := 0
 	for i := range stmtNodes {
-		converter := &cc{}
+		converter := &cc{preserveCase: p.preserveCase}
 		// A statement sqlc has no node for converts to a TODO and stays in
 		// the list: the formatter needs its extent to keep it as written,
 		// and Parse filters it out for the compiler.
