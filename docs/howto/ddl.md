@@ -230,3 +230,39 @@ type Comment struct {
 	Text string
 }
 ```
+
+### Directory-per-migration (up/down files)
+
+Some migration tools store each migration in its own directory with separate
+`up.sql` and `down.sql` files. For example:
+migrations/
+
+├── 001_init/
+
+│   ├── up.sql
+
+│   └── down.sql
+
+├── 002_add_users/
+
+│   ├── up.sql
+
+│   └── down.sql
+
+sqlc does not walk subdirectories automatically. To handle this pattern, use a
+glob pattern in your schema configuration:
+
+```yaml
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "query.sql"
+    schema: "migrations/*/up.sql"
+    gen:
+      go:
+        package: "store"
+        out: "internal/store"
+```
+
+sqlc will parse all matched `up.sql` files in lexicographic order and ignore
+the `down.sql` files entirely.
