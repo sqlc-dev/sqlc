@@ -156,6 +156,8 @@ func opToName(o opcode.Op) string {
 	// case opcode.BitNeg:
 	// case opcode.Case:
 	// case opcode.Div:
+	case opcode.Div:
+		return "/"
 	case opcode.EQ:
 		return "="
 	case opcode.GE:
@@ -164,7 +166,7 @@ func opToName(o opcode.Op) string {
 		return ">"
 		// case opcode.In:
 	case opcode.IntDiv:
-		return "/"
+		return "div"
 	// case opcode.IsFalsity:
 	// case opcode.IsNull:
 	// case opcode.IsTruth:
