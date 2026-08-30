@@ -97,6 +97,11 @@ func (p *Parser) ParseFile(r io.Reader) (*ast.File, error) {
 	searchFrom := 0
 	for i := range stmtNodes {
 		converter := &cc{preserveCase: p.preserveCase}
+		if p.preserveCase {
+			// The format parser also preserves operator spellings the tree
+			// does not keep; the compiler's parser stays canonical.
+			converter.src = src
+		}
 		// A statement sqlc has no node for converts to a TODO and stays in
 		// the list: the formatter needs its extent to keep it as written,
 		// and Parse filters it out for the compiler.

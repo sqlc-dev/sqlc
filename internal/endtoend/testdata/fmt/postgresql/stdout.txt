@@ -20,18 +20,17 @@
  ORDER BY name;
  
  -- name: CreateAuthor :one
-@@ -13,8 +15,5 @@
+@@ -13,8 +15,4 @@
 -INSERT INTO authors (
 -  name, bio
 -) VALUES (
 -  $1, $2
 -)
-+INSERT INTO authors (name, bio)
-+VALUES ($1, $2)
++INSERT INTO authors (name, bio) VALUES ($1, $2)
  RETURNING *;
  
  -- name: PickyQuery :many
-@@ -21,5 +20,6 @@
+@@ -21,5 +19,6 @@
 -SELECT id, -- the primary key
 -       name
 +SELECT
@@ -40,8 +39,8 @@
  FROM authors
  WHERE id > $1;
  
-@@ -30,4 +30,4 @@
- SELECT name FROM authors WHERE name = @slug AND @filter::bool;
+@@ -48,4 +47,4 @@
+ SELECT id FROM authors WHERE name != $1 AND bio <> $2;
  
  -- name: DeleteAuthor :exec
 -DELETE FROM authors WHERE id = @id

@@ -2,6 +2,7 @@ package ast
 
 import (
 	"sort"
+	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/format"
 )
@@ -201,11 +202,68 @@ func AttachComments(raw *RawStmt, d format.Dialect, comments []Comment, src stri
 				break
 			}
 		}
-		if prevPos >= 0 && nextPos >= 0 && lineOf(prevPos) != lineOf(nextPos) {
+		if prevPos < 0 || nextPos < 0 {
+			continue
+		}
+		// The boundary before a bare VALUES list is a seam between two paren
+		// lists, so the neighbouring nodes' lines cannot decide it: with both
+		// lists broken they always differ, even when the author glued
+		// `) VALUES (`. Read the author's choice at the keyword itself.
+		if sel, ok := a.node.(*SelectStmt); ok && items(sel.ValuesLists) {
+			if broken, ok := valuesSeamBroken(src, nextPos); ok {
+				if broken {
+					table.breaks[a.node] = true
+				}
+				continue
+			}
+		}
+		if lineOf(prevPos) != lineOf(nextPos) {
 			table.breaks[a.node] = true
 		}
 	}
 	return table
+}
+
+// valuesSeamBroken reports whether the author broke the line before a bare
+// VALUES keyword. nextPos is the position of the first printed node inside
+// the list; scanning backward from it crosses `(` and then the keyword, and
+// the whitespace in front of the keyword holds the answer. Source that does
+// not scan that way (an extra paren, a comment against the keyword) returns
+// ok=false and the caller falls back to the line heuristic.
+func valuesSeamBroken(src string, nextPos int) (broken bool, ok bool) {
+	if nextPos <= 0 || nextPos > len(src) {
+		return false, false
+	}
+	isSpace := func(c byte) bool {
+		return c == ' ' || c == '\t' || c == '\r' || c == '\n'
+	}
+	i := nextPos - 1
+	for i >= 0 && isSpace(src[i]) {
+		i--
+	}
+	if i < 0 || src[i] != '(' {
+		return false, false
+	}
+	i--
+	for i >= 0 && isSpace(src[i]) {
+		i--
+	}
+	const keyword = "VALUES"
+	if i+1 < len(keyword) || !strings.EqualFold(src[i+1-len(keyword):i+1], keyword) {
+		return false, false
+	}
+	i -= len(keyword)
+	// A keyword, not the tail of an identifier.
+	if i >= 0 && !isSpace(src[i]) && src[i] != ')' {
+		return false, false
+	}
+	for i >= 0 && isSpace(src[i]) {
+		if src[i] == '\n' {
+			broken = true
+		}
+		i--
+	}
+	return broken, true
 }
 
 type anchor struct {

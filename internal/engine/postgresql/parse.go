@@ -11,6 +11,7 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
@@ -144,7 +145,38 @@ func NewParser() *Parser {
 	return &Parser{}
 }
 
+// NewFormatParser returns the parser sqlc fmt uses. It differs from the
+// compiler's parser in one way: where the grammar normalizes an operator the
+// author may spell two ways (`!=` parses as `<>`), the spelling is read back
+// out of the source so formatting preserves it. The compiler keeps the
+// normalized name, which is the one the catalog knows.
+func NewFormatParser() *Parser {
+	return &Parser{preserveSpelling: true}
+}
+
 type Parser struct {
+	preserveSpelling bool
+}
+
+// restoreOperatorSpelling rewrites operators the grammar normalized back to
+// the spelling the author wrote. The scanner turns `!=` into `<>` before the
+// AST exists; an A_Expr's location points at the operator token, so the
+// source says which spelling to print.
+func restoreOperatorSpelling(n ast.Node, src string) {
+	astutils.Walk(astutils.VisitorFunc(func(node ast.Node) {
+		expr, ok := node.(*ast.A_Expr)
+		if !ok || expr.Name == nil || len(expr.Name.Items) != 1 {
+			return
+		}
+		s, ok := expr.Name.Items[0].(*ast.String)
+		if !ok || s.Str != "<>" {
+			return
+		}
+		loc := expr.Location
+		if loc >= 0 && loc+2 <= len(src) && src[loc:loc+2] == "!=" {
+			expr.Name = &ast.List{Items: []ast.Node{&ast.String{Str: "!="}}}
+		}
+	}), n)
 }
 
 var errSkip = errors.New("skip stmt")
@@ -207,6 +239,9 @@ func (p *Parser) ParseFile(r io.Reader) (*ast.File, error) {
 		}
 		if n == nil {
 			return nil, fmt.Errorf("unexpected nil node")
+		}
+		if p.preserveSpelling {
+			restoreOperatorSpelling(n, contents)
 		}
 		stmts = append(stmts, ast.Statement{
 			Raw: &ast.RawStmt{

@@ -61,8 +61,20 @@ func (n *InsertStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 	if n.DefaultValues {
 		buf.WriteString(" DEFAULT VALUES")
 	} else if set(n.SelectStmt) {
-		buf.beforeClause(n.SelectStmt, d)
-		buf.Line()
+		if sel, ok := n.SelectStmt.(*SelectStmt); ok && items(sel.ValuesLists) {
+			// The seam before a bare VALUES list keeps the author's own
+			// choice — `) VALUES (` glued or VALUES on its own line — so it
+			// gets a group of its own: a break inside either paren list must
+			// not decide it. AttachComments reads the choice out of the
+			// source (see valuesSeamBroken) and marks the boundary.
+			buf.Group()
+			buf.beforeClause(n.SelectStmt, d)
+			buf.Line()
+			buf.EndGroup()
+		} else {
+			buf.beforeClause(n.SelectStmt, d)
+			buf.Line()
+		}
 		buf.astFormat(n.SelectStmt, d)
 	}
 

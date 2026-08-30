@@ -45,7 +45,9 @@ type queryFormatter interface {
 func newQueryFormatter(engine config.Engine) queryFormatter {
 	switch engine {
 	case config.EnginePostgreSQL:
-		return postgresql.NewParser()
+		// The format parser preserves the author's operator spellings
+		// (`!=` vs `<>`) that the grammar would otherwise normalize.
+		return postgresql.NewFormatParser()
 	case config.EngineSQLite:
 		return sqlite.NewParser()
 	case config.EngineMySQL:

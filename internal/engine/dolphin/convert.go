@@ -21,6 +21,31 @@ type cc struct {
 	// lowercasing them for case-insensitive catalog matching; the format
 	// parser sets it (see NewFormatParser).
 	preserveCase bool
+	// src is the statement's source text, set alongside preserveCase: the
+	// format parser reads spellings the tree does not keep (`!=` vs `<>`)
+	// back out of it.
+	src string
+}
+
+// operatorSpelling reads the operator token that sits immediately before
+// the operand at byte offset rpos, reporting which of the candidate
+// spellings the author wrote. Source that does not end in a candidate right
+// there (a comment against the operand, no recorded position) returns
+// ok=false and the caller keeps the canonical name.
+func (c *cc) operatorSpelling(rpos int, candidates ...string) (string, bool) {
+	if c.src == "" || rpos <= 0 || rpos > len(c.src) {
+		return "", false
+	}
+	end := rpos
+	for end > 0 && (c.src[end-1] == ' ' || c.src[end-1] == '\t' || c.src[end-1] == '\r' || c.src[end-1] == '\n') {
+		end--
+	}
+	for _, cand := range candidates {
+		if end >= len(cand) && c.src[end-len(cand):end] == cand {
+			return cand, true
+		}
+	}
+	return "", false
 }
 
 func todo(n pcast.Node) *ast.TODO {
@@ -224,11 +249,20 @@ func (c *cc) convertBinaryOperationExpr(n *pcast.BinaryOperationExpr) ast.Node {
 			Location: n.OriginTextPosition(),
 		}
 	} else {
+		name := opToName(n.Op)
+		if n.Op == opcode.NE && c.src != "" {
+			// MySQL spells inequality two ways (!= and <>) and the tree
+			// keeps only the opcode, so the format parser reads the
+			// author's choice back out of the source.
+			if op, ok := c.operatorSpelling(n.R.OriginTextPosition(), "!=", "<>"); ok {
+				name = op
+			}
+		}
 		return &ast.A_Expr{
 			// TODO: Set kind
 			Name: &ast.List{
 				Items: []ast.Node{
-					&ast.String{Str: opToName(n.Op)},
+					&ast.String{Str: name},
 				},
 			},
 			Lexpr:    c.convert(n.L),

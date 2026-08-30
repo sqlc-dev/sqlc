@@ -29,5 +29,23 @@ SELECT id, name, bio, created_at FROM authors WHERE name LIKE $1 AND bio IS NOT 
 -- name: AtParamsGlued :many
 SELECT name FROM authors WHERE name = @slug AND @filter::bool;
 
+-- name: CreateAuthorLong :one
+INSERT INTO authors (
+  name,
+  bio
+) VALUES (
+  $1,
+  $2
+)
+RETURNING *;
+
+-- name: CreateAuthorBrokenValues :one
+INSERT INTO authors (name, bio)
+VALUES ($1, $2)
+RETURNING *;
+
+-- name: SpelledOperators :many
+SELECT id FROM authors WHERE name != $1 AND bio <> $2;
+
 -- name: DeleteAuthor :exec
 DELETE FROM authors WHERE id = @id

@@ -70,3 +70,6 @@ WHERE p.bio IS NOT NULL;
 SHOW WARNINGS;
 
 CREATE TABLE scores (points decimal(10, 5), views bigint unsigned NOT NULL);
+
+-- name: SpelledOperators :many
+SELECT id FROM authors WHERE name != ? AND bio <> ?;
