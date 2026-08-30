@@ -43,7 +43,7 @@
  
  -- name: CastUnsigned :one
  SELECT CAST(id AS UNSIGNED) FROM authors LIMIT 1;
-@@ -34,8 +39,5 @@
+@@ -34,14 +39,11 @@
  SELECT id FROM authors LIMIT 1;
  
  -- name: CreateAuthor :execresult
@@ -54,3 +54,20 @@
 -) values (
 -  ?, ?
 -);
+ 
+ -- name: CasePreserved :many
++SELECT ID, Name FROM Authors WHERE Name != '' ORDER BY Name;
+-SELECT ID, Name FROM Authors WHERE Name <> '' ORDER BY Name;
+ 
+ -- name: LiteralsSurvive :one
+ SELECT true AS t, false AS f, 1.50 AS score, CASE WHEN name = '' THEN NULL ELSE name END AS n FROM authors LIMIT 1;
+@@ -62,7 +64,8 @@
+ SELECT /*+ MAX_EXECUTION_TIME(1000) */ id FROM authors LIMIT 1;
+ 
+ -- name: UpdateWithJoin :exec
++UPDATE authors AS a
++JOIN authors AS p ON p.id = a.id
+-UPDATE authors AS a JOIN authors AS p ON p.id = a.id
+ SET a.name = ?
+ WHERE p.bio IS NOT NULL;
+ 

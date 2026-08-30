@@ -56,6 +56,33 @@ func (n *A_Expr) isNamedParam() (sigil, name string, ok bool) {
 	return "", "", false
 }
 
+// gluePrefix reports that this prefix expression must print with no space
+// between the operator and its operand. `@name::type` is a sqlc named
+// parameter with a cast: the cast binds tighter than the operator, so the
+// parse is @ applied to a TypeCast and isNamedParam does not see it — but
+// `@ name::type` would break the parameter apart for sqlc's scanner. Glue
+// the sigils onto any operand that starts with an identifier, which also
+// keeps a genuine prefix operator like pg's absolute-value @ meaning the
+// same thing.
+func (n *A_Expr) gluePrefix() bool {
+	if set(n.Lexpr) || n.Name == nil || len(n.Name.Items) != 1 {
+		return false
+	}
+	s, ok := n.Name.Items[0].(*String)
+	if !ok || (s.Str != "@" && s.Str != ":" && s.Str != "$") {
+		return false
+	}
+	operand := n.Rexpr
+	if tc, ok := operand.(*TypeCast); ok {
+		operand = tc.Arg
+	}
+	switch operand.(type) {
+	case *ColumnRef, *FuncCall:
+		return true
+	}
+	return false
+}
+
 // negated returns true when the expression's operator carries the negated
 // spelling of a pattern-match operator (e.g. "!~~" for NOT LIKE).
 func (n *A_Expr) negated() bool {
@@ -142,7 +169,9 @@ func (n *A_Expr) Format(buf *TrackedBuffer, d format.Dialect) {
 		}
 		buf.astFormat(n.Name, d)
 		if set(n.Rexpr) {
-			buf.WriteString(" ")
+			if !n.gluePrefix() {
+				buf.WriteString(" ")
+			}
 			buf.astFormat(n.Rexpr, d)
 		}
 	}

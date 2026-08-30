@@ -17,7 +17,7 @@ type SelectStaticRow struct {
 	Column1   string
 	B         string
 	Num       int32
-	Truefield int32
+	Truefield bool
 	Floater   float64
 }
 
