@@ -1,0 +1,1 @@
+query.sql: ListByIDs: no-anonymous-params: query has an anonymous parameter; name it with sqlc.arg() or @name
