@@ -523,6 +523,20 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				Column: col,
 			})
 
+		case *ast.BoolExpr:
+			defaultP := named.NewInferredParam(ref.name, false)
+			p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
+			a = append(a, Parameter{
+				Number: ref.ref.Number,
+				Column: &Column{
+					Name:         p.Name(),
+					DataType:     "boolean",
+					IsNamedParam: isNamed,
+					NotNull:      p.NotNull(),
+					IsSqlcSlice:  p.IsSqlcSlice(),
+				},
+			})
+
 		case *ast.ParamRef:
 			a = append(a, Parameter{Number: ref.ref.Number})
 
