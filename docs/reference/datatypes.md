@@ -122,8 +122,8 @@ type Author struct {
 
 ## UUIDs
 
-The Go standard library does not come with a `uuid` package. For UUID support,
-sqlc uses the excellent `github.com/google/uuid` package. The pgx/v5 sql package uses `pgtype.UUID`.
+For UUID support, sqlc uses the `github.com/google/uuid` package by default.
+The pgx/v5 sql package uses `pgtype.UUID`.
 
 ```sql
 CREATE TABLE records (
@@ -142,6 +142,70 @@ type Author struct {
 	ID uuid.UUID
 }
 ```
+
+### Using the standard library uuid package
+
+Go 1.27 added a [`uuid`](https://pkg.go.dev/uuid) package to the standard
+library. sqlc will use this package by default in a future release. Until
+then, use it today with type overrides
+(see [Overriding types](../howto/overrides.md) for details).
+
+Two overrides are required: one for non-nullable columns and one for nullable
+columns. The standard library does not include a `NullUUID` type, so nullable
+columns map to `*uuid.UUID` instead.
+
+```yaml
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "schema.sql"
+    queries: "query.sql"
+    gen:
+      go:
+        package: "db"
+        out: "db"
+        sql_package: "pgx/v5"
+        overrides:
+          - db_type: "uuid"
+            go_type: "uuid.UUID"
+          - db_type: "uuid"
+            nullable: true
+            go_type:
+              import: "uuid"
+              type: "UUID"
+              pointer: true
+```
+
+With this configuration, a table with both nullable and non-nullable `uuid`
+columns:
+
+```sql
+CREATE TABLE records (
+  id          uuid PRIMARY KEY,
+  external_id uuid
+);
+```
+
+generates:
+
+```go
+package db
+
+import (
+	"uuid"
+)
+
+type Record struct {
+	ID         uuid.UUID
+	ExternalID *uuid.UUID
+}
+```
+
+These overrides work with both the `pgx/v5` and `database/sql` sql packages.
+pgx supports any type whose underlying type is `[16]byte`, and as of Go 1.27
+`database/sql` converts `uuid.UUID` values in both directions: parameters are
+bound via `driver.DefaultParameterConverter` and results are scanned into
+`uuid.UUID` and `*uuid.UUID` destinations, with `nil` representing `NULL`.
 
 For MySQL, there is no native `uuid` data type. When using `UUID_TO_BIN` to store a `UUID()`, the underlying field type is `BINARY(16)` which by default sqlc would map to `sql.NullString`. To have sqlc automatically convert these fields to a `uuid.UUID` type, use an overide on the column storing the `uuid`
 (see [Overriding types](../howto/overrides.md) for details).
