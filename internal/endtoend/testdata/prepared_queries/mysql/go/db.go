@@ -115,6 +115,46 @@ type Queries struct {
 	listUsersStmt               *sql.Stmt
 }
 
+func (q *Queries) PrepareDeleteUsersByName(ctx context.Context) error {
+	var err error
+	if q.deleteUsersByNameStmt, err = q.db.PrepareContext(ctx, deleteUsersByName); err != nil {
+		return fmt.Errorf("error preparing query DeleteUsersByName: %w", err)
+	}
+	return nil
+}
+
+func (q *Queries) PrepareGetUserByID(ctx context.Context) error {
+	var err error
+	if q.getUserByIDStmt, err = q.db.PrepareContext(ctx, getUserByID); err != nil {
+		return fmt.Errorf("error preparing query GetUserByID: %w", err)
+	}
+	return nil
+}
+
+func (q *Queries) PrepareInsertNewUser(ctx context.Context) error {
+	var err error
+	if q.insertNewUserStmt, err = q.db.PrepareContext(ctx, insertNewUser); err != nil {
+		return fmt.Errorf("error preparing query InsertNewUser: %w", err)
+	}
+	return nil
+}
+
+func (q *Queries) PrepareInsertNewUserWithResult(ctx context.Context) error {
+	var err error
+	if q.insertNewUserWithResultStmt, err = q.db.PrepareContext(ctx, insertNewUserWithResult); err != nil {
+		return fmt.Errorf("error preparing query InsertNewUserWithResult: %w", err)
+	}
+	return nil
+}
+
+func (q *Queries) PrepareListUsers(ctx context.Context) error {
+	var err error
+	if q.listUsersStmt, err = q.db.PrepareContext(ctx, listUsers); err != nil {
+		return fmt.Errorf("error preparing query ListUsers: %w", err)
+	}
+	return nil
+}
+
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
 		db:                          tx,
