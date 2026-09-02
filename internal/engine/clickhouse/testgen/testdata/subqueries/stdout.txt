@@ -5,20 +5,30 @@
     "columns": [
       {
         "name": "id",
-        "type": "uint64",
-        "not_null": true,
+        "type": {
+          "name": "uint64"
+        },
         "table": "events"
       },
       {
         "name": "tag",
-        "type": "string",
-        "not_null": false,
+        "type": {
+          "name": "nullable",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        },
         "table": "events"
       },
       {
         "name": "cnt",
-        "type": "uint64",
-        "not_null": true
+        "type": {
+          "name": "uint64"
+        }
       }
     ],
     "params": []
@@ -29,19 +39,22 @@
     "columns": [
       {
         "name": "x",
-        "type": "uint64",
-        "not_null": true,
+        "type": {
+          "name": "uint64"
+        },
         "table": "events"
       },
       {
         "name": "total",
-        "type": "float64",
-        "not_null": true
+        "type": {
+          "name": "float64"
+        }
       },
       {
         "name": "email",
-        "type": "string",
-        "not_null": true
+        "type": {
+          "name": "string"
+        }
       }
     ],
     "params": []
@@ -52,38 +65,51 @@
     "columns": [
       {
         "name": "id",
-        "type": "uint64",
-        "not_null": true,
+        "type": {
+          "name": "uint64"
+        },
         "table": "users"
       },
       {
         "name": "email",
-        "type": "string",
-        "not_null": true,
+        "type": {
+          "name": "string"
+        },
         "table": "users"
       },
       {
         "name": "e.id",
-        "type": "uint64",
-        "not_null": true,
+        "type": {
+          "name": "uint64"
+        },
         "table": "events"
       },
       {
         "name": "name",
-        "type": "string",
-        "not_null": true,
+        "type": {
+          "name": "string"
+        },
         "table": "events"
       },
       {
         "name": "tag",
-        "type": "string",
-        "not_null": false,
+        "type": {
+          "name": "nullable",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        },
         "table": "events"
       },
       {
         "name": "amount",
-        "type": "float64",
-        "not_null": true,
+        "type": {
+          "name": "float64"
+        },
         "table": "events"
       }
     ],
@@ -95,14 +121,16 @@
     "columns": [
       {
         "name": "id",
-        "type": "uint64",
-        "not_null": true,
+        "type": {
+          "name": "uint64"
+        },
         "table": "events"
       },
       {
         "name": "name",
-        "type": "string",
-        "not_null": true,
+        "type": {
+          "name": "string"
+        },
         "table": "events"
       }
     ],
@@ -114,14 +142,23 @@
     "columns": [
       {
         "name": "id",
-        "type": "uint64",
-        "not_null": true,
+        "type": {
+          "name": "uint64"
+        },
         "table": "events"
       },
       {
         "name": "user_count",
-        "type": "uint64",
-        "not_null": false
+        "type": {
+          "name": "nullable",
+          "args": [
+            {
+              "type": {
+                "name": "uint64"
+              }
+            }
+          ]
+        }
       }
     ],
     "params": [
@@ -129,8 +166,9 @@
         "number": 1,
         "column": {
           "name": "email",
-          "type": "string",
-          "not_null": true,
+          "type": {
+            "name": "string"
+          },
           "table": "users"
         }
       }

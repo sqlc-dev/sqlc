@@ -5,14 +5,16 @@
     "columns": [
       {
         "name": "id",
-        "type": "uint64",
-        "not_null": true,
+        "type": {
+          "name": "uint64"
+        },
         "table": "events"
       },
       {
         "name": "name",
-        "type": "string",
-        "not_null": true,
+        "type": {
+          "name": "string"
+        },
         "table": "events"
       }
     ],
@@ -21,8 +23,9 @@
         "number": 1,
         "column": {
           "name": "id",
-          "type": "uint64",
-          "not_null": true,
+          "type": {
+            "name": "uint64"
+          },
           "table": "events"
         }
       }
@@ -34,14 +37,16 @@
     "columns": [
       {
         "name": "id",
-        "type": "uint64",
-        "not_null": true,
+        "type": {
+          "name": "uint64"
+        },
         "table": "events"
       },
       {
         "name": "name",
-        "type": "string",
-        "not_null": true,
+        "type": {
+          "name": "string"
+        },
         "table": "events"
       }
     ],
@@ -50,8 +55,9 @@
         "number": 1,
         "column": {
           "name": "name",
-          "type": "string",
-          "not_null": true,
+          "type": {
+            "name": "string"
+          },
           "table": "events"
         }
       },
@@ -59,8 +65,9 @@
         "number": 2,
         "column": {
           "name": "amount",
-          "type": "float64",
-          "not_null": true,
+          "type": {
+            "name": "float64"
+          },
           "table": "events"
         }
       }

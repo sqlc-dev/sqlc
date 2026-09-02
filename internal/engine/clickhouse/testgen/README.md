@@ -40,24 +40,30 @@ query is explained and then executed, and the process exits.
   target columns reported by `DESCRIBE TABLE`.
 
 The output has the shape of `sqlc analyze`, except that each column's type is
-one expression rather than a name and flags. A type is written as a call: a
-lowercased name applied to arguments that are numbers, quoted strings,
-identifiers, other calls, or any of those with a label. `Nullable`, `Array`
-and `LowCardinality` are ordinary names in that grammar, so nothing about
-nesting is lost:
+one expression rather than a name and flags. A type is a call: a lowercased
+`name` applied to `args`, each of which carries an optional `label` and
+exactly one of `type`, `int` or `string`. `Nullable`, `Array` and
+`LowCardinality` are ordinary names in that grammar, so nothing about nesting
+is lost, and there is no separate nullability flag: a nullable column is one
+whose type is `nullable(...)`.
 
-| ClickHouse                        | testgen                            |
-|-----------------------------------|------------------------------------|
-| `Array(Nullable(String))`         | `array(nullable(string))`          |
-| `Map(String, UInt32)`             | `map(string, uint32)`              |
-| `Tuple(lat Float64, lon Float64)` | `tuple(lat: float64, lon: float64)`|
-| `Enum8('a' = 1, 'b' = 2)`         | `enum8('a': 1, 'b': 2)`            |
-| `DateTime64(3, 'UTC')`            | `datetime64(3, 'UTC')`             |
-| `LowCardinality(Nullable(String))`| `lowcardinality(string)`, `not_null: false` |
+```json
+{"name": "map", "args": [
+  {"type": {"name": "string"}},
+  {"type": {"name": "nullable", "args": [{"type": {"name": "uint8"}}]}}]}
 
-An outer `Nullable` is the column's nullability rather than part of its type,
-so it is lifted into `not_null`; a `Nullable` at any greater depth stays in
-the expression. Resolving the names is left to whoever reads the output.
+{"name": "tuple", "args": [
+  {"label": "lat", "type": {"name": "float64"}},
+  {"label": "lon", "type": {"name": "float64"}}]}
+
+{"name": "enum8", "args": [{"label": "active", "int": 1}, {"label": "deleted", "int": 2}]}
+
+{"name": "datetime64", "args": [{"int": 3}, {"string": "UTC"}]}
+```
+
+An identifier argument, such as the function in `AggregateFunction(uniq,
+String)`, is a type with no arguments. Resolving the names is left to
+whoever reads the output.
 
 ## Tests
 
