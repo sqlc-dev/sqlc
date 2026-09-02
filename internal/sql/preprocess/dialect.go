@@ -88,11 +88,19 @@ var dialects = map[config.Engine]Dialect{
 		Backtick:  true,
 		Backslash: true,
 	},
+	// ClickHouse binds with an unnumbered ?, like MySQL, and its identifiers
+	// keep their case.
+	config.EngineClickHouse: {
+		Style:     StyleQuestion,
+		Question:  true,
+		Backtick:  true,
+		Backslash: true,
+	},
 }
 
 // DialectFor returns the lexical rules for an engine, and whether the engine is
-// preprocessed at all. GoogleSQL and ClickHouse are not: they handle their own
-// parameter syntax, so their queries reach the parser unchanged.
+// preprocessed at all. GoogleSQL is not: it handles its own parameter syntax,
+// so its queries reach the parser unchanged.
 func DialectFor(engine config.Engine) (Dialect, bool) {
 	d, ok := dialects[engine]
 	return d, ok

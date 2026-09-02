@@ -10,16 +10,29 @@
         }
       },
       {
-        "name": "top"
+        "name": "top",
+        "type": {
+          "name": "float64"
+        }
       },
       {
-        "name": "sum"
+        "name": "sum(amount)",
+        "type": {
+          "name": "float64"
+        }
       },
       {
-        "name": "first_tag"
+        "name": "first_tag",
+        "type": {
+          "name": "string",
+          "nullable": true
+        }
       },
       {
-        "name": "uniq"
+        "name": "uniq(name)",
+        "type": {
+          "name": "uint64"
+        }
       }
     ],
     "params": []
@@ -35,25 +48,42 @@
         }
       },
       {
-        "name": "maybe"
+        "name": "maybe",
+        "type": {
+          "name": "string",
+          "nullable": true
+        }
       },
       {
-        "name": "tag_or_none"
+        "name": "tag_or_none",
+        "type": {
+          "name": "string"
+        }
       },
       {
-        "name": "lower"
+        "name": "lower(name)",
+        "type": {
+          "name": "string"
+        }
       },
       {
-        "name": "today"
+        "name": "today",
+        "type": {
+          "name": "date"
+        }
       },
       {
         "name": "big",
         "type": {
-          "name": "bool"
+          "name": "uint8"
         }
       },
       {
-        "name": "word"
+        "name": "word",
+        "type": {
+          "name": "string",
+          "nullable": true
+        }
       }
     ],
     "params": []
@@ -158,7 +188,49 @@
         "table": "events"
       }
     ],
-    "params": []
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "string"
+          },
+          "table": "events"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "tag",
+          "type": {
+            "name": "string",
+            "nullable": true
+          },
+          "table": "events"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "amount",
+          "type": {
+            "name": "float64"
+          },
+          "table": "events"
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "amount",
+          "type": {
+            "name": "float64"
+          },
+          "table": "events"
+        }
+      }
+    ]
   },
   {
     "name": "Functions",
@@ -176,7 +248,10 @@
       {
         "number": 1,
         "column": {
-          "name": ""
+          "name": "lower",
+          "type": {
+            "name": "string"
+          }
         }
       },
       {
@@ -192,7 +267,10 @@
       {
         "number": 3,
         "column": {
-          "name": ""
+          "name": "toDate",
+          "type": {
+            "name": "date"
+          }
         }
       }
     ]
@@ -209,14 +287,37 @@
         "table": "events"
       }
     ],
-    "params": []
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "uint64"
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "uint64"
+          }
+        }
+      }
+    ]
   },
   {
     "name": "Projected",
     "cmd": ":one",
     "columns": [
       {
-        "name": "echo"
+        "name": "echo",
+        "type": {
+          "name": "nothing",
+          "nullable": true
+        }
       },
       {
         "name": "lit",
@@ -229,7 +330,11 @@
       {
         "number": 1,
         "column": {
-          "name": ""
+          "name": "echo",
+          "type": {
+            "name": "nothing",
+            "nullable": true
+          }
         }
       }
     ]

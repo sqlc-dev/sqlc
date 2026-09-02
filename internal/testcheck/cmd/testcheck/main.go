@@ -5,8 +5,8 @@
 //
 // Usage, from this directory:
 //
-//	go run . install clickhouse   # download the pinned clickhouse binary
-//	go run . check [engine]       # check every case, or one engine's
+//	go run ./cmd/testcheck install clickhouse   # download the pinned clickhouse binary
+//	go run ./cmd/testcheck check [engine]       # check every case, or one engine's
 //
 // `go test ./...` runs the same checks as tests, skipping engines whose
 // database is not available.

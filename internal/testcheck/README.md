@@ -12,9 +12,9 @@ so it never shares code with the analysis it checks. Run it from this
 directory:
 
 ```bash
-go run . install clickhouse   # download the pinned clickhouse binary once
-go run . check                # check every engine whose database is available
-go run . check clickhouse     # check one engine
+go run ./cmd/testcheck install clickhouse   # download the pinned clickhouse binary once
+go run ./cmd/testcheck check                # check every engine whose database is available
+go run ./cmd/testcheck check clickhouse     # check one engine
 go test ./...                 # the same checks as tests; engines without a database skip
 ```
 

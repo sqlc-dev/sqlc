@@ -83,30 +83,17 @@ var namedArgRe = regexp.MustCompile(`^sqlc\.(n?arg)\(\s*'?([A-Za-z_][A-Za-z0-9_]
 
 // bindPlaceholders rewrites sqlc's parameter syntax (?, sqlc.arg(name),
 // sqlc.narg(name)) into constants ClickHouse can analyze, skipping string
-// literals, quoted identifiers and comments. Placeholders are numbered the
-// way sqlc numbers them: positionally, with a repeated name sharing a number.
+// literals, quoted identifiers and comments. ClickHouse binds every ?
+// positionally, so each placeholder is its own parameter even when a name
+// repeats, which is how sqlc numbers them too.
 func bindPlaceholders(sql string) (string, []placeholder) {
 	var (
 		out      strings.Builder
 		phs      []placeholder
-		numbers  = map[string]int{}
 		lastWord string
 		i        = 0
 	)
-	number := func(name string) int {
-		if name != "" {
-			if n, ok := numbers[name]; ok {
-				return n
-			}
-		}
-		n := len(numbers) + 1
-		if name == "" {
-			// Positional placeholders never repeat; give them a private key.
-			name = fmt.Sprintf("?%d", n)
-		}
-		numbers[name] = n
-		return n
-	}
+	number := func(string) int { return len(phs) + 1 }
 	for i < len(sql) {
 		c := sql[i]
 		switch {

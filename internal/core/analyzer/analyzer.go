@@ -119,6 +119,20 @@ func derivedRel(alias string, cols []core.Column) scopeRel {
 }
 
 func (a *analyzer) result() core.PrepareResult {
+	// A placeholder nothing constrained takes the dialect's type for one, when
+	// the dialect has such a type.
+	if oid, ok := a.cat.UntypedTypeOID(); ok {
+		for n, p := range a.params {
+			if p.TypeOID == 0 && p.DataType == "" {
+				t := exprType{typeOID: oid, nullable: true}
+				p.TypeOID = oid
+				p.DataType, p.IsArray = a.typeNameOf(t)
+				p.NotNull = false
+				p.Type = a.typeExprOf(t, "")
+				a.params[n] = p
+			}
+		}
+	}
 	res := core.PrepareResult{
 		Command:    a.command,
 		Columns:    a.columns,
@@ -213,7 +227,37 @@ func (a *analyzer) analyzeSelect(s *ast.SelectStmt) error {
 			return err
 		}
 	}
+	for _, item := range listItems(s.SortClause) {
+		if sb, ok := item.(*ast.SortBy); ok {
+			if _, err := a.typeExpr(sb.Node); err != nil {
+				return fmt.Errorf("order by: %w", err)
+			}
+		}
+	}
+	for _, n := range []ast.Node{s.LimitCount, s.LimitOffset} {
+		if err := a.typeLimit(n); err != nil {
+			return fmt.Errorf("limit: %w", err)
+		}
+	}
 	return nil
+}
+
+// typeLimit types a LIMIT or OFFSET count. A bare placeholder there holds
+// whatever the dialect counts rows in.
+func (a *analyzer) typeLimit(n ast.Node) error {
+	if n == nil {
+		return nil
+	}
+	if pr, ok := n.(*ast.ParamRef); ok {
+		oid, err := a.cat.LimitTypeOID()
+		if err != nil {
+			return err
+		}
+		a.inferParam(pr.Number, exprType{typeOID: oid})
+		return nil
+	}
+	_, err := a.typeExpr(n)
+	return err
 }
 
 func (a *analyzer) typeValuesLists(l *ast.List) error {

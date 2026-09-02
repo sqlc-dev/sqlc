@@ -227,7 +227,14 @@ func (t *queryTree) describe(n *treeNode) analyzedColumn {
 	case "FUNCTION":
 		return column(n.attrs["function_name"], n.attrs["result_type"])
 	case "CONSTANT":
-		return column("", n.attrs["constant_value_type"])
+		// A constant folded from a function call, such as toDate(now()),
+		// still names the function, which is what a placeholder compared
+		// with it is named after.
+		name := ""
+		if fn := firstNode(n.section("EXPRESSION").childrenOrNil()); fn != nil && fn.kind == "FUNCTION" {
+			name = fn.attrs["function_name"]
+		}
+		return column(name, n.attrs["constant_value_type"])
 	}
 	return analyzedColumn{}
 }

@@ -53,8 +53,11 @@ type ColumnSource struct {
 }
 
 type Column struct {
-	Name               string        `json:"name"`
-	DataType           string        `json:"data_type"`
+	Name     string `json:"name"`
+	DataType string `json:"data_type"`
+	// Type is the column's type as an expression, carrying what DataType
+	// and IsArray flatten away: arguments, nesting and inner nullability.
+	Type               *TypeExpr     `json:"type,omitempty"`
 	TypeOID            int64         `json:"type_oid,omitempty"`
 	NotNull            bool          `json:"not_null"`
 	IsArray            bool          `json:"is_array,omitempty"`
@@ -73,6 +76,7 @@ type Parameter struct {
 	Number   int           `json:"number"`
 	Name     string        `json:"name,omitempty"`
 	DataType string        `json:"data_type,omitempty"`
+	Type     *TypeExpr     `json:"type,omitempty"`
 	TypeOID  int64         `json:"type_oid,omitempty"`
 	NotNull  bool          `json:"not_null"`
 	IsArray  bool          `json:"is_array,omitempty"`

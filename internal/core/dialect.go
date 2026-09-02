@@ -54,6 +54,29 @@ func (c *Catalog) DialectFlag(dialectOID int64, key string) (string, error) {
 // same ones the seeded types have.
 const FlagComparisonOperators = "operators.comparison"
 
+// FlagBoolType holds the type a comparison or predicate yields, when it is
+// not the type a boolean literal has: ClickHouse compares to UInt8 while
+// writing true as Bool.
+const FlagBoolType = "types.bool"
+
+// FlagLimitType holds the type a LIMIT or OFFSET count has, which is what a
+// placeholder in one is typed as.
+const FlagLimitType = "types.limit"
+
+// FlagUntypedType holds the type a placeholder takes when nothing in the
+// query constrains it, for a dialect that gives such a placeholder one.
+const FlagUntypedType = "types.untyped"
+
+// FlagPropagateNullable is set when a function's result is nullable whenever
+// one of its arguments is, the way ClickHouse's ordinary functions behave.
+const FlagPropagateNullable = "functions.propagate_nullable"
+
+// FlagQualifyDuplicateColumns is set for a dialect that names a result
+// column after its relation when an earlier result column from another
+// relation has the same name, as ClickHouse names the second id of a join
+// e.id.
+const FlagQualifyDuplicateColumns = "columns.qualify_duplicates"
+
 // FlagCastCategories holds the categories whose types are all implicitly
 // castable to one another, as the dialect's seed declared them, so that a type
 // arriving after the seed — an extension's, say — can join its category.
@@ -108,4 +131,62 @@ func (c *Catalog) ConstTypeOID(kind string) (int64, error) {
 		return 0, fmt.Errorf("unknown constant kind %q", kind)
 	}
 	return c.TypeOID(name)
+}
+
+// BoolTypeOID returns the type a comparison or predicate yields.
+func (c *Catalog) BoolTypeOID() (int64, error) {
+	if c.dialectOID != 0 {
+		if name, _ := c.DialectFlag(c.dialectOID, FlagBoolType); name != "" {
+			return c.TypeOID(name)
+		}
+	}
+	return c.ConstTypeOID(ConstBool)
+}
+
+// LimitTypeOID returns the type a LIMIT or OFFSET count has, falling back to
+// the type of an integer literal.
+func (c *Catalog) LimitTypeOID() (int64, error) {
+	if c.dialectOID != 0 {
+		if name, _ := c.DialectFlag(c.dialectOID, FlagLimitType); name != "" {
+			return c.TypeOID(name)
+		}
+	}
+	return c.ConstTypeOID(ConstInteger)
+}
+
+// UntypedTypeOID returns the type an unconstrained placeholder takes, and
+// whether the dialect gives it one at all.
+func (c *Catalog) UntypedTypeOID() (int64, bool) {
+	if c.dialectOID == 0 {
+		return 0, false
+	}
+	name, _ := c.DialectFlag(c.dialectOID, FlagUntypedType)
+	if name == "" {
+		return 0, false
+	}
+	oid, err := c.TypeOID(name)
+	if err != nil {
+		return 0, false
+	}
+	return oid, true
+}
+
+// PropagatesNullable reports whether a function's result is nullable
+// whenever one of its arguments is.
+func (c *Catalog) PropagatesNullable() bool {
+	if c.dialectOID == 0 {
+		return false
+	}
+	v, _ := c.DialectFlag(c.dialectOID, FlagPropagateNullable)
+	return v == "true"
+}
+
+// QualifiesDuplicateColumns reports whether a result column that repeats an
+// earlier one's name from another relation is named after its relation.
+func (c *Catalog) QualifiesDuplicateColumns() bool {
+	if c.dialectOID == 0 {
+		return false
+	}
+	v, _ := c.DialectFlag(c.dialectOID, FlagQualifyDuplicateColumns)
+	return v == "true"
 }

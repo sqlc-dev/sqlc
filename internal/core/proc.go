@@ -17,10 +17,21 @@ type ProcSpec struct {
 	ReturnTypeOID  int64
 	ReturnSet      bool
 	ReturnNullable bool
-	Strict         bool
-	VariadicKind   string
-	Args           []ProcArg
+	// NeverNull marks a function whose result is never NULL even when an
+	// argument is, in a dialect that otherwise propagates nullability.
+	NeverNull    bool
+	Strict       bool
+	VariadicKind string
+	Args         []ProcArg
 }
+
+// The proc table stores nullability as one integer: 0 leaves it to the
+// dialect's rule, 1 is always nullable and 2 is never nullable.
+const (
+	nullableDefault int64 = 0
+	nullableAlways  int64 = 1
+	nullableNever   int64 = 2
+)
 
 type ProcArg struct {
 	Name       string
@@ -44,7 +55,7 @@ func (c *Catalog) CreateProc(p ProcSpec) (int64, error) {
 		Kind:           p.Kind,
 		ReturnTypeOid:  p.ReturnTypeOID,
 		ReturnSet:      boolToInt64(p.ReturnSet),
-		ReturnNullable: boolToInt64(p.ReturnNullable),
+		ReturnNullable: returnNullable(p),
 		Strict:         boolToInt64(p.Strict),
 		VariadicKind:   p.VariadicKind,
 	})
@@ -71,12 +82,23 @@ func (c *Catalog) CreateProc(p ProcSpec) (int64, error) {
 	return procOID, nil
 }
 
+func returnNullable(p ProcSpec) int64 {
+	switch {
+	case p.NeverNull:
+		return nullableNever
+	case p.ReturnNullable:
+		return nullableAlways
+	}
+	return nullableDefault
+}
+
 type ProcOverload struct {
 	OID            int64
 	Name           string
 	Kind           string
 	ReturnTypeOID  int64
 	ReturnNullable bool
+	NeverNull      bool
 	ArgTypes       []int64
 }
 
@@ -99,7 +121,8 @@ func (c *Catalog) FindProcs(name string, namespaceOIDs []int64) ([]ProcOverload,
 				Name:           r.Name,
 				Kind:           r.Kind,
 				ReturnTypeOID:  r.ReturnTypeOid,
-				ReturnNullable: r.ReturnNullable != 0,
+				ReturnNullable: r.ReturnNullable == nullableAlways,
+				NeverNull:      r.ReturnNullable == nullableNever,
 			})
 		}
 	} else {
@@ -121,7 +144,8 @@ func (c *Catalog) FindProcs(name string, namespaceOIDs []int64) ([]ProcOverload,
 				Name:           r.Name,
 				Kind:           r.Kind,
 				ReturnTypeOID:  r.ReturnTypeOid,
-				ReturnNullable: r.ReturnNullable != 0,
+				ReturnNullable: r.ReturnNullable == nullableAlways,
+				NeverNull:      r.ReturnNullable == nullableNever,
 			})
 		}
 	}

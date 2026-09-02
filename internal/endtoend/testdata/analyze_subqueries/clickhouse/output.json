@@ -11,10 +11,16 @@
         "table": "events"
       },
       {
-        "name": "total"
+        "name": "total",
+        "type": {
+          "name": "float64"
+        }
       },
       {
-        "name": "email"
+        "name": "email",
+        "type": {
+          "name": "string"
+        }
       }
     ],
     "params": []
@@ -52,10 +58,100 @@
         "table": "events"
       },
       {
-        "name": "?column?",
+        "name": "user_count",
         "type": {
-          "name": "bool"
+          "name": "uint64",
+          "nullable": true
         }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "email",
+          "type": {
+            "name": "string"
+          },
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Cte",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      },
+      {
+        "name": "tag",
+        "type": {
+          "name": "string",
+          "nullable": true
+        },
+        "table": "events"
+      },
+      {
+        "name": "cnt",
+        "type": {
+          "name": "uint64"
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Star",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "users"
+      },
+      {
+        "name": "email",
+        "type": {
+          "name": "string"
+        },
+        "table": "users"
+      },
+      {
+        "name": "e.id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "string"
+        },
+        "table": "events"
+      },
+      {
+        "name": "tag",
+        "type": {
+          "name": "string",
+          "nullable": true
+        },
+        "table": "events"
+      },
+      {
+        "name": "amount",
+        "type": {
+          "name": "float64"
+        },
+        "table": "events"
       }
     ],
     "params": []
