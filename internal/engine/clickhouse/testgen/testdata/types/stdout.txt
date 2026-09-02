@@ -1,0 +1,268 @@
+[
+  {
+    "name": "AllTypes",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "data_type": "uint64",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "name",
+        "data_type": "string",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "tag",
+        "data_type": "string",
+        "not_null": false,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "amount",
+        "data_type": "float64",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "tags",
+        "data_type": "string",
+        "not_null": true,
+        "is_array": true,
+        "table": "things"
+      },
+      {
+        "name": "labels",
+        "data_type": "string",
+        "not_null": false,
+        "is_array": true,
+        "table": "things"
+      },
+      {
+        "name": "matrix",
+        "data_type": "uint8",
+        "not_null": true,
+        "is_array": true,
+        "table": "things"
+      },
+      {
+        "name": "kind",
+        "data_type": "string",
+        "not_null": false,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "created",
+        "data_type": "datetime",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "updated",
+        "data_type": "datetime64",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "price",
+        "data_type": "decimal",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "status",
+        "data_type": "enum8",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "attrs",
+        "data_type": "map",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "pos",
+        "data_type": "tuple",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "ip",
+        "data_type": "ipv4",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "uid",
+        "data_type": "uuid",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "fixed",
+        "data_type": "fixedstring",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "flag",
+        "data_type": "bool",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "StarColumns",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "data_type": "uint64",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "name",
+        "data_type": "string",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "tag",
+        "data_type": "string",
+        "not_null": false,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "amount",
+        "data_type": "float64",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "tags",
+        "data_type": "string",
+        "not_null": true,
+        "is_array": true,
+        "table": "things"
+      },
+      {
+        "name": "labels",
+        "data_type": "string",
+        "not_null": false,
+        "is_array": true,
+        "table": "things"
+      },
+      {
+        "name": "matrix",
+        "data_type": "uint8",
+        "not_null": true,
+        "is_array": true,
+        "table": "things"
+      },
+      {
+        "name": "kind",
+        "data_type": "string",
+        "not_null": false,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "created",
+        "data_type": "datetime",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "updated",
+        "data_type": "datetime64",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "price",
+        "data_type": "decimal",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "status",
+        "data_type": "enum8",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "attrs",
+        "data_type": "map",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "pos",
+        "data_type": "tuple",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "ip",
+        "data_type": "ipv4",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "uid",
+        "data_type": "uuid",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "fixed",
+        "data_type": "fixedstring",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "flag",
+        "data_type": "bool",
+        "not_null": true,
+        "is_array": false,
+        "table": "things"
+      }
+    ],
+    "params": []
+  }
+]

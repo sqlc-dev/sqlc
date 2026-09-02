@@ -1,0 +1,20 @@
+CREATE TABLE things (
+    id UInt64,
+    name String,
+    tag Nullable(String),
+    amount Float64,
+    tags Array(String),
+    labels Array(Nullable(String)),
+    matrix Array(Array(UInt8)),
+    kind LowCardinality(Nullable(String)),
+    created DateTime,
+    updated DateTime64(3, 'UTC'),
+    price Decimal(10, 2),
+    status Enum8('active' = 1, 'deleted' = 2),
+    attrs Map(String, UInt32),
+    pos Tuple(Float64, Float64),
+    ip IPv4,
+    uid UUID,
+    fixed FixedString(4),
+    flag Bool
+) ENGINE = MergeTree ORDER BY id;

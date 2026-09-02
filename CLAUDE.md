@@ -233,6 +233,9 @@ MYSQL_SERVER_URI="root:mysecretpassword@tcp(127.0.0.1:3306)/mysql?multiStatement
   - `/postgresql/` - PostgreSQL parser and converter
   - `/dolphin/` - MySQL parser (uses TiDB parser)
   - `/sqlite/` - SQLite parser
+  - `/clickhouse/testgen/` - Nested module that records what a real
+    ClickHouse reports about a schema, fixture and queries, in the `sqlc
+    analyze` output format; see its README
   - `/duckdb/` - DuckDB 2.0 parser (uses darkwing, the pure Go port of
     DuckDB's PEG parser)
   - `<engine>/dialect/` - The engine's type system and standard library, as
