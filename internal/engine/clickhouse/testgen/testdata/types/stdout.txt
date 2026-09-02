@@ -5,122 +5,286 @@
     "columns": [
       {
         "name": "id",
-        "type": "uint64",
-        "not_null": true,
+        "type": {
+          "name": "uint64"
+        },
         "table": "things"
       },
       {
         "name": "name",
-        "type": "string",
-        "not_null": true,
+        "type": {
+          "name": "string"
+        },
         "table": "things"
       },
       {
         "name": "tag",
-        "type": "string",
-        "not_null": false,
+        "type": {
+          "name": "nullable",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "amount",
-        "type": "float64",
-        "not_null": true,
+        "type": {
+          "name": "float64"
+        },
         "table": "things"
       },
       {
         "name": "tags",
-        "type": "array(string)",
-        "not_null": true,
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "labels",
-        "type": "array(nullable(string))",
-        "not_null": true,
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "nullable",
+                "args": [
+                  {
+                    "type": {
+                      "name": "string"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "matrix",
-        "type": "array(array(uint8))",
-        "not_null": true,
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "array",
+                "args": [
+                  {
+                    "type": {
+                      "name": "uint8"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "kind",
-        "type": "lowcardinality(string)",
-        "not_null": false,
+        "type": {
+          "name": "lowcardinality",
+          "args": [
+            {
+              "type": {
+                "name": "nullable",
+                "args": [
+                  {
+                    "type": {
+                      "name": "string"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "created",
-        "type": "datetime",
-        "not_null": true,
+        "type": {
+          "name": "datetime"
+        },
         "table": "things"
       },
       {
         "name": "updated",
-        "type": "datetime64(3, 'UTC')",
-        "not_null": true,
+        "type": {
+          "name": "datetime64",
+          "args": [
+            {
+              "int": 3
+            },
+            {
+              "string": "UTC"
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "price",
-        "type": "decimal(10, 2)",
-        "not_null": true,
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "status",
-        "type": "enum8('active': 1, 'deleted': 2)",
-        "not_null": true,
+        "type": {
+          "name": "enum8",
+          "args": [
+            {
+              "label": "active",
+              "int": 1
+            },
+            {
+              "label": "deleted",
+              "int": 2
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "attrs",
-        "type": "map(string, uint32)",
-        "not_null": true,
+        "type": {
+          "name": "map",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            },
+            {
+              "type": {
+                "name": "uint32"
+              }
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "pos",
-        "type": "tuple(float64, float64)",
-        "not_null": true,
+        "type": {
+          "name": "tuple",
+          "args": [
+            {
+              "type": {
+                "name": "float64"
+              }
+            },
+            {
+              "type": {
+                "name": "float64"
+              }
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "geo",
-        "type": "tuple(lat: float64, lon: float64)",
-        "not_null": true,
+        "type": {
+          "name": "tuple",
+          "args": [
+            {
+              "label": "lat",
+              "type": {
+                "name": "float64"
+              }
+            },
+            {
+              "label": "lon",
+              "type": {
+                "name": "float64"
+              }
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "scores",
-        "type": "map(string, nullable(uint8))",
-        "not_null": true,
+        "type": {
+          "name": "map",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            },
+            {
+              "type": {
+                "name": "nullable",
+                "args": [
+                  {
+                    "type": {
+                      "name": "uint8"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "ip",
-        "type": "ipv4",
-        "not_null": true,
+        "type": {
+          "name": "ipv4"
+        },
         "table": "things"
       },
       {
         "name": "uid",
-        "type": "uuid",
-        "not_null": true,
+        "type": {
+          "name": "uuid"
+        },
         "table": "things"
       },
       {
         "name": "fixed",
-        "type": "fixedstring(4)",
-        "not_null": true,
+        "type": {
+          "name": "fixedstring",
+          "args": [
+            {
+              "int": 4
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "flag",
-        "type": "bool",
-        "not_null": true,
+        "type": {
+          "name": "bool"
+        },
         "table": "things"
       }
     ],
@@ -132,122 +296,286 @@
     "columns": [
       {
         "name": "id",
-        "type": "uint64",
-        "not_null": true,
+        "type": {
+          "name": "uint64"
+        },
         "table": "things"
       },
       {
         "name": "name",
-        "type": "string",
-        "not_null": true,
+        "type": {
+          "name": "string"
+        },
         "table": "things"
       },
       {
         "name": "tag",
-        "type": "string",
-        "not_null": false,
+        "type": {
+          "name": "nullable",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "amount",
-        "type": "float64",
-        "not_null": true,
+        "type": {
+          "name": "float64"
+        },
         "table": "things"
       },
       {
         "name": "tags",
-        "type": "array(string)",
-        "not_null": true,
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "labels",
-        "type": "array(nullable(string))",
-        "not_null": true,
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "nullable",
+                "args": [
+                  {
+                    "type": {
+                      "name": "string"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "matrix",
-        "type": "array(array(uint8))",
-        "not_null": true,
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "array",
+                "args": [
+                  {
+                    "type": {
+                      "name": "uint8"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "kind",
-        "type": "lowcardinality(string)",
-        "not_null": false,
+        "type": {
+          "name": "lowcardinality",
+          "args": [
+            {
+              "type": {
+                "name": "nullable",
+                "args": [
+                  {
+                    "type": {
+                      "name": "string"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "created",
-        "type": "datetime",
-        "not_null": true,
+        "type": {
+          "name": "datetime"
+        },
         "table": "things"
       },
       {
         "name": "updated",
-        "type": "datetime64(3, 'UTC')",
-        "not_null": true,
+        "type": {
+          "name": "datetime64",
+          "args": [
+            {
+              "int": 3
+            },
+            {
+              "string": "UTC"
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "price",
-        "type": "decimal(10, 2)",
-        "not_null": true,
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "status",
-        "type": "enum8('active': 1, 'deleted': 2)",
-        "not_null": true,
+        "type": {
+          "name": "enum8",
+          "args": [
+            {
+              "label": "active",
+              "int": 1
+            },
+            {
+              "label": "deleted",
+              "int": 2
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "attrs",
-        "type": "map(string, uint32)",
-        "not_null": true,
+        "type": {
+          "name": "map",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            },
+            {
+              "type": {
+                "name": "uint32"
+              }
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "pos",
-        "type": "tuple(float64, float64)",
-        "not_null": true,
+        "type": {
+          "name": "tuple",
+          "args": [
+            {
+              "type": {
+                "name": "float64"
+              }
+            },
+            {
+              "type": {
+                "name": "float64"
+              }
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "geo",
-        "type": "tuple(lat: float64, lon: float64)",
-        "not_null": true,
+        "type": {
+          "name": "tuple",
+          "args": [
+            {
+              "label": "lat",
+              "type": {
+                "name": "float64"
+              }
+            },
+            {
+              "label": "lon",
+              "type": {
+                "name": "float64"
+              }
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "scores",
-        "type": "map(string, nullable(uint8))",
-        "not_null": true,
+        "type": {
+          "name": "map",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            },
+            {
+              "type": {
+                "name": "nullable",
+                "args": [
+                  {
+                    "type": {
+                      "name": "uint8"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "ip",
-        "type": "ipv4",
-        "not_null": true,
+        "type": {
+          "name": "ipv4"
+        },
         "table": "things"
       },
       {
         "name": "uid",
-        "type": "uuid",
-        "not_null": true,
+        "type": {
+          "name": "uuid"
+        },
         "table": "things"
       },
       {
         "name": "fixed",
-        "type": "fixedstring(4)",
-        "not_null": true,
+        "type": {
+          "name": "fixedstring",
+          "args": [
+            {
+              "int": 4
+            }
+          ]
+        },
         "table": "things"
       },
       {
         "name": "flag",
-        "type": "bool",
-        "not_null": true,
+        "type": {
+          "name": "bool"
+        },
         "table": "things"
       }
     ],

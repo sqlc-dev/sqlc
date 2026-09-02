@@ -20,10 +20,9 @@ type analyzedQuery struct {
 }
 
 type analyzedColumn struct {
-	Name    string `json:"name"`
-	Type    string `json:"type"`
-	NotNull bool   `json:"not_null"`
-	Table   string `json:"table,omitempty"`
+	Name  string    `json:"name"`
+	Type  *typeExpr `json:"type,omitempty"`
+	Table string    `json:"table,omitempty"`
 }
 
 type analyzedParam struct {
@@ -118,8 +117,10 @@ func analyzeQuery(ctx context.Context, l local, schema, fixture string, q query)
 }
 
 func column(name, typ string) analyzedColumn {
-	expr, notNull := typeExpr(typ)
-	return analyzedColumn{Name: name, Type: expr, NotNull: notNull}
+	if typ == "" {
+		return analyzedColumn{Name: name}
+	}
+	return analyzedColumn{Name: name, Type: parseType(typ)}
 }
 
 // returnsRows reports whether a statement produces a result set and so can

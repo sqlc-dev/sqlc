@@ -5,28 +5,40 @@
     "columns": [
       {
         "name": "n",
-        "type": "uint64",
-        "not_null": true
+        "type": {
+          "name": "uint64"
+        }
       },
       {
         "name": "top",
-        "type": "float64",
-        "not_null": true
+        "type": {
+          "name": "float64"
+        }
       },
       {
         "name": "sum(amount)",
-        "type": "float64",
-        "not_null": true
+        "type": {
+          "name": "float64"
+        }
       },
       {
         "name": "first_tag",
-        "type": "string",
-        "not_null": false
+        "type": {
+          "name": "nullable",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        }
       },
       {
         "name": "uniq(name)",
-        "type": "uint64",
-        "not_null": true
+        "type": {
+          "name": "uint64"
+        }
       }
     ],
     "params": []
@@ -37,38 +49,59 @@
     "columns": [
       {
         "name": "next_id",
-        "type": "uint64",
-        "not_null": true
+        "type": {
+          "name": "uint64"
+        }
       },
       {
         "name": "maybe",
-        "type": "string",
-        "not_null": false
+        "type": {
+          "name": "nullable",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        }
       },
       {
         "name": "tag_or_none",
-        "type": "string",
-        "not_null": true
+        "type": {
+          "name": "string"
+        }
       },
       {
         "name": "lower(name)",
-        "type": "string",
-        "not_null": true
+        "type": {
+          "name": "string"
+        }
       },
       {
         "name": "today",
-        "type": "date",
-        "not_null": true
+        "type": {
+          "name": "date"
+        }
       },
       {
         "name": "big",
-        "type": "uint8",
-        "not_null": true
+        "type": {
+          "name": "uint8"
+        }
       },
       {
         "name": "word",
-        "type": "string",
-        "not_null": false
+        "type": {
+          "name": "nullable",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        }
       }
     ],
     "params": []
@@ -79,20 +112,23 @@
     "columns": [
       {
         "name": "id",
-        "type": "uint64",
-        "not_null": true,
+        "type": {
+          "name": "uint64"
+        },
         "table": "events"
       },
       {
         "name": "name",
-        "type": "string",
-        "not_null": true,
+        "type": {
+          "name": "string"
+        },
         "table": "events"
       },
       {
         "name": "email",
-        "type": "string",
-        "not_null": true,
+        "type": {
+          "name": "string"
+        },
         "table": "users"
       }
     ],
@@ -104,14 +140,16 @@
     "columns": [
       {
         "name": "id",
-        "type": "uint64",
-        "not_null": true,
+        "type": {
+          "name": "uint64"
+        },
         "table": "events"
       },
       {
         "name": "name",
-        "type": "string",
-        "not_null": true,
+        "type": {
+          "name": "string"
+        },
         "table": "events"
       }
     ],
@@ -120,8 +158,9 @@
         "number": 1,
         "column": {
           "name": "name",
-          "type": "string",
-          "not_null": true,
+          "type": {
+            "name": "string"
+          },
           "table": "events"
         }
       },
@@ -129,8 +168,9 @@
         "number": 2,
         "column": {
           "name": "amount",
-          "type": "float64",
-          "not_null": true,
+          "type": {
+            "name": "float64"
+          },
           "table": "events"
         }
       },
@@ -138,8 +178,16 @@
         "number": 3,
         "column": {
           "name": "tag",
-          "type": "string",
-          "not_null": false,
+          "type": {
+            "name": "nullable",
+            "args": [
+              {
+                "type": {
+                  "name": "string"
+                }
+              }
+            ]
+          },
           "table": "events"
         }
       }
@@ -151,14 +199,16 @@
     "columns": [
       {
         "name": "id",
-        "type": "uint64",
-        "not_null": true,
+        "type": {
+          "name": "uint64"
+        },
         "table": "events"
       },
       {
         "name": "name",
-        "type": "string",
-        "not_null": true,
+        "type": {
+          "name": "string"
+        },
         "table": "events"
       }
     ],
@@ -167,8 +217,9 @@
         "number": 1,
         "column": {
           "name": "name",
-          "type": "string",
-          "not_null": true,
+          "type": {
+            "name": "string"
+          },
           "table": "events"
         }
       },
@@ -176,8 +227,16 @@
         "number": 2,
         "column": {
           "name": "tag",
-          "type": "string",
-          "not_null": false,
+          "type": {
+            "name": "nullable",
+            "args": [
+              {
+                "type": {
+                  "name": "string"
+                }
+              }
+            ]
+          },
           "table": "events"
         }
       },
@@ -185,8 +244,9 @@
         "number": 3,
         "column": {
           "name": "amount",
-          "type": "float64",
-          "not_null": true,
+          "type": {
+            "name": "float64"
+          },
           "table": "events"
         }
       },
@@ -194,8 +254,9 @@
         "number": 3,
         "column": {
           "name": "amount",
-          "type": "float64",
-          "not_null": true,
+          "type": {
+            "name": "float64"
+          },
           "table": "events"
         }
       }
@@ -207,8 +268,9 @@
     "columns": [
       {
         "name": "id",
-        "type": "uint64",
-        "not_null": true,
+        "type": {
+          "name": "uint64"
+        },
         "table": "events"
       }
     ],
@@ -217,16 +279,18 @@
         "number": 1,
         "column": {
           "name": "lower",
-          "type": "string",
-          "not_null": true
+          "type": {
+            "name": "string"
+          }
         }
       },
       {
         "number": 2,
         "column": {
           "name": "id",
-          "type": "uint64",
-          "not_null": true,
+          "type": {
+            "name": "uint64"
+          },
           "table": "events"
         }
       },
@@ -234,8 +298,9 @@
         "number": 3,
         "column": {
           "name": "",
-          "type": "date",
-          "not_null": true
+          "type": {
+            "name": "date"
+          }
         }
       }
     ]
@@ -246,8 +311,9 @@
     "columns": [
       {
         "name": "id",
-        "type": "uint64",
-        "not_null": true,
+        "type": {
+          "name": "uint64"
+        },
         "table": "events"
       }
     ],
@@ -256,16 +322,18 @@
         "number": 1,
         "column": {
           "name": "",
-          "type": "uint64",
-          "not_null": true
+          "type": {
+            "name": "uint64"
+          }
         }
       },
       {
         "number": 2,
         "column": {
           "name": "",
-          "type": "uint64",
-          "not_null": true
+          "type": {
+            "name": "uint64"
+          }
         }
       }
     ]
@@ -276,13 +344,22 @@
     "columns": [
       {
         "name": "echo",
-        "type": "nothing",
-        "not_null": false
+        "type": {
+          "name": "nullable",
+          "args": [
+            {
+              "type": {
+                "name": "nothing"
+              }
+            }
+          ]
+        }
       },
       {
         "name": "lit",
-        "type": "string",
-        "not_null": true
+        "type": {
+          "name": "string"
+        }
       }
     ],
     "params": [
@@ -290,8 +367,16 @@
         "number": 1,
         "column": {
           "name": "echo",
-          "type": "nothing",
-          "not_null": false
+          "type": {
+            "name": "nullable",
+            "args": [
+              {
+                "type": {
+                  "name": "nothing"
+                }
+              }
+            ]
+          }
         }
       }
     ]

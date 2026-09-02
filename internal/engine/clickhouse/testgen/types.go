@@ -1,79 +1,86 @@
 package main
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+)
 
-// A type is written as a call expression, the way ClickHouse itself models
-// one: a lowercased name applied to an ordered argument list in which each
-// argument is a number, a quoted string, an identifier, another call, or
-// one of those with a label. Nothing is special-cased, so Nullable, Array
-// and LowCardinality are ordinary names, and the text form is the same for
-// every engine that spells the same structure differently:
+// A type is a call expression, the way ClickHouse itself models one: a
+// lowercased name applied to an ordered argument list. Each argument is
+// another type, an integer or a quoted string, optionally labelled, so
+// Nullable, Array and LowCardinality are ordinary names and nothing about a
+// nested type is lost. The shape maps one to one onto a protobuf message
+// with a oneof for the argument value:
 //
-//	Map(String, Nullable(UInt32))     map(string, nullable(uint32))
-//	Tuple(lat Float64, lon Float64)   tuple(lat: float64, lon: float64)
-//	Enum8('a' = 1, 'b' = 2)           enum8('a': 1, 'b': 2)
-//	DateTime64(3, 'UTC')              datetime64(3, 'UTC')
-//	AggregateFunction(uniq, String)   aggregatefunction(uniq, string)
+//	Map(String, Nullable(UInt32))
+//	{"name": "map", "args": [
+//	  {"type": {"name": "string"}},
+//	  {"type": {"name": "nullable", "args": [{"type": {"name": "uint32"}}]}}]}
 //
-// The catalog resolves the names afterwards; the output only records what
-// was said.
+//	Tuple(lat Float64, lon Float64)
+//	{"name": "tuple", "args": [
+//	  {"label": "lat", "type": {"name": "float64"}},
+//	  {"label": "lon", "type": {"name": "float64"}}]}
+//
+//	Enum8('a' = 1, 'b' = 2)
+//	{"name": "enum8", "args": [{"label": "a", "int": 1}, {"label": "b", "int": 2}]}
+//
+//	DateTime64(3, 'UTC')
+//	{"name": "datetime64", "args": [{"int": 3}, {"string": "UTC"}]}
+//
+// An identifier argument such as the function in AggregateFunction(uniq,
+// String) is a type with no arguments. Resolving names against the catalog
+// is the reader's job; the output only records what was said.
 
-// typeExpr renders a column's type and reports whether it is NOT NULL. An
-// outer Nullable is the column's nullability rather than part of its type,
-// so it is lifted into the flag, through LowCardinality when needed; a
-// Nullable anywhere deeper stays in the expression.
-func typeExpr(t string) (expr string, notNull bool) {
-	name, args := splitType(t)
-	switch strings.ToLower(name) {
-	case "nullable":
-		if len(args) == 1 {
-			expr, _ = typeExpr(args[0])
-			return expr, false
-		}
-	case "lowcardinality":
-		if len(args) == 1 {
-			inner, notNull := typeExpr(args[0])
-			return "lowcardinality(" + inner + ")", notNull
-		}
-	}
-	return renderCall(t), true
+type typeExpr struct {
+	Name string    `json:"name"`
+	Args []typeArg `json:"args,omitempty"`
 }
 
-// renderCall renders a type as a call expression.
-func renderCall(t string) string {
+type typeArg struct {
+	Label  string    `json:"label,omitempty"`
+	Type   *typeExpr `json:"type,omitempty"`
+	Int    *int64    `json:"int,omitempty"`
+	String *string   `json:"string,omitempty"`
+}
+
+// parseType turns a ClickHouse type string into its expression.
+func parseType(t string) *typeExpr {
 	name, args := splitType(t)
 	name = strings.ToLower(strings.TrimSpace(name))
 	if name == "" {
-		return "nothing"
+		name = "nothing"
 	}
-	if args == nil {
-		return name
+	expr := &typeExpr{Name: name}
+	for _, a := range args {
+		expr.Args = append(expr.Args, parseArg(a))
 	}
-	parts := make([]string, len(args))
-	for i, a := range args {
-		parts[i] = renderArg(a)
-	}
-	return name + "(" + strings.Join(parts, ", ") + ")"
+	return expr
 }
 
-// renderArg renders one argument: a quoted string, a number, a labelled
-// argument (`lat Float64` in a Tuple, `'a' = 1` in an Enum), or a call.
-func renderArg(a string) string {
+// parseArg parses one argument: a quoted string, an integer, a labelled
+// argument (`lat Float64` in a Tuple, `'a' = 1` in an Enum), or a type.
+func parseArg(a string) typeArg {
 	a = strings.TrimSpace(a)
 	if strings.HasPrefix(a, "'") {
 		end := skipQuoted(a, 0)
+		lit := unquote(a[1 : end-1])
 		if rest := strings.TrimSpace(a[end:]); strings.HasPrefix(rest, "=") {
-			return a[:end] + ": " + renderArg(rest[1:])
+			arg := parseArg(rest[1:])
+			arg.Label = lit
+			return arg
 		}
-		return a[:end]
+		return typeArg{String: &lit}
 	}
-	if isNumber(a) {
-		return a
+	if n, err := strconv.ParseInt(a, 10, 64); err == nil {
+		return typeArg{Int: &n}
 	}
 	if i := labelEnd(a); i > 0 {
-		return a[:i] + ": " + renderArg(a[i+1:])
+		arg := parseArg(a[i+1:])
+		arg.Label = a[:i]
+		return arg
 	}
-	return renderCall(a)
+	return typeArg{Type: parseType(a)}
 }
 
 // labelEnd returns the index of the space separating a label from the type
@@ -87,19 +94,11 @@ func labelEnd(a string) int {
 	return strings.IndexByte(head, ' ')
 }
 
-func isNumber(s string) bool {
-	if s == "" {
-		return false
-	}
-	for i, c := range s {
-		if c == '-' && i == 0 && len(s) > 1 {
-			continue
-		}
-		if c < '0' || c > '9' {
-			return false
-		}
-	}
-	return true
+// unquote undoes the escaping inside a single-quoted ClickHouse literal.
+func unquote(s string) string {
+	s = strings.ReplaceAll(s, `\'`, `'`)
+	s = strings.ReplaceAll(s, `''`, `'`)
+	return strings.ReplaceAll(s, `\\`, `\`)
 }
 
 // splitType splits `Base(arg, arg)` into its base name and top-level
