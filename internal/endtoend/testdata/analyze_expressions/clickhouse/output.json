@@ -1,0 +1,237 @@
+[
+  {
+    "name": "Aggregates",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "n",
+        "type": {
+          "name": "uint64"
+        }
+      },
+      {
+        "name": "top"
+      },
+      {
+        "name": "sum"
+      },
+      {
+        "name": "first_tag"
+      },
+      {
+        "name": "uniq"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Expressions",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "next_id",
+        "type": {
+          "name": "uint64"
+        }
+      },
+      {
+        "name": "maybe"
+      },
+      {
+        "name": "tag_or_none"
+      },
+      {
+        "name": "lower"
+      },
+      {
+        "name": "today"
+      },
+      {
+        "name": "big",
+        "type": {
+          "name": "bool"
+        }
+      },
+      {
+        "name": "word"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "LeftJoinDefaults",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "string"
+        },
+        "table": "events"
+      },
+      {
+        "name": "email",
+        "type": {
+          "name": "string"
+        },
+        "table": "users"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Positional",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "string"
+        },
+        "table": "events"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "string"
+          },
+          "table": "events"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "amount",
+          "type": {
+            "name": "float64"
+          },
+          "table": "events"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "tag",
+          "type": {
+            "name": "string",
+            "nullable": true
+          },
+          "table": "events"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Named",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "string"
+        },
+        "table": "events"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Functions",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": ""
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "uint64"
+          },
+          "table": "events"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": ""
+        }
+      }
+    ]
+  },
+  {
+    "name": "Paging",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Projected",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "echo"
+      },
+      {
+        "name": "lit",
+        "type": {
+          "name": "string"
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": ""
+        }
+      }
+    ]
+  }
+]

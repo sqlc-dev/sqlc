@@ -1,0 +1,63 @@
+[
+  {
+    "name": "Aliased",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "x",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      },
+      {
+        "name": "total"
+      },
+      {
+        "name": "email"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Union",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "string"
+        },
+        "table": "events"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "ScalarSubquery",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      },
+      {
+        "name": "?column?",
+        "type": {
+          "name": "bool"
+        }
+      }
+    ],
+    "params": []
+  }
+]

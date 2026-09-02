@@ -1,0 +1,98 @@
+[
+  {
+    "name": "ListUsers",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "int64"
+        },
+        "table": "users"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "string"
+        },
+        "table": "users"
+      },
+      {
+        "name": "bio",
+        "type": {
+          "name": "string",
+          "nullable": true
+        },
+        "table": "users"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "CountUsers",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "total",
+        "type": {
+          "name": "int64"
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "ListUserPosts",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "name",
+        "type": {
+          "name": "string"
+        },
+        "table": "users"
+      },
+      {
+        "name": "id",
+        "type": {
+          "name": "int64"
+        },
+        "table": "posts"
+      },
+      {
+        "name": "user_id",
+        "type": {
+          "name": "int64"
+        },
+        "table": "posts"
+      },
+      {
+        "name": "title",
+        "type": {
+          "name": "string",
+          "nullable": true
+        },
+        "table": "posts"
+      },
+      {
+        "name": "created",
+        "type": {
+          "name": "timestamp"
+        },
+        "table": "posts"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "string"
+          },
+          "table": "users"
+        }
+      }
+    ]
+  }
+]

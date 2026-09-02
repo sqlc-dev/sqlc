@@ -120,8 +120,8 @@ A case is a directory holding the inputs and the expected output. `exec.json`
 names the command and its arguments — omit it and the case runs `generate`,
 comparing the generated files against the ones committed alongside; give it
 `{"command": "analyze", "args": [...]}` and the case compares the command's
-stdout against `stdout.txt`. A case that is expected to fail commits its
-`stderr.txt`. Regenerate a golden by running the command in its directory and
+stdout against `output.json` (or `stdout.txt` for a command that does not
+print JSON). A case that is expected to fail commits its `stderr.txt`. Regenerate a golden by running the command in its directory and
 writing the output back over the committed file.
 
 `TestReplay` runs the whole corpus once per *context*. `base` runs each case as
@@ -233,9 +233,6 @@ MYSQL_SERVER_URI="root:mysecretpassword@tcp(127.0.0.1:3306)/mysql?multiStatement
   - `/postgresql/` - PostgreSQL parser and converter
   - `/dolphin/` - MySQL parser (uses TiDB parser)
   - `/sqlite/` - SQLite parser
-  - `/clickhouse/testgen/` - Nested module that records what a real
-    ClickHouse reports about a schema, fixture and queries, in the shape of
-    `sqlc analyze` output with types as call expressions; see its README
   - `/duckdb/` - DuckDB 2.0 parser (uses darkwing, the pure Go port of
     DuckDB's PEG parser)
   - `<engine>/dialect/` - The engine's type system and standard library, as
@@ -249,6 +246,9 @@ MYSQL_SERVER_URI="root:mysecretpassword@tcp(127.0.0.1:3306)/mysql?multiStatement
 - `/internal/codegen/` - Code generation for different languages
 - `/internal/config/` - Configuration file parsing
 - `/internal/endtoend/` - End-to-end tests
+- `/internal/testcheck/` - Nested module that verifies the analyze cases under
+  `/internal/endtoend/testdata/` against a real database, one package per
+  engine; see its README
 - `/internal/sqltest/` - Test database setup (Docker, native, local detection)
 - `/examples/` - Example projects for testing
 

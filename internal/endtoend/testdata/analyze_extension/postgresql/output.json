@@ -1,0 +1,78 @@
+[
+  {
+    "name": "GetUserByEmail",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigserial"
+        },
+        "table": "users"
+      },
+      {
+        "name": "email",
+        "type": {
+          "name": "citext"
+        },
+        "table": "users"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "email",
+          "type": {
+            "name": "citext"
+          },
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "MatchingEmails",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigserial"
+        },
+        "table": "users"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "RankUsers",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigserial"
+        },
+        "table": "users"
+      },
+      {
+        "name": "score",
+        "type": {
+          "name": "real"
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "text"
+          }
+        }
+      }
+    ]
+  }
+]
