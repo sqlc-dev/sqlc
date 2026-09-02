@@ -16,9 +16,12 @@ go run . analyze --schema schema.sql --fixture fixture.sql query.sql
 ```
 
 The binary is looked up in the `CLICKHOUSE` environment variable first, then
-in the cache populated by `install`. The version is pinned in `install.go`;
-bumping it can change the query tree format and type inference, so regenerate
-and review the goldens afterwards.
+in the cache populated by `install`. The version is pinned in `install.go`,
+whose asset table lists each platform's download and its SHA-512; a download
+that does not match is discarded. Bumping the version means adding the new
+release's assets and checksums to the table, and since a release can change
+the query tree format and type inference, regenerating and reviewing the
+goldens afterwards.
 
 ## How it works
 
