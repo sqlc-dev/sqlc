@@ -69,11 +69,11 @@ whoever reads the output.
 ## Tests
 
 `testdata/<case>/` holds a `schema.sql`, `query.sql`, an optional
-`fixture.sql` and the expected `stdout.txt`. The test skips unless a binary is
+`fixture.sql` and the expected `analyze.json`. The test skips unless a binary is
 available.
 
 ```bash
 go run . install
 go test .
-go test . -update   # rewrite every stdout.txt
+go test . -update   # rewrite every analyze.json
 ```
