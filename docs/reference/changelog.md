@@ -1208,7 +1208,7 @@ Released 2023-07-06
 
 Rules are defined in the `sqlc` [configuration](config.md) file. They consist
 of a name, message, and a [Common Expression Language (CEL)](https://github.com/google/cel-spec)
-expression. Expressions are evaluated using [cel-go](https://github.com/google/cel-go).
+expression. Expressions are evaluated using [cel-go](https://github.com/cel-expr/cel-go).
 If an expression evaluates to `true`, an error is reported using the given message.
 
 While these examples are simplistic, they give you a flavor of the types of
