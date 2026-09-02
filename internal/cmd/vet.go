@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/sqlc-dev/sqlc/internal/constants"
 	"io"
 	"log"
 	"os"
@@ -17,14 +16,15 @@ import (
 	"sync"
 	"time"
 
+	"cel.dev/cel-go/cel"
+	"cel.dev/cel-go/ext"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/ext"
 	"github.com/jackc/pgx/v5"
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/constants"
 	"github.com/sqlc-dev/sqlc/internal/dbmanager"
 	"github.com/sqlc-dev/sqlc/internal/debug"
 	"github.com/sqlc-dev/sqlc/internal/migrations"
@@ -140,7 +140,7 @@ func Vet(ctx context.Context, dir, filename string, opts *Options) error {
 		rule := rule{Program: &prg, Message: c.Msg}
 
 		// TODO There's probably a nicer way to do this from the ast
-		// https://pkg.go.dev/github.com/google/cel-go/common/ast#AllMatcher
+		// https://pkg.go.dev/cel.dev/cel-go/common/ast#AllMatcher
 		if strings.Contains(c.Rule, "postgresql.explain") ||
 			strings.Contains(c.Rule, "mysql.explain") {
 			rule.NeedsExplain = true
