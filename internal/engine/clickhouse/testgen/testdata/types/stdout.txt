@@ -5,128 +5,122 @@
     "columns": [
       {
         "name": "id",
-        "data_type": "uint64",
+        "type": "uint64",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "name",
-        "data_type": "string",
+        "type": "string",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "tag",
-        "data_type": "string",
+        "type": "string",
         "not_null": false,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "amount",
-        "data_type": "float64",
+        "type": "float64",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "tags",
-        "data_type": "string",
+        "type": "array(string)",
         "not_null": true,
-        "is_array": true,
         "table": "things"
       },
       {
         "name": "labels",
-        "data_type": "string",
-        "not_null": false,
-        "is_array": true,
+        "type": "array(nullable(string))",
+        "not_null": true,
         "table": "things"
       },
       {
         "name": "matrix",
-        "data_type": "uint8",
+        "type": "array(array(uint8))",
         "not_null": true,
-        "is_array": true,
         "table": "things"
       },
       {
         "name": "kind",
-        "data_type": "string",
+        "type": "lowcardinality(string)",
         "not_null": false,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "created",
-        "data_type": "datetime",
+        "type": "datetime",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "updated",
-        "data_type": "datetime64",
+        "type": "datetime64(3, 'UTC')",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "price",
-        "data_type": "decimal",
+        "type": "decimal(10, 2)",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "status",
-        "data_type": "enum8",
+        "type": "enum8('active': 1, 'deleted': 2)",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "attrs",
-        "data_type": "map",
+        "type": "map(string, uint32)",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "pos",
-        "data_type": "tuple",
+        "type": "tuple(float64, float64)",
         "not_null": true,
-        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "geo",
+        "type": "tuple(lat: float64, lon: float64)",
+        "not_null": true,
+        "table": "things"
+      },
+      {
+        "name": "scores",
+        "type": "map(string, nullable(uint8))",
+        "not_null": true,
         "table": "things"
       },
       {
         "name": "ip",
-        "data_type": "ipv4",
+        "type": "ipv4",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "uid",
-        "data_type": "uuid",
+        "type": "uuid",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "fixed",
-        "data_type": "fixedstring",
+        "type": "fixedstring(4)",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "flag",
-        "data_type": "bool",
+        "type": "bool",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       }
     ],
@@ -138,128 +132,122 @@
     "columns": [
       {
         "name": "id",
-        "data_type": "uint64",
+        "type": "uint64",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "name",
-        "data_type": "string",
+        "type": "string",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "tag",
-        "data_type": "string",
+        "type": "string",
         "not_null": false,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "amount",
-        "data_type": "float64",
+        "type": "float64",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "tags",
-        "data_type": "string",
+        "type": "array(string)",
         "not_null": true,
-        "is_array": true,
         "table": "things"
       },
       {
         "name": "labels",
-        "data_type": "string",
-        "not_null": false,
-        "is_array": true,
+        "type": "array(nullable(string))",
+        "not_null": true,
         "table": "things"
       },
       {
         "name": "matrix",
-        "data_type": "uint8",
+        "type": "array(array(uint8))",
         "not_null": true,
-        "is_array": true,
         "table": "things"
       },
       {
         "name": "kind",
-        "data_type": "string",
+        "type": "lowcardinality(string)",
         "not_null": false,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "created",
-        "data_type": "datetime",
+        "type": "datetime",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "updated",
-        "data_type": "datetime64",
+        "type": "datetime64(3, 'UTC')",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "price",
-        "data_type": "decimal",
+        "type": "decimal(10, 2)",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "status",
-        "data_type": "enum8",
+        "type": "enum8('active': 1, 'deleted': 2)",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "attrs",
-        "data_type": "map",
+        "type": "map(string, uint32)",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "pos",
-        "data_type": "tuple",
+        "type": "tuple(float64, float64)",
         "not_null": true,
-        "is_array": false,
+        "table": "things"
+      },
+      {
+        "name": "geo",
+        "type": "tuple(lat: float64, lon: float64)",
+        "not_null": true,
+        "table": "things"
+      },
+      {
+        "name": "scores",
+        "type": "map(string, nullable(uint8))",
+        "not_null": true,
         "table": "things"
       },
       {
         "name": "ip",
-        "data_type": "ipv4",
+        "type": "ipv4",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "uid",
-        "data_type": "uuid",
+        "type": "uuid",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "fixed",
-        "data_type": "fixedstring",
+        "type": "fixedstring(4)",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       },
       {
         "name": "flag",
-        "data_type": "bool",
+        "type": "bool",
         "not_null": true,
-        "is_array": false,
         "table": "things"
       }
     ],

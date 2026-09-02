@@ -1,7 +1,7 @@
 # ClickHouse testgen
 
 `testgen` records what ClickHouse itself reports about a set of sqlc queries,
-so the answer can be committed as a golden file and compared with what sqlc's
+so the answer can be committed as a golden file and held against what sqlc's
 own analysis produces for the same schema and queries.
 
 It is a nested Go module with no dependencies beyond the standard library.
@@ -39,10 +39,25 @@ query is explained and then executed, and the process exits.
   operand it is compared with. Parameters of `INSERT ... VALUES` map onto the
   target columns reported by `DESCRIBE TABLE`.
 
-The output has the same shape as `sqlc analyze`, with ClickHouse types lowered
-the way sqlc's ClickHouse engine lowers them: the lowercased base name with
-parameters dropped, `Nullable` and `Array` folded into `not_null` and
-`is_array`, and `LowCardinality` discarded.
+The output has the shape of `sqlc analyze`, except that each column's type is
+one expression rather than a name and flags. A type is written as a call: a
+lowercased name applied to arguments that are numbers, quoted strings,
+identifiers, other calls, or any of those with a label. `Nullable`, `Array`
+and `LowCardinality` are ordinary names in that grammar, so nothing about
+nesting is lost:
+
+| ClickHouse                        | testgen                            |
+|-----------------------------------|------------------------------------|
+| `Array(Nullable(String))`         | `array(nullable(string))`          |
+| `Map(String, UInt32)`             | `map(string, uint32)`              |
+| `Tuple(lat Float64, lon Float64)` | `tuple(lat: float64, lon: float64)`|
+| `Enum8('a' = 1, 'b' = 2)`         | `enum8('a': 1, 'b': 2)`            |
+| `DateTime64(3, 'UTC')`            | `datetime64(3, 'UTC')`             |
+| `LowCardinality(Nullable(String))`| `lowcardinality(string)`, `not_null: false` |
+
+An outer `Nullable` is the column's nullability rather than part of its type,
+so it is lifted into `not_null`; a `Nullable` at any greater depth stays in
+the expression. Resolving the names is left to whoever reads the output.
 
 ## Tests
 

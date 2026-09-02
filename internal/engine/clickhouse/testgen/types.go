@@ -2,41 +2,104 @@ package main
 
 import "strings"
 
-// sqlcType lowers a ClickHouse type name to the shape sqlc's ClickHouse
-// engine reports: the lowercased base name with parameters dropped,
-// Nullable and Array wrappers folded into flags and LowCardinality
-// discarded. It mirrors unwrapTypeString in the engine so goldens generated
-// here diff cleanly against `sqlc analyze`.
-func sqlcType(t string) (dataType string, isArray, notNull bool) {
-	name, arr, nullable := unwrapType(t)
-	return name, arr, !nullable
-}
+// A type is written as a call expression, the way ClickHouse itself models
+// one: a lowercased name applied to an ordered argument list in which each
+// argument is a number, a quoted string, an identifier, another call, or
+// one of those with a label. Nothing is special-cased, so Nullable, Array
+// and LowCardinality are ordinary names, and the text form is the same for
+// every engine that spells the same structure differently:
+//
+//	Map(String, Nullable(UInt32))     map(string, nullable(uint32))
+//	Tuple(lat Float64, lon Float64)   tuple(lat: float64, lon: float64)
+//	Enum8('a' = 1, 'b' = 2)           enum8('a': 1, 'b': 2)
+//	DateTime64(3, 'UTC')              datetime64(3, 'UTC')
+//	AggregateFunction(uniq, String)   aggregatefunction(uniq, string)
+//
+// The catalog resolves the names afterwards; the output only records what
+// was said.
 
-func unwrapType(t string) (name string, isArray, nullable bool) {
-	base, args := splitType(t)
-	switch strings.ToLower(base) {
+// typeExpr renders a column's type and reports whether it is NOT NULL. An
+// outer Nullable is the column's nullability rather than part of its type,
+// so it is lifted into the flag, through LowCardinality when needed; a
+// Nullable anywhere deeper stays in the expression.
+func typeExpr(t string) (expr string, notNull bool) {
+	name, args := splitType(t)
+	switch strings.ToLower(name) {
 	case "nullable":
 		if len(args) == 1 {
-			inner, arr, _ := unwrapType(args[0])
-			return inner, arr, true
+			expr, _ = typeExpr(args[0])
+			return expr, false
 		}
-		return "nullable", false, true
 	case "lowcardinality":
 		if len(args) == 1 {
-			return unwrapType(args[0])
+			inner, notNull := typeExpr(args[0])
+			return "lowcardinality(" + inner + ")", notNull
 		}
-		return "lowcardinality", false, false
-	case "array":
-		if len(args) == 1 {
-			inner, _, nul := unwrapType(args[0])
-			return inner, true, nul
-		}
-		return "array", true, false
-	case "":
-		return "nothing", false, false
-	default:
-		return strings.ToLower(base), false, false
 	}
+	return renderCall(t), true
+}
+
+// renderCall renders a type as a call expression.
+func renderCall(t string) string {
+	name, args := splitType(t)
+	name = strings.ToLower(strings.TrimSpace(name))
+	if name == "" {
+		return "nothing"
+	}
+	if args == nil {
+		return name
+	}
+	parts := make([]string, len(args))
+	for i, a := range args {
+		parts[i] = renderArg(a)
+	}
+	return name + "(" + strings.Join(parts, ", ") + ")"
+}
+
+// renderArg renders one argument: a quoted string, a number, a labelled
+// argument (`lat Float64` in a Tuple, `'a' = 1` in an Enum), or a call.
+func renderArg(a string) string {
+	a = strings.TrimSpace(a)
+	if strings.HasPrefix(a, "'") {
+		end := skipQuoted(a, 0)
+		if rest := strings.TrimSpace(a[end:]); strings.HasPrefix(rest, "=") {
+			return a[:end] + ": " + renderArg(rest[1:])
+		}
+		return a[:end]
+	}
+	if isNumber(a) {
+		return a
+	}
+	if i := labelEnd(a); i > 0 {
+		return a[:i] + ": " + renderArg(a[i+1:])
+	}
+	return renderCall(a)
+}
+
+// labelEnd returns the index of the space separating a label from the type
+// it labels, or -1 when the argument has no label: a space that comes before
+// any parenthesis, as in `lat Float64` or `tags Array(String)`.
+func labelEnd(a string) int {
+	head := a
+	if p := strings.IndexByte(a, '('); p >= 0 {
+		head = a[:p]
+	}
+	return strings.IndexByte(head, ' ')
+}
+
+func isNumber(s string) bool {
+	if s == "" {
+		return false
+	}
+	for i, c := range s {
+		if c == '-' && i == 0 && len(s) > 1 {
+			continue
+		}
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
 }
 
 // splitType splits `Base(arg, arg)` into its base name and top-level
