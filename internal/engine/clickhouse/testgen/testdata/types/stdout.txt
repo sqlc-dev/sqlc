@@ -20,14 +20,8 @@
       {
         "name": "tag",
         "type": {
-          "name": "nullable",
-          "args": [
-            {
-              "type": {
-                "name": "string"
-              }
-            }
-          ]
+          "name": "string",
+          "nullable": true
         },
         "table": "things"
       },
@@ -59,14 +53,8 @@
           "args": [
             {
               "type": {
-                "name": "nullable",
-                "args": [
-                  {
-                    "type": {
-                      "name": "string"
-                    }
-                  }
-                ]
+                "name": "string",
+                "nullable": true
               }
             }
           ]
@@ -101,14 +89,8 @@
           "args": [
             {
               "type": {
-                "name": "nullable",
-                "args": [
-                  {
-                    "type": {
-                      "name": "string"
-                    }
-                  }
-                ]
+                "name": "string",
+                "nullable": true
               }
             }
           ]
@@ -240,14 +222,8 @@
             },
             {
               "type": {
-                "name": "nullable",
-                "args": [
-                  {
-                    "type": {
-                      "name": "uint8"
-                    }
-                  }
-                ]
+                "name": "uint8",
+                "nullable": true
               }
             }
           ]
@@ -311,14 +287,8 @@
       {
         "name": "tag",
         "type": {
-          "name": "nullable",
-          "args": [
-            {
-              "type": {
-                "name": "string"
-              }
-            }
-          ]
+          "name": "string",
+          "nullable": true
         },
         "table": "things"
       },
@@ -350,14 +320,8 @@
           "args": [
             {
               "type": {
-                "name": "nullable",
-                "args": [
-                  {
-                    "type": {
-                      "name": "string"
-                    }
-                  }
-                ]
+                "name": "string",
+                "nullable": true
               }
             }
           ]
@@ -392,14 +356,8 @@
           "args": [
             {
               "type": {
-                "name": "nullable",
-                "args": [
-                  {
-                    "type": {
-                      "name": "string"
-                    }
-                  }
-                ]
+                "name": "string",
+                "nullable": true
               }
             }
           ]
@@ -531,14 +489,8 @@
             },
             {
               "type": {
-                "name": "nullable",
-                "args": [
-                  {
-                    "type": {
-                      "name": "uint8"
-                    }
-                  }
-                ]
+                "name": "uint8",
+                "nullable": true
               }
             }
           ]

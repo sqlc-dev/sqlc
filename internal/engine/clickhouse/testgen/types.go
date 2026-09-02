@@ -8,15 +8,17 @@ import (
 // A type is a call expression, the way ClickHouse itself models one: a
 // lowercased name applied to an ordered argument list. Each argument is
 // another type, an integer, a boolean or a quoted string, optionally
-// labelled, so
-// Nullable, Array and LowCardinality are ordinary names and nothing about a
-// nested type is lost. The shape maps one to one onto a protobuf message
-// with a oneof for the argument value:
+// labelled, so Array, Map and LowCardinality are ordinary names and nothing
+// about a nested type is lost. Nullability is an attribute of a type rather
+// than a wrapper, since every engine has it and only ClickHouse spells it as
+// a type: Nullable(T) becomes T with nullable set, at whatever depth it
+// appears. The shape maps one to one onto a protobuf message with a oneof
+// for the argument value:
 //
 //	Map(String, Nullable(UInt32))
 //	{"name": "map", "args": [
 //	  {"type": {"name": "string"}},
-//	  {"type": {"name": "nullable", "args": [{"type": {"name": "uint32"}}]}}]}
+//	  {"type": {"name": "uint32", "nullable": true}}]}
 //
 //	Tuple(lat Float64, lon Float64)
 //	{"name": "tuple", "args": [
@@ -34,8 +36,9 @@ import (
 // is the reader's job; the output only records what was said.
 
 type typeExpr struct {
-	Name string    `json:"name"`
-	Args []typeArg `json:"args,omitempty"`
+	Name     string    `json:"name"`
+	Nullable bool      `json:"nullable,omitempty"`
+	Args     []typeArg `json:"args,omitempty"`
 }
 
 type typeArg struct {
@@ -50,6 +53,11 @@ type typeArg struct {
 func parseType(t string) *typeExpr {
 	name, args := splitType(t)
 	name = strings.ToLower(strings.TrimSpace(name))
+	if name == "nullable" && len(args) == 1 {
+		expr := parseType(args[0])
+		expr.Nullable = true
+		return expr
+	}
 	if name == "" {
 		name = "nothing"
 	}

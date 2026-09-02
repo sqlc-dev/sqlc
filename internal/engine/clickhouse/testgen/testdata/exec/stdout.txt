@@ -56,14 +56,8 @@
         "column": {
           "name": "tag",
           "type": {
-            "name": "nullable",
-            "args": [
-              {
-                "type": {
-                  "name": "string"
-                }
-              }
-            ]
+            "name": "string",
+            "nullable": true
           },
           "table": "events"
         }

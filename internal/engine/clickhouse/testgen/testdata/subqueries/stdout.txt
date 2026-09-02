@@ -13,14 +13,8 @@
       {
         "name": "tag",
         "type": {
-          "name": "nullable",
-          "args": [
-            {
-              "type": {
-                "name": "string"
-              }
-            }
-          ]
+          "name": "string",
+          "nullable": true
         },
         "table": "events"
       },
@@ -94,14 +88,8 @@
       {
         "name": "tag",
         "type": {
-          "name": "nullable",
-          "args": [
-            {
-              "type": {
-                "name": "string"
-              }
-            }
-          ]
+          "name": "string",
+          "nullable": true
         },
         "table": "events"
       },
@@ -150,14 +138,8 @@
       {
         "name": "user_count",
         "type": {
-          "name": "nullable",
-          "args": [
-            {
-              "type": {
-                "name": "uint64"
-              }
-            }
-          ]
+          "name": "uint64",
+          "nullable": true
         }
       }
     ],
