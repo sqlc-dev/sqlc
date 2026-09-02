@@ -42,7 +42,7 @@ query is explained and then executed, and the process exits.
 The output has the shape of `sqlc analyze`, except that each column's type is
 one expression rather than a name and flags. A type is a call: a lowercased
 `name` applied to `args`, each of which carries an optional `label` and
-exactly one of `type`, `int` or `string`. `Nullable`, `Array` and
+exactly one of `type`, `int`, `bool` or `string`. `Nullable`, `Array` and
 `LowCardinality` are ordinary names in that grammar, so nothing about nesting
 is lost, and there is no separate nullability flag: a nullable column is one
 whose type is `nullable(...)`.
