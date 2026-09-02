@@ -7,7 +7,8 @@ import (
 
 // A type is a call expression, the way ClickHouse itself models one: a
 // lowercased name applied to an ordered argument list. Each argument is
-// another type, an integer or a quoted string, optionally labelled, so
+// another type, an integer, a boolean or a quoted string, optionally
+// labelled, so
 // Nullable, Array and LowCardinality are ordinary names and nothing about a
 // nested type is lost. The shape maps one to one onto a protobuf message
 // with a oneof for the argument value:
@@ -41,6 +42,7 @@ type typeArg struct {
 	Label  string    `json:"label,omitempty"`
 	Type   *typeExpr `json:"type,omitempty"`
 	Int    *int64    `json:"int,omitempty"`
+	Bool   *bool     `json:"bool,omitempty"`
 	String *string   `json:"string,omitempty"`
 }
 
@@ -58,8 +60,9 @@ func parseType(t string) *typeExpr {
 	return expr
 }
 
-// parseArg parses one argument: a quoted string, an integer, a labelled
-// argument (`lat Float64` in a Tuple, `'a' = 1` in an Enum), or a type.
+// parseArg parses one argument: a quoted string, an integer, a boolean, a
+// labelled argument (`lat Float64` in a Tuple, `'a' = 1` in an Enum), or a
+// type.
 func parseArg(a string) typeArg {
 	a = strings.TrimSpace(a)
 	if strings.HasPrefix(a, "'") {
@@ -74,6 +77,11 @@ func parseArg(a string) typeArg {
 	}
 	if n, err := strconv.ParseInt(a, 10, 64); err == nil {
 		return typeArg{Int: &n}
+	}
+	switch strings.ToLower(a) {
+	case "true", "false":
+		b := strings.EqualFold(a, "true")
+		return typeArg{Bool: &b}
 	}
 	if i := labelEnd(a); i > 0 {
 		arg := parseArg(a[i+1:])
