@@ -11,6 +11,7 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/compiler"
 	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/multierr"
 	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -204,34 +205,14 @@ type analyzedQuery struct {
 }
 
 type analyzedColumn struct {
-	Name  string        `json:"name"`
-	Type  *analyzedType `json:"type,omitempty"`
-	Table string        `json:"table,omitempty"`
+	Name  string         `json:"name"`
+	Type  *core.TypeExpr `json:"type,omitempty"`
+	Table string         `json:"table,omitempty"`
 }
 
 type analyzedParam struct {
 	Number int            `json:"number"`
 	Column analyzedColumn `json:"column"`
-}
-
-// analyzedType writes a type as a call expression: a name applied to
-// arguments that are other types, integers, booleans or strings, each with
-// an optional label, and a nullable flag at whatever depth it applies. An
-// array of text is array(text); a nullable column of it has nullable set on
-// the array node. Names are recorded as the engine reports them and resolve
-// against the catalog afterwards.
-type analyzedType struct {
-	Name     string        `json:"name"`
-	Nullable bool          `json:"nullable,omitempty"`
-	Args     []analyzedArg `json:"args,omitempty"`
-}
-
-type analyzedArg struct {
-	Label  string        `json:"label,omitempty"`
-	Type   *analyzedType `json:"type,omitempty"`
-	Int    *int64        `json:"int,omitempty"`
-	Bool   *bool         `json:"bool,omitempty"`
-	String *string       `json:"string,omitempty"`
 }
 
 func newAnalyzedQuery(q *compiler.Query, includeAST bool) analyzedQuery {
@@ -270,20 +251,24 @@ func newAnalyzedColumn(col *compiler.Column) analyzedColumn {
 	return ac
 }
 
-// newAnalyzedType builds the type expression the compiler's flat column
-// description amounts to: the data type wrapped in one array node per
-// dimension, with the column's nullability on the outermost node.
-func newAnalyzedType(col *compiler.Column) *analyzedType {
+// newAnalyzedType is the column's type as an expression: the one the
+// analysis core wrote when it did, otherwise the flat description the
+// compiler holds, which is the data type wrapped in one array node per
+// dimension with the column's nullability on the outermost node.
+func newAnalyzedType(col *compiler.Column) *core.TypeExpr {
+	if col.TypeExpr != nil {
+		return col.TypeExpr
+	}
 	if col.DataType == "" {
 		return nil
 	}
-	t := &analyzedType{Name: col.DataType}
+	t := core.ParseTypeExpr(col.DataType)
 	dims := col.ArrayDims
 	if col.IsArray && dims == 0 {
 		dims = 1
 	}
 	for i := 0; i < dims; i++ {
-		t = &analyzedType{Name: "array", Args: []analyzedArg{{Type: t}}}
+		t = &core.TypeExpr{Name: "array", Args: []core.TypeArg{{Type: t}}}
 	}
 	t.Nullable = !col.NotNull
 	return t

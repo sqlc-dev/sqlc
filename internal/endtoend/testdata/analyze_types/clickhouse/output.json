@@ -50,11 +50,11 @@
         "name": "labels",
         "type": {
           "name": "array",
-          "nullable": true,
           "args": [
             {
               "type": {
-                "name": "string"
+                "name": "string",
+                "nullable": true
               }
             }
           ]
@@ -68,7 +68,14 @@
           "args": [
             {
               "type": {
-                "name": "uint8"
+                "name": "array",
+                "args": [
+                  {
+                    "type": {
+                      "name": "uint8"
+                    }
+                  }
+                ]
               }
             }
           ]
@@ -78,8 +85,15 @@
       {
         "name": "kind",
         "type": {
-          "name": "string",
-          "nullable": true
+          "name": "lowcardinality",
+          "args": [
+            {
+              "type": {
+                "name": "string",
+                "nullable": true
+              }
+            }
+          ]
         },
         "table": "things"
       },
@@ -93,49 +107,126 @@
       {
         "name": "updated",
         "type": {
-          "name": "datetime64"
+          "name": "datetime64",
+          "args": [
+            {
+              "int": 3
+            },
+            {
+              "string": "UTC"
+            }
+          ]
         },
         "table": "things"
       },
       {
         "name": "price",
         "type": {
-          "name": "decimal"
+          "name": "decimal",
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
         },
         "table": "things"
       },
       {
         "name": "status",
         "type": {
-          "name": "enum8"
+          "name": "enum8",
+          "args": [
+            {
+              "label": "active",
+              "int": 1
+            },
+            {
+              "label": "deleted",
+              "int": 2
+            }
+          ]
         },
         "table": "things"
       },
       {
         "name": "attrs",
         "type": {
-          "name": "map"
+          "name": "map",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            },
+            {
+              "type": {
+                "name": "uint32"
+              }
+            }
+          ]
         },
         "table": "things"
       },
       {
         "name": "pos",
         "type": {
-          "name": "tuple"
+          "name": "tuple",
+          "args": [
+            {
+              "type": {
+                "name": "float64"
+              }
+            },
+            {
+              "type": {
+                "name": "float64"
+              }
+            }
+          ]
         },
         "table": "things"
       },
       {
         "name": "geo",
         "type": {
-          "name": "tuple"
+          "name": "tuple",
+          "args": [
+            {
+              "label": "lat",
+              "type": {
+                "name": "float64"
+              }
+            },
+            {
+              "label": "lon",
+              "type": {
+                "name": "float64"
+              }
+            }
+          ]
         },
         "table": "things"
       },
       {
         "name": "scores",
         "type": {
-          "name": "map"
+          "name": "map",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            },
+            {
+              "type": {
+                "name": "uint8",
+                "nullable": true
+              }
+            }
+          ]
         },
         "table": "things"
       },
@@ -156,7 +247,12 @@
       {
         "name": "fixed",
         "type": {
-          "name": "fixedstring"
+          "name": "fixedstring",
+          "args": [
+            {
+              "int": 4
+            }
+          ]
         },
         "table": "things"
       },
@@ -221,11 +317,11 @@
         "name": "labels",
         "type": {
           "name": "array",
-          "nullable": true,
           "args": [
             {
               "type": {
-                "name": "string"
+                "name": "string",
+                "nullable": true
               }
             }
           ]
@@ -239,7 +335,14 @@
           "args": [
             {
               "type": {
-                "name": "uint8"
+                "name": "array",
+                "args": [
+                  {
+                    "type": {
+                      "name": "uint8"
+                    }
+                  }
+                ]
               }
             }
           ]
@@ -249,8 +352,15 @@
       {
         "name": "kind",
         "type": {
-          "name": "string",
-          "nullable": true
+          "name": "lowcardinality",
+          "args": [
+            {
+              "type": {
+                "name": "string",
+                "nullable": true
+              }
+            }
+          ]
         },
         "table": "things"
       },
@@ -264,49 +374,126 @@
       {
         "name": "updated",
         "type": {
-          "name": "datetime64"
+          "name": "datetime64",
+          "args": [
+            {
+              "int": 3
+            },
+            {
+              "string": "UTC"
+            }
+          ]
         },
         "table": "things"
       },
       {
         "name": "price",
         "type": {
-          "name": "decimal"
+          "name": "decimal",
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
         },
         "table": "things"
       },
       {
         "name": "status",
         "type": {
-          "name": "enum8"
+          "name": "enum8",
+          "args": [
+            {
+              "label": "active",
+              "int": 1
+            },
+            {
+              "label": "deleted",
+              "int": 2
+            }
+          ]
         },
         "table": "things"
       },
       {
         "name": "attrs",
         "type": {
-          "name": "map"
+          "name": "map",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            },
+            {
+              "type": {
+                "name": "uint32"
+              }
+            }
+          ]
         },
         "table": "things"
       },
       {
         "name": "pos",
         "type": {
-          "name": "tuple"
+          "name": "tuple",
+          "args": [
+            {
+              "type": {
+                "name": "float64"
+              }
+            },
+            {
+              "type": {
+                "name": "float64"
+              }
+            }
+          ]
         },
         "table": "things"
       },
       {
         "name": "geo",
         "type": {
-          "name": "tuple"
+          "name": "tuple",
+          "args": [
+            {
+              "label": "lat",
+              "type": {
+                "name": "float64"
+              }
+            },
+            {
+              "label": "lon",
+              "type": {
+                "name": "float64"
+              }
+            }
+          ]
         },
         "table": "things"
       },
       {
         "name": "scores",
         "type": {
-          "name": "map"
+          "name": "map",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            },
+            {
+              "type": {
+                "name": "uint8",
+                "nullable": true
+              }
+            }
+          ]
         },
         "table": "things"
       },
@@ -327,7 +514,12 @@
       {
         "name": "fixed",
         "type": {
-          "name": "fixedstring"
+          "name": "fixedstring",
+          "args": [
+            {
+              "int": 4
+            }
+          ]
         },
         "table": "things"
       },

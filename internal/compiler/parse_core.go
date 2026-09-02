@@ -105,6 +105,7 @@ func coreColumn(c core.Column) *Column {
 		DataType: c.DataType,
 		NotNull:  c.NotNull,
 		IsArray:  c.IsArray,
+		TypeExpr: c.Type,
 	}
 	// The core reports arrays without dimensions, and codegen renders one
 	// "[]" per dimension.
@@ -129,6 +130,7 @@ func coreParamColumn(p core.Parameter, params *named.ParamSet) *Column {
 		DataType: p.DataType,
 		NotNull:  p.NotNull,
 		IsArray:  p.IsArray,
+		TypeExpr: p.Type,
 	}
 	if p.IsArray {
 		col.ArrayDims = 1

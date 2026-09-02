@@ -1,1 +1,581 @@
-{"name": "count", "kind": "a", "returns": "UInt64"}
+{"name": "count", "kind": "a", "returns": "UInt64", "never_null": true}
+{"name": "count", "kind": "a", "args": [{"type": "any"}], "returns": "UInt64", "never_null": true}
+{"name": "countIf", "kind": "a", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt64", "never_null": true}
+{"name": "sum", "kind": "a", "args": [{"type": "UInt8"}], "returns": "UInt64"}
+{"name": "sum", "kind": "a", "args": [{"type": "UInt16"}], "returns": "UInt64"}
+{"name": "sum", "kind": "a", "args": [{"type": "UInt32"}], "returns": "UInt64"}
+{"name": "sum", "kind": "a", "args": [{"type": "Int8"}], "returns": "Int64"}
+{"name": "sum", "kind": "a", "args": [{"type": "Int16"}], "returns": "Int64"}
+{"name": "sum", "kind": "a", "args": [{"type": "Int32"}], "returns": "Int64"}
+{"name": "sum", "kind": "a", "args": [{"type": "Float32"}], "returns": "Float64"}
+{"name": "sum", "kind": "a", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "sumIf", "kind": "a", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "avg", "kind": "a", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "avgIf", "kind": "a", "args": [{"type": "any"}, {"type": "any"}], "returns": "Float64"}
+{"name": "min", "kind": "a", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "max", "kind": "a", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "any", "kind": "a", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "anyLast", "kind": "a", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "minIf", "kind": "a", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "maxIf", "kind": "a", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "anyIf", "kind": "a", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "uniq", "kind": "a", "args": [{"type": "any"}], "returns": "UInt64", "never_null": true}
+{"name": "uniqExact", "kind": "a", "args": [{"type": "any"}], "returns": "UInt64", "never_null": true}
+{"name": "uniqCombined", "kind": "a", "args": [{"type": "any"}], "returns": "UInt64", "never_null": true}
+{"name": "uniqHLL12", "kind": "a", "args": [{"type": "any"}], "returns": "UInt64", "never_null": true}
+{"name": "uniqIf", "kind": "a", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt64", "never_null": true}
+{"name": "argMin", "kind": "a", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "argMax", "kind": "a", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "stddevPop", "kind": "a", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "stddevSamp", "kind": "a", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "varPop", "kind": "a", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "varSamp", "kind": "a", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "median", "kind": "a", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "quantile", "kind": "a", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "quantile", "kind": "a", "args": [{"type": "any"}, {"type": "any"}], "returns": "Float64"}
+{"name": "row_number", "kind": "w", "returns": "UInt64", "never_null": true}
+{"name": "rank", "kind": "w", "returns": "UInt64", "never_null": true}
+{"name": "dense_rank", "kind": "w", "returns": "UInt64", "never_null": true}
+{"name": "plus", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "minus", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "multiply", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "intDiv", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "intDivOrZero", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "modulo", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "moduloOrZero", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "gcd", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "lcm", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "bitAnd", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "bitOr", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "bitXor", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "bitShiftLeft", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "bitShiftRight", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "greatest", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "least", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "divide", "args": [{"type": "any"}, {"type": "any"}], "returns": "Float64"}
+{"name": "negate", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "abs", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "round", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "floor", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "ceil", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "ceiling", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "trunc", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "truncate", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "identity", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "bitNot", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "round", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "floor", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "ceil", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "trunc", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "exp", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "log", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "ln", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "exp2", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "log2", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "exp10", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "log10", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "sqrt", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "cbrt", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "sin", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "cos", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "tan", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "asin", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "acos", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "atan", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "sigmoid", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "erf", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "lgamma", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "tgamma", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "pow", "args": [{"type": "any"}, {"type": "any"}], "returns": "Float64"}
+{"name": "power", "args": [{"type": "any"}, {"type": "any"}], "returns": "Float64"}
+{"name": "atan2", "args": [{"type": "any"}, {"type": "any"}], "returns": "Float64"}
+{"name": "hypot", "args": [{"type": "any"}, {"type": "any"}], "returns": "Float64"}
+{"name": "e", "returns": "Float64", "never_null": true}
+{"name": "pi", "returns": "Float64", "never_null": true}
+{"name": "sign", "args": [{"type": "any"}], "returns": "Int8"}
+{"name": "isFinite", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "isInfinite", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "isNaN", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "rand", "returns": "UInt32", "never_null": true}
+{"name": "rand32", "returns": "UInt32", "never_null": true}
+{"name": "rand64", "returns": "UInt64", "never_null": true}
+{"name": "randCanonical", "returns": "Float64", "never_null": true}
+{"name": "equals", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "notEquals", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "less", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "greater", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "lessOrEquals", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "greaterOrEquals", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "and", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "or", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "xor", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "like", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "notLike", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "ilike", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "notILike", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "match", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "startsWith", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "endsWith", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "has", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "hasAll", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "hasAny", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "mapContains", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "multiSearchAny", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "in", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "notIn", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "not", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "isNull", "args": [{"type": "any"}], "returns": "UInt8", "never_null": true}
+{"name": "isNotNull", "args": [{"type": "any"}], "returns": "UInt8", "never_null": true}
+{"name": "isZeroOrNull", "args": [{"type": "any"}], "returns": "UInt8", "never_null": true}
+{"name": "assumeNotNull", "args": [{"type": "any"}], "returns": "$1", "never_null": true}
+{"name": "toNullable", "args": [{"type": "any"}], "returns": "$1", "nullable": true}
+{"name": "nullIf", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1", "nullable": true}
+{"name": "if", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$2"}
+{"name": "empty", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "notEmpty", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "length", "args": [{"type": "any"}], "returns": "UInt64"}
+{"name": "lengthUTF8", "args": [{"type": "any"}], "returns": "UInt64"}
+{"name": "char_length", "args": [{"type": "any"}], "returns": "UInt64"}
+{"name": "character_length", "args": [{"type": "any"}], "returns": "UInt64"}
+{"name": "position", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt64"}
+{"name": "positionUTF8", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt64"}
+{"name": "positionCaseInsensitive", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt64"}
+{"name": "countSubstrings", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt64"}
+{"name": "indexOf", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt64"}
+{"name": "countEqual", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt64"}
+{"name": "ngramSearch", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt64"}
+{"name": "lower", "args": [{"type": "any"}], "returns": "String"}
+{"name": "upper", "args": [{"type": "any"}], "returns": "String"}
+{"name": "lowerUTF8", "args": [{"type": "any"}], "returns": "String"}
+{"name": "upperUTF8", "args": [{"type": "any"}], "returns": "String"}
+{"name": "toString", "args": [{"type": "any"}], "returns": "String"}
+{"name": "toValidUTF8", "args": [{"type": "any"}], "returns": "String"}
+{"name": "trim", "args": [{"type": "any"}], "returns": "String"}
+{"name": "trimLeft", "args": [{"type": "any"}], "returns": "String"}
+{"name": "trimRight", "args": [{"type": "any"}], "returns": "String"}
+{"name": "trimBoth", "args": [{"type": "any"}], "returns": "String"}
+{"name": "ltrim", "args": [{"type": "any"}], "returns": "String"}
+{"name": "rtrim", "args": [{"type": "any"}], "returns": "String"}
+{"name": "hex", "args": [{"type": "any"}], "returns": "String"}
+{"name": "unhex", "args": [{"type": "any"}], "returns": "String"}
+{"name": "bin", "args": [{"type": "any"}], "returns": "String"}
+{"name": "base64Encode", "args": [{"type": "any"}], "returns": "String"}
+{"name": "base64Decode", "args": [{"type": "any"}], "returns": "String"}
+{"name": "tryBase64Decode", "args": [{"type": "any"}], "returns": "String"}
+{"name": "reverseUTF8", "args": [{"type": "any"}], "returns": "String"}
+{"name": "initcap", "args": [{"type": "any"}], "returns": "String"}
+{"name": "normalizeQuery", "args": [{"type": "any"}], "returns": "String"}
+{"name": "typeName", "args": [{"type": "any"}], "returns": "String"}
+{"name": "dumpColumnStructure", "args": [{"type": "any"}], "returns": "String"}
+{"name": "urlDecode", "args": [{"type": "any"}], "returns": "String"}
+{"name": "encodeURLComponent", "args": [{"type": "any"}], "returns": "String"}
+{"name": "decodeURLComponent", "args": [{"type": "any"}], "returns": "String"}
+{"name": "domain", "args": [{"type": "any"}], "returns": "String"}
+{"name": "topLevelDomain", "args": [{"type": "any"}], "returns": "String"}
+{"name": "path", "args": [{"type": "any"}], "returns": "String"}
+{"name": "pathFull", "args": [{"type": "any"}], "returns": "String"}
+{"name": "protocol", "args": [{"type": "any"}], "returns": "String"}
+{"name": "queryString", "args": [{"type": "any"}], "returns": "String"}
+{"name": "fragment", "args": [{"type": "any"}], "returns": "String"}
+{"name": "cutQueryString", "args": [{"type": "any"}], "returns": "String"}
+{"name": "cutFragment", "args": [{"type": "any"}], "returns": "String"}
+{"name": "cutWWW", "args": [{"type": "any"}], "returns": "String"}
+{"name": "firstSignificantSubdomain", "args": [{"type": "any"}], "returns": "String"}
+{"name": "IPv4NumToString", "args": [{"type": "any"}], "returns": "String"}
+{"name": "IPv6NumToString", "args": [{"type": "any"}], "returns": "String"}
+{"name": "formatReadableSize", "args": [{"type": "any"}], "returns": "String"}
+{"name": "formatReadableQuantity", "args": [{"type": "any"}], "returns": "String"}
+{"name": "formatReadableDecimalSize", "args": [{"type": "any"}], "returns": "String"}
+{"name": "formatReadableTimeDelta", "args": [{"type": "any"}], "returns": "String"}
+{"name": "toDecimalString", "args": [{"type": "any"}], "returns": "String"}
+{"name": "monthName", "args": [{"type": "any"}], "returns": "String"}
+{"name": "toJSONString", "args": [{"type": "any"}], "returns": "String"}
+{"name": "toTypeName", "args": [{"type": "any"}], "returns": "String", "never_null": true}
+{"name": "hostName", "returns": "String", "never_null": true}
+{"name": "version", "returns": "String", "never_null": true}
+{"name": "currentDatabase", "returns": "String", "never_null": true}
+{"name": "currentUser", "returns": "String", "never_null": true}
+{"name": "FQDN", "returns": "String", "never_null": true}
+{"name": "queryID", "returns": "String", "never_null": true}
+{"name": "generateULID", "returns": "String", "never_null": true}
+{"name": "concat", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "substring", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "substr", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "mid", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "substringUTF8", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "repeat", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "leftPad", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "rightPad", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "left", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "right", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "extract", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "formatDateTime", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "formatDateTimeInJodaSyntax", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "dateName", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "JSONExtractString", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "JSONExtractRaw", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "visitParamExtractString", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "simpleJSONExtractString", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "arrayStringConcat", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "regexpExtract", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "translate", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "format", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "toDecimalString", "args": [{"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "concat", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "substring", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "substr", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "mid", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "substringUTF8", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "leftPad", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "rightPad", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "replaceOne", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "replaceAll", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "replaceRegexpOne", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "replaceRegexpAll", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "translate", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "format", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "concatWithSeparator", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "regexpExtract", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "formatDateTime", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "JSONExtractString", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "JSONExtractRaw", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "concat", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "concat", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "concat", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}, {"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "arrayStringConcat", "args": [{"type": "any"}], "returns": "String"}
+{"name": "splitByChar", "args": [{"type": "any"}, {"type": "any"}], "returns": "Array(String)"}
+{"name": "splitByString", "args": [{"type": "any"}, {"type": "any"}], "returns": "Array(String)"}
+{"name": "splitByRegexp", "args": [{"type": "any"}, {"type": "any"}], "returns": "Array(String)"}
+{"name": "splitByWhitespace", "args": [{"type": "any"}, {"type": "any"}], "returns": "Array(String)"}
+{"name": "alphaTokens", "args": [{"type": "any"}, {"type": "any"}], "returns": "Array(String)"}
+{"name": "extractAll", "args": [{"type": "any"}, {"type": "any"}], "returns": "Array(String)"}
+{"name": "tokens", "args": [{"type": "any"}, {"type": "any"}], "returns": "Array(String)"}
+{"name": "splitByWhitespace", "args": [{"type": "any"}], "returns": "Array(String)"}
+{"name": "alphaTokens", "args": [{"type": "any"}], "returns": "Array(String)"}
+{"name": "tokens", "args": [{"type": "any"}], "returns": "Array(String)"}
+{"name": "reverse", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "md5", "args": [{"type": "any"}], "returns": "FixedString(16)"}
+{"name": "MD5", "args": [{"type": "any"}], "returns": "FixedString(16)"}
+{"name": "sipHash128", "args": [{"type": "any"}], "returns": "FixedString(16)"}
+{"name": "murmurHash3_128", "args": [{"type": "any"}], "returns": "FixedString(16)"}
+{"name": "cityHash128", "args": [{"type": "any"}], "returns": "FixedString(16)"}
+{"name": "SHA1", "args": [{"type": "any"}], "returns": "FixedString(20)"}
+{"name": "SHA224", "args": [{"type": "any"}], "returns": "FixedString(28)"}
+{"name": "SHA256", "args": [{"type": "any"}], "returns": "FixedString(32)"}
+{"name": "SHA512", "args": [{"type": "any"}], "returns": "FixedString(64)"}
+{"name": "sipHash64", "args": [{"type": "any"}], "returns": "UInt64", "never_null": true}
+{"name": "cityHash64", "args": [{"type": "any"}], "returns": "UInt64", "never_null": true}
+{"name": "xxHash64", "args": [{"type": "any"}], "returns": "UInt64", "never_null": true}
+{"name": "halfMD5", "args": [{"type": "any"}], "returns": "UInt64", "never_null": true}
+{"name": "farmHash64", "args": [{"type": "any"}], "returns": "UInt64", "never_null": true}
+{"name": "javaHash", "args": [{"type": "any"}], "returns": "UInt64", "never_null": true}
+{"name": "intHash64", "args": [{"type": "any"}], "returns": "UInt64", "never_null": true}
+{"name": "murmurHash2_64", "args": [{"type": "any"}], "returns": "UInt64", "never_null": true}
+{"name": "murmurHash3_64", "args": [{"type": "any"}], "returns": "UInt64", "never_null": true}
+{"name": "metroHash64", "args": [{"type": "any"}], "returns": "UInt64", "never_null": true}
+{"name": "xxh3", "args": [{"type": "any"}], "returns": "UInt64", "never_null": true}
+{"name": "wyHash64", "args": [{"type": "any"}], "returns": "UInt64", "never_null": true}
+{"name": "xxHash32", "args": [{"type": "any"}], "returns": "UInt32", "never_null": true}
+{"name": "intHash32", "args": [{"type": "any"}], "returns": "UInt32", "never_null": true}
+{"name": "murmurHash2_32", "args": [{"type": "any"}], "returns": "UInt32", "never_null": true}
+{"name": "murmurHash3_32", "args": [{"type": "any"}], "returns": "UInt32", "never_null": true}
+{"name": "crc32", "args": [{"type": "any"}], "returns": "UInt32", "never_null": true}
+{"name": "CRC32", "args": [{"type": "any"}], "returns": "UInt32", "never_null": true}
+{"name": "javaHash", "args": [{"type": "any"}], "returns": "UInt32", "never_null": true}
+{"name": "levenshteinDistance", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt64"}
+{"name": "editDistance", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt64"}
+{"name": "ngramDistance", "args": [{"type": "any"}, {"type": "any"}], "returns": "Float32"}
+{"name": "ngramSearch", "args": [{"type": "any"}, {"type": "any"}], "returns": "Float32"}
+{"name": "jaroSimilarity", "args": [{"type": "any"}, {"type": "any"}], "returns": "Float32"}
+{"name": "jaroWinklerSimilarity", "args": [{"type": "any"}, {"type": "any"}], "returns": "Float32"}
+{"name": "toInt8", "args": [{"type": "any"}], "returns": "Int8"}
+{"name": "toInt8OrZero", "args": [{"type": "any"}], "returns": "Int8"}
+{"name": "toInt8OrNull", "args": [{"type": "any"}], "returns": "Int8", "nullable": true}
+{"name": "toInt16", "args": [{"type": "any"}], "returns": "Int16"}
+{"name": "toInt16OrZero", "args": [{"type": "any"}], "returns": "Int16"}
+{"name": "toInt16OrNull", "args": [{"type": "any"}], "returns": "Int16", "nullable": true}
+{"name": "toInt32", "args": [{"type": "any"}], "returns": "Int32"}
+{"name": "toInt32OrZero", "args": [{"type": "any"}], "returns": "Int32"}
+{"name": "toInt32OrNull", "args": [{"type": "any"}], "returns": "Int32", "nullable": true}
+{"name": "toInt64", "args": [{"type": "any"}], "returns": "Int64"}
+{"name": "toInt64OrZero", "args": [{"type": "any"}], "returns": "Int64"}
+{"name": "toInt64OrNull", "args": [{"type": "any"}], "returns": "Int64", "nullable": true}
+{"name": "toInt128", "args": [{"type": "any"}], "returns": "Int128"}
+{"name": "toInt128OrZero", "args": [{"type": "any"}], "returns": "Int128"}
+{"name": "toInt128OrNull", "args": [{"type": "any"}], "returns": "Int128", "nullable": true}
+{"name": "toInt256", "args": [{"type": "any"}], "returns": "Int256"}
+{"name": "toInt256OrZero", "args": [{"type": "any"}], "returns": "Int256"}
+{"name": "toInt256OrNull", "args": [{"type": "any"}], "returns": "Int256", "nullable": true}
+{"name": "toUInt8", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "toUInt8OrZero", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "toUInt8OrNull", "args": [{"type": "any"}], "returns": "UInt8", "nullable": true}
+{"name": "toUInt16", "args": [{"type": "any"}], "returns": "UInt16"}
+{"name": "toUInt16OrZero", "args": [{"type": "any"}], "returns": "UInt16"}
+{"name": "toUInt16OrNull", "args": [{"type": "any"}], "returns": "UInt16", "nullable": true}
+{"name": "toUInt32", "args": [{"type": "any"}], "returns": "UInt32"}
+{"name": "toUInt32OrZero", "args": [{"type": "any"}], "returns": "UInt32"}
+{"name": "toUInt32OrNull", "args": [{"type": "any"}], "returns": "UInt32", "nullable": true}
+{"name": "toUInt64", "args": [{"type": "any"}], "returns": "UInt64"}
+{"name": "toUInt64OrZero", "args": [{"type": "any"}], "returns": "UInt64"}
+{"name": "toUInt64OrNull", "args": [{"type": "any"}], "returns": "UInt64", "nullable": true}
+{"name": "toUInt128", "args": [{"type": "any"}], "returns": "UInt128"}
+{"name": "toUInt128OrZero", "args": [{"type": "any"}], "returns": "UInt128"}
+{"name": "toUInt128OrNull", "args": [{"type": "any"}], "returns": "UInt128", "nullable": true}
+{"name": "toUInt256", "args": [{"type": "any"}], "returns": "UInt256"}
+{"name": "toUInt256OrZero", "args": [{"type": "any"}], "returns": "UInt256"}
+{"name": "toUInt256OrNull", "args": [{"type": "any"}], "returns": "UInt256", "nullable": true}
+{"name": "toFloat32", "args": [{"type": "any"}], "returns": "Float32"}
+{"name": "toFloat32OrZero", "args": [{"type": "any"}], "returns": "Float32"}
+{"name": "toFloat32OrNull", "args": [{"type": "any"}], "returns": "Float32", "nullable": true}
+{"name": "toFloat64", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "toFloat64OrZero", "args": [{"type": "any"}], "returns": "Float64"}
+{"name": "toFloat64OrNull", "args": [{"type": "any"}], "returns": "Float64", "nullable": true}
+{"name": "toDate", "args": [{"type": "any"}], "returns": "Date"}
+{"name": "toDateOrZero", "args": [{"type": "any"}], "returns": "Date"}
+{"name": "toDateOrNull", "args": [{"type": "any"}], "returns": "Date", "nullable": true}
+{"name": "toDate32", "args": [{"type": "any"}], "returns": "Date32"}
+{"name": "toDate32OrZero", "args": [{"type": "any"}], "returns": "Date32"}
+{"name": "toDate32OrNull", "args": [{"type": "any"}], "returns": "Date32", "nullable": true}
+{"name": "toDateTime", "args": [{"type": "any"}], "returns": "DateTime"}
+{"name": "toDateTimeOrZero", "args": [{"type": "any"}], "returns": "DateTime"}
+{"name": "toDateTimeOrNull", "args": [{"type": "any"}], "returns": "DateTime", "nullable": true}
+{"name": "toUUID", "args": [{"type": "any"}], "returns": "UUID"}
+{"name": "toUUIDOrZero", "args": [{"type": "any"}], "returns": "UUID"}
+{"name": "toUUIDOrNull", "args": [{"type": "any"}], "returns": "UUID", "nullable": true}
+{"name": "toIPv4", "args": [{"type": "any"}], "returns": "IPv4"}
+{"name": "toIPv4OrZero", "args": [{"type": "any"}], "returns": "IPv4"}
+{"name": "toIPv4OrNull", "args": [{"type": "any"}], "returns": "IPv4", "nullable": true}
+{"name": "toIPv6", "args": [{"type": "any"}], "returns": "IPv6"}
+{"name": "toIPv6OrZero", "args": [{"type": "any"}], "returns": "IPv6"}
+{"name": "toIPv6OrNull", "args": [{"type": "any"}], "returns": "IPv6", "nullable": true}
+{"name": "toBool", "args": [{"type": "any"}], "returns": "Bool"}
+{"name": "toString", "args": [{"type": "any"}], "returns": "String"}
+{"name": "toDateTime", "args": [{"type": "any"}, {"type": "any"}], "returns": "DateTime"}
+{"name": "toDate", "args": [{"type": "any"}, {"type": "any"}], "returns": "Date"}
+{"name": "toDateTime64", "args": [{"type": "any"}, {"type": "any"}], "returns": "DateTime64"}
+{"name": "toDateTime64", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "DateTime64"}
+{"name": "toDecimal32", "args": [{"type": "any"}, {"type": "any"}], "returns": "Decimal32"}
+{"name": "toDecimal64", "args": [{"type": "any"}, {"type": "any"}], "returns": "Decimal64"}
+{"name": "toDecimal128", "args": [{"type": "any"}, {"type": "any"}], "returns": "Decimal128"}
+{"name": "toDecimal256", "args": [{"type": "any"}, {"type": "any"}], "returns": "Decimal256"}
+{"name": "toFixedString", "args": [{"type": "any"}, {"type": "any"}], "returns": "FixedString"}
+{"name": "toStringCutToZero", "args": [{"type": "any"}], "returns": "String"}
+{"name": "reinterpretAsString", "args": [{"type": "any"}], "returns": "String"}
+{"name": "reinterpretAsUInt64", "args": [{"type": "any"}], "returns": "UInt64"}
+{"name": "toUnixTimestamp", "args": [{"type": "any"}], "returns": "UInt32"}
+{"name": "toUnixTimestamp", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt32"}
+{"name": "fromUnixTimestamp", "args": [{"type": "any"}], "returns": "DateTime"}
+{"name": "toUUIDOrNull", "args": [{"type": "any"}], "returns": "UUID", "nullable": true}
+{"name": "toUUIDOrZero", "args": [{"type": "any"}], "returns": "UUID"}
+{"name": "generateUUIDv4", "returns": "UUID", "never_null": true}
+{"name": "generateUUIDv7", "returns": "UUID", "never_null": true}
+{"name": "toIntervalSecond", "args": [{"type": "any"}], "returns": "IntervalSecond"}
+{"name": "toIntervalMinute", "args": [{"type": "any"}], "returns": "IntervalMinute"}
+{"name": "toIntervalHour", "args": [{"type": "any"}], "returns": "IntervalHour"}
+{"name": "toIntervalDay", "args": [{"type": "any"}], "returns": "IntervalDay"}
+{"name": "toIntervalWeek", "args": [{"type": "any"}], "returns": "IntervalWeek"}
+{"name": "toIntervalMonth", "args": [{"type": "any"}], "returns": "IntervalMonth"}
+{"name": "toIntervalYear", "args": [{"type": "any"}], "returns": "IntervalYear"}
+{"name": "now", "returns": "DateTime", "never_null": true}
+{"name": "now", "args": [{"type": "any"}], "returns": "DateTime", "never_null": true}
+{"name": "now64", "returns": "DateTime64", "never_null": true}
+{"name": "now64", "args": [{"type": "any"}], "returns": "DateTime64", "never_null": true}
+{"name": "today", "returns": "Date", "never_null": true}
+{"name": "yesterday", "returns": "Date", "never_null": true}
+{"name": "timeZone", "returns": "String", "never_null": true}
+{"name": "serverTimezone", "returns": "String", "never_null": true}
+{"name": "toYear", "args": [{"type": "any"}], "returns": "UInt16"}
+{"name": "toISOYear", "args": [{"type": "any"}], "returns": "UInt16"}
+{"name": "toDayOfYear", "args": [{"type": "any"}], "returns": "UInt16"}
+{"name": "toRelativeYearNum", "args": [{"type": "any"}], "returns": "UInt16"}
+{"name": "toWeek", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "toISOWeek", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "toYearWeek", "args": [{"type": "any"}], "returns": "UInt32"}
+{"name": "toQuarter", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "toMonth", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "toDayOfMonth", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "toDayOfWeek", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "toHour", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "toMinute", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "toSecond", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "toMillisecond", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "toYYYYMM", "args": [{"type": "any"}], "returns": "UInt32"}
+{"name": "toYYYYMMDD", "args": [{"type": "any"}], "returns": "UInt32"}
+{"name": "toYYYYMMDDhhmmss", "args": [{"type": "any"}], "returns": "UInt64"}
+{"name": "toStartOfDay", "args": [{"type": "any"}], "returns": "DateTime"}
+{"name": "toStartOfHour", "args": [{"type": "any"}], "returns": "DateTime"}
+{"name": "toStartOfMinute", "args": [{"type": "any"}], "returns": "DateTime"}
+{"name": "toStartOfFiveMinutes", "args": [{"type": "any"}], "returns": "DateTime"}
+{"name": "toStartOfFifteenMinutes", "args": [{"type": "any"}], "returns": "DateTime"}
+{"name": "toStartOfTenMinutes", "args": [{"type": "any"}], "returns": "DateTime"}
+{"name": "toTime", "args": [{"type": "any"}], "returns": "DateTime"}
+{"name": "timeSlot", "args": [{"type": "any"}], "returns": "DateTime"}
+{"name": "toLastDayOfMonth", "args": [{"type": "any"}], "returns": "DateTime"}
+{"name": "toLastDayOfMonth", "args": [{"type": "any"}], "returns": "Date"}
+{"name": "toStartOfMonth", "args": [{"type": "any"}], "returns": "Date"}
+{"name": "toStartOfQuarter", "args": [{"type": "any"}], "returns": "Date"}
+{"name": "toStartOfYear", "args": [{"type": "any"}], "returns": "Date"}
+{"name": "toStartOfWeek", "args": [{"type": "any"}], "returns": "Date"}
+{"name": "toMonday", "args": [{"type": "any"}], "returns": "Date"}
+{"name": "toStartOfISOYear", "args": [{"type": "any"}], "returns": "Date"}
+{"name": "toStartOfWeek", "args": [{"type": "any"}, {"type": "any"}], "returns": "Date"}
+{"name": "toStartOfInterval", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "addYears", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "addQuarters", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "addMonths", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "addWeeks", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "addDays", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "addHours", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "addMinutes", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "addSeconds", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "addMilliseconds", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "subtractYears", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "subtractQuarters", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "subtractMonths", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "subtractWeeks", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "subtractDays", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "subtractHours", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "subtractMinutes", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "subtractSeconds", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "addInterval", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "subtractInterval", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "dateDiff", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "Int64"}
+{"name": "date_diff", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "Int64"}
+{"name": "timestampDiff", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "Int64"}
+{"name": "timestamp_diff", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "Int64"}
+{"name": "age", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "Int64"}
+{"name": "dateAdd", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$3"}
+{"name": "date_add", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$3"}
+{"name": "dateSub", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$3"}
+{"name": "date_sub", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$3"}
+{"name": "timestampAdd", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$3"}
+{"name": "timestampSub", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$3"}
+{"name": "dateTrunc", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$3"}
+{"name": "date_trunc", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$3"}
+{"name": "dateTrunc", "args": [{"type": "any"}, {"type": "any"}], "returns": "$2"}
+{"name": "date_trunc", "args": [{"type": "any"}, {"type": "any"}], "returns": "$2"}
+{"name": "toRelativeDayNum", "args": [{"type": "any"}], "returns": "UInt32"}
+{"name": "toRelativeHourNum", "args": [{"type": "any"}], "returns": "UInt32"}
+{"name": "toRelativeMinuteNum", "args": [{"type": "any"}], "returns": "UInt32"}
+{"name": "toRelativeSecondNum", "args": [{"type": "any"}], "returns": "UInt32"}
+{"name": "toRelativeMonthNum", "args": [{"type": "any"}], "returns": "UInt32"}
+{"name": "toRelativeWeekNum", "args": [{"type": "any"}], "returns": "UInt32"}
+{"name": "toTimeZone", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "toTimezone", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "parseDateTimeBestEffort", "args": [{"type": "any"}], "returns": "DateTime"}
+{"name": "parseDateTimeBestEffortOrNull", "args": [{"type": "any"}], "returns": "DateTime", "nullable": true}
+{"name": "parseDateTimeBestEffortOrZero", "args": [{"type": "any"}], "returns": "DateTime"}
+{"name": "parseDateTime", "args": [{"type": "any"}, {"type": "any"}], "returns": "DateTime"}
+{"name": "parseDateTime64BestEffort", "args": [{"type": "any"}], "returns": "DateTime64"}
+{"name": "makeDate", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "Date"}
+{"name": "makeDateTime", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}, {"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "DateTime"}
+{"name": "arrayConcat", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "arrayConcat", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayConcat", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayDistinct", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "arrayDistinct", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayDistinct", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arraySort", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "arraySort", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arraySort", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayReverseSort", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "arrayReverseSort", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayReverseSort", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayReverse", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "arrayReverse", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayReverse", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arraySlice", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "arraySlice", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arraySlice", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayResize", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "arrayResize", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayResize", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayPushBack", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "arrayPushBack", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayPushBack", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayPushFront", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "arrayPushFront", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayPushFront", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayPopBack", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "arrayPopBack", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayPopBack", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayPopFront", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "arrayPopFront", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayPopFront", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayFlatten", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "arrayFlatten", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayFlatten", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayCompact", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "arrayCompact", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayCompact", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayIntersect", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "arrayIntersect", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayIntersect", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayUnion", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "arrayUnion", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayUnion", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayShuffle", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "arrayShuffle", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayShuffle", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "arrayCount", "args": [{"type": "any"}], "returns": "UInt32"}
+{"name": "arrayCount", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt32"}
+{"name": "arrayUniq", "args": [{"type": "any"}], "returns": "UInt32"}
+{"name": "arrayExists", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "arrayAll", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "hasSubstr", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "arrayEnumerate", "args": [{"type": "any"}], "returns": "Array(UInt32)"}
+{"name": "arrayEnumerateUniq", "args": [{"type": "any"}], "returns": "Array(UInt32)"}
+{"name": "range", "args": [{"type": "any"}], "returns": "Array(UInt64)"}
+{"name": "range", "args": [{"type": "any"}, {"type": "any"}], "returns": "Array(UInt64)"}
+{"name": "range", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "Array(UInt64)"}
+{"name": "mapKeys", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "mapValues", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "length", "args": [{"type": "any"}], "returns": "UInt64"}
+{"name": "JSONExtractInt", "args": [{"type": "any"}, {"type": "any"}], "returns": "Int64"}
+{"name": "JSONExtractInt64", "args": [{"type": "any"}, {"type": "any"}], "returns": "Int64"}
+{"name": "JSONExtractUInt", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt64"}
+{"name": "JSONExtractFloat", "args": [{"type": "any"}, {"type": "any"}], "returns": "Float64"}
+{"name": "JSONExtractBool", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "JSONHas", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "JSONLength", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt64"}
+{"name": "JSONType", "args": [{"type": "any"}, {"type": "any"}], "returns": "Enum8"}
+{"name": "isValidJSON", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "JSONArrayLength", "args": [{"type": "any"}], "returns": "UInt64", "nullable": true}
+{"name": "simpleJSONExtractInt", "args": [{"type": "any"}, {"type": "any"}], "returns": "Int64"}
+{"name": "simpleJSONExtractUInt", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt64"}
+{"name": "simpleJSONExtractFloat", "args": [{"type": "any"}, {"type": "any"}], "returns": "Float64"}
+{"name": "simpleJSONExtractBool", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "simpleJSONHas", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "visitParamExtractInt", "args": [{"type": "any"}, {"type": "any"}], "returns": "Int64"}
+{"name": "visitParamExtractUInt", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt64"}
+{"name": "visitParamExtractFloat", "args": [{"type": "any"}, {"type": "any"}], "returns": "Float64"}
+{"name": "visitParamExtractBool", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "visitParamHas", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "IPv4StringToNum", "args": [{"type": "any"}], "returns": "UInt32"}
+{"name": "IPv4StringToNumOrNull", "args": [{"type": "any"}], "returns": "UInt32", "nullable": true}
+{"name": "IPv6StringToNum", "args": [{"type": "any"}], "returns": "FixedString(16)"}
+{"name": "isIPv4String", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "isIPv6String", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "sleep", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "blockSize", "returns": "UInt64", "never_null": true}
+{"name": "rowNumberInAllBlocks", "returns": "UInt64", "never_null": true}
+{"name": "materialize", "args": [{"type": "any"}], "returns": "$1"}
+{"name": "ignore", "args": [{"type": "any"}], "returns": "UInt8", "never_null": true}
+{"name": "ifNotFinite", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
+{"name": "throwIf", "args": [{"type": "any"}], "returns": "UInt8"}
+{"name": "transform", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$4"}
+{"name": "bar", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "bar", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "dictGetString", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "String"}
+{"name": "dictGetUInt64", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "UInt64"}
+{"name": "dictGetInt64", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "Int64"}
+{"name": "dictGetFloat64", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "Float64"}
+{"name": "dictGetDate", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "Date"}
+{"name": "dictGetDateTime", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "DateTime"}
+{"name": "dictHas", "args": [{"type": "any"}, {"type": "any"}], "returns": "UInt8"}
+{"name": "tuple", "args": [{"type": "any"}], "returns": "Tuple"}
+{"name": "tupleElement", "args": [{"type": "any"}, {"type": "any"}], "returns": "any"}
+{"name": "map", "args": [{"type": "any"}, {"type": "any"}], "returns": "Map"}
+{"name": "multiIf", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$2"}
+{"name": "multiIf", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$2"}
+{"name": "multiIf", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}, {"type": "any"}, {"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "$2"}

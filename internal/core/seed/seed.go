@@ -63,6 +63,24 @@ type Settings struct {
 	// Bool names the type comparisons return.
 	Bool string `json:"bool,omitempty"`
 
+	// Limit names the type a LIMIT or OFFSET count has, which is what a
+	// placeholder in one is typed as. Unset, it is the integer literal's.
+	Limit string `json:"limit,omitempty"`
+
+	// Untyped names the type a placeholder takes when nothing in the query
+	// constrains it. Unset, such a placeholder stays untyped.
+	Untyped string `json:"untyped,omitempty"`
+
+	// PropagateNullable makes a function's result nullable whenever one of
+	// its arguments is, the way ClickHouse's ordinary functions behave,
+	// unless the function is seeded as never null.
+	PropagateNullable bool `json:"propagate_nullable,omitempty"`
+
+	// QualifyDuplicateColumns names a result column after its relation when
+	// an earlier result column from another relation has the same name, as
+	// ClickHouse names the second id of a join e.id.
+	QualifyDuplicateColumns bool `json:"qualify_duplicate_columns,omitempty"`
+
 	// Comparison operators are registered as (T, T) -> Bool for every type in
 	// ComparisonCategories.
 	Comparison           []string `json:"comparison,omitempty"`
@@ -108,11 +126,16 @@ type Cast struct {
 // Function is a function the dialect ships with. Kind is 'f'unction,
 // 'a'ggregate, 'w'indow or 'p'rocedure.
 type Function struct {
-	Name     string `json:"name"`
-	Kind     string `json:"kind,omitempty"`
-	Args     []Arg  `json:"args,omitempty"`
+	Name string `json:"name,omitempty"`
+	Kind string `json:"kind,omitempty"`
+	Args []Arg  `json:"args,omitempty"`
+	// Returns names the result type, or "$1", "$2"... for the type of that
+	// argument.
 	Returns  string `json:"returns"`
 	Nullable bool   `json:"nullable,omitempty"`
+	// NeverNull marks a result that is never NULL even when an argument
+	// is, in a dialect that propagates nullability.
+	NeverNull bool `json:"never_null,omitempty"`
 }
 
 // Relation is a table or view the dialect ships with, such as one of
@@ -450,6 +473,31 @@ func (b *builder) consts() error {
 			return err
 		}
 	}
+	for key, name := range map[string]string{
+		core.FlagBoolType:    b.settings.Bool,
+		core.FlagLimitType:   b.settings.Limit,
+		core.FlagUntypedType: b.settings.Untyped,
+	} {
+		if name == "" {
+			continue
+		}
+		if _, ok := b.oids[strings.ToLower(name)]; !ok {
+			return fmt.Errorf("seed %s: %s names unknown type %q", b.settings.Dialect, key, name)
+		}
+		if err := b.cat.SetDialectFlag(b.dialectOID, key, name); err != nil {
+			return err
+		}
+	}
+	if b.settings.PropagateNullable {
+		if err := b.cat.SetDialectFlag(b.dialectOID, core.FlagPropagateNullable, "true"); err != nil {
+			return err
+		}
+	}
+	if b.settings.QualifyDuplicateColumns {
+		if err := b.cat.SetDialectFlag(b.dialectOID, core.FlagQualifyDuplicateColumns, "true"); err != nil {
+			return err
+		}
+	}
 	// A schema declares types the seed knows nothing about — enums, domains,
 	// arrays, a SQLite column typed whatever the author felt like. Recording
 	// the comparison operators lets the catalog give those types the same ones.
@@ -602,6 +650,7 @@ func (b *builder) addFunction(fn Function) error {
 		Kind:           fn.Kind,
 		ReturnTypeOID:  returnOID,
 		ReturnNullable: fn.Nullable,
+		NeverNull:      fn.NeverNull,
 		Args:           args,
 	})
 	if err != nil {

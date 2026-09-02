@@ -162,7 +162,7 @@ func applyCreateTable(cat *core.Catalog, stmt *ast.CreateTableStmt) error {
 			Num:          i + 1,
 			NotNull:      col.IsNotNull || col.PrimaryKey,
 			IsPrimaryKey: col.PrimaryKey,
-			DeclType:     col.TypeName.Name,
+			DeclType:     declType(col.TypeName),
 			Hidden:       col.IsHidden,
 		}); err != nil {
 			return fmt.Errorf("attr %s.%s: %w", stmt.Name.Name, col.Colname, err)
@@ -234,7 +234,7 @@ func applyAlterTable(cat *core.Catalog, stmt *ast.AlterTableStmt) error {
 				Num:          num,
 				NotNull:      cmd.Def.IsNotNull || cmd.Def.PrimaryKey,
 				IsPrimaryKey: cmd.Def.PrimaryKey,
-				DeclType:     cmd.Def.TypeName.Name,
+				DeclType:     declType(cmd.Def.TypeName),
 			}); err != nil {
 				return err
 			}
@@ -426,4 +426,16 @@ func columnTypeOID(cat *core.Catalog, col *ast.ColumnDef) (int64, error) {
 		name += core.ArraySuffix
 	}
 	return cat.ResolveTypeName(name)
+}
+
+// declType is the type as the schema spelled it: an engine that folds or
+// reduces the name for the catalog keeps the full spelling alongside.
+func declType(tn *ast.TypeName) string {
+	if tn == nil {
+		return ""
+	}
+	if tn.Spelling != "" {
+		return tn.Spelling
+	}
+	return tn.Name
 }

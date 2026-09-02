@@ -114,7 +114,7 @@ func Locate() (string, error) {
 		return "", err
 	}
 	if _, err := os.Stat(path); err != nil {
-		return "", fmt.Errorf("clickhouse %s is not installed: run `go run . install clickhouse` in internal/testcheck, or set CLICKHOUSE to a clickhouse binary", DefaultVersion)
+		return "", fmt.Errorf("clickhouse %s is not installed: run `go run ./cmd/testcheck install clickhouse` in internal/testcheck, or set CLICKHOUSE to a clickhouse binary", DefaultVersion)
 	}
 	return path, nil
 }
