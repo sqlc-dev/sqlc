@@ -7,7 +7,7 @@
 Rules are defined in the `sqlc` [configuration](../reference/config.md) file. They
 consist of a name, message, and a [Common Expression Language
 (CEL)](https://github.com/google/cel-spec) expression. Expressions are evaluated
-using [cel-go](https://github.com/google/cel-go).  If an expression evaluates to
+using [cel-go](https://github.com/cel-expr/cel-go).  If an expression evaluates to
 `true`, `sqlc vet` will report an error using the given message.
 
 ## Defining lint rules

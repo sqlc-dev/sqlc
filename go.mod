@@ -5,11 +5,11 @@ go 1.26.0
 toolchain go1.26.5
 
 require (
+	cel.dev/cel-go v0.32.0
 	github.com/cubicdaiya/gonp v1.0.4
 	github.com/davecgh/go-spew v1.1.1
 	github.com/fatih/structtag v1.2.0
 	github.com/go-sql-driver/mysql v1.10.0
-	github.com/google/cel-go v0.31.0
 	github.com/google/go-cmp v0.7.0
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/jinzhu/inflection v1.0.0
