@@ -1,0 +1,335 @@
+[
+  {
+    "name": "Aggregates",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "n",
+        "data_type": "uint64",
+        "not_null": true,
+        "is_array": false
+      },
+      {
+        "name": "top",
+        "data_type": "float64",
+        "not_null": true,
+        "is_array": false
+      },
+      {
+        "name": "sum(amount)",
+        "data_type": "float64",
+        "not_null": true,
+        "is_array": false
+      },
+      {
+        "name": "first_tag",
+        "data_type": "string",
+        "not_null": false,
+        "is_array": false
+      },
+      {
+        "name": "uniq(name)",
+        "data_type": "uint64",
+        "not_null": true,
+        "is_array": false
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Expressions",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "next_id",
+        "data_type": "uint64",
+        "not_null": true,
+        "is_array": false
+      },
+      {
+        "name": "maybe",
+        "data_type": "string",
+        "not_null": false,
+        "is_array": false
+      },
+      {
+        "name": "tag_or_none",
+        "data_type": "string",
+        "not_null": true,
+        "is_array": false
+      },
+      {
+        "name": "lower(name)",
+        "data_type": "string",
+        "not_null": true,
+        "is_array": false
+      },
+      {
+        "name": "today",
+        "data_type": "date",
+        "not_null": true,
+        "is_array": false
+      },
+      {
+        "name": "big",
+        "data_type": "uint8",
+        "not_null": true,
+        "is_array": false
+      },
+      {
+        "name": "word",
+        "data_type": "string",
+        "not_null": false,
+        "is_array": false
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "LeftJoinDefaults",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "data_type": "uint64",
+        "not_null": true,
+        "is_array": false,
+        "table": "events"
+      },
+      {
+        "name": "name",
+        "data_type": "string",
+        "not_null": true,
+        "is_array": false,
+        "table": "events"
+      },
+      {
+        "name": "email",
+        "data_type": "string",
+        "not_null": true,
+        "is_array": false,
+        "table": "users"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Positional",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "data_type": "uint64",
+        "not_null": true,
+        "is_array": false,
+        "table": "events"
+      },
+      {
+        "name": "name",
+        "data_type": "string",
+        "not_null": true,
+        "is_array": false,
+        "table": "events"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "data_type": "string",
+          "not_null": true,
+          "is_array": false,
+          "table": "events"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "amount",
+          "data_type": "float64",
+          "not_null": true,
+          "is_array": false,
+          "table": "events"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "tag",
+          "data_type": "string",
+          "not_null": false,
+          "is_array": false,
+          "table": "events"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Named",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "data_type": "uint64",
+        "not_null": true,
+        "is_array": false,
+        "table": "events"
+      },
+      {
+        "name": "name",
+        "data_type": "string",
+        "not_null": true,
+        "is_array": false,
+        "table": "events"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "data_type": "string",
+          "not_null": true,
+          "is_array": false,
+          "table": "events"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "tag",
+          "data_type": "string",
+          "not_null": false,
+          "is_array": false,
+          "table": "events"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "amount",
+          "data_type": "float64",
+          "not_null": true,
+          "is_array": false,
+          "table": "events"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "amount",
+          "data_type": "float64",
+          "not_null": true,
+          "is_array": false,
+          "table": "events"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Functions",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "data_type": "uint64",
+        "not_null": true,
+        "is_array": false,
+        "table": "events"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "lower",
+          "data_type": "string",
+          "not_null": true,
+          "is_array": false
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "id",
+          "data_type": "uint64",
+          "not_null": true,
+          "is_array": false,
+          "table": "events"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "",
+          "data_type": "date",
+          "not_null": true,
+          "is_array": false
+        }
+      }
+    ]
+  },
+  {
+    "name": "Paging",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "data_type": "uint64",
+        "not_null": true,
+        "is_array": false,
+        "table": "events"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "",
+          "data_type": "uint64",
+          "not_null": true,
+          "is_array": false
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "",
+          "data_type": "uint64",
+          "not_null": true,
+          "is_array": false
+        }
+      }
+    ]
+  },
+  {
+    "name": "Projected",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "echo",
+        "data_type": "nothing",
+        "not_null": false,
+        "is_array": false
+      },
+      {
+        "name": "lit",
+        "data_type": "string",
+        "not_null": true,
+        "is_array": false
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "echo",
+          "data_type": "nothing",
+          "not_null": false,
+          "is_array": false
+        }
+      }
+    ]
+  }
+]
