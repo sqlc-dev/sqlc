@@ -42,15 +42,16 @@ query is explained and then executed, and the process exits.
 The output has the shape of `sqlc analyze`, except that each column's type is
 one expression rather than a name and flags. A type is a call: a lowercased
 `name` applied to `args`, each of which carries an optional `label` and
-exactly one of `type`, `int`, `bool` or `string`. `Nullable`, `Array` and
+exactly one of `type`, `int`, `bool` or `string`. `Array`, `Map` and
 `LowCardinality` are ordinary names in that grammar, so nothing about nesting
-is lost, and there is no separate nullability flag: a nullable column is one
-whose type is `nullable(...)`.
+is lost. Nullability is an attribute of a type rather than a wrapper:
+`Nullable(T)` becomes `T` with `nullable` set, at whatever depth ClickHouse
+wrote it.
 
 ```json
 {"name": "map", "args": [
   {"type": {"name": "string"}},
-  {"type": {"name": "nullable", "args": [{"type": {"name": "uint8"}}]}}]}
+  {"type": {"name": "uint8", "nullable": true}}]}
 
 {"name": "tuple", "args": [
   {"label": "lat", "type": {"name": "float64"}},

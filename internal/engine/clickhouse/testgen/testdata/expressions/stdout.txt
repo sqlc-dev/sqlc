@@ -24,14 +24,8 @@
       {
         "name": "first_tag",
         "type": {
-          "name": "nullable",
-          "args": [
-            {
-              "type": {
-                "name": "string"
-              }
-            }
-          ]
+          "name": "string",
+          "nullable": true
         }
       },
       {
@@ -56,14 +50,8 @@
       {
         "name": "maybe",
         "type": {
-          "name": "nullable",
-          "args": [
-            {
-              "type": {
-                "name": "string"
-              }
-            }
-          ]
+          "name": "string",
+          "nullable": true
         }
       },
       {
@@ -93,14 +81,8 @@
       {
         "name": "word",
         "type": {
-          "name": "nullable",
-          "args": [
-            {
-              "type": {
-                "name": "string"
-              }
-            }
-          ]
+          "name": "string",
+          "nullable": true
         }
       }
     ],
@@ -179,14 +161,8 @@
         "column": {
           "name": "tag",
           "type": {
-            "name": "nullable",
-            "args": [
-              {
-                "type": {
-                  "name": "string"
-                }
-              }
-            ]
+            "name": "string",
+            "nullable": true
           },
           "table": "events"
         }
@@ -228,14 +204,8 @@
         "column": {
           "name": "tag",
           "type": {
-            "name": "nullable",
-            "args": [
-              {
-                "type": {
-                  "name": "string"
-                }
-              }
-            ]
+            "name": "string",
+            "nullable": true
           },
           "table": "events"
         }
@@ -345,14 +315,8 @@
       {
         "name": "echo",
         "type": {
-          "name": "nullable",
-          "args": [
-            {
-              "type": {
-                "name": "nothing"
-              }
-            }
-          ]
+          "name": "nothing",
+          "nullable": true
         }
       },
       {
@@ -368,14 +332,8 @@
         "column": {
           "name": "echo",
           "type": {
-            "name": "nullable",
-            "args": [
-              {
-                "type": {
-                  "name": "nothing"
-                }
-              }
-            ]
+            "name": "nothing",
+            "nullable": true
           }
         }
       }
