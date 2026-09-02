@@ -5,8 +5,8 @@
 // It loads a schema and a fixture into an ephemeral `clickhouse local`
 // process, runs each query found in a sqlc query file against that data, and
 // prints the result column types, nullability and source tables along with
-// the parameters each query binds, in the same JSON shape `sqlc analyze`
-// prints.
+// the parameters each query binds, in the JSON shape `sqlc analyze` prints
+// with each type written as a call expression.
 //
 // The clickhouse binary is downloaded once per pinned version with
 // `testgen install`, or supplied through the CLICKHOUSE environment variable.

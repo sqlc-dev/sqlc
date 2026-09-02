@@ -13,6 +13,8 @@ CREATE TABLE things (
     status Enum8('active' = 1, 'deleted' = 2),
     attrs Map(String, UInt32),
     pos Tuple(Float64, Float64),
+    geo Tuple(lat Float64, lon Float64),
+    scores Map(String, Nullable(UInt8)),
     ip IPv4,
     uid UUID,
     fixed FixedString(4),

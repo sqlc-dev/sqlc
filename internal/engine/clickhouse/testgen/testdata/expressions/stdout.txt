@@ -5,33 +5,28 @@
     "columns": [
       {
         "name": "n",
-        "data_type": "uint64",
-        "not_null": true,
-        "is_array": false
+        "type": "uint64",
+        "not_null": true
       },
       {
         "name": "top",
-        "data_type": "float64",
-        "not_null": true,
-        "is_array": false
+        "type": "float64",
+        "not_null": true
       },
       {
         "name": "sum(amount)",
-        "data_type": "float64",
-        "not_null": true,
-        "is_array": false
+        "type": "float64",
+        "not_null": true
       },
       {
         "name": "first_tag",
-        "data_type": "string",
-        "not_null": false,
-        "is_array": false
+        "type": "string",
+        "not_null": false
       },
       {
         "name": "uniq(name)",
-        "data_type": "uint64",
-        "not_null": true,
-        "is_array": false
+        "type": "uint64",
+        "not_null": true
       }
     ],
     "params": []
@@ -42,45 +37,38 @@
     "columns": [
       {
         "name": "next_id",
-        "data_type": "uint64",
-        "not_null": true,
-        "is_array": false
+        "type": "uint64",
+        "not_null": true
       },
       {
         "name": "maybe",
-        "data_type": "string",
-        "not_null": false,
-        "is_array": false
+        "type": "string",
+        "not_null": false
       },
       {
         "name": "tag_or_none",
-        "data_type": "string",
-        "not_null": true,
-        "is_array": false
+        "type": "string",
+        "not_null": true
       },
       {
         "name": "lower(name)",
-        "data_type": "string",
-        "not_null": true,
-        "is_array": false
+        "type": "string",
+        "not_null": true
       },
       {
         "name": "today",
-        "data_type": "date",
-        "not_null": true,
-        "is_array": false
+        "type": "date",
+        "not_null": true
       },
       {
         "name": "big",
-        "data_type": "uint8",
-        "not_null": true,
-        "is_array": false
+        "type": "uint8",
+        "not_null": true
       },
       {
         "name": "word",
-        "data_type": "string",
-        "not_null": false,
-        "is_array": false
+        "type": "string",
+        "not_null": false
       }
     ],
     "params": []
@@ -91,23 +79,20 @@
     "columns": [
       {
         "name": "id",
-        "data_type": "uint64",
+        "type": "uint64",
         "not_null": true,
-        "is_array": false,
         "table": "events"
       },
       {
         "name": "name",
-        "data_type": "string",
+        "type": "string",
         "not_null": true,
-        "is_array": false,
         "table": "events"
       },
       {
         "name": "email",
-        "data_type": "string",
+        "type": "string",
         "not_null": true,
-        "is_array": false,
         "table": "users"
       }
     ],
@@ -119,16 +104,14 @@
     "columns": [
       {
         "name": "id",
-        "data_type": "uint64",
+        "type": "uint64",
         "not_null": true,
-        "is_array": false,
         "table": "events"
       },
       {
         "name": "name",
-        "data_type": "string",
+        "type": "string",
         "not_null": true,
-        "is_array": false,
         "table": "events"
       }
     ],
@@ -137,9 +120,8 @@
         "number": 1,
         "column": {
           "name": "name",
-          "data_type": "string",
+          "type": "string",
           "not_null": true,
-          "is_array": false,
           "table": "events"
         }
       },
@@ -147,9 +129,8 @@
         "number": 2,
         "column": {
           "name": "amount",
-          "data_type": "float64",
+          "type": "float64",
           "not_null": true,
-          "is_array": false,
           "table": "events"
         }
       },
@@ -157,9 +138,8 @@
         "number": 3,
         "column": {
           "name": "tag",
-          "data_type": "string",
+          "type": "string",
           "not_null": false,
-          "is_array": false,
           "table": "events"
         }
       }
@@ -171,16 +151,14 @@
     "columns": [
       {
         "name": "id",
-        "data_type": "uint64",
+        "type": "uint64",
         "not_null": true,
-        "is_array": false,
         "table": "events"
       },
       {
         "name": "name",
-        "data_type": "string",
+        "type": "string",
         "not_null": true,
-        "is_array": false,
         "table": "events"
       }
     ],
@@ -189,9 +167,8 @@
         "number": 1,
         "column": {
           "name": "name",
-          "data_type": "string",
+          "type": "string",
           "not_null": true,
-          "is_array": false,
           "table": "events"
         }
       },
@@ -199,9 +176,8 @@
         "number": 2,
         "column": {
           "name": "tag",
-          "data_type": "string",
+          "type": "string",
           "not_null": false,
-          "is_array": false,
           "table": "events"
         }
       },
@@ -209,9 +185,8 @@
         "number": 3,
         "column": {
           "name": "amount",
-          "data_type": "float64",
+          "type": "float64",
           "not_null": true,
-          "is_array": false,
           "table": "events"
         }
       },
@@ -219,9 +194,8 @@
         "number": 3,
         "column": {
           "name": "amount",
-          "data_type": "float64",
+          "type": "float64",
           "not_null": true,
-          "is_array": false,
           "table": "events"
         }
       }
@@ -233,9 +207,8 @@
     "columns": [
       {
         "name": "id",
-        "data_type": "uint64",
+        "type": "uint64",
         "not_null": true,
-        "is_array": false,
         "table": "events"
       }
     ],
@@ -244,18 +217,16 @@
         "number": 1,
         "column": {
           "name": "lower",
-          "data_type": "string",
-          "not_null": true,
-          "is_array": false
+          "type": "string",
+          "not_null": true
         }
       },
       {
         "number": 2,
         "column": {
           "name": "id",
-          "data_type": "uint64",
+          "type": "uint64",
           "not_null": true,
-          "is_array": false,
           "table": "events"
         }
       },
@@ -263,9 +234,8 @@
         "number": 3,
         "column": {
           "name": "",
-          "data_type": "date",
-          "not_null": true,
-          "is_array": false
+          "type": "date",
+          "not_null": true
         }
       }
     ]
@@ -276,9 +246,8 @@
     "columns": [
       {
         "name": "id",
-        "data_type": "uint64",
+        "type": "uint64",
         "not_null": true,
-        "is_array": false,
         "table": "events"
       }
     ],
@@ -287,18 +256,16 @@
         "number": 1,
         "column": {
           "name": "",
-          "data_type": "uint64",
-          "not_null": true,
-          "is_array": false
+          "type": "uint64",
+          "not_null": true
         }
       },
       {
         "number": 2,
         "column": {
           "name": "",
-          "data_type": "uint64",
-          "not_null": true,
-          "is_array": false
+          "type": "uint64",
+          "not_null": true
         }
       }
     ]
@@ -309,15 +276,13 @@
     "columns": [
       {
         "name": "echo",
-        "data_type": "nothing",
-        "not_null": false,
-        "is_array": false
+        "type": "nothing",
+        "not_null": false
       },
       {
         "name": "lit",
-        "data_type": "string",
-        "not_null": true,
-        "is_array": false
+        "type": "string",
+        "not_null": true
       }
     ],
     "params": [
@@ -325,9 +290,8 @@
         "number": 1,
         "column": {
           "name": "echo",
-          "data_type": "nothing",
-          "not_null": false,
-          "is_array": false
+          "type": "nothing",
+          "not_null": false
         }
       }
     ]

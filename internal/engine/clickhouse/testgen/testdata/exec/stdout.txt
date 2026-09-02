@@ -8,9 +8,8 @@
         "number": 1,
         "column": {
           "name": "id",
-          "data_type": "uint64",
+          "type": "uint64",
           "not_null": true,
-          "is_array": false,
           "table": "users"
         }
       },
@@ -18,9 +17,8 @@
         "number": 2,
         "column": {
           "name": "email",
-          "data_type": "string",
+          "type": "string",
           "not_null": true,
-          "is_array": false,
           "table": "users"
         }
       }
@@ -35,9 +33,8 @@
         "number": 1,
         "column": {
           "name": "id",
-          "data_type": "uint64",
+          "type": "uint64",
           "not_null": true,
-          "is_array": false,
           "table": "events"
         }
       },
@@ -45,9 +42,8 @@
         "number": 2,
         "column": {
           "name": "name",
-          "data_type": "string",
+          "type": "string",
           "not_null": true,
-          "is_array": false,
           "table": "events"
         }
       },
@@ -55,9 +51,8 @@
         "number": 3,
         "column": {
           "name": "tag",
-          "data_type": "string",
+          "type": "string",
           "not_null": false,
-          "is_array": false,
           "table": "events"
         }
       },
@@ -65,9 +60,8 @@
         "number": 4,
         "column": {
           "name": "amount",
-          "data_type": "float64",
+          "type": "float64",
           "not_null": true,
-          "is_array": false,
           "table": "events"
         }
       }
@@ -82,9 +76,8 @@
         "number": 1,
         "column": {
           "name": "id",
-          "data_type": "uint64",
+          "type": "uint64",
           "not_null": true,
-          "is_array": false,
           "table": "events"
         }
       },
@@ -92,9 +85,8 @@
         "number": 2,
         "column": {
           "name": "name",
-          "data_type": "string",
+          "type": "string",
           "not_null": true,
-          "is_array": false,
           "table": "events"
         }
       },
@@ -102,9 +94,8 @@
         "number": 3,
         "column": {
           "name": "id",
-          "data_type": "uint64",
+          "type": "uint64",
           "not_null": true,
-          "is_array": false,
           "table": "events"
         }
       },
@@ -112,9 +103,8 @@
         "number": 4,
         "column": {
           "name": "name",
-          "data_type": "string",
+          "type": "string",
           "not_null": true,
-          "is_array": false,
           "table": "events"
         }
       }

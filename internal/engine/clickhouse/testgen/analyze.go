@@ -9,8 +9,8 @@ import (
 	"strings"
 )
 
-// The output mirrors the JSON `sqlc analyze` prints so a golden generated
-// here can be diffed against sqlc's own analysis of the same files.
+// The output follows the JSON `sqlc analyze` prints, with each type written
+// as a call expression (see types.go) instead of a name and flags.
 
 type analyzedQuery struct {
 	Name    string           `json:"name"`
@@ -20,11 +20,10 @@ type analyzedQuery struct {
 }
 
 type analyzedColumn struct {
-	Name     string `json:"name"`
-	DataType string `json:"data_type"`
-	NotNull  bool   `json:"not_null"`
-	IsArray  bool   `json:"is_array"`
-	Table    string `json:"table,omitempty"`
+	Name    string `json:"name"`
+	Type    string `json:"type"`
+	NotNull bool   `json:"not_null"`
+	Table   string `json:"table,omitempty"`
 }
 
 type analyzedParam struct {
@@ -119,8 +118,8 @@ func analyzeQuery(ctx context.Context, l local, schema, fixture string, q query)
 }
 
 func column(name, typ string) analyzedColumn {
-	dataType, isArray, notNull := sqlcType(typ)
-	return analyzedColumn{Name: name, DataType: dataType, NotNull: notNull, IsArray: isArray}
+	expr, notNull := typeExpr(typ)
+	return analyzedColumn{Name: name, Type: expr, NotNull: notNull}
 }
 
 // returnsRows reports whether a statement produces a result set and so can
