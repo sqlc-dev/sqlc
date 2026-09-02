@@ -204,16 +204,34 @@ type analyzedQuery struct {
 }
 
 type analyzedColumn struct {
-	Name     string `json:"name"`
-	DataType string `json:"data_type"`
-	NotNull  bool   `json:"not_null"`
-	IsArray  bool   `json:"is_array"`
-	Table    string `json:"table,omitempty"`
+	Name  string        `json:"name"`
+	Type  *analyzedType `json:"type,omitempty"`
+	Table string        `json:"table,omitempty"`
 }
 
 type analyzedParam struct {
 	Number int            `json:"number"`
 	Column analyzedColumn `json:"column"`
+}
+
+// analyzedType writes a type as a call expression: a name applied to
+// arguments that are other types, integers, booleans or strings, each with
+// an optional label, and a nullable flag at whatever depth it applies. An
+// array of text is array(text); a nullable column of it has nullable set on
+// the array node. Names are recorded as the engine reports them and resolve
+// against the catalog afterwards.
+type analyzedType struct {
+	Name     string        `json:"name"`
+	Nullable bool          `json:"nullable,omitempty"`
+	Args     []analyzedArg `json:"args,omitempty"`
+}
+
+type analyzedArg struct {
+	Label  string        `json:"label,omitempty"`
+	Type   *analyzedType `json:"type,omitempty"`
+	Int    *int64        `json:"int,omitempty"`
+	Bool   *bool         `json:"bool,omitempty"`
+	String *string       `json:"string,omitempty"`
 }
 
 func newAnalyzedQuery(q *compiler.Query, includeAST bool) analyzedQuery {
@@ -243,13 +261,30 @@ func newAnalyzedColumn(col *compiler.Column) analyzedColumn {
 		return analyzedColumn{}
 	}
 	ac := analyzedColumn{
-		Name:     col.Name,
-		DataType: col.DataType,
-		NotNull:  col.NotNull,
-		IsArray:  col.IsArray,
+		Name: col.Name,
+		Type: newAnalyzedType(col),
 	}
 	if col.Table != nil {
 		ac.Table = col.Table.Name
 	}
 	return ac
+}
+
+// newAnalyzedType builds the type expression the compiler's flat column
+// description amounts to: the data type wrapped in one array node per
+// dimension, with the column's nullability on the outermost node.
+func newAnalyzedType(col *compiler.Column) *analyzedType {
+	if col.DataType == "" {
+		return nil
+	}
+	t := &analyzedType{Name: col.DataType}
+	dims := col.ArrayDims
+	if col.IsArray && dims == 0 {
+		dims = 1
+	}
+	for i := 0; i < dims; i++ {
+		t = &analyzedType{Name: "array", Args: []analyzedArg{{Type: t}}}
+	}
+	t.Nullable = !col.NotNull
+	return t
 }

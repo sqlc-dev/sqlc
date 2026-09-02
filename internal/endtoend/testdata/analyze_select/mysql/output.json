@@ -1,0 +1,162 @@
+[
+  {
+    "name": "ListUsers",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "users"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "varchar"
+        },
+        "table": "users"
+      },
+      {
+        "name": "bio",
+        "type": {
+          "name": "text",
+          "nullable": true
+        },
+        "table": "users"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "CountUsers",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "total",
+        "type": {
+          "name": "bigint"
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "ListUserPosts",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "name",
+        "type": {
+          "name": "varchar"
+        },
+        "table": "users"
+      },
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "posts"
+      },
+      {
+        "name": "user_id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "posts"
+      },
+      {
+        "name": "title",
+        "type": {
+          "name": "varchar",
+          "nullable": true
+        },
+        "table": "posts"
+      },
+      {
+        "name": "created",
+        "type": {
+          "name": "datetime"
+        },
+        "table": "posts"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "varchar"
+          },
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "SearchPosts",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "posts"
+      },
+      {
+        "name": "title",
+        "type": {
+          "name": "varchar",
+          "nullable": true
+        },
+        "table": "posts"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "title",
+          "type": {
+            "name": "varchar",
+            "nullable": true
+          },
+          "table": "posts"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "created",
+          "type": {
+            "name": "datetime"
+          },
+          "table": "posts"
+        }
+      }
+    ]
+  },
+  {
+    "name": "LatestPostPerUser",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "name",
+        "type": {
+          "name": "varchar"
+        },
+        "table": "users"
+      },
+      {
+        "name": "created",
+        "type": {
+          "name": "datetime"
+        }
+      }
+    ],
+    "params": []
+  }
+]

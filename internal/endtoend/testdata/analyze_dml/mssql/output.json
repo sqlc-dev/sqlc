@@ -1,0 +1,110 @@
+[
+  {
+    "name": "CreateAuthor",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "authors"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "nvarchar"
+          },
+          "table": "authors"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "bio",
+          "type": {
+            "name": "nvarchar",
+            "nullable": true
+          },
+          "table": "authors"
+        }
+      }
+    ]
+  },
+  {
+    "name": "UpdateAuthorAlias",
+    "cmd": ":exec",
+    "columns": [],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "nvarchar"
+          },
+          "table": "authors"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "bigint"
+          },
+          "table": "authors"
+        }
+      }
+    ]
+  },
+  {
+    "name": "UpdateBookPrices",
+    "cmd": ":exec",
+    "columns": [],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "price",
+          "type": {
+            "name": "decimal",
+            "nullable": true
+          },
+          "table": "books"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "nvarchar"
+          },
+          "table": "authors"
+        }
+      }
+    ]
+  },
+  {
+    "name": "DeleteBooksByAuthor",
+    "cmd": ":exec",
+    "columns": [],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "nvarchar"
+          },
+          "table": "authors"
+        }
+      }
+    ]
+  }
+]

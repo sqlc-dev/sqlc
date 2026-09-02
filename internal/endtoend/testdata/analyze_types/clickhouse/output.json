@@ -1,0 +1,344 @@
+[
+  {
+    "name": "AllTypes",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "things"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "string"
+        },
+        "table": "things"
+      },
+      {
+        "name": "tag",
+        "type": {
+          "name": "string",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "amount",
+        "type": {
+          "name": "float64"
+        },
+        "table": "things"
+      },
+      {
+        "name": "tags",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "labels",
+        "type": {
+          "name": "array",
+          "nullable": true,
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "matrix",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "uint8"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "kind",
+        "type": {
+          "name": "string",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "created",
+        "type": {
+          "name": "datetime"
+        },
+        "table": "things"
+      },
+      {
+        "name": "updated",
+        "type": {
+          "name": "datetime64"
+        },
+        "table": "things"
+      },
+      {
+        "name": "price",
+        "type": {
+          "name": "decimal"
+        },
+        "table": "things"
+      },
+      {
+        "name": "status",
+        "type": {
+          "name": "enum8"
+        },
+        "table": "things"
+      },
+      {
+        "name": "attrs",
+        "type": {
+          "name": "map"
+        },
+        "table": "things"
+      },
+      {
+        "name": "pos",
+        "type": {
+          "name": "tuple"
+        },
+        "table": "things"
+      },
+      {
+        "name": "geo",
+        "type": {
+          "name": "tuple"
+        },
+        "table": "things"
+      },
+      {
+        "name": "scores",
+        "type": {
+          "name": "map"
+        },
+        "table": "things"
+      },
+      {
+        "name": "ip",
+        "type": {
+          "name": "ipv4"
+        },
+        "table": "things"
+      },
+      {
+        "name": "uid",
+        "type": {
+          "name": "uuid"
+        },
+        "table": "things"
+      },
+      {
+        "name": "fixed",
+        "type": {
+          "name": "fixedstring"
+        },
+        "table": "things"
+      },
+      {
+        "name": "flag",
+        "type": {
+          "name": "bool"
+        },
+        "table": "things"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "StarColumns",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "things"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "string"
+        },
+        "table": "things"
+      },
+      {
+        "name": "tag",
+        "type": {
+          "name": "string",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "amount",
+        "type": {
+          "name": "float64"
+        },
+        "table": "things"
+      },
+      {
+        "name": "tags",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "labels",
+        "type": {
+          "name": "array",
+          "nullable": true,
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "matrix",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "uint8"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "kind",
+        "type": {
+          "name": "string",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "created",
+        "type": {
+          "name": "datetime"
+        },
+        "table": "things"
+      },
+      {
+        "name": "updated",
+        "type": {
+          "name": "datetime64"
+        },
+        "table": "things"
+      },
+      {
+        "name": "price",
+        "type": {
+          "name": "decimal"
+        },
+        "table": "things"
+      },
+      {
+        "name": "status",
+        "type": {
+          "name": "enum8"
+        },
+        "table": "things"
+      },
+      {
+        "name": "attrs",
+        "type": {
+          "name": "map"
+        },
+        "table": "things"
+      },
+      {
+        "name": "pos",
+        "type": {
+          "name": "tuple"
+        },
+        "table": "things"
+      },
+      {
+        "name": "geo",
+        "type": {
+          "name": "tuple"
+        },
+        "table": "things"
+      },
+      {
+        "name": "scores",
+        "type": {
+          "name": "map"
+        },
+        "table": "things"
+      },
+      {
+        "name": "ip",
+        "type": {
+          "name": "ipv4"
+        },
+        "table": "things"
+      },
+      {
+        "name": "uid",
+        "type": {
+          "name": "uuid"
+        },
+        "table": "things"
+      },
+      {
+        "name": "fixed",
+        "type": {
+          "name": "fixedstring"
+        },
+        "table": "things"
+      },
+      {
+        "name": "flag",
+        "type": {
+          "name": "bool"
+        },
+        "table": "things"
+      }
+    ],
+    "params": []
+  }
+]
