@@ -9,11 +9,11 @@ import (
 	"testing"
 )
 
-var update = flag.Bool("update", false, "rewrite the expected stdout.txt of every case")
+var update = flag.Bool("update", false, "rewrite the expected analyze.json of every case")
 
 // TestAnalyze runs the CLI over each directory under testdata, which holds
 // the same files a sqlc analyze case does plus a fixture, and compares the
-// output with the committed stdout.txt. It needs the clickhouse binary and
+// output with the committed analyze.json. It needs the clickhouse binary and
 // skips when none is installed.
 func TestAnalyze(t *testing.T) {
 	if _, err := Locate(); err != nil {
@@ -36,7 +36,7 @@ func TestAnalyze(t *testing.T) {
 				t.Fatalf("%v\n%s", err, stderr.String())
 			}
 
-			golden := filepath.Join(dir, "stdout.txt")
+			golden := filepath.Join(dir, "analyze.json")
 			if *update {
 				if err := os.WriteFile(golden, stdout.Bytes(), 0o644); err != nil {
 					t.Fatal(err)
