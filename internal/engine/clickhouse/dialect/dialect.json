@@ -6,9 +6,13 @@
     "string": "String",
     "bool": "Bool"
   },
-  "bool": "Bool",
-  "comparison": ["=", "<>", "!=", "<", "<=", ">", ">="],
-  "comparison_categories": "NBSD",
-  "arithmetic": ["+", "-", "*", "/"],
+  "bool": "UInt8",
+  "limit": "UInt64",
+  "untyped": "Nothing",
+  "propagate_nullable": true,
+  "qualify_duplicate_columns": true,
+  "comparison": ["=", "==", "<>", "!=", "<", "<=", ">", ">="],
+  "comparison_categories": "NBSDU",
+  "arithmetic": ["+", "-", "*", "/", "%"],
   "arithmetic_categories": "N"
 }

@@ -1,0 +1,130 @@
+[
+  {
+    "name": "CreateUser",
+    "cmd": ":exec",
+    "columns": [],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "uint64"
+          },
+          "table": "users"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "email",
+          "type": {
+            "name": "string"
+          },
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "CreateEvent",
+    "cmd": ":exec",
+    "columns": [],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "uint64"
+          },
+          "table": "events"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "string"
+          },
+          "table": "events"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "tag",
+          "type": {
+            "name": "string",
+            "nullable": true
+          },
+          "table": "events"
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "amount",
+          "type": {
+            "name": "float64"
+          },
+          "table": "events"
+        }
+      }
+    ]
+  },
+  {
+    "name": "CreateEvents",
+    "cmd": ":exec",
+    "columns": [],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "uint64"
+          },
+          "table": "events"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "string"
+          },
+          "table": "events"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "uint64"
+          },
+          "table": "events"
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "string"
+          },
+          "table": "events"
+        }
+      }
+    ]
+  },
+  {
+    "name": "DropUsers",
+    "cmd": ":exec",
+    "columns": [],
+    "params": []
+  }
+]

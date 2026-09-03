@@ -134,7 +134,7 @@ func (a *analyzer) typeConst(c *ast.A_Const) (exprType, error) {
 }
 
 func (a *analyzer) boolType(nullable bool) (exprType, error) {
-	oid, err := a.cat.ConstTypeOID(core.ConstBool)
+	oid, err := a.cat.BoolTypeOID()
 	if err != nil {
 		return exprType{}, err
 	}
@@ -207,10 +207,12 @@ func (a *analyzer) inferParam(number int, t exprType) {
 	if !ok {
 		cur = core.Parameter{Number: number}
 	}
-	if cur.TypeOID == 0 && cur.DataType == "" && (t.typeOID != 0 || t.typeName != "") {
+	typed := cur.TypeOID == 0 && cur.DataType == "" && (t.typeOID != 0 || t.typeName != "")
+	if typed {
 		cur.TypeOID = t.typeOID
 		cur.DataType, cur.IsArray = a.typeNameOf(t)
 		cur.NotNull = !t.nullable
+		cur.Type = a.typeExprOf(t, "")
 	}
 	if cur.Source == nil && t.sourceAttributeOID != 0 {
 		ad, err := a.cat.LookupAttribute(t.sourceAttributeOID)
@@ -221,9 +223,27 @@ func (a *analyzer) inferParam(number int, t exprType) {
 				TableAlias: t.sourceTableAlias,
 				Column:     ad.Column,
 			}
+			if typed {
+				cur.Type = a.typeExprOf(t, ad.DeclType)
+			}
 		}
 	}
 	a.params[number] = cur
+}
+
+// nameParamAfter names a placeholder compared with a function call after
+// the function, the way a placeholder compared with a column is named after
+// the column.
+func (a *analyzer) nameParamAfter(number int, other ast.Node) {
+	fc, ok := other.(*ast.FuncCall)
+	if !ok {
+		return
+	}
+	cur := a.params[number]
+	if cur.Name == "" && cur.Source == nil {
+		cur.Name = funcCallName(fc)
+		a.params[number] = cur
+	}
 }
 
 func (a *analyzer) typeAExpr(e *ast.A_Expr) (exprType, error) {
@@ -272,10 +292,12 @@ func (a *analyzer) typeAExpr(e *ast.A_Expr) (exprType, error) {
 
 	if pr, ok := e.Lexpr.(*ast.ParamRef); ok && rightT.typeOID != 0 {
 		a.inferParam(pr.Number, rightT)
+		a.nameParamAfter(pr.Number, e.Rexpr)
 		leftT = rightT
 	}
 	if pr, ok := e.Rexpr.(*ast.ParamRef); ok && leftT.typeOID != 0 {
 		a.inferParam(pr.Number, leftT)
+		a.nameParamAfter(pr.Number, e.Lexpr)
 		rightT = leftT
 	}
 
@@ -335,6 +357,19 @@ func (a *analyzer) typeIn(e *ast.In) (exprType, error) {
 			return exprType{}, err
 		}
 	}
+	// "x IN (SELECT ...)" compares x against the subquery's column, and the
+	// subquery's own placeholders are reported with the rest.
+	if sel, ok := e.Sel.(*ast.SelectStmt); ok {
+		cols, err := a.subqueryColumns(sel)
+		if err != nil {
+			return exprType{}, err
+		}
+		if len(cols) > 0 {
+			if err := a.typeOperands(e.Expr, exprType{typeOID: cols[0].TypeOID, nullable: !cols[0].NotNull}); err != nil {
+				return exprType{}, err
+			}
+		}
+	}
 	return a.boolType(false)
 }
 
@@ -385,10 +420,26 @@ func (a *analyzer) typeCase(e *ast.CaseExpr) (exprType, error) {
 	return t, nil
 }
 
-// typeCoalesce types COALESCE, which is its first argument's type and is null
-// only when every argument is.
+// typeCoalesce types COALESCE, which is its first typed argument's type and
+// is null only when every argument is.
 func (a *analyzer) typeCoalesce(e *ast.CoalesceExpr) (exprType, error) {
-	return a.typeFirstOf(listItems(e.Args), false)
+	var out exprType
+	found := false
+	nullable := true
+	for _, n := range listItems(e.Args) {
+		t, err := a.typeExpr(n)
+		if err != nil {
+			return exprType{}, err
+		}
+		if !found && t.typeOID != 0 {
+			// The result is an expression's, not the column's it came from.
+			out = exprType{typeOID: t.typeOID, typeName: t.typeName}
+			found = true
+		}
+		nullable = nullable && t.nullable
+	}
+	out.nullable = nullable
+	return out, nil
 }
 
 // typeFirstOf types a set of alternative results, taking the first one that has
@@ -591,7 +642,7 @@ func (a *analyzer) resolveOperator(name string, leftOID, rightOID int64) (core.O
 	// operator's name implies: a comparison yields a boolean and anything
 	// else yields the type it was applied to.
 	if a.cat.IsComparisonOperator(name) {
-		boolOID, err := a.cat.ConstTypeOID(core.ConstBool)
+		boolOID, err := a.cat.BoolTypeOID()
 		if err != nil {
 			return core.OperatorOverload{}, err
 		}
@@ -631,13 +682,17 @@ func (a *analyzer) typeFuncCall(f *ast.FuncCall) (exprType, error) {
 	}
 
 	args := listItems(f.Args)
-	argTypes := make([]int64, 0, len(args))
+	argTypes := make([]exprType, 0, len(args))
+	argOIDs := make([]int64, 0, len(args))
+	anyNullable := false
 	for _, arg := range args {
 		t, err := a.typeExpr(arg)
 		if err != nil {
 			return exprType{}, err
 		}
-		argTypes = append(argTypes, t.typeOID)
+		argTypes = append(argTypes, t)
+		argOIDs = append(argOIDs, t.typeOID)
+		anyNullable = anyNullable || t.nullable
 	}
 
 	overloads, err := a.cat.FindProcs(name, nil)
@@ -650,30 +705,84 @@ func (a *analyzer) typeFuncCall(f *ast.FuncCall) (exprType, error) {
 		// rather than failing the query.
 		return exprType{nullable: true}, nil
 	}
-	p := pickOverload(overloads, argTypes)
-	// An argument that is a bare placeholder takes the parameter's type.
+	p := a.pickOverload(overloads, argOIDs)
+	// An argument that is a bare placeholder takes the parameter's type,
+	// unless the parameter is polymorphic and says nothing.
 	for i, arg := range args {
 		if i >= len(p.ArgTypes) {
 			break
+		}
+		if a.isPolymorphicOID(p.ArgTypes[i]) {
+			continue
 		}
 		if err := a.typeOperands(arg, exprType{typeOID: p.ArgTypes[i]}); err != nil {
 			return exprType{}, err
 		}
 	}
-	return exprType{typeOID: a.returnType(p, argTypes), nullable: p.ReturnNullable}, nil
+	ret := a.returnType(p, argTypes)
+	ret.nullable = p.ReturnNullable
+	if !p.NeverNull && anyNullable && a.cat.PropagatesNullable() {
+		ret.nullable = true
+	}
+	return ret, nil
 }
 
-// returnType resolves a polymorphic return type — max(anyelement) and its
-// like — to the type the call was made with.
-func (a *analyzer) returnType(p core.ProcOverload, argTypes []int64) int64 {
-	if p.ReturnTypeOID == 0 || len(argTypes) == 0 || argTypes[0] == 0 {
-		return p.ReturnTypeOID
+// returnType resolves a polymorphic return type — max(anyelement), or a
+// seed's "$2" for the type of the second argument — to the type the call was
+// made with.
+func (a *analyzer) returnType(p core.ProcOverload, argTypes []exprType) exprType {
+	if p.ReturnTypeOID == 0 || len(argTypes) == 0 {
+		return exprType{typeOID: p.ReturnTypeOID}
 	}
 	name, err := a.cat.TypeName(p.ReturnTypeOID)
-	if err != nil || !isPolymorphic(name) {
-		return p.ReturnTypeOID
+	if err != nil {
+		return exprType{typeOID: p.ReturnTypeOID}
 	}
-	return argTypes[0]
+	if n, ok := argIndex(name); ok {
+		if n < len(argTypes) {
+			return exprType{typeOID: argTypes[n].typeOID, typeName: argTypes[n].typeName}
+		}
+		return exprType{}
+	}
+	if isPolymorphic(name) && argTypes[0].typeOID != 0 {
+		return exprType{typeOID: argTypes[0].typeOID}
+	}
+	return exprType{typeOID: p.ReturnTypeOID}
+}
+
+// argIndex reads a seed's "$n" pseudo-type as the zero-based index of the
+// argument whose type it stands for.
+func argIndex(typeName string) (int, bool) {
+	rest, ok := strings.CutPrefix(typeName, "$")
+	if !ok {
+		return 0, false
+	}
+	n := 0
+	for _, r := range rest {
+		if r < '0' || r > '9' {
+			return 0, false
+		}
+		n = n*10 + int(r-'0')
+	}
+	if n == 0 {
+		return 0, false
+	}
+	return n - 1, true
+}
+
+// isPolymorphicOID reports whether a parameter type accepts any argument.
+func (a *analyzer) isPolymorphicOID(oid int64) bool {
+	if oid == 0 {
+		return true
+	}
+	name, err := a.cat.TypeName(oid)
+	if err != nil {
+		return false
+	}
+	if _, ok := argIndex(name); ok {
+		return true
+	}
+	return isPolymorphic(name)
 }
 
 func isPolymorphic(typeName string) bool {
@@ -687,30 +796,32 @@ func isPolymorphic(typeName string) bool {
 }
 
 // pickOverload chooses the overload whose parameters the call's arguments
-// match, preferring an exact match on types over one on arity alone.
-func pickOverload(overloads []core.ProcOverload, argTypes []int64) core.ProcOverload {
-	var byArity *core.ProcOverload
+// match best: an exact type match on a parameter beats a polymorphic one,
+// which beats a mismatch, and any overload of the right arity beats one of
+// the wrong arity.
+func (a *analyzer) pickOverload(overloads []core.ProcOverload, argTypes []int64) core.ProcOverload {
+	best := -1
+	bestScore := -1
 	for i := range overloads {
 		ov := &overloads[i]
 		if len(ov.ArgTypes) != len(argTypes) {
 			continue
 		}
-		if byArity == nil {
-			byArity = ov
-		}
-		exact := true
+		score := 0
 		for j, oid := range argTypes {
-			if oid != ov.ArgTypes[j] {
-				exact = false
-				break
+			switch {
+			case oid != 0 && oid == ov.ArgTypes[j]:
+				score += 2
+			case a.isPolymorphicOID(ov.ArgTypes[j]):
+				score += 1
 			}
 		}
-		if exact {
-			return *ov
+		if score > bestScore {
+			best, bestScore = i, score
 		}
 	}
-	if byArity != nil {
-		return *byArity
+	if best >= 0 {
+		return overloads[best]
 	}
 	return overloads[0]
 }

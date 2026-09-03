@@ -1,0 +1,159 @@
+[
+  {
+    "name": "Aliased",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "x",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      },
+      {
+        "name": "total",
+        "type": {
+          "name": "float64"
+        }
+      },
+      {
+        "name": "email",
+        "type": {
+          "name": "string"
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Union",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "string"
+        },
+        "table": "events"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "ScalarSubquery",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      },
+      {
+        "name": "user_count",
+        "type": {
+          "name": "uint64",
+          "nullable": true
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "email",
+          "type": {
+            "name": "string"
+          },
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Cte",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      },
+      {
+        "name": "tag",
+        "type": {
+          "name": "string",
+          "nullable": true
+        },
+        "table": "events"
+      },
+      {
+        "name": "cnt",
+        "type": {
+          "name": "uint64"
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Star",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "users"
+      },
+      {
+        "name": "email",
+        "type": {
+          "name": "string"
+        },
+        "table": "users"
+      },
+      {
+        "name": "e.id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "string"
+        },
+        "table": "events"
+      },
+      {
+        "name": "tag",
+        "type": {
+          "name": "string",
+          "nullable": true
+        },
+        "table": "events"
+      },
+      {
+        "name": "amount",
+        "type": {
+          "name": "float64"
+        },
+        "table": "events"
+      }
+    ],
+    "params": []
+  }
+]

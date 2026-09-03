@@ -166,10 +166,10 @@ type occurrence struct {
 
 // File rewrites every sqlc construct in src to native SQL for the given engine.
 //
-// Engines that are not preprocessed — GoogleSQL and ClickHouse, which handle
-// their own parameter syntax — get the source back unchanged, with an empty
-// side table. sqlc.arg() and friends are not rewritten for them, so they reach
-// the parser as the function calls they look like.
+// An engine that is not preprocessed — GoogleSQL, which handles its own
+// parameter syntax — gets the source back unchanged, with an empty side
+// table. sqlc.arg() and friends are not rewritten for it, so they reach the
+// parser as the function calls they look like.
 func File(engine config.Engine, src string) *Result {
 	d, ok := DialectFor(engine)
 	if !ok {

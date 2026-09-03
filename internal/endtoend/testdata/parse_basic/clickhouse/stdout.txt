@@ -11,15 +11,16 @@
           "items": [
             {
               "tag": "ResTarget",
+              "name": "1",
               "val": {
                 "tag": "A_Const",
                 "val": {
                   "tag": "Integer",
                   "ival": 1
                 },
-                "location": 31
+                "location": 30
               },
-              "location": 31
+              "location": 30
             }
           ]
         },

@@ -1,0 +1,109 @@
+[
+  {
+    "name": "GetAuthor",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "authors"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "text"
+        },
+        "table": "authors"
+      },
+      {
+        "name": "bio",
+        "type": {
+          "name": "text",
+          "nullable": true
+        },
+        "table": "authors"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "bigint"
+          },
+          "table": "authors"
+        }
+      }
+    ]
+  },
+  {
+    "name": "FilterAuthors",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "authors"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "text"
+        },
+        "table": "authors"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "text"
+          },
+          "table": "authors"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "royalties",
+          "type": {
+            "name": "decimal"
+          },
+          "table": "authors"
+        }
+      }
+    ]
+  },
+  {
+    "name": "SearchAuthors",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "authors"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "text"
+          },
+          "table": "authors"
+        }
+      }
+    ]
+  }
+]

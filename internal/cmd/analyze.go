@@ -11,6 +11,7 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/compiler"
 	"github.com/sqlc-dev/sqlc/internal/config"
+	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/multierr"
 	"github.com/sqlc-dev/sqlc/internal/opts"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -204,11 +205,9 @@ type analyzedQuery struct {
 }
 
 type analyzedColumn struct {
-	Name     string `json:"name"`
-	DataType string `json:"data_type"`
-	NotNull  bool   `json:"not_null"`
-	IsArray  bool   `json:"is_array"`
-	Table    string `json:"table,omitempty"`
+	Name  string         `json:"name"`
+	Type  *core.TypeExpr `json:"type,omitempty"`
+	Table string         `json:"table,omitempty"`
 }
 
 type analyzedParam struct {
@@ -243,13 +242,34 @@ func newAnalyzedColumn(col *compiler.Column) analyzedColumn {
 		return analyzedColumn{}
 	}
 	ac := analyzedColumn{
-		Name:     col.Name,
-		DataType: col.DataType,
-		NotNull:  col.NotNull,
-		IsArray:  col.IsArray,
+		Name: col.Name,
+		Type: newAnalyzedType(col),
 	}
 	if col.Table != nil {
 		ac.Table = col.Table.Name
 	}
 	return ac
+}
+
+// newAnalyzedType is the column's type as an expression: the one the
+// analysis core wrote when it did, otherwise the flat description the
+// compiler holds, which is the data type wrapped in one array node per
+// dimension with the column's nullability on the outermost node.
+func newAnalyzedType(col *compiler.Column) *core.TypeExpr {
+	if col.TypeExpr != nil {
+		return col.TypeExpr
+	}
+	if col.DataType == "" {
+		return nil
+	}
+	t := core.ParseTypeExpr(col.DataType)
+	dims := col.ArrayDims
+	if col.IsArray && dims == 0 {
+		dims = 1
+	}
+	for i := 0; i < dims; i++ {
+		t = &core.TypeExpr{Name: "array", Args: []core.TypeArg{{Type: t}}}
+	}
+	t.Nullable = !col.NotNull
+	return t
 }

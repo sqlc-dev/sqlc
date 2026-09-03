@@ -60,10 +60,29 @@ the hand-written files alone, and the checks do not look at them.
 - `dialect/` — the record types the files are made of, mirrored from
   `internal/core/seed`, and the helpers that write a generated set of files
   into an engine directory or diff it against what is committed.
+- `endtoend/` — finds the analyze cases and compares an engine's answer with
+  a case's committed output.
 - `postgresql/`, `duckdb/`, `clickhouse/` — one package per engine, each
-  exposing `Locate`, `Version` and `Generate`, and a test that runs the check.
+  exposing `Locate`, `Version` and `Generate`, `Analyze` where the engine has
+  an analysis check, and tests that run the checks.
 - `cmd/goldeneye/` — the command.
 
-The analysis checks — verifying the `analyze_*` cases under
-`internal/endtoend/testdata` against what each database itself reports — are
-meant to live here too, alongside the dialect checks.
+## Analysis checks
+
+`check` also verifies the `analyze_*` cases under `internal/endtoend/testdata`
+against what the database itself reports. A case is an
+`analyze_<name>/<engine>` directory whose `exec.json` runs the analyze
+command; `endtoend/` finds them. The engine package loads the case's
+`schema.sql` and optional `fixture.sql` into the database, runs `query.sql`
+there, prints what the database reports in the JSON shape `sqlc analyze`
+prints, and compares it with the committed `output.json` byte for byte. A
+difference means sqlc's analysis disagrees with the database. A case that
+asks for `--ast` is skipped, since only sqlc can print that.
+
+- **`clickhouse`** runs each case in an ephemeral `clickhouse local` process.
+  Column types come from the executed query's result header, provenance from
+  `EXPLAIN QUERY TREE`, and parameters from sentinel constants substituted for
+  `?`, `sqlc.arg()` and `sqlc.narg()`, since ClickHouse itself never sees a
+  placeholder; `INSERT ... VALUES` parameters map onto `DESCRIBE TABLE`.
+
+The other engines have no analysis check yet.

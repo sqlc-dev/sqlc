@@ -1,0 +1,102 @@
+[
+  {
+    "name": "CreateUser",
+    "cmd": ":exec",
+    "columns": [],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "bigint"
+          },
+          "table": "users"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "varchar"
+          },
+          "table": "users"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "bio",
+          "type": {
+            "name": "text",
+            "nullable": true
+          },
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "UpdateBio",
+    "cmd": ":exec",
+    "columns": [],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "bio",
+          "type": {
+            "name": "text",
+            "nullable": true
+          },
+          "table": "users"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "bigint"
+          },
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "DeleteUser",
+    "cmd": ":exec",
+    "columns": [],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "bigint"
+          },
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "DeleteUserPosts",
+    "cmd": ":exec",
+    "columns": [],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "varchar"
+          },
+          "table": "users"
+        }
+      }
+    ]
+  }
+]

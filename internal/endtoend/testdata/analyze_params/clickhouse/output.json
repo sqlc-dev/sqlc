@@ -1,0 +1,76 @@
+[
+  {
+    "name": "GetEvent",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "string"
+        },
+        "table": "events"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "uint64"
+          },
+          "table": "events"
+        }
+      }
+    ]
+  },
+  {
+    "name": "FilterEvents",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "string"
+        },
+        "table": "events"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "string"
+          },
+          "table": "events"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "amount",
+          "type": {
+            "name": "float64"
+          },
+          "table": "events"
+        }
+      }
+    ]
+  }
+]

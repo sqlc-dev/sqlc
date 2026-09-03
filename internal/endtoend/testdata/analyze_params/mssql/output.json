@@ -1,0 +1,84 @@
+[
+  {
+    "name": "GetAuthor",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "authors"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "nvarchar"
+        },
+        "table": "authors"
+      },
+      {
+        "name": "bio",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true
+        },
+        "table": "authors"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "bigint"
+          },
+          "table": "authors"
+        }
+      }
+    ]
+  },
+  {
+    "name": "FilterAuthors",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "authors"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "nvarchar"
+        },
+        "table": "authors"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "nvarchar"
+          },
+          "table": "authors"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "royalties",
+          "type": {
+            "name": "decimal"
+          },
+          "table": "authors"
+        }
+      }
+    ]
+  }
+]

@@ -1,12 +1,13 @@
 // Command goldeneye generates the dialect seeds under
-// internal/engine/<engine>/dialect from a live database, and checks the
-// committed ones against it.
+// internal/engine/<engine>/dialect from a live database, checks the
+// committed ones against it, and checks the analyze cases under
+// internal/endtoend/testdata against what the database itself reports.
 //
 // Usage, from internal/goldeneye:
 //
 //	go run ./cmd/goldeneye install clickhouse   # download the pinned clickhouse binary
 //	go run ./cmd/goldeneye generate [engine]    # rewrite the generated files from the database
-//	go run ./cmd/goldeneye check [engine]       # compare the committed files with the database
+//	go run ./cmd/goldeneye check [engine]       # compare the committed files and analyze cases with the database
 //
 // Without an engine, generate and check cover every engine whose database
 // is available and say which ones they skipped. `go test ./...` runs the
@@ -21,10 +22,12 @@ import (
 	"io"
 	"os"
 	"runtime"
+	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/clickhouse"
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/dialect"
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/duckdb"
+	"github.com/sqlc-dev/sqlc/internal/goldeneye/endtoend"
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/postgresql"
 )
 
@@ -41,7 +44,7 @@ const usage = `usage:
   goldeneye generate [engine]
       rewrite the generated dialect files from the database, for every available engine or one
   goldeneye check [engine]
-      compare the committed dialect files with the database, for every available engine or one
+      compare the committed dialect files and analyze cases with the database, for every available engine or one
 
 engines: clickhouse, duckdb, postgresql`
 
@@ -55,12 +58,15 @@ type engine struct {
 	version func(context.Context, string) (string, error)
 	// generate reads the dialect from the database.
 	generate func(context.Context, string) (dialect.Files, error)
+	// analyze asks the database what it reports for an analyze case, in
+	// the shape sqlc analyze prints. Nil for an engine without one yet.
+	analyze func(context.Context, string, endtoend.Case) ([]byte, error)
 }
 
 var engines = []engine{
-	{clickhouse.Engine, clickhouse.Locate, clickhouse.Version, clickhouse.Generate},
-	{duckdb.Engine, duckdb.Locate, duckdb.Version, duckdb.Generate},
-	{postgresql.Engine, postgresql.Locate, postgresql.Version, postgresql.Generate},
+	{clickhouse.Engine, clickhouse.Locate, clickhouse.Version, clickhouse.Generate, clickhouse.Analyze},
+	{duckdb.Engine, duckdb.Locate, duckdb.Version, duckdb.Generate, nil},
+	{postgresql.Engine, postgresql.Locate, postgresql.Version, postgresql.Generate, nil},
 }
 
 func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
@@ -184,5 +190,37 @@ func check(ctx context.Context, e engine, handle string, stderr io.Writer) error
 		return fmt.Errorf("%s does not match the database\n%s", dir, report)
 	}
 	fmt.Fprintf(stderr, "%s: ok, %d file(s) match\n", e.name, len(files))
+	return checkAnalyzeCases(ctx, e, handle, stderr)
+}
+
+// checkAnalyzeCases compares what the database reports for each of the
+// engine's analyze cases with the case's committed output.
+func checkAnalyzeCases(ctx context.Context, e engine, handle string, stderr io.Writer) error {
+	if e.analyze == nil {
+		return nil
+	}
+	cases, err := endtoend.Cases(e.name)
+	if err != nil {
+		return err
+	}
+	var report strings.Builder
+	for _, c := range cases {
+		got, err := e.analyze(ctx, handle, c)
+		if err != nil {
+			fmt.Fprintf(&report, "%s: %v\n", c.Name, err)
+			continue
+		}
+		diff, err := c.Compare(got)
+		if err != nil {
+			return err
+		}
+		if diff != "" {
+			fmt.Fprintf(&report, "%s (-committed +database)\n%s", c.Name, diff)
+		}
+	}
+	if report.Len() > 0 {
+		return fmt.Errorf("analyze cases do not match the database\n%s", report.String())
+	}
+	fmt.Fprintf(stderr, "%s: ok, %d analyze case(s) match\n", e.name, len(cases))
 	return nil
 }

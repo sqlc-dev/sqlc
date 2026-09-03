@@ -52,17 +52,22 @@ func parseStderr(t *testing.T, dir, testctx string) []byte {
 	return nil
 }
 
+// parseStdout reads the command's expected output: output.json for a
+// command that prints JSON, so editors highlight it, otherwise stdout.txt.
 func parseStdout(t *testing.T, dir string) []byte {
 	t.Helper()
-	path := filepath.Join(dir, "stdout.txt")
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return nil
+	for _, name := range []string{"output.json", "stdout.txt"} {
+		path := filepath.Join(dir, name)
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			continue
+		}
+		blob, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return blob
 	}
-	blob, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return blob
+	return nil
 }
 
 // hasSQLCConfig reports whether dir contains an sqlc configuration file.
