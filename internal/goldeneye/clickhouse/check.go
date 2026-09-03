@@ -1,13 +1,3 @@
-// Package clickhouse verifies the ClickHouse analyze cases under
-// internal/endtoend/testdata against what ClickHouse itself reports.
-//
-// Each case's schema and fixture are loaded into an ephemeral
-// `clickhouse local` process and its queries are run there. Result column
-// types come from the executed query's result header, provenance from
-// EXPLAIN QUERY TREE, and parameters from sentinel constants substituted
-// for the placeholders, since ClickHouse itself never sees a ?. The answer
-// is printed in the JSON shape sqlc analyze prints and compared with the
-// case's committed output.json byte for byte.
 package clickhouse
 
 import (
@@ -17,11 +7,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sqlc-dev/sqlc/internal/testcheck/endtoend"
+	"github.com/sqlc-dev/sqlc/internal/goldeneye/endtoend"
 )
-
-// Engine is the name of this engine's directory under each analyze case.
-const Engine = "clickhouse"
 
 // Analyze runs a case's queries through the clickhouse binary and returns
 // the analysis in the JSON shape sqlc analyze prints.
