@@ -1,5 +1,7 @@
 // Package endtoend finds the analyze cases under internal/endtoend/testdata
-// and compares an engine's own answer with the output a case committed.
+// and compares an engine's own answer with the output a case committed,
+// the way the dialect package compares a generated dialect with the
+// committed one.
 package endtoend
 
 import (
@@ -11,6 +13,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/sqlc-dev/sqlc/internal/goldeneye/dialect"
 )
 
 // Case is one analyze case: the files sqlc analyze ran with, the fixture
@@ -132,49 +136,5 @@ func (c Case) Compare(got []byte) (string, error) {
 	if bytes.Equal(want, got) {
 		return "", nil
 	}
-	return Diff(string(want), string(got)), nil
-}
-
-// Diff is a line diff of two texts, marking lines only in want with "-" and
-// lines only in got with "+". Outputs are small, so a plain longest common
-// subsequence is fine.
-func Diff(want, got string) string {
-	a := strings.Split(strings.TrimSuffix(want, "\n"), "\n")
-	b := strings.Split(strings.TrimSuffix(got, "\n"), "\n")
-	lcs := make([][]int, len(a)+1)
-	for i := range lcs {
-		lcs[i] = make([]int, len(b)+1)
-	}
-	for i := len(a) - 1; i >= 0; i-- {
-		for j := len(b) - 1; j >= 0; j-- {
-			if a[i] == b[j] {
-				lcs[i][j] = lcs[i+1][j+1] + 1
-			} else {
-				lcs[i][j] = max(lcs[i+1][j], lcs[i][j+1])
-			}
-		}
-	}
-	var out strings.Builder
-	i, j := 0, 0
-	for i < len(a) && j < len(b) {
-		switch {
-		case a[i] == b[j]:
-			fmt.Fprintf(&out, "  %s\n", a[i])
-			i++
-			j++
-		case lcs[i+1][j] >= lcs[i][j+1]:
-			fmt.Fprintf(&out, "- %s\n", a[i])
-			i++
-		default:
-			fmt.Fprintf(&out, "+ %s\n", b[j])
-			j++
-		}
-	}
-	for ; i < len(a); i++ {
-		fmt.Fprintf(&out, "- %s\n", a[i])
-	}
-	for ; j < len(b); j++ {
-		fmt.Fprintf(&out, "+ %s\n", b[j])
-	}
-	return out.String()
+	return dialect.Diff(string(want), string(got)), nil
 }

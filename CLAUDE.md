@@ -147,8 +147,11 @@ the run early. Run a subset to get past one (`-run 'TestReplay/core/^select'`).
 
 The dialect seeds under `/internal/engine/<engine>/dialect/` are generated
 from a live database by `/internal/goldeneye`, a nested module, and its tests
-verify the committed files against one byte for byte. Engines whose database
-is not available skip.
+verify the committed files against one byte for byte. The same module checks
+the `analyze_*` cases under `/internal/endtoend/testdata/` against what the
+database itself reports for them, so a `fixture.sql` next to a case's schema
+gives the queries rows to run against. Engines whose database is not
+available skip.
 
 ```bash
 cd internal/goldeneye
@@ -239,16 +242,15 @@ MYSQL_SERVER_URI="root:mysecretpassword@tcp(127.0.0.1:3306)/mysql?multiStatement
     JSONL read by `/internal/core/seed`; the generated parts come from
     `/internal/goldeneye`
 - `/internal/goldeneye/` - Nested module that generates the dialect seeds
-  under `/internal/engine/<engine>/dialect/` from a live database and checks
-  the committed ones against it, one package per engine; see its README
+  under `/internal/engine/<engine>/dialect/` from a live database, checks
+  the committed ones against it, and checks the analyze cases under
+  `/internal/endtoend/testdata/` against what the database reports, one
+  package per engine; see its README
 - `/internal/core/` - The analysis core: catalog, analyzer and dialect seeds
 - `/internal/compiler/` - Query compilation logic
 - `/internal/codegen/` - Code generation for different languages
 - `/internal/config/` - Configuration file parsing
 - `/internal/endtoend/` - End-to-end tests
-- `/internal/testcheck/` - Nested module that verifies the analyze cases under
-  `/internal/endtoend/testdata/` against a real database, one package per
-  engine; see its README
 - `/internal/sqltest/` - Test database setup (Docker, native, local detection)
 - `/examples/` - Example projects for testing
 

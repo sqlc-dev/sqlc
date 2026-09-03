@@ -9,6 +9,15 @@
 // system.functions carries no signatures — so functions.jsonl is written by
 // hand and is not this package's business.
 //
+// The package also verifies the ClickHouse analyze cases under
+// internal/endtoend/testdata against the same binary: each case's schema and
+// fixture are loaded into a `clickhouse local` process and its queries run
+// there. Result column types come from the executed query's result header,
+// provenance from EXPLAIN QUERY TREE, and parameters from sentinel constants
+// substituted for the placeholders, since ClickHouse itself never sees a ?.
+// The answer is printed in the JSON shape sqlc analyze prints and compared
+// with the case's committed output.json byte for byte.
+//
 // The binary is downloaded once per pinned version by Install, or supplied
 // through the CLICKHOUSE environment variable.
 package clickhouse
