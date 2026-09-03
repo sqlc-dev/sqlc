@@ -1,4 +1,4 @@
-package main
+package postgresql
 
 import (
 	"context"
@@ -19,6 +19,18 @@ FROM pg_catalog.pg_proc p
 LEFT JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
 WHERE n.nspname::text = $1
   AND pg_function_is_visible(p.oid)
+  -- A function that one of the extensions the dialect describes separately
+  -- put in the schema, as adminpack puts its own in pg_catalog, belongs to
+  -- that extension's directory: leaving it out here keeps the output the
+  -- same whether or not the extension is installed.
+  AND NOT EXISTS (
+    SELECT 1
+    FROM pg_catalog.pg_depend d
+    INNER JOIN pg_catalog.pg_extension e ON e.oid = d.refobjid
+    WHERE d.classid = 'pg_catalog.pg_proc'::regclass
+      AND d.objid = p.oid
+      AND d.deptype = 'e'
+      AND e.extname = ANY($2))
 -- simply order all columns to keep subsequent runs stable
 ORDER BY 1, 2, 3, 4, 5;
 `
@@ -139,8 +151,10 @@ func scanProcs(rows pgx.Rows) ([]Proc, error) {
 	return procs, rows.Err()
 }
 
-func readProcs(ctx context.Context, conn *pgx.Conn, schemaName string) ([]Proc, error) {
-	rows, err := conn.Query(ctx, catalogFuncs, schemaName)
+// readProcs reads the functions of a schema, leaving out the ones that
+// belong to any of the named extensions.
+func readProcs(ctx context.Context, conn *pgx.Conn, schemaName string, extensions []string) ([]Proc, error) {
+	rows, err := conn.Query(ctx, catalogFuncs, schemaName, extensions)
 	if err != nil {
 		return nil, err
 	}

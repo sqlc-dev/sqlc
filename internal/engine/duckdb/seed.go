@@ -9,10 +9,10 @@ import (
 
 // The dialect directory describes DuckDB's type system. types.jsonl,
 // functions.jsonl and operators.jsonl are generated from a live DuckDB 2.0
-// CLI by sqlc-duckdb-gen (internal/tools/sqlc-duckdb-gen); dialect.json is
-// authored by hand. Regenerate with:
+// CLI by goldeneye (internal/goldeneye), which also checks them against one;
+// dialect.json is authored by hand. Regenerate from internal/goldeneye with:
 //
-//	DUCKDB=/path/to/duckdb go run ./internal/tools/sqlc-duckdb-gen
+//	DUCKDB=/path/to/duckdb go run ./cmd/goldeneye generate duckdb
 //
 //go:embed dialect
 var dialectFS embed.FS

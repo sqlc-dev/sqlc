@@ -1695,11 +1695,6 @@
 {"name":"pg_export_snapshot","returns":"text"}
 {"name":"pg_extension_config_dump","args":[{"type":"regclass"},{"type":"text"}],"returns":"void"}
 {"name":"pg_extension_update_paths","args":[{"name":"name","type":"name"}],"returns":"record"}
-{"name":"pg_file_rename","args":[{"type":"text"},{"type":"text"}],"returns":"boolean"}
-{"name":"pg_file_rename","args":[{"type":"text"},{"type":"text"},{"type":"text"}],"returns":"boolean"}
-{"name":"pg_file_sync","args":[{"type":"text"}],"returns":"void"}
-{"name":"pg_file_unlink","args":[{"type":"text"}],"returns":"boolean"}
-{"name":"pg_file_write","args":[{"type":"text"},{"type":"text"},{"type":"boolean"}],"returns":"bigint"}
 {"name":"pg_filenode_relation","args":[{"type":"oid"},{"type":"oid"}],"returns":"regclass"}
 {"name":"pg_function_is_visible","args":[{"type":"oid"}],"returns":"boolean"}
 {"name":"pg_get_backend_memory_contexts","returns":"record"}
@@ -1772,7 +1767,6 @@
 {"name":"pg_lock_status","returns":"record"}
 {"name":"pg_log_backend_memory_contexts","args":[{"type":"integer"}],"returns":"boolean"}
 {"name":"pg_log_standby_snapshot","returns":"pg_lsn"}
-{"name":"pg_logdir_ls","returns":"record"}
 {"name":"pg_logical_emit_message","args":[{"type":"boolean"},{"type":"text"},{"type":"bytea"}],"returns":"pg_lsn"}
 {"name":"pg_logical_emit_message","args":[{"type":"boolean"},{"type":"text"},{"type":"text"}],"returns":"pg_lsn"}
 {"name":"pg_logical_slot_get_binary_changes","args":[{"name":"slot_name","type":"name"},{"name":"upto_lsn","type":"pg_lsn"},{"name":"upto_nchanges","type":"integer"},{"name":"options","type":"text[]","mode":"v","has_default":true}],"returns":"record"}

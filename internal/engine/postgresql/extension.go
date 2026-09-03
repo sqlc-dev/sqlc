@@ -9,7 +9,7 @@ import (
 )
 
 // loadExtension reads the named extension's function list from the dialect
-// directory, where sqlc-pg-gen writes one directory per extension. An
+// directory, where goldeneye writes one directory per extension. An
 // extension sqlc does not know is nil, which CREATE EXTENSION treats as
 // nothing to add.
 func loadExtension(name string) *catalog.Schema {

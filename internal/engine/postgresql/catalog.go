@@ -16,7 +16,7 @@ func NewCatalog() *catalog.Catalog {
 }
 
 // genPGCatalog and genInformationSchema build the schemas sqlc knows
-// PostgreSQL by. Both read the dialect directory, which sqlc-pg-gen writes,
+// PostgreSQL by. Both read the dialect directory, which goldeneye writes,
 // and which the analysis core seeds its catalog from as well.
 func genPGCatalog() *catalog.Schema {
 	return systemSchema("pg_catalog", pgCatalogFuncs())

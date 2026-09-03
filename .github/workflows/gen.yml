@@ -1,13 +1,13 @@
-name: sqlc-pg-gen
+name: goldeneye
 on:
   workflow_dispatch:
 jobs:
-  gen:
-    name: sqlc-pg-gen
-    runs-on: ubuntu-22.04
+  generate:
+    name: generate dialects
+    runs-on: ubuntu-24.04
     services:
       postgres:
-        image: postgres:15.0-alpine
+        image: postgres:16
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -20,20 +20,16 @@ jobs:
     - uses: actions/checkout@v7
     - uses: actions/setup-go@v7
       with:
-        go-version-file: go.mod
+        go-version-file: internal/goldeneye/go.mod
         check-latest: true
-    - run: go build -o sqlc-pg-gen ./internal/tools/sqlc-pg-gen
-    - run: mkdir -p gen/contrib
-    - run: ./sqlc-pg-gen gen
+    - run: go run ./cmd/goldeneye install clickhouse
+      working-directory: internal/goldeneye
+    - run: go run ./cmd/goldeneye generate
+      working-directory: internal/goldeneye
       env:
-        PG_USER: postgres
-        PG_HOST: localhost
-        PG_DATABASE: postgres
-        PG_PASSWORD: postgres
-        PG_PORT: ${{ job.services.postgres.ports['5432'] }}
+        POSTGRESQL_SERVER_URI: postgres://postgres:postgres@localhost:${{ job.services.postgres.ports['5432'] }}/postgres?sslmode=disable
     - name: Save results
       uses: actions/upload-artifact@v7
       with:
-        name: sqlc-pg-gen-results
-        path: gen
-
+        name: dialects
+        path: internal/engine/*/dialect

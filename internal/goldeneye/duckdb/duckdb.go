@@ -1,47 +1,53 @@
-// Command sqlc-duckdb-gen writes the DuckDB dialect seed files —
-// types.jsonl, functions.jsonl and operators.jsonl under
-// internal/engine/duckdb/dialect — from a live DuckDB CLI, the same way
-// sqlc-pg-gen writes PostgreSQL's from a live server. The CLI must be the
+// Package duckdb generates the DuckDB dialect seed under
+// internal/engine/duckdb/dialect — types.jsonl, functions.jsonl and
+// operators.jsonl — from a live DuckDB CLI, the same way the postgresql
+// package generates PostgreSQL's from a live server. The CLI must be the
 // DuckDB 2.0 build darkwing is pinned against; it is located through the
 // DUCKDB environment variable, falling back to "duckdb" on PATH.
-//
-// Usage:
-//
-//	DUCKDB=/path/to/duckdb go run ./internal/tools/sqlc-duckdb-gen [engine-dir]
-package main
+package duckdb
 
 import (
 	"context"
 	"encoding/json"
-	"flag"
+	"errors"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"sort"
 	"strings"
 
-	"github.com/sqlc-dev/sqlc/internal/core/seed"
+	"github.com/sqlc-dev/sqlc/internal/goldeneye/dialect"
 )
 
-func main() {
-	if err := run(context.Background()); err != nil {
-		log.Fatal(err)
+// Engine is the name of the engine directory the dialect lives under.
+const Engine = "duckdb"
+
+// Locate finds the DuckDB CLI: the DUCKDB environment variable wins, then
+// "duckdb" on PATH.
+func Locate() (string, error) {
+	if path := os.Getenv("DUCKDB"); path != "" {
+		return path, nil
 	}
+	path, err := exec.LookPath("duckdb")
+	if err != nil {
+		return "", errors.New("no duckdb CLI found: set DUCKDB to the DuckDB 2.0 binary darkwing is pinned against, or put duckdb on PATH")
+	}
+	return path, nil
 }
 
-func duckdbPath() string {
-	if path := os.Getenv("DUCKDB"); path != "" {
-		return path
+// Version reports the release a CLI is.
+func Version(ctx context.Context, binary string) (string, error) {
+	out, err := exec.CommandContext(ctx, binary, "--version").Output()
+	if err != nil {
+		return "", fmt.Errorf("duckdb --version: %w", err)
 	}
-	return "duckdb"
+	return "DuckDB " + strings.TrimSpace(string(out)), nil
 }
 
 // query runs a SQL statement against an in-memory database and decodes the
 // CLI's JSON output into rows.
-func query(ctx context.Context, sql string, rows any) error {
-	cmd := exec.CommandContext(ctx, duckdbPath(), "-json", ":memory:", "-c", sql)
+func query(ctx context.Context, binary, sql string, rows any) error {
+	cmd := exec.CommandContext(ctx, binary, "-json", ":memory:", "-c", sql)
 	out, err := cmd.Output()
 	if err != nil {
 		if exit, ok := err.(*exec.ExitError); ok {
@@ -105,9 +111,9 @@ func categoryLetter(category *string) string {
 	}
 }
 
-func readTypes(ctx context.Context) ([]seed.Type, error) {
+func readTypes(ctx context.Context, binary string) ([]dialect.Type, error) {
 	var rows []typeRow
-	err := query(ctx, `
+	err := query(ctx, binary, `
 SELECT type_name, logical_type, type_category
 FROM duckdb_types()
 WHERE database_name = 'system'
@@ -119,7 +125,7 @@ ORDER BY type_name`, &rows)
 	// Group the dump's one-row-per-spelling by logical type: the spelling
 	// matching the logical type id is the canonical name, the rest are
 	// aliases.
-	grouped := map[string]*seed.Type{}
+	grouped := map[string]*dialect.Type{}
 	var order []string
 	for _, row := range rows {
 		logical := strings.ToLower(row.LogicalType)
@@ -128,7 +134,7 @@ ORDER BY type_name`, &rows)
 		}
 		t, ok := grouped[logical]
 		if !ok {
-			t = &seed.Type{Name: logical, Category: categoryLetter(row.Category)}
+			t = &dialect.Type{Name: logical, Category: categoryLetter(row.Category)}
 			grouped[logical] = t
 			order = append(order, logical)
 		}
@@ -141,11 +147,11 @@ ORDER BY type_name`, &rows)
 	}
 
 	sort.Strings(order)
-	types := make([]seed.Type, 0, len(order)+1)
+	types := make([]dialect.Type, 0, len(order)+1)
 	// "any" stands in for the generic parameters of DuckDB's polymorphic
 	// functions (ANY, T, K, V); the analyzer resolves a call returning it
 	// to the type of the call's first argument.
-	types = append(types, seed.Type{Name: "any", Category: "U"})
+	types = append(types, dialect.Type{Name: "any", Category: "U"})
 	for _, name := range order {
 		types = append(types, *grouped[name])
 	}
@@ -154,7 +160,7 @@ ORDER BY type_name`, &rows)
 
 // typeNames is the set of names the seed declares, for filtering out function
 // overloads over generic or binder-internal types.
-func typeNames(types []seed.Type) map[string]bool {
+func typeNames(types []dialect.Type) map[string]bool {
 	names := map[string]bool{}
 	for _, t := range types {
 		names[t.Name] = true
@@ -211,9 +217,9 @@ func functionKind(functionType string) string {
 	}
 }
 
-func readFunctions(ctx context.Context, known map[string]bool) ([]seed.Function, []seed.Operator, error) {
+func readFunctions(ctx context.Context, binary string, known map[string]bool) ([]dialect.Function, []dialect.Operator, error) {
 	var rows []functionRow
-	err := query(ctx, `
+	err := query(ctx, binary, `
 SELECT DISTINCT function_name, function_type, parameter_types, varargs, return_type
 FROM duckdb_functions()
 WHERE database_name = 'system'
@@ -224,8 +230,8 @@ ORDER BY function_name, parameter_types::VARCHAR, return_type`, &rows)
 		return nil, nil, err
 	}
 
-	var funcs []seed.Function
-	var operators []seed.Operator
+	var funcs []dialect.Function
+	var operators []dialect.Operator
 	seenFunc := map[string]bool{}
 	seenOp := map[string]bool{}
 	for _, row := range rows {
@@ -269,7 +275,7 @@ ORDER BY function_name, parameter_types::VARCHAR, return_type`, &rows)
 				continue
 			}
 			seenOp[key] = true
-			operators = append(operators, seed.Operator{
+			operators = append(operators, dialect.Operator{
 				Name:   row.Name,
 				Left:   args[0],
 				Right:  args[1],
@@ -278,7 +284,7 @@ ORDER BY function_name, parameter_types::VARCHAR, return_type`, &rows)
 			continue
 		}
 
-		fn := seed.Function{
+		fn := dialect.Function{
 			Name:    row.Name,
 			Kind:    functionKind(row.FunctionType),
 			Returns: returns,
@@ -287,14 +293,14 @@ ORDER BY function_name, parameter_types::VARCHAR, return_type`, &rows)
 			Nullable: row.FunctionType == "aggregate" && !strings.HasPrefix(row.Name, "count"),
 		}
 		for _, arg := range args {
-			fn.Args = append(fn.Args, seed.Arg{Type: arg})
+			fn.Args = append(fn.Args, dialect.Arg{Type: arg})
 		}
 		if row.Varargs != nil {
 			vararg, ok := seedTypeName(*row.Varargs, known)
 			if !ok {
 				continue
 			}
-			fn.Args = append(fn.Args, seed.Arg{Type: vararg, Mode: "v"})
+			fn.Args = append(fn.Args, dialect.Arg{Type: vararg, Mode: "v"})
 		}
 
 		key := fn.Name + "\x00" + fn.Kind + "\x00" + strings.Join(args, "\x00")
@@ -307,54 +313,25 @@ ORDER BY function_name, parameter_types::VARCHAR, return_type`, &rows)
 	return funcs, operators, nil
 }
 
-func writeJSONL[T any](path string, records []T) error {
-	out, err := os.Create(path)
+// Generate reads the dialect from the CLI.
+func Generate(ctx context.Context, binary string) (dialect.Files, error) {
+	types, err := readTypes(ctx, binary)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer out.Close()
-	enc := json.NewEncoder(out)
-	for _, record := range records {
-		if err := enc.Encode(record); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func run(ctx context.Context) error {
-	flag.Parse()
-
-	dir := flag.Arg(0)
-	if dir == "" {
-		dir = filepath.Join("internal", "engine", "duckdb")
-	}
-	dialectDir := filepath.Join(dir, "dialect")
-
-	version, err := exec.CommandContext(ctx, duckdbPath(), "--version").Output()
+	funcs, operators, err := readFunctions(ctx, binary, typeNames(types))
 	if err != nil {
-		return fmt.Errorf("duckdb --version: %w", err)
+		return nil, err
 	}
-	log.Printf("generating from %s", strings.TrimSpace(string(version)))
-
-	types, err := readTypes(ctx)
-	if err != nil {
-		return err
+	files := dialect.Files{}
+	if files[dialect.TypesFile], err = dialect.JSONL(types); err != nil {
+		return nil, err
 	}
-	funcs, operators, err := readFunctions(ctx, typeNames(types))
-	if err != nil {
-		return err
+	if files[dialect.FunctionsFile], err = dialect.JSONL(funcs); err != nil {
+		return nil, err
 	}
-
-	if err := writeJSONL(filepath.Join(dialectDir, seed.TypesFile), types); err != nil {
-		return err
+	if files[dialect.OperatorsFile], err = dialect.JSONL(operators); err != nil {
+		return nil, err
 	}
-	if err := writeJSONL(filepath.Join(dialectDir, seed.FunctionsFile), funcs); err != nil {
-		return err
-	}
-	if err := writeJSONL(filepath.Join(dialectDir, seed.OperatorsFile), operators); err != nil {
-		return err
-	}
-	log.Printf("wrote %d types, %d functions, %d operators to %s", len(types), len(funcs), len(operators), dialectDir)
-	return nil
+	return files, nil
 }
