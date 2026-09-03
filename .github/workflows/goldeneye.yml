@@ -1,0 +1,60 @@
+name: goldeneye
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: check the committed dialect files against the databases, or generate them and upload the result
+        type: choice
+        options:
+        - check
+        - generate
+        default: check
+jobs:
+  goldeneye:
+    name: ${{ inputs.command }} dialects
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+        - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      POSTGRESQL_SERVER_URI: postgres://postgres:postgres@localhost:${{ job.services.postgres.ports['5432'] }}/postgres?sslmode=disable
+    defaults:
+      run:
+        working-directory: internal/goldeneye
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-go@v7
+      with:
+        go-version-file: internal/goldeneye/go.mod
+        check-latest: true
+
+    - name: install clickhouse
+      run: go run ./cmd/goldeneye install clickhouse
+
+    - name: check
+      if: inputs.command == 'check'
+      run: go test -v ./...
+
+    - name: generate
+      if: inputs.command == 'generate'
+      run: go run ./cmd/goldeneye generate
+
+    - name: show changes
+      if: inputs.command == 'generate'
+      run: git status --short && git diff --stat
+      working-directory: .
+
+    - name: upload dialects
+      if: inputs.command == 'generate'
+      uses: actions/upload-artifact@v7
+      with:
+        name: dialects
+        path: internal/engine/*/dialect

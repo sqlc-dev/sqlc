@@ -66,36 +66,6 @@ jobs:
         MYSQL_SERVER_URI: "root:mysecretpassword@tcp(127.0.0.1:3306)/mysql?multiStatements=true&parseTime=true"
         CGO_ENABLED: "0"
 
-  goldeneye:
-    name: check dialects
-    runs-on: ubuntu-24.04
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
-        ports:
-        - 5432:5432
-        # needed because the postgres container does not provide a healthcheck
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-    steps:
-    - uses: actions/checkout@v7
-    - uses: actions/setup-go@v7
-      with:
-        go-version: '1.26.5'
-
-    - name: install clickhouse
-      run: go run ./cmd/goldeneye install clickhouse
-      working-directory: internal/goldeneye
-
-    - name: test internal/goldeneye
-      run: go test ./...
-      working-directory: internal/goldeneye
-      env:
-        POSTGRESQL_SERVER_URI: postgres://postgres:postgres@localhost:${{ job.services.postgres.ports['5432'] }}/postgres?sslmode=disable
-
   vuln_check:
     runs-on: ubuntu-24.04
     timeout-minutes: 5

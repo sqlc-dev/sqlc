@@ -157,6 +157,10 @@ POSTGRESQL_SERVER_URI="postgres://postgres:postgres@127.0.0.1:5432/postgres?sslm
 go run ./cmd/goldeneye generate postgresql  # rewrite the files after a change
 ```
 
+The checks are not part of CI. The `goldeneye` workflow
+(`.github/workflows/goldeneye.yml`) runs them on demand, or generates the
+files and uploads them as an artifact.
+
 ### Example Tests
 
 - **Location:** `/examples/` directory
