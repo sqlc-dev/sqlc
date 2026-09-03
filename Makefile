@@ -1,4 +1,4 @@
-.PHONY: build build-endtoend test test-ci test-examples test-endtoend start psql mysqlsh proto
+.PHONY: build build-endtoend test test-ci test-examples test-endtoend test-goldeneye start psql mysqlsh proto
 
 build:
 	go build ./...
@@ -26,8 +26,11 @@ test-ci: test-examples build-endtoend vet
 sqlc-dev:
 	go build -o ~/bin/sqlc-dev ./cmd/sqlc/
 
-sqlc-pg-gen:
-	go build -o ~/bin/sqlc-pg-gen ./internal/tools/sqlc-pg-gen
+goldeneye:
+	cd ./internal/goldeneye && go build -o ~/bin/goldeneye ./cmd/goldeneye
+
+test-goldeneye:
+	cd ./internal/goldeneye && go test ./...
 
 sqlc-gen-json:
 	go build -o ~/bin/sqlc-gen-json ./cmd/sqlc-gen-json

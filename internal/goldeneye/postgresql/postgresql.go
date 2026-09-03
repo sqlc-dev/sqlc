@@ -1,21 +1,38 @@
-package main
+// Package postgresql generates the PostgreSQL dialect seed under
+// internal/engine/postgresql/dialect from a live server: pg_catalog's
+// functions, the relations of pg_catalog and information_schema, and one
+// directory per contrib extension holding the types and functions CREATE
+// EXTENSION adds. types.jsonl and operators.jsonl at the top of the dialect
+// are written by hand and are not this package's business.
+//
+// The server is named by POSTGRESQL_SERVER_URI and has to be the major
+// release in Major, since each release adds to its catalogs.
+package postgresql
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
+	"errors"
 	"fmt"
-	"io"
-	"log"
 	"os"
-	"path/filepath"
+	"path"
 	"sort"
+	"strconv"
 	"strings"
 
-	"github.com/sqlc-dev/sqlc/internal/core/seed"
-
 	"github.com/jackc/pgx/v5"
+
+	"github.com/sqlc-dev/sqlc/internal/goldeneye/dialect"
 )
+
+// Engine is the name of the engine directory the dialect lives under.
+const Engine = "postgresql"
+
+// Major is the PostgreSQL major release the dialect is generated from.
+// Bumping it is a deliberate change: every release adds functions and
+// catalog columns, so regenerate and review the dialect after changing it.
+const Major = 16
 
 // https://dba.stackexchange.com/questions/255412/how-to-select-functions-that-belong-in-a-given-extension-in-postgresql
 //
@@ -59,10 +76,44 @@ WHERE d.deptype = 'e'
 ORDER BY t.oid;
 `
 
-func main() {
-	if err := run(context.Background()); err != nil {
-		log.Fatal(err)
+// Locate returns the server to generate from, named by POSTGRESQL_SERVER_URI.
+func Locate() (string, error) {
+	if url := os.Getenv("POSTGRESQL_SERVER_URI"); url != "" {
+		return url, nil
 	}
+	return "", errors.New("POSTGRESQL_SERVER_URI is not set")
+}
+
+// Version reports the release a server is.
+func Version(ctx context.Context, url string) (string, error) {
+	conn, err := pgx.Connect(ctx, url)
+	if err != nil {
+		return "", err
+	}
+	defer conn.Close(ctx)
+	var version string
+	if err := conn.QueryRow(ctx, "SELECT version()").Scan(&version); err != nil {
+		return "", err
+	}
+	return version, nil
+}
+
+// checkVersion refuses a server of another major release than the dialect
+// is generated from, whose catalogs would differ from the committed ones
+// without anything being wrong.
+func checkVersion(ctx context.Context, conn *pgx.Conn) error {
+	var num string
+	if err := conn.QueryRow(ctx, "SELECT current_setting('server_version_num')").Scan(&num); err != nil {
+		return err
+	}
+	n, err := strconv.Atoi(num)
+	if err != nil {
+		return fmt.Errorf("server_version_num %q: %w", num, err)
+	}
+	if major := n / 10000; major != Major {
+		return fmt.Errorf("the dialect is generated from PostgreSQL %d, but the server is PostgreSQL %d", Major, major)
+	}
+	return nil
 }
 
 func clean(arg string) string {
@@ -73,43 +124,35 @@ func clean(arg string) string {
 	return arg
 }
 
-// writeFunctions writes procs to destPath as JSONL, one function per line, in
-// the form the seed package reads. Both the analysis core and the catalog the
-// legacy compiler builds load the result.
-func writeFunctions(procs []Proc, destPath string) error {
-	out, err := os.Create(destPath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	enc := json.NewEncoder(out)
+// encodeFunctions encodes procs as JSONL, one function per line, in the form
+// the seed package reads. Both the analysis core and the catalog the legacy
+// compiler builds load the result.
+func encodeFunctions(procs []Proc) ([]byte, error) {
+	funcs := make([]dialect.Function, 0, len(procs))
 	for _, proc := range procs {
-		fn := seed.Function{Name: proc.Name, Returns: proc.ReturnTypeName()}
+		fn := dialect.Function{Name: proc.Name, Returns: proc.ReturnTypeName()}
 		for _, arg := range proc.Args() {
-			a := seed.Arg{Name: arg.Name, Type: arg.TypeName(), HasDefault: arg.HasDefault}
+			a := dialect.Arg{Name: arg.Name, Type: arg.TypeName(), HasDefault: arg.HasDefault}
 			if arg.Mode != "" && arg.Mode != "i" {
 				a.Mode = arg.Mode
 			}
 			fn.Args = append(fn.Args, a)
 		}
-		if err := enc.Encode(fn); err != nil {
-			return err
-		}
+		funcs = append(funcs, fn)
 	}
-	return nil
+	return dialect.JSONL(funcs)
 }
 
 // readExtensionTypes reads the types an extension defines.
-func readExtensionTypes(ctx context.Context, conn *pgx.Conn, extension string) ([]seed.Type, error) {
+func readExtensionTypes(ctx context.Context, conn *pgx.Conn, extension string) ([]dialect.Type, error) {
 	rows, err := conn.Query(ctx, extensionTypes, extension)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var types []seed.Type
+	var types []dialect.Type
 	for rows.Next() {
-		var t seed.Type
+		var t dialect.Type
 		if err := rows.Scan(&t.Name, &t.Category); err != nil {
 			return nil, err
 		}
@@ -118,36 +161,18 @@ func readExtensionTypes(ctx context.Context, conn *pgx.Conn, extension string) (
 	return types, rows.Err()
 }
 
-// writeTypes writes types to destPath as JSONL, one type per line, in the
-// form the seed package reads.
-func writeTypes(types []seed.Type, destPath string) error {
-	out, err := os.Create(destPath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	enc := json.NewEncoder(out)
-	for _, t := range types {
-		if err := enc.Encode(t); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // writeRelations appends a schema's relations to out as JSONL, one relation
 // per line, in the form the seed package reads.
-func writeRelations(out io.Writer, schemaName string, relations []Relation) error {
+func writeRelations(out *bytes.Buffer, schemaName string, relations []Relation) error {
 	enc := json.NewEncoder(out)
 	for _, relation := range relations {
-		rec := seed.Relation{
+		rec := dialect.Relation{
 			Catalog: relation.Catalog,
 			Schema:  schemaName,
 			Name:    relation.Name,
 		}
 		for _, col := range relation.Columns {
-			c := seed.Column{
+			c := dialect.Column{
 				Name:    col.Name,
 				Type:    col.Type,
 				NotNull: col.IsNotNull,
@@ -201,115 +226,63 @@ func preserveLegacyCatalogBehavior(allProcs []Proc) []Proc {
 	return procs
 }
 
-func databaseURL() string {
-	dburl := os.Getenv("DATABASE_URL")
-	if dburl != "" {
-		return dburl
-	}
-	pgUser := os.Getenv("PG_USER")
-	pgHost := os.Getenv("PG_HOST")
-	pgPort := os.Getenv("PG_PORT")
-	pgPass := os.Getenv("PG_PASSWORD")
-	pgDB := os.Getenv("PG_DATABASE")
-	if pgUser == "" {
-		pgUser = "postgres"
-	}
-	if pgPass == "" {
-		pgPass = "mysecretpassword"
-	}
-	if pgPort == "" {
-		pgPort = "5432"
-	}
-	if pgHost == "" {
-		pgHost = "127.0.0.1"
-	}
-	if pgDB == "" {
-		pgDB = "dinotest"
-	}
-	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", pgUser, pgPass, pgHost, pgPort, pgDB)
-}
-
-func run(ctx context.Context) error {
-	flag.Parse()
-
-	dir := flag.Arg(0)
-	if dir == "" {
-		dir = filepath.Join("internal", "engine", "postgresql")
-	}
-
-	conn, err := pgx.Connect(ctx, databaseURL())
+// Generate reads the dialect from the server. It creates every contrib
+// extension it describes, so the server's contrib package has to be
+// installed.
+func Generate(ctx context.Context, url string) (dialect.Files, error) {
+	conn, err := pgx.Connect(ctx, url)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer conn.Close(ctx)
-
-	// The two schemas sqlc knows PostgreSQL by are written to the dialect
-	// directory rather than to Go: the engine and the analysis core both read
-	// them from there. Their relations share one file, keyed by schema.
-	dialectDir := filepath.Join(dir, "dialect")
-	relationsPath := filepath.Join(dialectDir, seed.RelationsFile)
-	schemas := []schemaToLoad{
-		{
-			Name:      "pg_catalog",
-			FuncsPath: filepath.Join(dialectDir, seed.FunctionsFile),
-		},
-		{
-			Name: "information_schema",
-		},
+	if err := checkVersion(ctx, conn); err != nil {
+		return nil, err
 	}
 
-	relationsFile, err := os.Create(relationsPath)
+	files := dialect.Files{}
+
+	// The two schemas sqlc knows PostgreSQL by. pg_catalog's functions are
+	// the dialect's standard library; the relations of both share one file,
+	// keyed by schema.
+	procs, err := readProcs(ctx, conn, "pg_catalog", extensions)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer relationsFile.Close()
-
-	for _, schema := range schemas {
-		procs, err := readProcs(ctx, conn, schema.Name)
+	if files[dialect.FunctionsFile], err = encodeFunctions(preserveLegacyCatalogBehavior(procs)); err != nil {
+		return nil, err
+	}
+	var relations bytes.Buffer
+	for _, schema := range []string{"pg_catalog", "information_schema"} {
+		rels, err := readRelations(ctx, conn, schema)
 		if err != nil {
-			return err
+			return nil, err
 		}
-
-		if schema.Name == "pg_catalog" {
-			procs = preserveLegacyCatalogBehavior(procs)
-		}
-
-		relations, err := readRelations(ctx, conn, schema.Name)
-		if err != nil {
-			return err
-		}
-
-		if schema.FuncsPath != "" {
-			if err := writeFunctions(procs, schema.FuncsPath); err != nil {
-				return err
-			}
-		}
-		if err := writeRelations(relationsFile, schema.Name, relations); err != nil {
-			return err
+		if err := writeRelations(&relations, schema, rels); err != nil {
+			return nil, err
 		}
 	}
+	files[dialect.RelationsFile] = relations.Bytes()
 
 	// Each extension is a directory of its own under the dialect, holding the
 	// functions CREATE EXTENSION adds to the catalog.
 	for _, extension := range extensions {
 		if _, err := conn.Exec(ctx, fmt.Sprintf("CREATE EXTENSION IF NOT EXISTS %q", extension)); err != nil {
-			return fmt.Errorf("error creating %s: %s", extension, err)
+			return nil, fmt.Errorf("error creating %s: %s", extension, err)
 		}
 
 		rows, err := conn.Query(ctx, extensionFuncs, extension)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		procs, err := scanProcs(rows)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		types, err := readExtensionTypes(ctx, conn, extension)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if len(procs) == 0 && len(types) == 0 {
-			log.Printf("nothing in %s, skipping", extension)
 			continue
 		}
 
@@ -327,29 +300,18 @@ func run(ctx context.Context) error {
 			return false
 		})
 
-		extensionDir := filepath.Join(dialectDir, "extensions", extension)
-		if err := os.MkdirAll(extensionDir, 0o755); err != nil {
-			return err
-		}
+		extensionDir := path.Join(dialect.ExtensionsDir, extension)
 		if len(types) > 0 {
-			if err := writeTypes(types, filepath.Join(extensionDir, seed.TypesFile)); err != nil {
-				return fmt.Errorf("error generating extension %s: %w", extension, err)
+			if files[path.Join(extensionDir, dialect.TypesFile)], err = dialect.JSONL(types); err != nil {
+				return nil, fmt.Errorf("error generating extension %s: %w", extension, err)
 			}
 		}
-		if err := writeFunctions(procs, filepath.Join(extensionDir, seed.FunctionsFile)); err != nil {
-			return fmt.Errorf("error generating extension %s: %w", extension, err)
+		if files[path.Join(extensionDir, dialect.FunctionsFile)], err = encodeFunctions(procs); err != nil {
+			return nil, fmt.Errorf("error generating extension %s: %w", extension, err)
 		}
 	}
 
-	return nil
-}
-
-type schemaToLoad struct {
-	// name is the name of a schema to load
-	Name string
-	// FuncsPath, when set, is the JSONL file this schema's functions are
-	// written to.
-	FuncsPath string
+	return files, nil
 }
 
 // https://www.postgresql.org/docs/current/contrib.html

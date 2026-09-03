@@ -17,10 +17,11 @@ import (
 // "WHERE bigint_col = 1" depends on.
 //
 // functions.jsonl and relations.jsonl are pg_catalog's functions and the
-// tables and views of pg_catalog and information_schema, all written by
-// sqlc-pg-gen. Both the analysis core and the catalog the legacy compiler
-// builds read them. Each contrib extension sqlc knows is a directory under
-// extensions/ holding the types and functions CREATE EXTENSION adds.
+// tables and views of pg_catalog and information_schema, all generated from
+// a live PostgreSQL 16 server by goldeneye (internal/goldeneye), which also
+// checks them against one. Both the analysis core and the catalog the legacy
+// compiler builds read them. Each contrib extension sqlc knows is a directory
+// under extensions/ holding the types and functions CREATE EXTENSION adds.
 //
 //go:embed dialect
 var dialectFS embed.FS
