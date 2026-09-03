@@ -1,4 +1,4 @@
-name: goldeneye
+name: gen
 on:
   workflow_dispatch:
 jobs:
