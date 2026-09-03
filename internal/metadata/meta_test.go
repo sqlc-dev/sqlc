@@ -19,7 +19,7 @@ func TestParseQueryNameAndType(t *testing.T) {
 		"-- name:CreateFoo",
 		`--name:CreateFoo :two`,
 	} {
-		if _, _, err := ParseQueryNameAndType(query, CommentSyntax{Dash: true}); err == nil {
+		if _, _, _, err := ParseQueryNameAndType(query, CommentSyntax{Dash: true}); err == nil {
 			t.Errorf("expected invalid metadata: %q", query)
 		}
 	}
@@ -29,7 +29,7 @@ func TestParseQueryNameAndType(t *testing.T) {
 		`-- name comment`,
 		`--name comment`,
 	} {
-		if _, _, err := ParseQueryNameAndType(query, CommentSyntax{Dash: true}); err != nil {
+		if _, _, _, err := ParseQueryNameAndType(query, CommentSyntax{Dash: true}); err != nil {
 			t.Errorf("expected valid comment: %q", query)
 		}
 	}
@@ -39,7 +39,7 @@ func TestParseQueryNameAndType(t *testing.T) {
 		`# name: CreateFoo :one`:     {Hash: true},
 		`/* name: CreateFoo :one */`: {SlashStar: true},
 	} {
-		queryName, queryCmd, err := ParseQueryNameAndType(query, cs)
+		queryName, queryCmd, stream, err := ParseQueryNameAndType(query, cs)
 		if err != nil {
 			t.Errorf("expected valid metadata: %q", query)
 		}
@@ -48,6 +48,29 @@ func TestParseQueryNameAndType(t *testing.T) {
 		}
 		if queryCmd != CmdOne {
 			t.Errorf("incorrect queryCmd parsed: (%q) %q", queryCmd, query)
+		}
+		if stream {
+			t.Errorf("unexpected stream flag for :one query")
+		}
+	}
+
+	for query, wantStream := range map[string]bool{
+		`-- name: StreamAuthors :stream`:     true,
+		`-- name: ListAuthors :many:stream`: true,
+		`-- name: ListAuthors :many`:        false,
+	} {
+		queryName, queryCmd, stream, err := ParseQueryNameAndType(query, CommentSyntax{Dash: true})
+		if err != nil {
+			t.Errorf("expected valid metadata: %q: %v", query, err)
+		}
+		if queryName == "" {
+			t.Errorf("missing query name: %q", query)
+		}
+		if queryCmd != CmdMany {
+			t.Errorf("incorrect queryCmd for %q: got %q want %q", query, queryCmd, CmdMany)
+		}
+		if stream != wantStream {
+			t.Errorf("stream flag for %q: got %v want %v", query, stream, wantStream)
 		}
 	}
 
