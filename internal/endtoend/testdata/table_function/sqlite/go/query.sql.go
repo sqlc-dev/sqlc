@@ -29,7 +29,7 @@ type GetTransactionParams struct {
 
 type GetTransactionRow struct {
 	JsonExtract    any
-	JsonGroupArray any
+	JsonGroupArray string
 }
 
 func (q *Queries) GetTransaction(ctx context.Context, arg GetTransactionParams) ([]GetTransactionRow, error) {

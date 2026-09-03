@@ -24,6 +24,8 @@ jobs:
         check-latest: true
     - run: go run ./cmd/goldeneye install clickhouse
       working-directory: internal/goldeneye
+    - run: go run ./cmd/goldeneye install sqlite
+      working-directory: internal/goldeneye
     - run: go run ./cmd/goldeneye generate
       working-directory: internal/goldeneye
       env:

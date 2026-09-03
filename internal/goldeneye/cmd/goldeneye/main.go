@@ -5,6 +5,7 @@
 // Usage, from internal/goldeneye:
 //
 //	go run ./cmd/goldeneye install clickhouse   # download the pinned clickhouse binary
+//	go run ./cmd/goldeneye install sqlite       # download the pinned sqlite3 shell
 //	go run ./cmd/goldeneye generate [engine]    # rewrite the generated files from the database
 //	go run ./cmd/goldeneye check [engine]       # compare the committed files with the database
 //
@@ -26,6 +27,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/dialect"
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/duckdb"
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/postgresql"
+	"github.com/sqlc-dev/sqlc/internal/goldeneye/sqlite"
 )
 
 func main() {
@@ -36,14 +38,14 @@ func main() {
 }
 
 const usage = `usage:
-  goldeneye install clickhouse [-version V]
-      download the pinned clickhouse binary into the user cache directory
+  goldeneye install clickhouse|sqlite [-version V]
+      download the pinned binary for an engine into the user cache directory
   goldeneye generate [engine]
       rewrite the generated dialect files from the database, for every available engine or one
   goldeneye check [engine]
       compare the committed dialect files with the database, for every available engine or one
 
-engines: clickhouse, duckdb, postgresql`
+engines: clickhouse, duckdb, postgresql, sqlite`
 
 // engine is one database goldeneye knows how to read a dialect from.
 type engine struct {
@@ -61,6 +63,19 @@ var engines = []engine{
 	{clickhouse.Engine, clickhouse.Locate, clickhouse.Version, clickhouse.Generate},
 	{duckdb.Engine, duckdb.Locate, duckdb.Version, duckdb.Generate},
 	{postgresql.Engine, postgresql.Locate, postgresql.Version, postgresql.Generate},
+	{sqlite.Engine, sqlite.Locate, sqlite.Version, sqlite.Generate},
+}
+
+// installer downloads the binary an engine is read through, for the engines
+// that need no server and whose release is pinned in their package.
+type installer struct {
+	defaultVersion string
+	install        func(ctx context.Context, version, goos, goarch string, progress io.Writer) (string, error)
+}
+
+var installers = map[string]installer{
+	clickhouse.Engine: {clickhouse.DefaultVersion, clickhouse.Install},
+	sqlite.Engine:     {sqlite.DefaultVersion, sqlite.Install},
 }
 
 func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
@@ -84,16 +99,20 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 }
 
 func install(ctx context.Context, args []string, stdout, stderr io.Writer) error {
-	if len(args) == 0 || args[0] != clickhouse.Engine {
-		return errors.New("install takes the engine to install: clickhouse")
+	if len(args) == 0 {
+		return errors.New("install takes the engine to install: clickhouse or sqlite")
 	}
-	fs := flag.NewFlagSet("install", flag.ContinueOnError)
+	inst, ok := installers[args[0]]
+	if !ok {
+		return fmt.Errorf("install takes the engine to install, clickhouse or sqlite, not %q", args[0])
+	}
+	fs := flag.NewFlagSet("install "+args[0], flag.ContinueOnError)
 	fs.SetOutput(stderr)
-	version := fs.String("version", clickhouse.DefaultVersion, "ClickHouse release to install")
+	version := fs.String("version", inst.defaultVersion, args[0]+" release to install")
 	if err := fs.Parse(args[1:]); err != nil {
 		return err
 	}
-	path, err := clickhouse.Install(ctx, *version, runtime.GOOS, runtime.GOARCH, stderr)
+	path, err := inst.install(ctx, *version, runtime.GOOS, runtime.GOARCH, stderr)
 	if err != nil {
 		return err
 	}

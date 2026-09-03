@@ -153,6 +153,7 @@ is not available skip.
 ```bash
 cd internal/goldeneye
 go run ./cmd/goldeneye install clickhouse   # download the pinned clickhouse binary once
+go run ./cmd/goldeneye install sqlite       # download the pinned sqlite3 shell once
 POSTGRESQL_SERVER_URI="postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable" go test ./...
 go run ./cmd/goldeneye generate postgresql  # rewrite the files after a change
 ```

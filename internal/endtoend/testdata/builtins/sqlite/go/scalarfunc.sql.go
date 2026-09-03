@@ -289,9 +289,9 @@ const getRandom = `-- name: GetRandom :one
 SELECT random()
 `
 
-func (q *Queries) GetRandom(ctx context.Context) (any, error) {
+func (q *Queries) GetRandom(ctx context.Context) (int64, error) {
 	row := q.db.QueryRowContext(ctx, getRandom)
-	var random any
+	var random int64
 	err := row.Scan(&random)
 	return random, err
 }
@@ -300,9 +300,9 @@ const getRandomBlob = `-- name: GetRandomBlob :one
 SELECT randomblob(16)
 `
 
-func (q *Queries) GetRandomBlob(ctx context.Context) (any, error) {
+func (q *Queries) GetRandomBlob(ctx context.Context) ([]byte, error) {
 	row := q.db.QueryRowContext(ctx, getRandomBlob)
-	var randomblob any
+	var randomblob []byte
 	err := row.Scan(&randomblob)
 	return randomblob, err
 }
@@ -421,9 +421,9 @@ const getSoundex = `-- name: GetSoundex :one
 SELECT soundex('abc')
 `
 
-func (q *Queries) GetSoundex(ctx context.Context) (string, error) {
+func (q *Queries) GetSoundex(ctx context.Context) (any, error) {
 	row := q.db.QueryRowContext(ctx, getSoundex)
-	var soundex string
+	var soundex any
 	err := row.Scan(&soundex)
 	return soundex, err
 }

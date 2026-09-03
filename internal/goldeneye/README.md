@@ -15,6 +15,7 @@ reads the files: the files are the contract. Run it from this directory:
 
 ```bash
 go run ./cmd/goldeneye install clickhouse   # download the pinned clickhouse binary once
+go run ./cmd/goldeneye install sqlite       # download the pinned sqlite3 shell once
 go run ./cmd/goldeneye check                # check every engine whose database is available
 go run ./cmd/goldeneye check postgresql     # check one engine
 go run ./cmd/goldeneye generate [engine]    # rewrite the generated files from the database
@@ -54,14 +55,29 @@ the hand-written files alone, and the checks do not look at them.
   `clickhouse/install.go`, and a download that does not match is discarded.
   ClickHouse describes its functions no further than their names, so
   `functions.jsonl` is hand-written.
+- **`sqlite`** needs no server either: `functions.jsonl` comes from
+  `pragma_function_list` of the `sqlite3` shell sqlite.org publishes, run
+  against an in-memory database. SQLite describes its functions as far as
+  their names, their kinds and the number of arguments each overload takes,
+  and no further — it types values, not functions — so what each returns and
+  what its arguments hold comes from the table in `sqlite/signatures.go`,
+  and a built-in function the shell reports that the table does not know
+  fails the run rather than being guessed at. The shell is downloaded once
+  per pinned release by `install` into the user cache directory, or supplied
+  through the `SQLITE3` environment variable; the pinned release, which is
+  the one the main module's driver embeds, and the SHA3-256 of each
+  platform's download live in `sqlite/install.go`. SQLite has no catalog of
+  types or operators, so `types.jsonl` and `operators.jsonl` are
+  hand-written.
 
 ## Layout
 
 - `dialect/` — the record types the files are made of, mirrored from
   `internal/core/seed`, and the helpers that write a generated set of files
   into an engine directory or diff it against what is committed.
-- `postgresql/`, `duckdb/`, `clickhouse/` — one package per engine, each
-  exposing `Locate`, `Version` and `Generate`, and a test that runs the check.
+- `postgresql/`, `duckdb/`, `clickhouse/`, `sqlite/` — one package per
+  engine, each exposing `Locate`, `Version` and `Generate`, and a test that
+  runs the check.
 - `cmd/goldeneye/` — the command.
 
 The analysis checks — verifying the `analyze_*` cases under
