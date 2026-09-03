@@ -33,3 +33,5 @@ jobs:
       with:
         name: dialects
         path: internal/engine/*/dialect
+    - name: Fail if the committed dialects differ
+      run: git add -N internal/engine && git diff --exit-code --stat -- internal/engine
