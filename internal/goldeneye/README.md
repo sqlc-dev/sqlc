@@ -15,7 +15,7 @@ reads the files: the files are the contract. Run it from this directory:
 
 ```bash
 go run ./cmd/goldeneye install clickhouse   # download the pinned clickhouse binary once
-go run ./cmd/goldeneye install sqlite       # download the pinned sqlite3 shell once
+go run ./cmd/goldeneye install sqlite       # build the pinned sqlite3 shells once; needs a C compiler
 go run ./cmd/goldeneye check                # check every engine whose database is available
 go run ./cmd/goldeneye check postgresql     # check one engine
 go run ./cmd/goldeneye generate [engine]    # rewrite the generated files from the database
@@ -56,19 +56,25 @@ the hand-written files alone, and the checks do not look at them.
   ClickHouse describes its functions no further than their names, so
   `functions.jsonl` is hand-written.
 - **`sqlite`** needs no server either: `functions.jsonl` comes from
-  `pragma_function_list` of the `sqlite3` shell sqlite.org publishes, run
-  against an in-memory database. SQLite describes its functions as far as
-  their names, their kinds and the number of arguments each overload takes,
-  and no further — it types values, not functions — so what each returns and
-  what its arguments hold comes from the table in `sqlite/signatures.go`,
-  and a built-in function the shell reports that the table does not know
-  fails the run rather than being guessed at. The shell is downloaded once
-  per pinned release by `install` into the user cache directory, or supplied
-  through the `SQLITE3` environment variable; the pinned release, which is
-  the one the main module's driver embeds, and the SHA3-256 of each
-  platform's download live in `sqlite/install.go`. SQLite has no catalog of
-  types or operators, so `types.jsonl` and `operators.jsonl` are
-  hand-written.
+  `pragma_function_list` of a `sqlite3` shell run against an in-memory
+  database. Which functions a SQLite has is decided when it is compiled, so
+  `install` downloads the pinned release's amalgamation, checked against the
+  SHA3-256 the download page lists, and compiles the shell from it with the
+  compiler `CC` names, or `cc` — once with the options sqlite.org's own
+  configure turns on by default, which gives `functions.jsonl`, and once
+  more per option in `sqlite/install.go`'s extension list, each of which
+  gets a directory under `extensions/` holding the functions its build adds
+  over the default one, the way each PostgreSQL contrib extension holds what
+  `CREATE EXTENSION` adds; a schema that says `CREATE VIRTUAL TABLE ... USING
+  fts5` loads the option's directory, through the `modules` map in the
+  hand-written `dialect.json`. SQLite describes its functions as far as their
+  names, their kinds and the number of arguments each overload takes, and no
+  further — it types values, not functions — so what each returns and what
+  its arguments hold comes from the table in `sqlite/signatures.go`, and a
+  function a shell reports that the table does not know fails the run rather
+  than being guessed at. The pinned release is the one the main module's
+  driver embeds. SQLite has no catalog of types or operators, so
+  `types.jsonl` and `operators.jsonl` are hand-written.
 
 ## Layout
 

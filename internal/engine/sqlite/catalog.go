@@ -9,6 +9,7 @@ func NewCatalog() *catalog.Catalog {
 		Schemas: []*catalog.Schema{
 			defaultSchema(def),
 		},
-		Extensions: map[string]struct{}{},
+		LoadExtension: loadExtension,
+		Extensions:    map[string]struct{}{},
 	}
 }

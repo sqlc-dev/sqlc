@@ -1,0 +1,3 @@
+{"name":"rtreecheck","args":[{"type":"text","has_default":true},{"type":"text","has_default":true},{"type":"any","mode":"v"}],"returns":"text"}
+{"name":"rtreedepth","args":[{"type":"blob"}],"returns":"integer"}
+{"name":"rtreenode","args":[{"type":"integer"},{"type":"blob"}],"returns":"text"}

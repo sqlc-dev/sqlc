@@ -5,7 +5,7 @@
 // Usage, from internal/goldeneye:
 //
 //	go run ./cmd/goldeneye install clickhouse   # download the pinned clickhouse binary
-//	go run ./cmd/goldeneye install sqlite       # download the pinned sqlite3 shell
+//	go run ./cmd/goldeneye install sqlite       # build the pinned sqlite3 shells from source
 //	go run ./cmd/goldeneye generate [engine]    # rewrite the generated files from the database
 //	go run ./cmd/goldeneye check [engine]       # compare the committed files with the database
 //
@@ -39,7 +39,8 @@ func main() {
 
 const usage = `usage:
   goldeneye install clickhouse|sqlite [-version V]
-      download the pinned binary for an engine into the user cache directory
+      put the pinned release of an engine into the user cache directory: clickhouse is
+      downloaded, sqlite is built from the downloaded amalgamation with cc or $CC
   goldeneye generate [engine]
       rewrite the generated dialect files from the database, for every available engine or one
   goldeneye check [engine]
@@ -66,8 +67,8 @@ var engines = []engine{
 	{sqlite.Engine, sqlite.Locate, sqlite.Version, sqlite.Generate},
 }
 
-// installer downloads the binary an engine is read through, for the engines
-// that need no server and whose release is pinned in their package.
+// installer puts the binary an engine is read through in place, for the
+// engines that need no server and whose release is pinned in their package.
 type installer struct {
 	defaultVersion string
 	install        func(ctx context.Context, version, goos, goarch string, progress io.Writer) (string, error)

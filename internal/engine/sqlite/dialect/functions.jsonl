@@ -9,7 +9,6 @@
 {"name":"atan2","args":[{"type":"any"},{"type":"any"}],"returns":"real"}
 {"name":"atanh","args":[{"type":"any"}],"returns":"real"}
 {"name":"avg","kind":"a","args":[{"type":"any"}],"returns":"real","nullable":true}
-{"name":"bm25","args":[{"type":"text","has_default":true},{"type":"real","mode":"v"}],"returns":"real"}
 {"name":"ceil","args":[{"type":"any"}],"returns":"integer"}
 {"name":"ceiling","args":[{"type":"any"}],"returns":"integer"}
 {"name":"changes","returns":"integer"}
@@ -37,7 +36,6 @@
 {"name":"group_concat","kind":"a","args":[{"type":"any"}],"returns":"text","nullable":true}
 {"name":"group_concat","kind":"a","args":[{"type":"any"},{"type":"text"}],"returns":"text","nullable":true}
 {"name":"hex","args":[{"type":"any"}],"returns":"text"}
-{"name":"highlight","args":[{"type":"text","has_default":true},{"type":"integer","has_default":true},{"type":"text","has_default":true},{"type":"text","has_default":true},{"type":"any","mode":"v"}],"returns":"text"}
 {"name":"if","args":[{"type":"any"},{"type":"any"},{"type":"any","mode":"v"}],"returns":"any","nullable":true}
 {"name":"ifnull","args":[{"type":"any"},{"type":"any"}],"returns":"any","nullable":true}
 {"name":"iif","args":[{"type":"any"},{"type":"any"},{"type":"any","mode":"v"}],"returns":"any","nullable":true}
@@ -100,7 +98,6 @@
 {"name":"ltrim","args":[{"type":"text"},{"type":"text"}],"returns":"text"}
 {"name":"max","kind":"a","args":[{"type":"any"}],"returns":"any","nullable":true}
 {"name":"max","args":[{"type":"any"},{"type":"any","mode":"v"}],"returns":"any","nullable":true}
-{"name":"median","kind":"a","args":[{"type":"any"}],"returns":"real","nullable":true}
 {"name":"min","kind":"a","args":[{"type":"any"}],"returns":"any","nullable":true}
 {"name":"min","args":[{"type":"any"},{"type":"any","mode":"v"}],"returns":"any","nullable":true}
 {"name":"mod","args":[{"type":"any"},{"type":"any"}],"returns":"real"}
@@ -109,9 +106,6 @@
 {"name":"nullif","args":[{"type":"any"},{"type":"any"}],"returns":"any","nullable":true}
 {"name":"octet_length","args":[{"type":"any"}],"returns":"integer","nullable":true}
 {"name":"percent_rank","kind":"w","returns":"real"}
-{"name":"percentile","kind":"a","args":[{"type":"any"},{"type":"real"}],"returns":"real","nullable":true}
-{"name":"percentile_cont","kind":"a","args":[{"type":"any"},{"type":"real"}],"returns":"real","nullable":true}
-{"name":"percentile_disc","kind":"a","args":[{"type":"any"},{"type":"real"}],"returns":"any","nullable":true}
 {"name":"pi","returns":"real"}
 {"name":"pow","args":[{"type":"any"},{"type":"any"}],"returns":"real"}
 {"name":"power","args":[{"type":"any"},{"type":"any"}],"returns":"real"}
@@ -130,10 +124,8 @@
 {"name":"sign","args":[{"type":"any"}],"returns":"integer","nullable":true}
 {"name":"sin","args":[{"type":"any"}],"returns":"real"}
 {"name":"sinh","args":[{"type":"any"}],"returns":"real"}
-{"name":"snippet","args":[{"type":"text","has_default":true},{"type":"integer","has_default":true},{"type":"text","has_default":true},{"type":"text","has_default":true},{"type":"text","has_default":true},{"type":"integer","has_default":true},{"type":"any","mode":"v"}],"returns":"text"}
 {"name":"sqlite_compileoption_get","args":[{"type":"integer"}],"returns":"text","nullable":true}
 {"name":"sqlite_compileoption_used","args":[{"type":"text"}],"returns":"integer"}
-{"name":"sqlite_offset","args":[{"type":"any"}],"returns":"integer","nullable":true}
 {"name":"sqlite_source_id","returns":"text"}
 {"name":"sqlite_version","returns":"text"}
 {"name":"sqrt","args":[{"type":"any"}],"returns":"real"}

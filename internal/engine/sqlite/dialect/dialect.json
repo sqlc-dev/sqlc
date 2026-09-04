@@ -11,5 +11,13 @@
   "comparison_categories": "BNSDU",
   "arithmetic": ["+", "-", "*", "/", "%"],
   "arithmetic_categories": "N",
-  "cast_categories": "*"
+  "cast_categories": "*",
+  "modules": {
+    "fts3": "enable_fts3",
+    "fts4": "enable_fts3",
+    "fts5": "enable_fts5",
+    "geopoly": "enable_geopoly",
+    "rtree": "enable_rtree",
+    "rtree_i32": "enable_rtree"
+  }
 }

@@ -9,17 +9,12 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/core"
 )
 
-// applyExtension applies the named extension's directory to a catalog that
-// has already been seeded. Unlike the dialect's own seed, an extension lands
-// in a catalog full of types, so everything it names is resolved against what
-// is there before being created.
-func applyExtension(cat *core.Catalog, fsys fs.FS, name string) error {
-	dir := path.Join(ExtensionsDir, name)
-	if _, err := fs.Stat(fsys, dir); err != nil {
-		// An extension sqlc has no data for adds nothing, the way the legacy
-		// catalog has always treated one.
-		return nil
-	}
+// applyExtension applies the extension directory dir, relative to the
+// dialect, to a catalog that has already been seeded. Unlike the dialect's
+// own seed, an extension lands in a catalog full of types, so everything it
+// names is resolved against what is there before being created.
+func applyExtension(cat *core.Catalog, fsys fs.FS, dir string) error {
+	name := path.Base(dir)
 	sub, err := fs.Sub(fsys, dir)
 	if err != nil {
 		return fmt.Errorf("seed: extension %s: %w", name, err)

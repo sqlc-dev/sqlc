@@ -1,6 +1,7 @@
 // Package sqlite generates the SQLite dialect seed under
-// internal/engine/sqlite/dialect from the sqlite3 shell sqlite.org
-// publishes, run against an in-memory database that needs no server.
+// internal/engine/sqlite/dialect from sqlite3 shells built from the
+// amalgamation sqlite.org publishes, run against in-memory databases that
+// need no server.
 //
 // SQLite describes its functions as far as their names, their kinds and the
 // number of arguments each takes — pragma_function_list — and no further:
@@ -9,14 +10,20 @@
 // is therefore built from both sides. The shell says which functions exist,
 // how many arguments each overload takes and whether it aggregates, and the
 // signatures table in this package says what each returns and what its
-// arguments are meant to hold. A built-in function the shell reports that
-// the table does not know fails generation rather than being guessed at,
-// and so does a table entry the shell does not report. SQLite has no
-// catalog of types or operators, so types.jsonl and operators.jsonl are
-// hand-written.
+// arguments are meant to hold. A function the shell reports that the table
+// does not know fails generation rather than being guessed at, and so does
+// a table entry no shell reports.
 //
-// The shell is downloaded once per pinned version by Install, or supplied
-// through the SQLITE3 environment variable.
+// Which functions a SQLite has is decided when it is compiled, so the
+// dialect treats compile options the way the PostgreSQL dialect treats
+// contrib extensions. functions.jsonl is what a build with the default
+// options has, and each further option gets a directory under extensions/
+// holding the functions a build with that option adds — found the way
+// CREATE EXTENSION's additions are, by comparing the catalog with and
+// without. SQLite has no catalog of types or operators, so types.jsonl and
+// operators.jsonl are hand-written.
+//
+// The shells are built once per pinned version by Install.
 package sqlite
 
 import (
@@ -26,7 +33,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"os/exec"
+	"path"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -55,9 +65,14 @@ type functionRow struct {
 	NArg    int    `json:"narg"`
 }
 
-// Version reports the release a shell is.
-func Version(ctx context.Context, binary string) (string, error) {
-	out, err := exec.CommandContext(ctx, binary, "--version").Output()
+// key tells one overload from another.
+func (r functionRow) key() string {
+	return r.Name + "\x00" + strconv.Itoa(r.NArg)
+}
+
+// Version reports the release the default shell is.
+func Version(ctx context.Context, dir string) (string, error) {
+	out, err := exec.CommandContext(ctx, builds()[0].binary(dir), "--version").Output()
 	if err != nil {
 		return "", fmt.Errorf("sqlite3 --version: %w", err)
 	}
@@ -147,35 +162,86 @@ func isWindowFunction(ctx context.Context, binary string, row functionRow) (bool
 	return false, fmt.Errorf("sqlite3: %w", err)
 }
 
-// readFunctions turns the shell's list into the dialect's, one record per
-// overload of every function the signatures table knows. A built-in
-// function without a signature is an error; a function without one that
-// the shell or a bundled extension registered is not the dialect's
-// business.
-func readFunctions(ctx context.Context, binary string, rows []functionRow) ([]dialect.Function, error) {
+// shell is one built sqlite3 and the functions it reports.
+type shell struct {
+	build  build
+	binary string
+	rows   []functionRow
+}
+
+// readShell lists a build's functions, after checking that the shell was
+// built with the options the build says — a cached shell from before the
+// option lists changed would otherwise describe the wrong dialect.
+func readShell(ctx context.Context, dir string, b build) (*shell, error) {
+	s := &shell{build: b, binary: b.binary(dir)}
+	var used []struct {
+		Option string `json:"option"`
+		Used   int    `json:"used"`
+	}
+	known := map[string]bool{}
+	for _, b := range builds() {
+		for _, opt := range b.flags() {
+			known[opt] = true
+		}
+	}
+	var clauses []string
+	for _, opt := range slices.Sorted(maps.Keys(known)) {
+		clauses = append(clauses, fmt.Sprintf("SELECT '%s' AS option, sqlite_compileoption_used('%s') AS used", opt, opt))
+	}
+	if err := query(ctx, s.binary, strings.Join(clauses, " UNION ALL "), &used); err != nil {
+		return nil, err
+	}
+	for _, u := range used {
+		want := 0
+		if slices.Contains(b.flags(), u.Option) {
+			want = 1
+		}
+		if u.Used != want {
+			return nil, fmt.Errorf("sqlite: the %s shell was not built with the options it should have been (%s is %d): remove %s and run `go run ./cmd/goldeneye install sqlite` again", b.name, u.Option, u.Used, dir)
+		}
+	}
+	if err := query(ctx, s.binary, functionList, &s.rows); err != nil {
+		return nil, err
+	}
+	return s, nil
+}
+
+// generator accumulates the functions of every build, and remembers which
+// names were reported so that the signatures table can be checked against
+// the shells at the end.
+type generator struct {
+	ctx      context.Context
+	reported map[string]bool
+}
+
+// functions turns rows into records, one per overload. Every row has to
+// have a signature unless omitted; lenient says a row without one may be
+// skipped instead when it is not built in, which is how the shell's own
+// functions — edit, sha3, the bundled extensions — are kept out of the
+// default build's list. A comparison with the default build has already
+// removed them from an option's rows, so there nothing is skipped.
+func (g *generator) functions(s *shell, lenient bool) ([]dialect.Function, error) {
 	var funcs []dialect.Function
 	seen := map[string]bool{}
-	reported := map[string]bool{}
 	var missing []string
-	for _, row := range rows {
-		reported[row.Name] = true
-		if omitted[row.Name] {
+	for _, row := range s.rows {
+		g.reported[row.Name] = true
+		if omitted[row.Name] || seen[row.key()] {
 			continue
 		}
+		seen[row.key()] = true
 		sig, ok := signatures[row.Name]
 		if !ok {
-			if row.Builtin != 0 && !seen[row.Name] {
+			if lenient && row.Builtin == 0 {
+				continue
+			}
+			if !seen[row.Name] {
 				seen[row.Name] = true
 				missing = append(missing, row.Name)
 			}
 			continue
 		}
-		key := row.Name + "\x00" + strconv.Itoa(row.NArg)
-		if seen[key] {
-			continue
-		}
-		seen[key] = true
-		kind, err := functionKind(ctx, binary, row)
+		kind, err := functionKind(g.ctx, s.binary, row)
 		if err != nil {
 			return nil, err
 		}
@@ -188,34 +254,68 @@ func readFunctions(ctx context.Context, binary string, rows []functionRow) ([]di
 		})
 	}
 	if len(missing) > 0 {
-		return nil, fmt.Errorf("sqlite: no signature for built-in function(s) %s: add them to signatures.go", strings.Join(missing, ", "))
+		return nil, fmt.Errorf("sqlite: no signature for function(s) %s of the %s build: add them to signatures.go", strings.Join(missing, ", "), s.build.name)
+	}
+	return funcs, nil
+}
+
+// added returns the rows of an option's shell that the default shell does
+// not have: what the option adds.
+func added(opt, base *shell) *shell {
+	have := map[string]bool{}
+	for _, row := range base.rows {
+		have[row.key()] = true
+	}
+	diff := &shell{build: opt.build, binary: opt.binary}
+	for _, row := range opt.rows {
+		if !have[row.key()] {
+			diff.rows = append(diff.rows, row)
+		}
+	}
+	return diff
+}
+
+// Generate reads the dialect from the shells under dir.
+func Generate(ctx context.Context, dir string) (dialect.Files, error) {
+	g := &generator{ctx: ctx, reported: map[string]bool{}}
+	all := builds()
+	base, err := readShell(ctx, dir, all[0])
+	if err != nil {
+		return nil, err
+	}
+	funcs, err := g.functions(base, true)
+	if err != nil {
+		return nil, err
+	}
+	files := dialect.Files{}
+	if files[dialect.FunctionsFile], err = dialect.JSONL(funcs); err != nil {
+		return nil, err
+	}
+	for _, b := range all[1:] {
+		s, err := readShell(ctx, dir, b)
+		if err != nil {
+			return nil, err
+		}
+		funcs, err := g.functions(added(s, base), false)
+		if err != nil {
+			return nil, err
+		}
+		if len(funcs) == 0 {
+			return nil, fmt.Errorf("sqlite: %s adds no functions over the default build; drop it from the extensions in install.go", strings.Join(b.options, " "))
+		}
+		if files[path.Join(dialect.ExtensionsDir, b.name, dialect.FunctionsFile)], err = dialect.JSONL(funcs); err != nil {
+			return nil, err
+		}
 	}
 	var stale []string
 	for name := range signatures {
-		if !reported[name] {
+		if !g.reported[name] {
 			stale = append(stale, name)
 		}
 	}
 	if len(stale) > 0 {
 		sort.Strings(stale)
-		return nil, fmt.Errorf("sqlite: signatures.go lists function(s) the shell does not report: %s", strings.Join(stale, ", "))
+		return nil, fmt.Errorf("sqlite: signatures.go lists function(s) no shell reports: %s", strings.Join(stale, ", "))
 	}
-	return funcs, nil
-}
-
-// Generate reads the dialect from the shell.
-func Generate(ctx context.Context, binary string) (dialect.Files, error) {
-	var rows []functionRow
-	if err := query(ctx, binary, functionList, &rows); err != nil {
-		return nil, err
-	}
-	funcs, err := readFunctions(ctx, binary, rows)
-	if err != nil {
-		return nil, err
-	}
-	functions, err := dialect.JSONL(funcs)
-	if err != nil {
-		return nil, err
-	}
-	return dialect.Files{dialect.FunctionsFile: functions}, nil
+	return files, nil
 }

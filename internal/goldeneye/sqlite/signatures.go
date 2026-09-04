@@ -60,14 +60,20 @@ var omitted = map[string]bool{
 	// SQLITE_ENABLE_UNKNOWN_SQL_FUNCTION's stand-in for any function the
 	// shell does not know, so that EXPLAIN works on queries that use one.
 	"unknown": true,
+	// FTS3's and FTS5's ways of passing pointers to their virtual tables,
+	// not functions a query calls.
+	"fts3_tokenizer": true,
+	"fts5":           true,
+	// A debugging aid of GEOPOLY's.
+	"geopoly_debug": true,
 }
 
-// signatures covers every function the shell builds in, by the SQLite
-// documentation of each — lang_corefunc, lang_mathfunc, lang_datefunc,
-// lang_aggfunc, windowfunctions and json1 — and the auxiliary functions of
-// FTS5, which the shell bundles as an extension. A function marked
-// Nullable can return NULL for arguments that are not: an aggregate over
-// no rows, a lookup that finds nothing, an input that does not parse.
+// signatures covers every function of the default build and of each
+// extension's, by the SQLite documentation of each — lang_corefunc,
+// lang_mathfunc, lang_datefunc, lang_aggfunc, windowfunctions, json1,
+// fts3, fts5, rtree and geopoly. A function marked Nullable can return NULL
+// for arguments that are not: an aggregate over no rows, a lookup that
+// finds nothing, an input that does not parse.
 //
 // SQLite's values carry their own types, so a function's result type is
 // what it typically produces. abs of an integer is an integer, but abs
@@ -85,7 +91,7 @@ var signatures = map[string]signature{
 	"sum":          {Returns: "real", Nullable: true},
 	"total":        {Returns: "real"},
 
-	// Percentiles, built in by SQLITE_ENABLE_PERCENTILE.
+	// Percentiles, added by SQLITE_ENABLE_PERCENTILE.
 	"median":          {Returns: "real", Nullable: true},
 	"percentile":      {Args: []string{"any", "real"}, Returns: "real", Nullable: true},
 	"percentile_cont": {Args: []string{"any", "real"}, Returns: "real", Nullable: true},
@@ -136,7 +142,6 @@ var signatures = map[string]signature{
 	"sign":                      {Returns: "integer", Nullable: true},
 	"sqlite_compileoption_get":  {Args: []string{"integer"}, Returns: "text", Nullable: true},
 	"sqlite_compileoption_used": {Args: []string{"text"}, Returns: "integer"},
-	"sqlite_offset":             {Returns: "integer", Nullable: true},
 	"sqlite_source_id":          {Returns: "text"},
 	"sqlite_version":            {Returns: "text"},
 	"substr":                    {Args: []string{"any", "integer", "integer"}, Returns: "text"},
@@ -235,9 +240,45 @@ var signatures = map[string]signature{
 	"jsonb_replace":       {Args: []string{"any"}, Returns: "blob"},
 	"jsonb_set":           {Args: []string{"any"}, Returns: "blob"},
 
-	// FTS5's auxiliary functions, registered by the extension rather than
-	// built in, and the only ones of its functions a query calls.
-	"bm25":      {Args: []string{"text"}, Variadic: "real", Returns: "real"},
-	"highlight": {Args: []string{"text", "integer", "text", "text"}, Returns: "text"},
-	"snippet":   {Args: []string{"text", "integer", "text", "text", "text", "integer"}, Returns: "text"},
+	// Added by SQLITE_SOUNDEX.
+	"soundex": {Args: []string{"text"}, Returns: "text"},
+
+	// Added by SQLITE_ENABLE_OFFSET_SQL_FUNC.
+	"sqlite_offset": {Returns: "integer", Nullable: true},
+
+	// FTS3's auxiliary functions, whose first argument names the table.
+	"matchinfo": {Args: []string{"any", "text"}, Returns: "blob"},
+	"offsets":   {Args: []string{"any"}, Returns: "text"},
+	"optimize":  {Args: []string{"any"}, Returns: "text"},
+
+	// FTS5's auxiliary and locale functions. snippet is FTS3's too, with the
+	// same result.
+	"bm25":            {Args: []string{"text"}, Variadic: "real", Returns: "real"},
+	"fts5_get_locale": {Args: []string{"any", "any"}, Returns: "text", Nullable: true},
+	"fts5_insttoken":  {Args: []string{"text"}, Returns: "text"},
+	"fts5_locale":     {Args: []string{"text", "text"}, Returns: "text"},
+	"fts5_source_id":  {Returns: "text"},
+	"highlight":       {Args: []string{"text", "integer", "text", "text"}, Returns: "text"},
+	"snippet":         {Args: []string{"text", "integer", "text", "text", "text", "integer"}, Returns: "text"},
+
+	// R*Tree's functions for inspecting an index's nodes.
+	"rtreecheck": {Args: []string{"text", "text"}, Returns: "text"},
+	"rtreedepth": {Args: []string{"blob"}, Returns: "integer"},
+	"rtreenode":  {Args: []string{"integer", "blob"}, Returns: "text"},
+
+	// GEOPOLY's functions. A polygon argument is GeoJSON text or the binary
+	// form, so it is "any"; the functions that return a polygon return the
+	// binary form.
+	"geopoly_area":           {Returns: "real", Nullable: true},
+	"geopoly_bbox":           {Returns: "blob", Nullable: true},
+	"geopoly_blob":           {Returns: "blob", Nullable: true},
+	"geopoly_ccw":            {Returns: "blob", Nullable: true},
+	"geopoly_contains_point": {Args: []string{"any", "real", "real"}, Returns: "integer", Nullable: true},
+	"geopoly_group_bbox":     {Returns: "blob", Nullable: true},
+	"geopoly_json":           {Returns: "text", Nullable: true},
+	"geopoly_overlap":        {Returns: "integer", Nullable: true},
+	"geopoly_regular":        {Args: []string{"real", "real", "real", "integer"}, Returns: "blob"},
+	"geopoly_svg":            {Args: []string{"any", "text"}, Returns: "text", Nullable: true},
+	"geopoly_within":         {Returns: "integer", Nullable: true},
+	"geopoly_xform":          {Args: []string{"any", "real", "real", "real", "real", "real", "real"}, Returns: "blob", Nullable: true},
 }
