@@ -1,0 +1,15 @@
+{"name":"geopoly_area","args":[{"type":"any"}],"returns":"real","nullable":true}
+{"name":"geopoly_bbox","args":[{"type":"any"}],"returns":"blob","nullable":true}
+{"name":"geopoly_blob","args":[{"type":"any"}],"returns":"blob","nullable":true}
+{"name":"geopoly_ccw","args":[{"type":"any"}],"returns":"blob","nullable":true}
+{"name":"geopoly_contains_point","args":[{"type":"any"},{"type":"real"},{"type":"real"}],"returns":"integer","nullable":true}
+{"name":"geopoly_group_bbox","kind":"a","args":[{"type":"any"}],"returns":"blob","nullable":true}
+{"name":"geopoly_json","args":[{"type":"any"}],"returns":"text","nullable":true}
+{"name":"geopoly_overlap","args":[{"type":"any"},{"type":"any"}],"returns":"integer","nullable":true}
+{"name":"geopoly_regular","args":[{"type":"real"},{"type":"real"},{"type":"real"},{"type":"integer"}],"returns":"blob"}
+{"name":"geopoly_svg","args":[{"type":"text","mode":"v"}],"returns":"text","nullable":true}
+{"name":"geopoly_within","args":[{"type":"any"},{"type":"any"}],"returns":"integer","nullable":true}
+{"name":"geopoly_xform","args":[{"type":"any"},{"type":"real"},{"type":"real"},{"type":"real"},{"type":"real"},{"type":"real"},{"type":"real"}],"returns":"blob","nullable":true}
+{"name":"rtreecheck","args":[{"type":"text","has_default":true},{"type":"text","has_default":true},{"type":"any","mode":"v"}],"returns":"text"}
+{"name":"rtreedepth","args":[{"type":"blob"}],"returns":"integer"}
+{"name":"rtreenode","args":[{"type":"integer"},{"type":"blob"}],"returns":"text"}

@@ -47,9 +47,9 @@ const getGroupConcatInt = `-- name: GetGroupConcatInt :one
 SELECT group_concat(int_val) FROM test
 `
 
-func (q *Queries) GetGroupConcatInt(ctx context.Context) (string, error) {
+func (q *Queries) GetGroupConcatInt(ctx context.Context) (sql.NullString, error) {
 	row := q.db.QueryRowContext(ctx, getGroupConcatInt)
-	var group_concat string
+	var group_concat sql.NullString
 	err := row.Scan(&group_concat)
 	return group_concat, err
 }
@@ -58,9 +58,9 @@ const getGroupConcatInt2 = `-- name: GetGroupConcatInt2 :one
 SELECT group_concat(1, ':') FROM test
 `
 
-func (q *Queries) GetGroupConcatInt2(ctx context.Context) (string, error) {
+func (q *Queries) GetGroupConcatInt2(ctx context.Context) (sql.NullString, error) {
 	row := q.db.QueryRowContext(ctx, getGroupConcatInt2)
-	var group_concat string
+	var group_concat sql.NullString
 	err := row.Scan(&group_concat)
 	return group_concat, err
 }
@@ -69,9 +69,9 @@ const getGroupConcatText = `-- name: GetGroupConcatText :one
 SELECT group_concat(text_val) FROM test
 `
 
-func (q *Queries) GetGroupConcatText(ctx context.Context) (string, error) {
+func (q *Queries) GetGroupConcatText(ctx context.Context) (sql.NullString, error) {
 	row := q.db.QueryRowContext(ctx, getGroupConcatText)
-	var group_concat string
+	var group_concat sql.NullString
 	err := row.Scan(&group_concat)
 	return group_concat, err
 }
@@ -80,9 +80,9 @@ const getGroupConcatText2 = `-- name: GetGroupConcatText2 :one
 SELECT group_concat(text_val, ':') FROM test
 `
 
-func (q *Queries) GetGroupConcatText2(ctx context.Context) (string, error) {
+func (q *Queries) GetGroupConcatText2(ctx context.Context) (sql.NullString, error) {
 	row := q.db.QueryRowContext(ctx, getGroupConcatText2)
-	var group_concat string
+	var group_concat sql.NullString
 	err := row.Scan(&group_concat)
 	return group_concat, err
 }

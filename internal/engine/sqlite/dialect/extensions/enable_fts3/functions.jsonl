@@ -1,0 +1,5 @@
+{"name":"matchinfo","args":[{"type":"any"}],"returns":"blob"}
+{"name":"matchinfo","args":[{"type":"any"},{"type":"text"}],"returns":"blob"}
+{"name":"offsets","args":[{"type":"any"}],"returns":"text"}
+{"name":"optimize","args":[{"type":"any"}],"returns":"text"}
+{"name":"snippet","args":[{"type":"any","has_default":true},{"type":"any","has_default":true},{"type":"text","has_default":true},{"type":"text","has_default":true},{"type":"integer","has_default":true},{"type":"integer","has_default":true},{"type":"any","mode":"v"}],"returns":"text"}

@@ -1,0 +1,7 @@
+{"name":"bm25","args":[{"type":"any","has_default":true},{"type":"real","mode":"v"}],"returns":"real"}
+{"name":"fts5_get_locale","args":[{"type":"any","has_default":true},{"type":"integer","has_default":true},{"type":"any","mode":"v"}],"returns":"text","nullable":true}
+{"name":"fts5_insttoken","args":[{"type":"any"}],"returns":"any"}
+{"name":"fts5_locale","args":[{"type":"text"},{"type":"text"}],"returns":"text"}
+{"name":"fts5_source_id","returns":"text"}
+{"name":"highlight","args":[{"type":"any","has_default":true},{"type":"integer","has_default":true},{"type":"text","has_default":true},{"type":"text","has_default":true},{"type":"any","mode":"v"}],"returns":"text"}
+{"name":"snippet","args":[{"type":"any","has_default":true},{"type":"any","has_default":true},{"type":"text","has_default":true},{"type":"text","has_default":true},{"type":"integer","has_default":true},{"type":"integer","has_default":true},{"type":"any","mode":"v"}],"returns":"text"}

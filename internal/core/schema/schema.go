@@ -133,6 +133,13 @@ func applyCreateTable(cat *core.Catalog, stmt *ast.CreateTableStmt) error {
 	if stmt.Name == nil {
 		return fmt.Errorf("create table with nil name")
 	}
+	// A virtual table's module is the dialect's word for the extension it
+	// needs, the way CREATE EXTENSION is PostgreSQL's.
+	if stmt.Using != "" {
+		if err := cat.LoadExtension(stmt.Using); err != nil {
+			return err
+		}
+	}
 	nsOID, err := resolveOrCreateNamespace(cat, stmt.Name.Schema)
 	if err != nil {
 		return err

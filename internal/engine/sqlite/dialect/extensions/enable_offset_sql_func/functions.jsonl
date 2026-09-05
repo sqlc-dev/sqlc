@@ -1,0 +1,1 @@
+{"name":"sqlite_offset","args":[{"type":"any"}],"returns":"integer","nullable":true}
