@@ -2,8 +2,8 @@ name: gen
 on:
   workflow_dispatch:
 jobs:
-  generate:
-    name: generate dialects
+  postgresql:
+    name: generate postgresql dialect
     runs-on: ubuntu-24.04
     services:
       postgres:
@@ -22,18 +22,56 @@ jobs:
       with:
         go-version-file: internal/goldeneye/go.mod
         check-latest: true
-    - run: go run ./cmd/goldeneye install clickhouse
-      working-directory: internal/goldeneye
-    - run: go run ./cmd/goldeneye install sqlite
-      working-directory: internal/goldeneye
-    - run: go run ./cmd/goldeneye generate
+    - run: go run ./cmd/goldeneye generate postgresql
       working-directory: internal/goldeneye
       env:
         POSTGRESQL_SERVER_URI: postgres://postgres:postgres@localhost:${{ job.services.postgres.ports['5432'] }}/postgres?sslmode=disable
     - name: Save results
       uses: actions/upload-artifact@v7
       with:
-        name: dialects
-        path: internal/engine/*/dialect
-    - name: Fail if the committed dialects differ
-      run: git add -N internal/engine && git diff --exit-code --stat -- internal/engine
+        name: dialect-postgresql
+        path: internal/engine/postgresql/dialect
+    - name: Fail if the committed dialect differs
+      run: git add -N internal/engine/postgresql && git diff --exit-code --stat -- internal/engine/postgresql
+
+  clickhouse:
+    name: generate clickhouse dialect
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-go@v7
+      with:
+        go-version-file: internal/goldeneye/go.mod
+        check-latest: true
+    - run: go run ./cmd/goldeneye install clickhouse
+      working-directory: internal/goldeneye
+    - run: go run ./cmd/goldeneye generate clickhouse
+      working-directory: internal/goldeneye
+    - name: Save results
+      uses: actions/upload-artifact@v7
+      with:
+        name: dialect-clickhouse
+        path: internal/engine/clickhouse/dialect
+    - name: Fail if the committed dialect differs
+      run: git add -N internal/engine/clickhouse && git diff --exit-code --stat -- internal/engine/clickhouse
+
+  sqlite:
+    name: generate sqlite dialect
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-go@v7
+      with:
+        go-version-file: internal/goldeneye/go.mod
+        check-latest: true
+    - run: go run ./cmd/goldeneye install sqlite
+      working-directory: internal/goldeneye
+    - run: go run ./cmd/goldeneye generate sqlite
+      working-directory: internal/goldeneye
+    - name: Save results
+      uses: actions/upload-artifact@v7
+      with:
+        name: dialect-sqlite
+        path: internal/engine/sqlite/dialect
+    - name: Fail if the committed dialect differs
+      run: git add -N internal/engine/sqlite && git diff --exit-code --stat -- internal/engine/sqlite
