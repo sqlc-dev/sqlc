@@ -1,4 +1,4 @@
-{"name":"median","kind":"a","args":[{"type":"any"}],"returns":"real","nullable":true}
-{"name":"percentile","kind":"a","args":[{"type":"any"},{"type":"real"}],"returns":"real","nullable":true}
-{"name":"percentile_cont","kind":"a","args":[{"type":"any"},{"type":"real"}],"returns":"real","nullable":true}
-{"name":"percentile_disc","kind":"a","args":[{"type":"any"},{"type":"real"}],"returns":"any","nullable":true}
+{"name":"median","kind":"a","args":[{"type":"real"}],"returns":"real","nullable":true}
+{"name":"percentile","kind":"a","args":[{"type":"real"},{"type":"real"}],"returns":"real","nullable":true}
+{"name":"percentile_cont","kind":"a","args":[{"type":"real"},{"type":"real"}],"returns":"real","nullable":true}
+{"name":"percentile_disc","kind":"a","args":[{"type":"real"},{"type":"real"}],"returns":"real","nullable":true}

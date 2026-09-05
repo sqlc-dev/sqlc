@@ -69,9 +69,9 @@ const getFormat = `-- name: GetFormat :one
 SELECT format('Hello %s', 'world')
 `
 
-func (q *Queries) GetFormat(ctx context.Context) (sql.NullString, error) {
+func (q *Queries) GetFormat(ctx context.Context) (string, error) {
 	row := q.db.QueryRowContext(ctx, getFormat)
-	var format sql.NullString
+	var format string
 	err := row.Scan(&format)
 	return format, err
 }
@@ -124,9 +124,9 @@ const getInstr = `-- name: GetInstr :one
 SELECT instr('hello', 'l')
 `
 
-func (q *Queries) GetInstr(ctx context.Context) (sql.NullInt64, error) {
+func (q *Queries) GetInstr(ctx context.Context) (int64, error) {
 	row := q.db.QueryRowContext(ctx, getInstr)
-	var instr sql.NullInt64
+	var instr int64
 	err := row.Scan(&instr)
 	return instr, err
 }
@@ -146,9 +146,9 @@ const getLength = `-- name: GetLength :one
 SELECT length('12345')
 `
 
-func (q *Queries) GetLength(ctx context.Context) (sql.NullInt64, error) {
+func (q *Queries) GetLength(ctx context.Context) (int64, error) {
 	row := q.db.QueryRowContext(ctx, getLength)
-	var length sql.NullInt64
+	var length int64
 	err := row.Scan(&length)
 	return length, err
 }
@@ -267,9 +267,9 @@ const getPrintf = `-- name: GetPrintf :one
 SELECT printf('Hello %s', 'world')
 `
 
-func (q *Queries) GetPrintf(ctx context.Context) (sql.NullString, error) {
+func (q *Queries) GetPrintf(ctx context.Context) (string, error) {
 	row := q.db.QueryRowContext(ctx, getPrintf)
-	var printf sql.NullString
+	var printf string
 	err := row.Scan(&printf)
 	return printf, err
 }

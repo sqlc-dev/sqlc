@@ -1,18 +1,24 @@
 // Package sqlite generates the SQLite dialect seed under
 // internal/engine/sqlite/dialect from sqlite3 shells built from the
 // amalgamation sqlite.org publishes, run against in-memory databases that
-// need no server.
+// need no server, and from the amalgamation itself.
 //
 // SQLite describes its functions as far as their names, their kinds and the
 // number of arguments each takes — pragma_function_list — and no further:
 // it types values rather than columns or functions, so nothing in the
-// database says what a function returns or what it expects. functions.jsonl
-// is therefore built from both sides. The shell says which functions exist,
-// how many arguments each overload takes and whether it aggregates, and the
-// signatures table in this package says what each returns and what its
-// arguments are meant to hold. A function the shell reports that the table
-// does not know fails generation rather than being guessed at, and so does
-// a table entry no shell reports.
+// database says what a function returns or what it expects. The source
+// does, in its way. Every function is registered with the C functions that
+// implement it, and those set their result through sqlite3_result_* and
+// read their arguments through sqlite3_value_*, which is as close as SQLite
+// comes to declaring a signature. So functions.jsonl is built from both:
+// the shell says which functions exist, how many arguments each overload
+// takes and whether it aggregates, and the amalgamation says what each
+// returns and what its arguments hold. A function the shell reports that
+// the source does not register, or whose implementation sets no result,
+// fails generation rather than being guessed at. What neither can say —
+// which scalar functions return NULL for arguments that are not — is a
+// short list in signatures.go; for aggregates it is found by running each
+// over no rows.
 //
 // Which functions a SQLite has is decided when it is compiled, so the
 // dialect treats compile options the way the PostgreSQL dialect treats
@@ -36,6 +42,7 @@ import (
 	"maps"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"slices"
 	"sort"
 	"strconv"
@@ -67,7 +74,7 @@ type functionRow struct {
 
 // key tells one overload from another.
 func (r functionRow) key() string {
-	return r.Name + "\x00" + strconv.Itoa(r.NArg)
+	return r.Name + "/" + strconv.Itoa(r.NArg)
 }
 
 // Version reports the release the default shell is.
@@ -206,38 +213,44 @@ func readShell(ctx context.Context, dir string, b build) (*shell, error) {
 	return s, nil
 }
 
-// generator accumulates the functions of every build, and remembers which
-// names were reported so that the signatures table can be checked against
-// the shells at the end.
+// generator accumulates the functions of every build, reading their
+// signatures from the amalgamation, and remembers which names were
+// reported so that the lists in signatures.go can be checked against the
+// shells at the end.
 type generator struct {
 	ctx      context.Context
+	src      *source
 	reported map[string]bool
 }
 
-// functions turns rows into records, one per overload. Every row has to
-// have a signature unless omitted; lenient says a row without one may be
-// skipped instead when it is not built in, which is how the shell's own
-// functions — edit, sha3, the bundled extensions — are kept out of the
-// default build's list. A comparison with the default build has already
-// removed them from an option's rows, so there nothing is skipped.
-func (g *generator) functions(s *shell, lenient bool) ([]dialect.Function, error) {
-	var funcs []dialect.Function
+// overload is one row of a shell's list with what was found out about it.
+type overload struct {
+	row  functionRow
+	kind string
+	sig  signature
+}
+
+// functions turns rows into records, one per overload. Every row has to be
+// a function the amalgamation registers unless omitted. In the default
+// build only what the library builds in counts: the rest is what the shell
+// registers on top — edit, sha3, the extensions it bundles — which is not
+// the dialect's business, and which a comparison with the default build has
+// already removed from an option's rows.
+func (g *generator) functions(s *shell, base bool) ([]dialect.Function, error) {
+	var overloads []overload
 	seen := map[string]bool{}
 	var missing []string
 	for _, row := range s.rows {
 		g.reported[row.Name] = true
-		if omitted[row.Name] || seen[row.key()] {
+		if omitted[row.Name] || seen[row.key()] || base && row.Builtin == 0 {
 			continue
 		}
 		seen[row.key()] = true
-		sig, ok := signatures[row.Name]
-		if !ok {
-			if lenient && row.Builtin == 0 {
-				continue
-			}
+		sig, err := g.src.signature(row.Name)
+		if err != nil {
 			if !seen[row.Name] {
 				seen[row.Name] = true
-				missing = append(missing, row.Name)
+				missing = append(missing, err.Error())
 			}
 			continue
 		}
@@ -245,18 +258,78 @@ func (g *generator) functions(s *shell, lenient bool) ([]dialect.Function, error
 		if err != nil {
 			return nil, err
 		}
-		funcs = append(funcs, dialect.Function{
-			Name:     row.Name,
-			Kind:     kind,
-			Args:     sig.args(row.NArg),
-			Returns:  sig.Returns,
-			Nullable: sig.Nullable,
-		})
+		overloads = append(overloads, overload{row: row, kind: kind, sig: sig})
 	}
 	if len(missing) > 0 {
-		return nil, fmt.Errorf("sqlite: no signature for function(s) %s of the %s build: add them to signatures.go", strings.Join(missing, ", "), s.build.name)
+		return nil, fmt.Errorf("sqlite: %s build: %s", s.build.name, strings.Join(missing, "; "))
+	}
+	empty, err := overNoRows(g.ctx, s.binary, overloads)
+	if err != nil {
+		return nil, err
+	}
+	funcs := make([]dialect.Function, 0, len(overloads))
+	for _, o := range overloads {
+		isNullable := nullable[o.row.Name]
+		if o.kind == "a" {
+			isNullable = empty[o.row.key()] == "null"
+		}
+		funcs = append(funcs, dialect.Function{
+			Name:     o.row.Name,
+			Kind:     o.kind,
+			Args:     o.sig.args(o.row.NArg),
+			Returns:  o.sig.Returns,
+			Nullable: isNullable,
+		})
 	}
 	return funcs, nil
+}
+
+// overNoRows runs every aggregate over no rows and reports the type of
+// what each returns, "null" for the ones — avg, max, group_concat — that
+// return NULL when there is nothing to aggregate, and not count or total.
+// The probes go through one shell process, each statement labelled with
+// its overload so that the answers can be told apart.
+func overNoRows(ctx context.Context, binary string, overloads []overload) (map[string]string, error) {
+	var script strings.Builder
+	for _, o := range overloads {
+		if o.kind != "a" {
+			continue
+		}
+		n := o.row.NArg
+		if n < 0 {
+			n = minArgs(n)
+		}
+		args := strings.TrimSuffix(strings.Repeat("x, ", n), ", ")
+		fmt.Fprintf(&script, "SELECT '%s', typeof(%s(%s)) FROM (SELECT NULL AS x) WHERE 0;\n", o.row.key(), o.row.Name, args)
+	}
+	results := map[string]string{}
+	if script.Len() == 0 {
+		return results, nil
+	}
+	cmd := exec.CommandContext(ctx, binary, "-list", ":memory:", script.String())
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		var exit *exec.ExitError
+		if !errors.As(err, &exit) {
+			return nil, fmt.Errorf("sqlite3: %w", err)
+		}
+	}
+	for _, line := range strings.Split(strings.TrimSpace(stdout.String()), "\n") {
+		key, typ, ok := strings.Cut(line, "|")
+		if ok {
+			results[key] = typ
+		}
+	}
+	for _, o := range overloads {
+		if o.kind == "a" {
+			if _, ok := results[o.row.key()]; !ok {
+				return nil, fmt.Errorf("sqlite: cannot run %s over no rows: %s", o.row.Name, strings.TrimSpace(stderr.String()))
+			}
+		}
+	}
+	return results, nil
 }
 
 // added returns the rows of an option's shell that the default shell does
@@ -275,9 +348,14 @@ func added(opt, base *shell) *shell {
 	return diff
 }
 
-// Generate reads the dialect from the shells under dir.
+// Generate reads the dialect from the shells under dir and the
+// amalgamation they were built from.
 func Generate(ctx context.Context, dir string) (dialect.Files, error) {
-	g := &generator{ctx: ctx, reported: map[string]bool{}}
+	src, err := readSource(filepath.Join(dir, "src", "sqlite3.c"))
+	if err != nil {
+		return nil, err
+	}
+	g := &generator{ctx: ctx, src: src, reported: map[string]bool{}}
 	all := builds()
 	base, err := readShell(ctx, dir, all[0])
 	if err != nil {
@@ -308,9 +386,11 @@ func Generate(ctx context.Context, dir string) (dialect.Files, error) {
 		}
 	}
 	var stale []string
-	for name := range signatures {
-		if !g.reported[name] {
-			stale = append(stale, name)
+	for _, list := range []map[string]bool{omitted, nullable} {
+		for name := range list {
+			if !g.reported[name] {
+				stale = append(stale, name)
+			}
 		}
 	}
 	if len(stale) > 0 {

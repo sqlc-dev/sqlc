@@ -7,7 +7,7 @@
 {"name":"geopoly_json","args":[{"type":"any"}],"returns":"text","nullable":true}
 {"name":"geopoly_overlap","args":[{"type":"any"},{"type":"any"}],"returns":"integer","nullable":true}
 {"name":"geopoly_regular","args":[{"type":"real"},{"type":"real"},{"type":"real"},{"type":"integer"}],"returns":"blob"}
-{"name":"geopoly_svg","args":[{"type":"any","has_default":true},{"type":"text","has_default":true},{"type":"any","mode":"v"}],"returns":"text","nullable":true}
+{"name":"geopoly_svg","args":[{"type":"text","mode":"v"}],"returns":"text","nullable":true}
 {"name":"geopoly_within","args":[{"type":"any"},{"type":"any"}],"returns":"integer","nullable":true}
 {"name":"geopoly_xform","args":[{"type":"any"},{"type":"real"},{"type":"real"},{"type":"real"},{"type":"real"},{"type":"real"},{"type":"real"}],"returns":"blob","nullable":true}
 {"name":"rtreecheck","args":[{"type":"text","has_default":true},{"type":"text","has_default":true},{"type":"any","mode":"v"}],"returns":"text"}

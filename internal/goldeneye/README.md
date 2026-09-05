@@ -70,9 +70,15 @@ the hand-written files alone, and the checks do not look at them.
   hand-written `dialect.json`. SQLite describes its functions as far as their
   names, their kinds and the number of arguments each overload takes, and no
   further — it types values, not functions — so what each returns and what
-  its arguments hold comes from the table in `sqlite/signatures.go`, and a
-  function a shell reports that the table does not know fails the run rather
-  than being guessed at. The pinned release is the one the main module's
+  its arguments hold is read from the amalgamation: every function is
+  registered with the C functions that implement it, and those set their
+  result through `sqlite3_result_*` and read their arguments through
+  `sqlite3_value_*`. A function a shell reports that the source does not
+  register fails the run rather than being guessed at. Whether an aggregate
+  returns NULL over no rows is found by running it over none; the scalar
+  functions that return NULL for arguments that are not are a short list in
+  `sqlite/signatures.go`, since a SQLite function returns NULL as often by
+  setting no result as by saying so. The pinned release is the one the main module's
   driver embeds. SQLite has no catalog of types or operators, so
   `types.jsonl` and `operators.jsonl` are hand-written.
 
