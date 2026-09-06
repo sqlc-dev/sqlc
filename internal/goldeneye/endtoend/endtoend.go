@@ -112,7 +112,7 @@ func load(dir string) (Case, bool, error) {
 		Dir:    dir,
 		Schema: filepath.Join(dir, schema),
 		Query:  filepath.Join(dir, query),
-		Output: filepath.Join(dir, "output.json"),
+		Output: filepath.Join(dir, "stdout.json"),
 	}
 	if fixture := filepath.Join(dir, "fixture.sql"); fileExists(fixture) {
 		c.Fixture = fixture

@@ -120,7 +120,7 @@ A case is a directory holding the inputs and the expected output. `exec.json`
 names the command and its arguments — omit it and the case runs `generate`,
 comparing the generated files against the ones committed alongside; give it
 `{"command": "analyze", "args": [...]}` and the case compares the command's
-stdout against `output.json` (or `stdout.txt` for a command that does not
+stdout against `stdout.json` (or `stdout.txt` for a command that does not
 print JSON). A case that is expected to fail commits its `stderr.txt`. Regenerate a golden by running the command in its directory and
 writing the output back over the committed file.
 

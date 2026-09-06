@@ -16,7 +16,7 @@
 // provenance from EXPLAIN QUERY TREE, and parameters from sentinel constants
 // substituted for the placeholders, since ClickHouse itself never sees a ?.
 // The answer is printed in the JSON shape sqlc analyze prints and compared
-// with the case's committed output.json byte for byte.
+// with the case's committed stdout.json byte for byte.
 //
 // The binary is downloaded once per pinned version by Install, or supplied
 // through the CLICKHOUSE environment variable.

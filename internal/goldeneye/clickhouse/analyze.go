@@ -10,7 +10,7 @@ import (
 )
 
 // The output is the JSON `sqlc analyze` prints, so a case's committed
-// output.json can be compared with it byte for byte.
+// stdout.json can be compared with it byte for byte.
 
 type analyzedQuery struct {
 	Name    string           `json:"name"`

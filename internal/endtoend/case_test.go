@@ -52,11 +52,11 @@ func parseStderr(t *testing.T, dir, testctx string) []byte {
 	return nil
 }
 
-// parseStdout reads the command's expected output: output.json for a
+// parseStdout reads the command's expected output: stdout.json for a
 // command that prints JSON, so editors highlight it, otherwise stdout.txt.
 func parseStdout(t *testing.T, dir string) []byte {
 	t.Helper()
-	for _, name := range []string{"output.json", "stdout.txt"} {
+	for _, name := range []string{"stdout.json", "stdout.txt"} {
 		path := filepath.Join(dir, name)
 		if _, err := os.Stat(path); os.IsNotExist(err) {
 			continue

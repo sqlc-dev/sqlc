@@ -102,7 +102,7 @@ against what the database itself reports. A case is an
 command; `endtoend/` finds them. The engine package loads the case's
 `schema.sql` and optional `fixture.sql` into the database, runs `query.sql`
 there, prints what the database reports in the JSON shape `sqlc analyze`
-prints, and compares it with the committed `output.json` byte for byte. A
+prints, and compares it with the committed `stdout.json` byte for byte. A
 difference means sqlc's analysis disagrees with the database. A case that
 asks for `--ast` is skipped, since only sqlc can print that.
 
