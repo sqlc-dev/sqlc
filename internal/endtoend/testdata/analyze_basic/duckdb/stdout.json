@@ -1,0 +1,45 @@
+[
+  {
+    "name": "ListAuthors",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "authors"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "text"
+        },
+        "table": "authors"
+      },
+      {
+        "name": "bio",
+        "type": {
+          "name": "text",
+          "nullable": true
+        },
+        "table": "authors"
+      },
+      {
+        "name": "royalties",
+        "type": {
+          "name": "decimal"
+        },
+        "table": "authors"
+      },
+      {
+        "name": "created",
+        "type": {
+          "name": "timestamp"
+        },
+        "table": "authors"
+      }
+    ],
+    "params": []
+  }
+]

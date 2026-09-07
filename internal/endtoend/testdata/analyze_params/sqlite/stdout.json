@@ -1,0 +1,101 @@
+[
+  {
+    "name": "GetUser",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "integer"
+        },
+        "table": "users"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "text"
+        },
+        "table": "users"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "integer"
+          },
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "FilterUsers",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "integer"
+        },
+        "table": "users"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "text"
+        },
+        "table": "users"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "text"
+          },
+          "table": "users"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "bio",
+          "type": {
+            "name": "text",
+            "nullable": true
+          },
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "CountPosts",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "total",
+        "type": {
+          "name": "integer"
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "user_id",
+          "type": {
+            "name": "integer"
+          },
+          "table": "posts"
+        }
+      }
+    ]
+  }
+]

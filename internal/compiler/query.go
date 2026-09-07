@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
@@ -36,6 +37,11 @@ type Column struct {
 	TableAlias string
 	Type       *ast.TypeName
 	EmbedTable *ast.TableName
+
+	// TypeExpr is the type as the analysis core wrote it, with the
+	// arguments and nesting DataType and IsArray flatten away. It is unset
+	// on the legacy path.
+	TypeExpr *core.TypeExpr
 
 	IsSqlcSlice bool // is this sqlc.slice()
 

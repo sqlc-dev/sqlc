@@ -1,0 +1,34 @@
+[
+  {
+    "name": "GetUser",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "int64"
+        },
+        "table": "users"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "string"
+        },
+        "table": "users"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "int64"
+          },
+          "table": "users"
+        }
+      }
+    ]
+  }
+]

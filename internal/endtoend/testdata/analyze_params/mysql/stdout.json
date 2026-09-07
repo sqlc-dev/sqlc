@@ -1,0 +1,109 @@
+[
+  {
+    "name": "GetUser",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "users"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "varchar"
+        },
+        "table": "users"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "bigint"
+          },
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "FilterUsers",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "users"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "varchar"
+        },
+        "table": "users"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "varchar"
+          },
+          "table": "users"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "bio",
+          "type": {
+            "name": "text",
+            "nullable": true
+          },
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "UsersByID",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "users"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "varchar"
+        },
+        "table": "users"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "ids",
+          "type": {
+            "name": "bigint"
+          },
+          "table": "users"
+        }
+      }
+    ]
+  }
+]

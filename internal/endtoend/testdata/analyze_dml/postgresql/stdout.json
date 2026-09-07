@@ -1,0 +1,165 @@
+[
+  {
+    "name": "CreateUser",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigserial"
+        },
+        "table": "users"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "text"
+        },
+        "table": "users"
+      },
+      {
+        "name": "bio",
+        "type": {
+          "name": "text",
+          "nullable": true
+        },
+        "table": "users"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "text"
+          },
+          "table": "users"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "bio",
+          "type": {
+            "name": "text",
+            "nullable": true
+          },
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "UpdateBio",
+    "cmd": ":exec",
+    "columns": [],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "bio",
+          "type": {
+            "name": "text",
+            "nullable": true
+          },
+          "table": "users"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "bigserial"
+          },
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "UpdateNameReturning",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigserial"
+        },
+        "table": "users"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "text"
+        },
+        "table": "users"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "text"
+          },
+          "table": "users"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "bigserial"
+          },
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "DeleteUser",
+    "cmd": ":exec",
+    "columns": [],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "bigserial"
+          },
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "DeleteUserReturning",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigserial"
+        },
+        "table": "users"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "bigserial"
+          },
+          "table": "users"
+        }
+      }
+    ]
+  }
+]

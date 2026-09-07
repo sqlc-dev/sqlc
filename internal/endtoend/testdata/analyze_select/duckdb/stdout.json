@@ -1,0 +1,118 @@
+[
+  {
+    "name": "ListUsers",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "users"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "text"
+        },
+        "table": "users"
+      },
+      {
+        "name": "age",
+        "type": {
+          "name": "integer",
+          "nullable": true
+        },
+        "table": "users"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "CountUsers",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "total",
+        "type": {
+          "name": "bigint"
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "ListUserPosts",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "name",
+        "type": {
+          "name": "text"
+        },
+        "table": "users"
+      },
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "posts"
+      },
+      {
+        "name": "user_id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "posts"
+      },
+      {
+        "name": "title",
+        "type": {
+          "name": "text"
+        },
+        "table": "posts"
+      },
+      {
+        "name": "body",
+        "type": {
+          "name": "text",
+          "nullable": true
+        },
+        "table": "posts"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "text"
+          },
+          "table": "users"
+        }
+      }
+    ]
+  },
+  {
+    "name": "TopUsers",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "name",
+        "type": {
+          "name": "text"
+        },
+        "table": "users"
+      },
+      {
+        "name": "n",
+        "type": {
+          "name": "bigint"
+        }
+      }
+    ],
+    "params": []
+  }
+]

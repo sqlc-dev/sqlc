@@ -1,0 +1,342 @@
+[
+  {
+    "name": "Aggregates",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "n",
+        "type": {
+          "name": "uint64"
+        }
+      },
+      {
+        "name": "top",
+        "type": {
+          "name": "float64"
+        }
+      },
+      {
+        "name": "sum(amount)",
+        "type": {
+          "name": "float64"
+        }
+      },
+      {
+        "name": "first_tag",
+        "type": {
+          "name": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "uniq(name)",
+        "type": {
+          "name": "uint64"
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Expressions",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "next_id",
+        "type": {
+          "name": "uint64"
+        }
+      },
+      {
+        "name": "maybe",
+        "type": {
+          "name": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "tag_or_none",
+        "type": {
+          "name": "string"
+        }
+      },
+      {
+        "name": "lower(name)",
+        "type": {
+          "name": "string"
+        }
+      },
+      {
+        "name": "today",
+        "type": {
+          "name": "date"
+        }
+      },
+      {
+        "name": "big",
+        "type": {
+          "name": "uint8"
+        }
+      },
+      {
+        "name": "word",
+        "type": {
+          "name": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "LeftJoinDefaults",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "string"
+        },
+        "table": "events"
+      },
+      {
+        "name": "email",
+        "type": {
+          "name": "string"
+        },
+        "table": "users"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Positional",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "string"
+        },
+        "table": "events"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "string"
+          },
+          "table": "events"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "amount",
+          "type": {
+            "name": "float64"
+          },
+          "table": "events"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "tag",
+          "type": {
+            "name": "string",
+            "nullable": true
+          },
+          "table": "events"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Named",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "string"
+        },
+        "table": "events"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "string"
+          },
+          "table": "events"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "tag",
+          "type": {
+            "name": "string",
+            "nullable": true
+          },
+          "table": "events"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "amount",
+          "type": {
+            "name": "float64"
+          },
+          "table": "events"
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "amount",
+          "type": {
+            "name": "float64"
+          },
+          "table": "events"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Functions",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "lower",
+          "type": {
+            "name": "string"
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "uint64"
+          },
+          "table": "events"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "toDate",
+          "type": {
+            "name": "date"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "Paging",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "events"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "uint64"
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "uint64"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "Projected",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "echo",
+        "type": {
+          "name": "nothing",
+          "nullable": true
+        }
+      },
+      {
+        "name": "lit",
+        "type": {
+          "name": "string"
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "echo",
+          "type": {
+            "name": "nothing",
+            "nullable": true
+          }
+        }
+      }
+    ]
+  }
+]
