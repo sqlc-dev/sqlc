@@ -182,6 +182,15 @@ The `dumpexplain` command prints the JSON-formatted result from running
 
 `SQLCDEBUG=dumpexplain=1`
 
+### databases
+
+Setting this value to `managed` prevents `sqlc vet` from opening connections to
+databases configured with a `uri`. Rules that need a database connection will
+only run against a managed database; evaluating such a rule against a `uri`
+database returns an error.
+
+`SQLCDEBUG=databases=managed`
+
 ## SQLCTMPDIR
 
 If specified, use the given directory as the base for temporary folders. Only
