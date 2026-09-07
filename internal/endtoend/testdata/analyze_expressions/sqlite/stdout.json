@@ -56,6 +56,13 @@
         }
       },
       {
+        "name": "ids",
+        "type": {
+          "name": "integer",
+          "nullable": true
+        }
+      },
+      {
         "name": "names",
         "type": {
           "name": "text",

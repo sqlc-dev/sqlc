@@ -135,9 +135,9 @@ const getSumInt = `-- name: GetSumInt :one
 SELECT sum(int_val) FROM test
 `
 
-func (q *Queries) GetSumInt(ctx context.Context) (sql.NullFloat64, error) {
+func (q *Queries) GetSumInt(ctx context.Context) (sql.NullInt64, error) {
 	row := q.db.QueryRowContext(ctx, getSumInt)
-	var sum sql.NullFloat64
+	var sum sql.NullInt64
 	err := row.Scan(&sum)
 	return sum, err
 }
@@ -146,9 +146,9 @@ const getSumText = `-- name: GetSumText :one
 SELECT sum(text_val) FROM test
 `
 
-func (q *Queries) GetSumText(ctx context.Context) (sql.NullFloat64, error) {
+func (q *Queries) GetSumText(ctx context.Context) (sql.NullString, error) {
 	row := q.db.QueryRowContext(ctx, getSumText)
-	var sum sql.NullFloat64
+	var sum sql.NullString
 	err := row.Scan(&sum)
 	return sum, err
 }

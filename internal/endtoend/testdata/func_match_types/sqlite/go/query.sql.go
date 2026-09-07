@@ -19,7 +19,7 @@ GROUP BY author
 type AuthorPagesRow struct {
 	Author     string
 	NumBooks   int64
-	TotalPages sql.NullFloat64
+	TotalPages sql.NullInt64
 }
 
 func (q *Queries) AuthorPages(ctx context.Context) ([]AuthorPagesRow, error) {

@@ -1,6 +1,6 @@
 {"name":"-\u003e","args":[{"type":"any"},{"type":"any"}],"returns":"text","nullable":true}
 {"name":"-\u003e\u003e","args":[{"type":"any"},{"type":"any"}],"returns":"any","nullable":true}
-{"name":"abs","args":[{"type":"any"}],"returns":"real"}
+{"name":"abs","args":[{"type":"any"}],"returns":"$1"}
 {"name":"acos","args":[{"type":"real"}],"returns":"real"}
 {"name":"acosh","args":[{"type":"real"}],"returns":"real"}
 {"name":"asin","args":[{"type":"real"}],"returns":"real"}
@@ -9,8 +9,8 @@
 {"name":"atan2","args":[{"type":"real"},{"type":"real"}],"returns":"real"}
 {"name":"atanh","args":[{"type":"real"}],"returns":"real"}
 {"name":"avg","kind":"a","args":[{"type":"any"}],"returns":"real","nullable":true}
-{"name":"ceil","args":[{"type":"any"}],"returns":"real"}
-{"name":"ceiling","args":[{"type":"any"}],"returns":"real"}
+{"name":"ceil","args":[{"type":"any"}],"returns":"$1"}
+{"name":"ceiling","args":[{"type":"any"}],"returns":"$1"}
 {"name":"changes","returns":"integer"}
 {"name":"char","args":[{"type":"integer","mode":"v"}],"returns":"text"}
 {"name":"coalesce","args":[{"type":"any"},{"type":"any"},{"type":"any","mode":"v"}],"returns":"any"}
@@ -30,7 +30,7 @@
 {"name":"dense_rank","kind":"w","returns":"integer"}
 {"name":"exp","args":[{"type":"real"}],"returns":"real"}
 {"name":"first_value","kind":"w","args":[{"type":"any"}],"returns":"any","nullable":true}
-{"name":"floor","args":[{"type":"any"}],"returns":"real"}
+{"name":"floor","args":[{"type":"any"}],"returns":"$1"}
 {"name":"format","args":[{"type":"text","has_default":true},{"type":"any","mode":"v"}],"returns":"text"}
 {"name":"glob","args":[{"type":"text"},{"type":"text"}],"returns":"integer"}
 {"name":"group_concat","kind":"a","args":[{"type":"text"}],"returns":"text","nullable":true}
@@ -136,7 +136,7 @@
 {"name":"substring","args":[{"type":"any"},{"type":"integer"}],"returns":"text"}
 {"name":"substring","args":[{"type":"any"},{"type":"integer"},{"type":"integer"}],"returns":"text"}
 {"name":"subtype","args":[{"type":"any"}],"returns":"integer"}
-{"name":"sum","kind":"a","args":[{"type":"any"}],"returns":"real","nullable":true}
+{"name":"sum","kind":"a","args":[{"type":"any"}],"returns":"$1","nullable":true}
 {"name":"tan","args":[{"type":"real"}],"returns":"real"}
 {"name":"tanh","args":[{"type":"real"}],"returns":"real"}
 {"name":"time","args":[{"type":"any","mode":"v"}],"returns":"text","nullable":true}
@@ -145,7 +145,7 @@
 {"name":"total_changes","returns":"integer"}
 {"name":"trim","args":[{"type":"text"}],"returns":"text"}
 {"name":"trim","args":[{"type":"text"},{"type":"text"}],"returns":"text"}
-{"name":"trunc","args":[{"type":"any"}],"returns":"real"}
+{"name":"trunc","args":[{"type":"any"}],"returns":"$1"}
 {"name":"typeof","args":[{"type":"any"}],"returns":"text"}
 {"name":"unhex","args":[{"type":"text"}],"returns":"blob","nullable":true}
 {"name":"unhex","args":[{"type":"text"},{"type":"text"}],"returns":"blob","nullable":true}

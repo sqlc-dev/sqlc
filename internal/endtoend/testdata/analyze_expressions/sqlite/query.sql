@@ -3,7 +3,7 @@ SELECT count(*) AS total, max(id) AS latest, min(created) AS first
 FROM posts WHERE user_id = ?;
 
 -- name: UserScores :one
-SELECT avg(score) AS mean, sum(score) AS sum, group_concat(name) AS names
+SELECT avg(score) AS mean, sum(score) AS sum, sum(id) AS ids, group_concat(name) AS names
 FROM users;
 
 -- name: ListUsers :many

@@ -285,6 +285,12 @@ func (a *analyzer) typeAExpr(e *ast.A_Expr) (exprType, error) {
 	if err != nil {
 		return exprType{}, err
 	}
+	// The postfix null tests SQLite has — x ISNULL, x NOTNULL, x NOT NULL —
+	// arrive as operators with no right operand, and are predicates that
+	// are never NULL.
+	if e.Rexpr == nil && isNullTest(opName) {
+		return a.boolType(false)
+	}
 	rightT, err := a.typeExpr(e.Rexpr)
 	if err != nil {
 		return exprType{}, err
@@ -305,10 +311,23 @@ func (a *analyzer) typeAExpr(e *ast.A_Expr) (exprType, error) {
 	if err != nil {
 		return exprType{}, err
 	}
+	// An operator's result is NULL when an operand is, except for IS and
+	// IS NOT, which test for NULL rather than propagate it: x IS NULL and
+	// x IS y are never NULL, whatever x and y are.
 	return exprType{
 		typeOID:  overload.ResultTypeOID,
-		nullable: leftT.nullable || rightT.nullable,
+		nullable: (leftT.nullable || rightT.nullable) && !isNullTest(opName),
 	}, nil
+}
+
+// isNullTest reports whether an operator compares with NULL as a value
+// rather than propagating it, so that its result is never NULL.
+func isNullTest(opName string) bool {
+	switch opName {
+	case "IS", "IS NOT", "ISNULL", "NOTNULL", "NOT NULL":
+		return true
+	}
+	return false
 }
 
 // typeQuantifiedExpr types "x = ANY($1)" and "x > ALL(...)": the right side

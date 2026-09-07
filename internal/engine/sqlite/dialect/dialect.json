@@ -7,7 +7,7 @@
     "bool": "boolean"
   },
   "bool": "boolean",
-  "comparison": ["=", "==", "<>", "!=", "<", "<=", ">", ">=", "IS", "IS NOT"],
+  "comparison": ["=", "==", "<>", "!=", "<", "<=", ">", ">=", "IS", "IS NOT", "LIKE", "NOT LIKE", "GLOB", "NOT GLOB", "REGEXP", "NOT REGEXP", "MATCH", "NOT MATCH"],
   "comparison_categories": "BNSDU",
   "arithmetic": ["+", "-", "*", "/", "%"],
   "arithmetic_categories": "N",

@@ -396,7 +396,7 @@ func Generate(ctx context.Context, dir string) (dialect.Files, error) {
 		}
 	}
 	var stale []string
-	for _, list := range []map[string]bool{omitted, nullable} {
+	for _, list := range []map[string]bool{omitted, nullable, realResults} {
 		for name := range list {
 			if !g.reported[name] {
 				stale = append(stale, name)

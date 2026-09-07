@@ -57,6 +57,14 @@ var inlineReturns = map[string]string{
 	"INLINEFUNC_sqlite_offset": "integer",
 }
 
+// realResults are the functions that return an integer or a real on
+// something other than which their argument is, and so are typed real
+// rather than as the argument: unixepoch takes a time string and returns a
+// real only with the 'subsec' modifier.
+var realResults = map[string]bool{
+	"unixepoch": true,
+}
+
 // omitted are functions the dialect leaves out: ones that exist for their
 // side effect and return nothing a query can use, and ones an extension
 // uses to pass pointers to itself.
