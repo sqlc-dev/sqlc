@@ -3,6 +3,8 @@ package clickhouse
 import (
 	"strconv"
 	"strings"
+
+	"github.com/sqlc-dev/sqlc/internal/goldeneye/endtoend"
 )
 
 // A type is a call expression, the way ClickHouse itself models one: a
@@ -35,22 +37,8 @@ import (
 // String) is a type with no arguments. Resolving names against the catalog
 // is the reader's job; the output only records what was said.
 
-type typeExpr struct {
-	Name     string    `json:"name"`
-	Nullable bool      `json:"nullable,omitempty"`
-	Args     []typeArg `json:"args,omitempty"`
-}
-
-type typeArg struct {
-	Label  string    `json:"label,omitempty"`
-	Type   *typeExpr `json:"type,omitempty"`
-	Int    *int64    `json:"int,omitempty"`
-	Bool   *bool     `json:"bool,omitempty"`
-	String *string   `json:"string,omitempty"`
-}
-
 // parseType turns a ClickHouse type string into its expression.
-func parseType(t string) *typeExpr {
+func parseType(t string) *endtoend.TypeExpr {
 	name, args := splitType(t)
 	name = strings.ToLower(strings.TrimSpace(name))
 	if name == "nullable" && len(args) == 1 {
@@ -61,7 +49,7 @@ func parseType(t string) *typeExpr {
 	if name == "" {
 		name = "nothing"
 	}
-	expr := &typeExpr{Name: name}
+	expr := &endtoend.TypeExpr{Name: name}
 	for _, a := range args {
 		expr.Args = append(expr.Args, parseArg(a))
 	}
@@ -71,7 +59,7 @@ func parseType(t string) *typeExpr {
 // parseArg parses one argument: a quoted string, an integer, a boolean, a
 // labelled argument (`lat Float64` in a Tuple, `'a' = 1` in an Enum), or a
 // type.
-func parseArg(a string) typeArg {
+func parseArg(a string) endtoend.TypeArg {
 	a = strings.TrimSpace(a)
 	if strings.HasPrefix(a, "'") {
 		end := skipQuoted(a, 0)
@@ -81,22 +69,22 @@ func parseArg(a string) typeArg {
 			arg.Label = lit
 			return arg
 		}
-		return typeArg{String: &lit}
+		return endtoend.TypeArg{String: &lit}
 	}
 	if n, err := strconv.ParseInt(a, 10, 64); err == nil {
-		return typeArg{Int: &n}
+		return endtoend.TypeArg{Int: &n}
 	}
 	switch strings.ToLower(a) {
 	case "true", "false":
 		b := strings.EqualFold(a, "true")
-		return typeArg{Bool: &b}
+		return endtoend.TypeArg{Bool: &b}
 	}
 	if i := labelEnd(a); i > 0 {
 		arg := parseArg(a[i+1:])
 		arg.Label = a[:i]
 		return arg
 	}
-	return typeArg{Type: parseType(a)}
+	return endtoend.TypeArg{Type: parseType(a)}
 }
 
 // labelEnd returns the index of the space separating a label from the type

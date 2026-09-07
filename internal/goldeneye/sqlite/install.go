@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"sync"
 )
@@ -48,6 +49,26 @@ var extensions = []build{
 	{"enable_offset_sql_func", []string{"SQLITE_ENABLE_OFFSET_SQL_FUNC"}},
 	{"enable_percentile", []string{"SQLITE_ENABLE_PERCENTILE"}},
 	{"enable_rtree", []string{"SQLITE_ENABLE_RTREE"}},
+}
+
+// analysis is the shell the analyze cases run through, which is no
+// dialect build: nothing is generated from it. It is built with column
+// metadata, so that `.stats stmt` can say which table column each result
+// column of a statement comes from, and with every extension option at
+// once, so that whatever a case's schema asks for is there.
+var analysis = build{"analysis", append([]string{"SQLITE_ENABLE_COLUMN_METADATA"}, extensionOptions()...)}
+
+// extensionOptions is every option an extension build turns on, once each.
+func extensionOptions() []string {
+	var opts []string
+	for _, b := range extensions {
+		for _, opt := range b.options {
+			if !slices.Contains(opts, opt) {
+				opts = append(opts, opt)
+			}
+		}
+	}
+	return opts
 }
 
 // asset is one downloadable amalgamation of SQLite: the zip published on
@@ -87,7 +108,8 @@ func (a asset) url() string {
 }
 
 // cacheDir is where Install puts a version: the sources under src/, and one
-// shell per build under default/ and under each option's extension name.
+// shell per build under default/, under each option's extension name and
+// under analysis/.
 func cacheDir(version string) (string, error) {
 	dir, err := os.UserCacheDir()
 	if err != nil {
@@ -105,9 +127,16 @@ type build struct {
 	options []string
 }
 
-// builds lists the default build first, then one per extension.
+// builds lists the dialect builds: the default build first, then one per
+// extension.
 func builds() []build {
 	return append([]build{{"default", nil}}, extensions...)
+}
+
+// shells lists every build Install makes: the dialect builds and the
+// analysis shell.
+func shells() []build {
+	return append(builds(), analysis)
 }
 
 // flags are every option a build is compiled with.
@@ -125,7 +154,7 @@ func Locate() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	for _, b := range builds() {
+	for _, b := range shells() {
 		if _, err := os.Stat(b.binary(dir)); err != nil {
 			return "", fmt.Errorf("sqlite %s is not built with %s: run `go run ./cmd/goldeneye install sqlite` in internal/goldeneye", DefaultVersion, strings.Join(b.flags(), " "))
 		}
@@ -153,7 +182,7 @@ func Install(ctx context.Context, version, goos, goarch string, progress io.Writ
 		return "", err
 	}
 	var missing []build
-	for _, b := range builds() {
+	for _, b := range shells() {
 		if _, err := os.Stat(b.binary(dir)); err != nil {
 			missing = append(missing, b)
 		}

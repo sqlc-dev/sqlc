@@ -181,12 +181,25 @@ type shell struct {
 // option lists changed would otherwise describe the wrong dialect.
 func readShell(ctx context.Context, dir string, b build) (*shell, error) {
 	s := &shell{build: b, binary: b.binary(dir)}
+	if err := checkOptions(ctx, dir, b); err != nil {
+		return nil, err
+	}
+	if err := query(ctx, s.binary, functionList, &s.rows); err != nil {
+		return nil, err
+	}
+	return s, nil
+}
+
+// checkOptions asks a build's shell whether it was compiled with every
+// option any build turns on, and fails when the answers do not match the
+// build's own list.
+func checkOptions(ctx context.Context, dir string, b build) error {
 	var used []struct {
 		Option string `json:"option"`
 		Used   int    `json:"used"`
 	}
 	known := map[string]bool{}
-	for _, b := range builds() {
+	for _, b := range shells() {
 		for _, opt := range b.flags() {
 			known[opt] = true
 		}
@@ -195,8 +208,8 @@ func readShell(ctx context.Context, dir string, b build) (*shell, error) {
 	for _, opt := range slices.Sorted(maps.Keys(known)) {
 		clauses = append(clauses, fmt.Sprintf("SELECT '%s' AS option, sqlite_compileoption_used('%s') AS used", opt, opt))
 	}
-	if err := query(ctx, s.binary, strings.Join(clauses, " UNION ALL "), &used); err != nil {
-		return nil, err
+	if err := query(ctx, b.binary(dir), strings.Join(clauses, " UNION ALL "), &used); err != nil {
+		return err
 	}
 	for _, u := range used {
 		want := 0
@@ -204,13 +217,10 @@ func readShell(ctx context.Context, dir string, b build) (*shell, error) {
 			want = 1
 		}
 		if u.Used != want {
-			return nil, fmt.Errorf("sqlite: the %s shell was not built with the options it should have been (%s is %d): remove %s and run `go run ./cmd/goldeneye install sqlite` again", b.name, u.Option, u.Used, dir)
+			return fmt.Errorf("sqlite: the %s shell was not built with the options it should have been (%s is %d): remove %s and run `go run ./cmd/goldeneye install sqlite` again", b.name, u.Option, u.Used, filepath.Join(dir, b.name))
 		}
 	}
-	if err := query(ctx, s.binary, functionList, &s.rows); err != nil {
-		return nil, err
-	}
-	return s, nil
+	return nil
 }
 
 // generator accumulates the functions of every build, reading their

@@ -80,15 +80,17 @@ the hand-written files alone, and the checks do not look at them.
   `sqlite/signatures.go`, since a SQLite function returns NULL as often by
   setting no result as by saying so. The pinned release is the one the main module's
   driver embeds. SQLite has no catalog of types or operators, so
-  `types.jsonl` and `operators.jsonl` are hand-written.
+  `types.jsonl` and `operators.jsonl` are hand-written. `install` builds one
+  more shell, for the analysis check below; nothing is generated from it.
 
 ## Layout
 
 - `dialect/` — the record types the files are made of, mirrored from
   `internal/core/seed`, and the helpers that write a generated set of files
   into an engine directory or diff it against what is committed.
-- `endtoend/` — finds the analyze cases and compares an engine's answer with
-  a case's committed output.
+- `endtoend/` — finds the analyze cases, splits their query files, and
+  holds the shape of an engine's answer, which it compares with a case's
+  committed output.
 - `postgresql/`, `duckdb/`, `clickhouse/`, `sqlite/` — one package per
   engine, each exposing `Locate`, `Version` and `Generate`, `Analyze` where
   the engine has an analysis check, and tests that run the checks.
@@ -111,5 +113,32 @@ asks for `--ast` is skipped, since only sqlc can print that.
   `EXPLAIN QUERY TREE`, and parameters from sentinel constants substituted for
   `?`, `sqlc.arg()` and `sqlc.narg()`, since ClickHouse itself never sees a
   placeholder; `INSERT ... VALUES` parameters map onto `DESCRIBE TABLE`.
+- **`sqlite`** runs each case through one more shell `install` builds, under
+  `analysis/`: every extension option at once, so that any case's schema
+  loads, and `SQLITE_ENABLE_COLUMN_METADATA`, which lets the shell's `.stats
+  stmt` say which table column each result column of a statement is read
+  from. That column's declared type is the result column's, and its NOT
+  NULL decides nullability, the rowid counting as NOT NULL. SQLite types
+  values rather than expressions, so a column the library has no origin for
+  — an aggregate, an arithmetic result — is typed by the storage class of
+  the value it returns, which is why a case wants a `fixture.sql`: the query
+  is run over the fixture, with each parameter bound to a value of the
+  column it stands in for, and again over no rows, and a column is nullable
+  when either run returns a NULL for it — an aggregate over nothing, the far
+  side of an outer join. The library reports nothing about a parameter but
+  its number, so parameters are found in the bytecode `EXPLAIN` prints, the
+  way ClickHouse's are found in its query tree: each is followed from the
+  register its `Variable` loads, through copies and the expressions it is an
+  argument of, to the first opcode that uses it against something the
+  catalog can name — the other operand of a comparison, the row a seek lands
+  on, the position in the record an `Insert` writes, the column of an IN
+  list's ephemeral table it comes back out of. One that reaches nothing
+  nameable is described by what the program requires of it, when it
+  requires anything: `MustBeInt` makes LIMIT's an integer. `sqlc.arg(name)`
+  becomes `?N`, numbered as sqlc numbers them, so a repeated name is one
+  parameter. Two things the check reports that sqlc does not: a bare column
+  selected alongside an aggregate is NULL over no rows, and so nullable, and
+  a comparison such as `x IS NULL` is an integer, since that is what SQLite
+  returns.
 
 The other engines have no analysis check yet.
