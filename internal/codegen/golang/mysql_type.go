@@ -13,12 +13,16 @@ func mysqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.C
 	columnType := sdk.DataType(col.Type)
 	notNull := col.NotNull || col.IsArray
 	unsigned := col.Unsigned
+	emitPointersForNull := options.EmitPointersForNullTypes
 
 	switch columnType {
 
 	case "varchar", "text", "char", "tinytext", "mediumtext", "longtext":
 		if notNull {
 			return "string"
+		}
+		if emitPointersForNull {
+			return "*string"
 		}
 		return "sql.NullString"
 
@@ -27,6 +31,9 @@ func mysqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.C
 			if notNull {
 				return "bool"
 			}
+			if emitPointersForNull {
+				return "*bool"
+			}
 			return "sql.NullBool"
 		} else {
 			if notNull {
@@ -34,6 +41,12 @@ func mysqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.C
 					return "uint8"
 				}
 				return "int8"
+			}
+			if emitPointersForNull {
+				if unsigned {
+					return "*uint8"
+				}
+				return "*int8"
 			}
 			// The database/sql package does not have a sql.NullInt8 type, so we
 			// use the smallest type they have which is NullInt16
@@ -44,6 +57,9 @@ func mysqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.C
 		if notNull {
 			return "int16"
 		}
+		if emitPointersForNull {
+			return "*int16"
+		}
 		return "sql.NullInt16"
 
 	case "smallint":
@@ -53,6 +69,12 @@ func mysqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.C
 			}
 			return "int16"
 		}
+		if emitPointersForNull {
+			if unsigned {
+				return "*uint16"
+			}
+			return "*int16"
+		}
 		return "sql.NullInt16"
 
 	case "int", "integer", "mediumint":
@@ -61,6 +83,12 @@ func mysqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.C
 				return "uint32"
 			}
 			return "int32"
+		}
+		if emitPointersForNull {
+			if unsigned {
+				return "*uint32"
+			}
+			return "*int32"
 		}
 		return "sql.NullInt32"
 
@@ -75,6 +103,12 @@ func mysqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.C
 			}
 			return "int64"
 		}
+		if emitPointersForNull {
+			if unsigned {
+				return "*uint64"
+			}
+			return "*int64"
+		}
 		return "sql.NullInt64"
 
 	case "blob", "binary", "varbinary", "tinyblob", "mediumblob", "longblob":
@@ -87,11 +121,17 @@ func mysqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.C
 		if notNull {
 			return "float64"
 		}
+		if emitPointersForNull {
+			return "*float64"
+		}
 		return "sql.NullFloat64"
 
 	case "decimal", "dec", "fixed":
 		if notNull {
 			return "string"
+		}
+		if emitPointersForNull {
+			return "*string"
 		}
 		return "sql.NullString"
 
@@ -103,11 +143,17 @@ func mysqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.C
 		if notNull {
 			return "time.Time"
 		}
+		if emitPointersForNull {
+			return "*time.Time"
+		}
 		return "sql.NullTime"
 
 	case "boolean", "bool":
 		if notNull {
 			return "bool"
+		}
+		if emitPointersForNull {
+			return "*bool"
 		}
 		return "sql.NullBool"
 
