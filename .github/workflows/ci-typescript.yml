@@ -26,8 +26,8 @@ jobs:
         with:
           repository: bonakodo/sqlc-gen-typescript-native
           path: typescript
-          # v0.3.0
-          ref: 8eac5960f4ccffac60cccdf73d4a884998e77acf
+          # v0.4.0
+          ref: 1942c66cebc201e85fbd79fbe162a2ce6b47a666
           persist-credentials: false
       - uses: denoland/setup-deno@v2
         with:
