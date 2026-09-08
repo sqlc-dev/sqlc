@@ -14,9 +14,9 @@ const getAbs = `-- name: GetAbs :one
 SELECT abs(int_val) FROM test
 `
 
-func (q *Queries) GetAbs(ctx context.Context) (int64, error) {
+func (q *Queries) GetAbs(ctx context.Context) (any, error) {
 	row := q.db.QueryRowContext(ctx, getAbs)
-	var abs int64
+	var abs any
 	err := row.Scan(&abs)
 	return abs, err
 }

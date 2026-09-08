@@ -3,8 +3,6 @@ package compiler
 import (
 	"errors"
 	"fmt"
-	"strconv"
-	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -326,7 +324,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 			if err == nil {
 				cols = append(cols, &Column{
 					Name:       name,
-					DataType:   returnDataType(fun, n, tables, rtables),
+					DataType:   dataType(fun.ReturnType),
 					NotNull:    !fun.ReturnTypeNullable,
 					IsFuncCall: true,
 				})
@@ -658,41 +656,6 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 		}
 	}
 	return tables, nil
-}
-
-// returnDataType is the type a function call produces. A dialect spells a
-// function that hands back one of its arguments, as abs and sum do, with a
-// return type of "$n", the type of the nth argument, which is known when
-// that argument names a column.
-func returnDataType(fun *catalog.Function, call *ast.FuncCall, tables, rtables []*Table) string {
-	dt := dataType(fun.ReturnType)
-	rest, ok := strings.CutPrefix(dt, "$")
-	if !ok {
-		return dt
-	}
-	n, err := strconv.Atoi(rest)
-	if err != nil || n < 1 || call.Args == nil || n > len(call.Args.Items) {
-		return "any"
-	}
-	switch arg := call.Args.Items[n-1].(type) {
-	case *ast.ColumnRef:
-		cols, err := outputColumnRefs(&ast.ResTarget{}, tablesForRef(arg, tables, rtables), arg)
-		if err == nil && len(cols) == 1 {
-			return cols[0].DataType
-		}
-	case *ast.A_Const:
-		switch arg.Val.(type) {
-		case *ast.String:
-			return "text"
-		case *ast.Integer:
-			return "int"
-		case *ast.Float:
-			return "float"
-		case *ast.Boolean:
-			return "bool"
-		}
-	}
-	return "any"
 }
 
 func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) ([]*Column, error) {

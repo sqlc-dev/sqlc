@@ -7,7 +7,6 @@ package querytest
 
 import (
 	"context"
-	"database/sql"
 )
 
 const authorPages = `-- name: AuthorPages :many
@@ -19,7 +18,7 @@ GROUP BY author
 type AuthorPagesRow struct {
 	Author     string
 	NumBooks   int64
-	TotalPages sql.NullInt64
+	TotalPages any
 }
 
 func (q *Queries) AuthorPages(ctx context.Context) ([]AuthorPagesRow, error) {
