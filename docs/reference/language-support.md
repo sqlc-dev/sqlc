@@ -6,7 +6,7 @@
 | Go         | [sqlc-gen-go](https://github.com/sqlc-dev/sqlc-gen-go)                 | Stable | Stable     | Beta            |
 | Kotlin     | [sqlc-gen-kotlin](https://github.com/sqlc-dev/sqlc-gen-kotlin)         | Beta   | Beta       | Not implemented |
 | Python     | [sqlc-gen-python](https://github.com/sqlc-dev/sqlc-gen-python)         | Beta   | Beta       | Not implemented |
-| TypeScript | [sqlc-gen-typescript](https://github.com/sqlc-dev/sqlc-gen-typescript) | Beta   | Beta       | Not implemented |
+| TypeScript | [sqlc-gen-typescript-native](https://github.com/bonakodo/sqlc-gen-typescript-native) | Beta   | Beta       | Beta            |
 
 ## Community language support
 

@@ -25,7 +25,7 @@ Check out [an interactive example](https://play.sqlc.dev/) to see it in action, 
 - [sqlc-gen-go](https://github.com/sqlc-dev/sqlc-gen-go)
 - [sqlc-gen-kotlin](https://github.com/sqlc-dev/sqlc-gen-kotlin)
 - [sqlc-gen-python](https://github.com/sqlc-dev/sqlc-gen-python)
-- [sqlc-gen-typescript](https://github.com/sqlc-dev/sqlc-gen-typescript)
+- [sqlc-gen-typescript-native](https://github.com/bonakodo/sqlc-gen-typescript-native)
 
 Additional languages can be added via [plugins](https://docs.sqlc.dev/en/latest/reference/language-support.html#community-language-support).
 

@@ -417,7 +417,7 @@ If you run into any issues with the updated dependencies, please [open an issue]
 
 - Add name to query set configuration (#3011)
 - Add a sidebar link for `push`, add Go plugin link (#3023)
-- Update banner for sqlc-gen-typescript (#3036)
+- Update banner for the TypeScript plugin (#3036)
 - Add strict_order_by in doc (#3044)
 - Re-order the migration tools list (#3064)
 
@@ -434,7 +434,7 @@ If you run into any issues with the updated dependencies, please [open an issue]
 
 - (endtoend) Enable for more build targets (#3041)
 - (endtoend) Run MySQL and PostgreSQL locally on the runner (#3095)
-- (typescript) Test against sqlc-gen-typescript (#3046)
+- (typescript) Test against the TypeScript plugin (#3046)
 - Add tests for omit_sqlc_version (#3020)
 - Split schema and query for test (#3094)
 
