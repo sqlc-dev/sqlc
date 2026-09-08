@@ -10,10 +10,14 @@ import "github.com/sqlc-dev/sqlc/internal/goldeneye/dialect"
 // many arguments an overload takes, and how many of them it requires,
 // comes from the shell. Nullable is decided afterwards: for an aggregate by
 // running it over no rows, for a scalar by the nullable list below.
+// Numeric says the function returns an integer for an integer argument
+// and a real for a real one, and Returns what it returns for anything
+// else.
 type signature struct {
 	Args     []string
 	Variadic string
 	Returns  string
+	Numeric  bool
 	Nullable bool
 }
 
@@ -59,8 +63,8 @@ var inlineReturns = map[string]string{
 
 // realResults are the functions that return an integer or a real on
 // something other than which their argument is, and so are typed real
-// rather than as the argument: unixepoch takes a time string and returns a
-// real only with the 'subsec' modifier.
+// alone: unixepoch takes a time string and returns a real only with the
+// 'subsec' modifier.
 var realResults = map[string]bool{
 	"unixepoch": true,
 }

@@ -231,6 +231,9 @@ type generator struct {
 	ctx      context.Context
 	src      *source
 	reported map[string]bool
+	// numeric holds every spelling types.jsonl gives integer and real, in
+	// its order, for the functions written once per spelling.
+	numeric map[string][]string
 }
 
 // overload is one row of a shell's list with what was found out about it.
@@ -283,13 +286,30 @@ func (g *generator) functions(s *shell, base bool) ([]dialect.Function, error) {
 		if o.kind == "a" {
 			isNullable = empty[o.row.key()] == "null"
 		}
-		funcs = append(funcs, dialect.Function{
+		fn := dialect.Function{
 			Name:     o.row.Name,
 			Kind:     o.kind,
 			Args:     o.sig.args(o.row.NArg),
 			Returns:  o.sig.Returns,
 			Nullable: isNullable,
-		})
+		}
+		funcs = append(funcs, fn)
+		// A function that returns an integer for an integer and a real for
+		// a real is written once more per spelling of each, the way
+		// PostgreSQL's catalog has a sum per numeric type. The overload over
+		// any comes first: the analysis core picks the overload whose
+		// parameter is the argument's type, but the legacy compiler takes
+		// the first of the right arity, and keeps what it had.
+		if o.sig.Numeric && len(fn.Args) > 0 {
+			for _, typ := range []string{"integer", "real"} {
+				for _, spelling := range g.numeric[typ] {
+					typed := fn
+					typed.Args = append([]dialect.Arg{{Type: spelling}}, fn.Args[1:]...)
+					typed.Returns = typ
+					funcs = append(funcs, typed)
+				}
+			}
+		}
 	}
 	return funcs, nil
 }
@@ -365,7 +385,20 @@ func Generate(ctx context.Context, dir string) (dialect.Files, error) {
 	if err != nil {
 		return nil, err
 	}
-	g := &generator{ctx: ctx, src: src, reported: map[string]bool{}}
+	g := &generator{ctx: ctx, src: src, reported: map[string]bool{}, numeric: map[string][]string{}}
+	dialectDir, err := dialect.Dir(Engine)
+	if err != nil {
+		return nil, err
+	}
+	types, err := dialect.ReadTypes(dialectDir)
+	if err != nil {
+		return nil, err
+	}
+	for _, t := range types {
+		if t.Name == "integer" || t.Name == "real" {
+			g.numeric[t.Name] = append([]string{t.Name}, t.Aliases...)
+		}
+	}
 	all := builds()
 	base, err := readShell(ctx, dir, all[0])
 	if err != nil {

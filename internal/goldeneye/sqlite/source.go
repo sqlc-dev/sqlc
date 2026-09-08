@@ -442,12 +442,12 @@ func single(kinds map[string]bool) string {
 // A result of one kind is that type. A function that returns one of its
 // arguments, or a mixture of kinds, takes the type of its first argument,
 // which the seed spells "any" — except that integer and real together are
-// the argument's own type, spelled "$1", since abs, ceil and sum hand back
-// an integer for an integer and a real for a real, unless the function is
-// one of the few whose choice turns on something else; and text and blob
-// together are text, since a function that returns either is handing back
-// the bytes it was given, and the legacy compiler cannot follow "any" to
-// an argument.
+// real, and Numeric, since abs, ceil and sum hand back an integer for an
+// integer and a real for a real, and a real for the text or blob they
+// convert, unless the function is one of the few whose choice turns on
+// something else; and text and blob together are text, since a function
+// that returns either is handing back the bytes it was given, and the
+// legacy compiler cannot follow "any" to an argument.
 func (s *source) signature(name string) (signature, error) {
 	r, ok := s.regs[strings.ToLower(name)]
 	if !ok {
@@ -484,11 +484,8 @@ func (s *source) signature(name string) (signature, error) {
 			// registration says which this form gets.
 			sig.Returns = r.json
 		case len(kinds) == 2 && kinds["integer"] && kinds["real"]:
-			if realResults[strings.ToLower(name)] {
-				sig.Returns = "real"
-			} else {
-				sig.Returns = "$1"
-			}
+			sig.Returns = "real"
+			sig.Numeric = !realResults[strings.ToLower(name)]
 		case len(kinds) == 2 && kinds["text"] && kinds["blob"]:
 			sig.Returns = "text"
 		default:

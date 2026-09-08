@@ -90,9 +90,9 @@ const getCeil = `-- name: GetCeil :one
 SELECT ceil(1.0)
 `
 
-func (q *Queries) GetCeil(ctx context.Context) (any, error) {
+func (q *Queries) GetCeil(ctx context.Context) (float64, error) {
 	row := q.db.QueryRowContext(ctx, getCeil)
-	var ceil any
+	var ceil float64
 	err := row.Scan(&ceil)
 	return ceil, err
 }
@@ -101,9 +101,9 @@ const getCeilin = `-- name: GetCeilin :one
 SELECT ceiling(1.0)
 `
 
-func (q *Queries) GetCeilin(ctx context.Context) (any, error) {
+func (q *Queries) GetCeilin(ctx context.Context) (float64, error) {
 	row := q.db.QueryRowContext(ctx, getCeilin)
-	var ceiling any
+	var ceiling float64
 	err := row.Scan(&ceiling)
 	return ceiling, err
 }
@@ -156,9 +156,9 @@ const getFloor = `-- name: GetFloor :one
 SELECT floor(1.0)
 `
 
-func (q *Queries) GetFloor(ctx context.Context) (any, error) {
+func (q *Queries) GetFloor(ctx context.Context) (float64, error) {
 	row := q.db.QueryRowContext(ctx, getFloor)
-	var floor any
+	var floor float64
 	err := row.Scan(&floor)
 	return floor, err
 }
@@ -321,9 +321,9 @@ const getTrunc = `-- name: GetTrunc :one
 SELECT trunc(1.0)
 `
 
-func (q *Queries) GetTrunc(ctx context.Context) (any, error) {
+func (q *Queries) GetTrunc(ctx context.Context) (float64, error) {
 	row := q.db.QueryRowContext(ctx, getTrunc)
-	var trunc any
+	var trunc float64
 	err := row.Scan(&trunc)
 	return trunc, err
 }

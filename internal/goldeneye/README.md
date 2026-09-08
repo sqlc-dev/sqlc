@@ -80,8 +80,15 @@ the hand-written files alone, and the checks do not look at them.
   `sqlite/signatures.go`, since a SQLite function returns NULL as often by
   setting no result as by saying so. The pinned release is the one the main module's
   driver embeds. SQLite has no catalog of types or operators, so
-  `types.jsonl` and `operators.jsonl` are hand-written. `install` builds one
-  more shell, for the analysis check below; nothing is generated from it.
+  `types.jsonl` and `operators.jsonl` are hand-written. A function that
+  returns an integer for an integer and a real for a real — `abs`, `ceil`,
+  `floor`, `trunc`, `sum` — is written once over `any`, returning the real
+  that a text or blob argument gets, and once more per spelling
+  `types.jsonl` gives integer and real, returning that type, the way
+  PostgreSQL's catalog has a `sum` per numeric type; the overload over `any`
+  comes first, since the legacy compiler resolves by arity alone and takes
+  it. `install` builds one more shell, for the analysis check below;
+  nothing is generated from it.
 
 ## Layout
 

@@ -118,6 +118,25 @@ func JSONL[T any](records []T) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// ReadTypes reads the hand-written types.jsonl of a dialect directory, for
+// a generator that writes a function once per spelling of a type.
+func ReadTypes(dir string) ([]Type, error) {
+	blob, err := os.ReadFile(filepath.Join(dir, TypesFile))
+	if err != nil {
+		return nil, err
+	}
+	var types []Type
+	dec := json.NewDecoder(bytes.NewReader(blob))
+	for dec.More() {
+		var t Type
+		if err := dec.Decode(&t); err != nil {
+			return nil, fmt.Errorf("%s: %w", filepath.Join(dir, TypesFile), err)
+		}
+		types = append(types, t)
+	}
+	return types, nil
+}
+
 // Dir returns the dialect directory of an engine,
 // internal/engine/<engine>/dialect, found relative to this source file so
 // the working directory does not matter.
