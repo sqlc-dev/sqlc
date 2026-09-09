@@ -96,8 +96,8 @@ the hand-written files alone, and the checks do not look at them.
   `internal/core/seed`, and the helpers that write a generated set of files
   into an engine directory or diff it against what is committed.
 - `endtoend/` — finds the analyze cases, splits their query files, and
-  holds the shape of an engine's answer, which it compares with a case's
-  committed output.
+  compares an engine's answer with a case's committed output.
+- `analysis/` — the shape of that answer: the JSON `sqlc analyze` prints.
 - `postgresql/`, `duckdb/`, `clickhouse/`, `sqlite/` — one package per
   engine, each exposing `Locate`, `Version` and `Generate`, `Analyze` where
   the engine has an analysis check, and tests that run the checks.

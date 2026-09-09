@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sqlc-dev/sqlc/internal/goldeneye/endtoend"
+	"github.com/sqlc-dev/sqlc/internal/goldeneye/analysis"
 )
 
 // catalog is what the database says about a schema: its tables and their
@@ -205,19 +205,19 @@ func (t *table) rowidAlias() *tableColumn {
 
 // describe is the column as sqlc analyze describes one: its declared type,
 // nullable unless declared NOT NULL or the rowid, which is never NULL.
-func (tc *tableColumn) describe() endtoend.AnalyzedColumn {
+func (tc *tableColumn) describe() analysis.Column {
 	typ := parseType(tc.declType)
 	typ.Nullable = !tc.notNull && tc.table.rowidAlias() != tc
-	return endtoend.AnalyzedColumn{Name: tc.name, Type: typ, Table: tc.table.name}
+	return analysis.Column{Name: tc.name, Type: typ, Table: tc.table.name}
 }
 
 // rowid describes the table's rowid: the column that aliases it, or the
 // rowid itself.
-func (t *table) rowid() endtoend.AnalyzedColumn {
+func (t *table) rowid() analysis.Column {
 	if alias := t.rowidAlias(); alias != nil {
 		return alias.describe()
 	}
-	return endtoend.AnalyzedColumn{Name: "rowid", Type: &endtoend.TypeExpr{Name: "integer"}, Table: t.name}
+	return analysis.Column{Name: "rowid", Type: &analysis.TypeExpr{Name: "integer"}, Table: t.name}
 }
 
 // column returns what the object's ith stored column is: a table column,
@@ -260,16 +260,16 @@ func (o object) owner() *table {
 // parseType reads a declared type the way sqlc's catalog does: the name
 // lowercased, with whatever is in parentheses after it as arguments. A
 // column declared with no type at all can hold anything.
-func parseType(decl string) *endtoend.TypeExpr {
+func parseType(decl string) *analysis.TypeExpr {
 	decl = strings.TrimSpace(decl)
 	if decl == "" {
-		return &endtoend.TypeExpr{Name: "any"}
+		return &analysis.TypeExpr{Name: "any"}
 	}
 	name, args := decl, ""
 	if open := strings.IndexByte(decl, '('); open >= 0 && strings.HasSuffix(decl, ")") {
 		name, args = decl[:open], decl[open+1:len(decl)-1]
 	}
-	t := &endtoend.TypeExpr{Name: strings.ToLower(strings.TrimSpace(name))}
+	t := &analysis.TypeExpr{Name: strings.ToLower(strings.TrimSpace(name))}
 	if strings.TrimSpace(args) == "" {
 		return t
 	}
@@ -278,15 +278,15 @@ func parseType(decl string) *endtoend.TypeExpr {
 		switch {
 		case strings.HasPrefix(a, "'") && strings.HasSuffix(a, "'") && len(a) >= 2:
 			s := strings.ReplaceAll(a[1:len(a)-1], "''", "'")
-			t.Args = append(t.Args, endtoend.TypeArg{String: &s})
+			t.Args = append(t.Args, analysis.TypeArg{String: &s})
 		case strings.EqualFold(a, "true") || strings.EqualFold(a, "false"):
 			b := strings.EqualFold(a, "true")
-			t.Args = append(t.Args, endtoend.TypeArg{Bool: &b})
+			t.Args = append(t.Args, analysis.TypeArg{Bool: &b})
 		default:
 			if n, err := strconv.ParseInt(a, 10, 64); err == nil {
-				t.Args = append(t.Args, endtoend.TypeArg{Int: &n})
+				t.Args = append(t.Args, analysis.TypeArg{Int: &n})
 			} else {
-				t.Args = append(t.Args, endtoend.TypeArg{Type: &endtoend.TypeExpr{Name: strings.ToLower(a)}})
+				t.Args = append(t.Args, analysis.TypeArg{Type: &analysis.TypeExpr{Name: strings.ToLower(a)}})
 			}
 		}
 	}

@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/sqlc-dev/sqlc/internal/goldeneye/analysis"
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/endtoend"
 )
 
@@ -51,10 +52,10 @@ func bind(sql string) (string, []placeholder) {
 // Analyze runs a case's queries through the analysis shell and returns what
 // SQLite reports in the JSON shape sqlc analyze prints.
 func Analyze(ctx context.Context, dir string, c endtoend.Case) ([]byte, error) {
-	if err := checkOptions(ctx, dir, analysis); err != nil {
+	if err := checkOptions(ctx, dir, analysisShell); err != nil {
 		return nil, err
 	}
-	binary := analysis.binary(dir)
+	binary := analysisShell.binary(dir)
 	schema, err := os.ReadFile(c.Schema)
 	if err != nil {
 		return nil, err
@@ -69,7 +70,7 @@ func Analyze(ctx context.Context, dir string, c endtoend.Case) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	out := make([]endtoend.AnalyzedQuery, 0, len(queries))
+	out := make([]analysis.Query, 0, len(queries))
 	for _, q := range queries {
 		aq, err := analyzeQuery(ctx, binary, string(schema), string(fixture), q)
 		if err != nil {
@@ -77,7 +78,7 @@ func Analyze(ctx context.Context, dir string, c endtoend.Case) ([]byte, error) {
 		}
 		out = append(out, aq)
 	}
-	return endtoend.Encode(out)
+	return analysis.Encode(out)
 }
 
 // Check compares what SQLite reports for a case with the output the case
@@ -90,7 +91,7 @@ func Check(ctx context.Context, dir string, c endtoend.Case) (string, error) {
 	return c.Compare(got)
 }
 
-func analyzeQuery(ctx context.Context, binary, schema, fixture string, q endtoend.Query) (endtoend.AnalyzedQuery, error) {
+func analyzeQuery(ctx context.Context, binary, schema, fixture string, q endtoend.Query) (analysis.Query, error) {
 	sql, phs := bind(q.SQL)
 
 	// What the library says: the catalog, the bytecode, and the statement
@@ -112,10 +113,10 @@ func analyzeQuery(ctx context.Context, binary, schema, fixture string, q endtoen
 	s.section("end")
 	out, err := run(ctx, binary, s)
 	if err != nil {
-		return endtoend.AnalyzedQuery{}, err
+		return analysis.Query{}, err
 	}
 	if errs := out.errorsBefore(line); len(errs) > 0 {
-		return endtoend.AnalyzedQuery{}, errors.New(strings.Join(errs, "\n"))
+		return analysis.Query{}, errors.New(strings.Join(errs, "\n"))
 	}
 	query := out.sections["query"]
 	if query == nil || !query.prepared {
@@ -123,16 +124,16 @@ func analyzeQuery(ctx context.Context, binary, schema, fixture string, q endtoen
 		if msg == "" {
 			msg = "the statement was not prepared"
 		}
-		return endtoend.AnalyzedQuery{}, errors.New(msg)
+		return analysis.Query{}, errors.New(msg)
 	}
 	cat, err := readCatalog(out)
 	if err != nil {
-		return endtoend.AnalyzedQuery{}, err
+		return analysis.Query{}, err
 	}
 	var prog []instr
 	if explain := out.sections["explain"]; explain != nil && len(explain.blocks) > 0 {
 		if err := explain.decode(0, &prog); err != nil {
-			return endtoend.AnalyzedQuery{}, fmt.Errorf("reading the bytecode: %w", err)
+			return analysis.Query{}, fmt.Errorf("reading the bytecode: %w", err)
 		}
 	}
 	var names []string
@@ -141,7 +142,7 @@ func analyzeQuery(ctx context.Context, binary, schema, fixture string, q endtoen
 	}
 	t := newTracer(cat, names)
 	t.run(prog)
-	params := make([]endtoend.AnalyzedColumn, len(phs))
+	params := make([]analysis.Column, len(phs))
 	for i, ph := range phs {
 		params[i] = t.param(ph.Number)
 	}
@@ -164,7 +165,7 @@ func analyzeQuery(ctx context.Context, binary, schema, fixture string, q endtoen
 	s.section("end")
 	bound, err := run(ctx, binary, s)
 	if err != nil {
-		return endtoend.AnalyzedQuery{}, err
+		return analysis.Query{}, err
 	}
 	s = newScript()
 	s.sql(schema)
@@ -174,7 +175,7 @@ func analyzeQuery(ctx context.Context, binary, schema, fixture string, q endtoen
 	s.section("end")
 	empty, err := run(ctx, binary, s)
 	if err != nil {
-		return endtoend.AnalyzedQuery{}, err
+		return analysis.Query{}, err
 	}
 	var rows []string
 	for _, o := range []*output{bound, empty} {
@@ -183,11 +184,11 @@ func analyzeQuery(ctx context.Context, binary, schema, fixture string, q endtoen
 		}
 	}
 
-	aq := endtoend.AnalyzedQuery{
+	aq := analysis.Query{
 		Name:    q.Name,
 		Cmd:     q.Cmd,
-		Columns: []endtoend.AnalyzedColumn{},
-		Params:  []endtoend.AnalyzedParam{},
+		Columns: []analysis.Column{},
+		Params:  []analysis.Param{},
 	}
 	for i, m := range query.columns {
 		aq.Columns = append(aq.Columns, describeColumn(cat, m, classes(rows, i)))
@@ -197,7 +198,7 @@ func analyzeQuery(ctx context.Context, binary, schema, fixture string, q endtoen
 		if ph.Name != "" {
 			ac.Name = ph.Name
 		}
-		aq.Params = append(aq.Params, endtoend.AnalyzedParam{Number: ph.Number, Column: ac})
+		aq.Params = append(aq.Params, analysis.Param{Number: ph.Number, Column: ac})
 	}
 	return aq, nil
 }
@@ -205,7 +206,7 @@ func analyzeQuery(ctx context.Context, binary, schema, fixture string, q endtoen
 // sample is an expression for a value to bind to a parameter: one of its
 // column's values in the fixture, or a value of its type when all that is
 // known is the type. Empty when nothing is known.
-func sample(ac endtoend.AnalyzedColumn) string {
+func sample(ac analysis.Column) string {
 	if ac.Table != "" && ac.Name != "" {
 		col, tbl := quoteIdent(ac.Name), quoteIdent(ac.Table)
 		return fmt.Sprintf("(SELECT %s FROM %s WHERE %s IS NOT NULL LIMIT 1)", col, tbl, col)
@@ -244,15 +245,15 @@ func classes(rows []string, i int) []string {
 // describeColumn describes a result column: as the table column it is read
 // from when it is one, otherwise by the storage class of its values, and
 // nullable when any of its values was NULL.
-func describeColumn(cat *catalog, m columnMeta, classes []string) endtoend.AnalyzedColumn {
-	ac := endtoend.AnalyzedColumn{Name: m.Name}
+func describeColumn(cat *catalog, m columnMeta, classes []string) analysis.Column {
+	ac := analysis.Column{Name: m.Name}
 	if col := cat.lookup(m.Table, m.Origin); col != nil {
 		d := col.describe()
 		ac.Type, ac.Table = d.Type, d.Table
 	} else {
 		for _, class := range classes {
 			if class != "null" {
-				ac.Type = &endtoend.TypeExpr{Name: class}
+				ac.Type = &analysis.TypeExpr{Name: class}
 				break
 			}
 		}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/sqlc-dev/sqlc/internal/goldeneye/analysis"
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/endtoend"
 )
 
@@ -28,7 +29,7 @@ func Analyze(ctx context.Context, binary string, c endtoend.Case) ([]byte, error
 	if err != nil {
 		return nil, err
 	}
-	return endtoend.Encode(out)
+	return analysis.Encode(out)
 }
 
 // Check compares what ClickHouse reports for a case with the output the

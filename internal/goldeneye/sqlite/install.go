@@ -51,12 +51,12 @@ var extensions = []build{
 	{"enable_rtree", []string{"SQLITE_ENABLE_RTREE"}},
 }
 
-// analysis is the shell the analyze cases run through, which is no
+// analysisShell is the shell the analyze cases run through, which is no
 // dialect build: nothing is generated from it. It is built with column
 // metadata, so that `.stats stmt` can say which table column each result
 // column of a statement comes from, and with every extension option at
 // once, so that whatever a case's schema asks for is there.
-var analysis = build{"analysis", append([]string{"SQLITE_ENABLE_COLUMN_METADATA"}, extensionOptions()...)}
+var analysisShell = build{"analysis", append([]string{"SQLITE_ENABLE_COLUMN_METADATA"}, extensionOptions()...)}
 
 // extensionOptions is every option an extension build turns on, once each.
 func extensionOptions() []string {
@@ -136,7 +136,7 @@ func builds() []build {
 // shells lists every build Install makes: the dialect builds and the
 // analysis shell.
 func shells() []build {
-	return append(builds(), analysis)
+	return append(builds(), analysisShell)
 }
 
 // flags are every option a build is compiled with.

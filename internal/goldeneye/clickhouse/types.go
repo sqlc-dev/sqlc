@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sqlc-dev/sqlc/internal/goldeneye/endtoend"
+	"github.com/sqlc-dev/sqlc/internal/goldeneye/analysis"
 )
 
 // A type is a call expression, the way ClickHouse itself models one: a
@@ -38,7 +38,7 @@ import (
 // is the reader's job; the output only records what was said.
 
 // parseType turns a ClickHouse type string into its expression.
-func parseType(t string) *endtoend.TypeExpr {
+func parseType(t string) *analysis.TypeExpr {
 	name, args := splitType(t)
 	name = strings.ToLower(strings.TrimSpace(name))
 	if name == "nullable" && len(args) == 1 {
@@ -49,7 +49,7 @@ func parseType(t string) *endtoend.TypeExpr {
 	if name == "" {
 		name = "nothing"
 	}
-	expr := &endtoend.TypeExpr{Name: name}
+	expr := &analysis.TypeExpr{Name: name}
 	for _, a := range args {
 		expr.Args = append(expr.Args, parseArg(a))
 	}
@@ -59,7 +59,7 @@ func parseType(t string) *endtoend.TypeExpr {
 // parseArg parses one argument: a quoted string, an integer, a boolean, a
 // labelled argument (`lat Float64` in a Tuple, `'a' = 1` in an Enum), or a
 // type.
-func parseArg(a string) endtoend.TypeArg {
+func parseArg(a string) analysis.TypeArg {
 	a = strings.TrimSpace(a)
 	if strings.HasPrefix(a, "'") {
 		end := skipQuoted(a, 0)
@@ -69,22 +69,22 @@ func parseArg(a string) endtoend.TypeArg {
 			arg.Label = lit
 			return arg
 		}
-		return endtoend.TypeArg{String: &lit}
+		return analysis.TypeArg{String: &lit}
 	}
 	if n, err := strconv.ParseInt(a, 10, 64); err == nil {
-		return endtoend.TypeArg{Int: &n}
+		return analysis.TypeArg{Int: &n}
 	}
 	switch strings.ToLower(a) {
 	case "true", "false":
 		b := strings.EqualFold(a, "true")
-		return endtoend.TypeArg{Bool: &b}
+		return analysis.TypeArg{Bool: &b}
 	}
 	if i := labelEnd(a); i > 0 {
 		arg := parseArg(a[i+1:])
 		arg.Label = a[:i]
 		return arg
 	}
-	return endtoend.TypeArg{Type: parseType(a)}
+	return analysis.TypeArg{Type: parseType(a)}
 }
 
 // labelEnd returns the index of the space separating a label from the type

@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sqlc-dev/sqlc/internal/goldeneye/endtoend"
+	"github.com/sqlc-dev/sqlc/internal/goldeneye/analysis"
 )
 
 // SQLite has nothing to say about a parameter's type: a bound value is
@@ -88,7 +88,7 @@ type tracer struct {
 	regs      map[int]*register
 	// found is the column each parameter was found to stand in for, and
 	// hint what the program said about a parameter's type.
-	found map[int]endtoend.AnalyzedColumn
+	found map[int]analysis.Column
 	hint  map[int]string
 }
 
@@ -99,7 +99,7 @@ func newTracer(cat *catalog, names []string) *tracer {
 		cursors:   map[int]object{},
 		ephemeral: map[int]map[int][]int{},
 		regs:      map[int]*register{},
-		found:     map[int]endtoend.AnalyzedColumn{},
+		found:     map[int]analysis.Column{},
 		hint:      map[int]string{},
 	}
 }
@@ -117,14 +117,14 @@ func (t *tracer) run(prog []instr) {
 }
 
 // param describes what the parameter was found to stand in for.
-func (t *tracer) param(number int) endtoend.AnalyzedColumn {
+func (t *tracer) param(number int) analysis.Column {
 	if ac, ok := t.found[number]; ok {
 		return ac
 	}
 	if typ := t.hint[number]; typ != "" {
-		return endtoend.AnalyzedColumn{Type: &endtoend.TypeExpr{Name: typ}}
+		return analysis.Column{Type: &analysis.TypeExpr{Name: typ}}
 	}
-	return endtoend.AnalyzedColumn{}
+	return analysis.Column{}
 }
 
 func (t *tracer) reg(n int) *register {
@@ -167,7 +167,7 @@ func (t *tracer) copy(from, to int) {
 
 // assoc records the column the parameters in a register stand in for,
 // keeping the first found for each.
-func (t *tracer) assoc(params []int, ac endtoend.AnalyzedColumn) {
+func (t *tracer) assoc(params []int, ac analysis.Column) {
 	for _, p := range params {
 		if _, ok := t.found[p]; !ok {
 			t.found[p] = ac
@@ -190,7 +190,7 @@ func (t *tracer) typeHint(n int, typ string) {
 // describe turns what a register holds into the column a parameter
 // compared with it stands in for, when it can be named: a stored column
 // or rowid, a constant's storage class, or a function's name.
-func (t *tracer) describe(v value) (endtoend.AnalyzedColumn, bool) {
+func (t *tracer) describe(v value) (analysis.Column, bool) {
 	switch v.kind {
 	case vColumn:
 		return t.stored(v.cursor, v.index)
@@ -200,20 +200,20 @@ func (t *tracer) describe(v value) (endtoend.AnalyzedColumn, bool) {
 		}
 	case vConstant:
 		if v.class != "null" && v.class != "" {
-			return endtoend.AnalyzedColumn{Type: &endtoend.TypeExpr{Name: v.class}}, true
+			return analysis.Column{Type: &analysis.TypeExpr{Name: v.class}}, true
 		}
 	case vFunction:
-		return endtoend.AnalyzedColumn{Name: v.fn}, true
+		return analysis.Column{Name: v.fn}, true
 	}
-	return endtoend.AnalyzedColumn{}, false
+	return analysis.Column{}, false
 }
 
 // stored describes the ith stored column of a cursor.
-func (t *tracer) stored(cursor, i int) (endtoend.AnalyzedColumn, bool) {
+func (t *tracer) stored(cursor, i int) (analysis.Column, bool) {
 	col, owner, ok := t.cursors[cursor].column(i)
 	switch {
 	case !ok:
-		return endtoend.AnalyzedColumn{}, false
+		return analysis.Column{}, false
 	case col != nil:
 		return col.describe(), true
 	default:
@@ -438,7 +438,7 @@ func (t *tracer) step(in instr) {
 	case "ResultRow":
 		for i := 0; i < in.P2; i++ {
 			if i < len(t.names) {
-				t.assoc(t.params(in.P1+i), endtoend.AnalyzedColumn{Name: t.names[i]})
+				t.assoc(t.params(in.P1+i), analysis.Column{Name: t.names[i]})
 			}
 		}
 	}

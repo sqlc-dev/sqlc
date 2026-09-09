@@ -8,13 +8,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/sqlc-dev/sqlc/internal/goldeneye/analysis"
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/endtoend"
 )
 
 // analyze runs every query against the schema and fixture and records what
 // ClickHouse reports about each.
-func analyze(ctx context.Context, l local, schema, fixture string, queries []endtoend.Query) ([]endtoend.AnalyzedQuery, error) {
-	out := make([]endtoend.AnalyzedQuery, 0, len(queries))
+func analyze(ctx context.Context, l local, schema, fixture string, queries []endtoend.Query) ([]analysis.Query, error) {
+	out := make([]analysis.Query, 0, len(queries))
 	for _, q := range queries {
 		aq, err := analyzeQuery(ctx, l, schema, fixture, q)
 		if err != nil {
@@ -25,7 +26,7 @@ func analyze(ctx context.Context, l local, schema, fixture string, queries []end
 	return out, nil
 }
 
-func analyzeQuery(ctx context.Context, l local, schema, fixture string, q endtoend.Query) (endtoend.AnalyzedQuery, error) {
+func analyzeQuery(ctx context.Context, l local, schema, fixture string, q endtoend.Query) (analysis.Query, error) {
 	sql, phs := bindPlaceholders(q.SQL)
 	explain := returnsRows(sql)
 
@@ -43,33 +44,33 @@ func analyzeQuery(ctx context.Context, l local, schema, fixture string, q endtoe
 
 	results, err := l.run(ctx, script.String())
 	if err != nil {
-		return endtoend.AnalyzedQuery{}, err
+		return analysis.Query{}, err
 	}
 
-	aq := endtoend.AnalyzedQuery{
+	aq := analysis.Query{
 		Name:    q.Name,
 		Cmd:     q.Cmd,
-		Columns: []endtoend.AnalyzedColumn{},
-		Params:  []endtoend.AnalyzedParam{},
+		Columns: []analysis.Column{},
+		Params:  []analysis.Param{},
 	}
 	if !explain {
 		return analyzeExec(ctx, l, script.String(), sql, phs, aq)
 	}
 	if len(results) != 2 {
-		return endtoend.AnalyzedQuery{}, fmt.Errorf("expected the query tree and one result set, got %d results", len(results))
+		return analysis.Query{}, fmt.Errorf("expected the query tree and one result set, got %d results", len(results))
 	}
 
 	var lines []string
 	for _, row := range results[0].Data {
 		var line string
 		if err := json.Unmarshal(row["explain"], &line); err != nil {
-			return endtoend.AnalyzedQuery{}, fmt.Errorf("reading query tree: %w", err)
+			return analysis.Query{}, fmt.Errorf("reading query tree: %w", err)
 		}
 		lines = append(lines, line)
 	}
 	tree, err := parseQueryTree(lines)
 	if err != nil {
-		return endtoend.AnalyzedQuery{}, err
+		return analysis.Query{}, err
 	}
 
 	// Names and types come from the block header of the executed query, the
@@ -85,23 +86,23 @@ func analyzeQuery(ctx context.Context, l local, schema, fixture string, q endtoe
 
 	sentinels := tree.sentinels()
 	for i, ph := range phs {
-		ac := endtoend.AnalyzedColumn{}
+		ac := analysis.Column{}
 		if sentinel := sentinels[i+1]; sentinel != nil {
 			ac = tree.paramColumn(sentinel)
 		}
 		if ph.Name != "" {
 			ac.Name = ph.Name
 		}
-		aq.Params = append(aq.Params, endtoend.AnalyzedParam{Number: ph.Number, Column: ac})
+		aq.Params = append(aq.Params, analysis.Param{Number: ph.Number, Column: ac})
 	}
 	return aq, nil
 }
 
-func column(name, typ string) endtoend.AnalyzedColumn {
+func column(name, typ string) analysis.Column {
 	if typ == "" {
-		return endtoend.AnalyzedColumn{Name: name}
+		return analysis.Column{Name: name}
 	}
-	return endtoend.AnalyzedColumn{Name: name, Type: parseType(typ)}
+	return analysis.Column{Name: name, Type: parseType(typ)}
 }
 
 // returnsRows reports whether a statement produces a result set and so can
@@ -166,7 +167,7 @@ func sentinelOrdinal(c *treeNode) (int, bool) {
 // paramColumn describes what a placeholder is compared with or assigned to:
 // the other operand of the function it is an argument of, preferring a
 // column over an expression, or the projected column it stands for.
-func (t *queryTree) paramColumn(sentinel *treeNode) endtoend.AnalyzedColumn {
+func (t *queryTree) paramColumn(sentinel *treeNode) analysis.Column {
 	list := sentinel.parent
 	if list != nil && list.kind == "LIST" && list.parent != nil {
 		switch owner := list.parent; {
@@ -199,7 +200,7 @@ func (t *queryTree) paramColumn(sentinel *treeNode) endtoend.AnalyzedColumn {
 }
 
 // describe turns a tree expression into a column description.
-func (t *queryTree) describe(n *treeNode) endtoend.AnalyzedColumn {
+func (t *queryTree) describe(n *treeNode) analysis.Column {
 	switch n.kind {
 	case "COLUMN":
 		ac := column(n.attrs["column_name"], n.attrs["result_type"])
@@ -217,7 +218,7 @@ func (t *queryTree) describe(n *treeNode) endtoend.AnalyzedColumn {
 		}
 		return column(name, n.attrs["constant_value_type"])
 	}
-	return endtoend.AnalyzedColumn{}
+	return analysis.Column{}
 }
 
 var insertValuesRe = regexp.MustCompile(`(?is)^insert\s+into\s+(?:table\s+)?([\w.` + "`" + `"]+)\s*(?:\(([^)]*)\))?\s*(?:format\s+)?values\b`)
@@ -225,20 +226,20 @@ var insertValuesRe = regexp.MustCompile(`(?is)^insert\s+into\s+(?:table\s+)?([\w
 // analyzeExec runs a statement that returns no rows. The only parameters it
 // can describe are those of an INSERT ... VALUES, which map positionally
 // onto the target columns reported by DESCRIBE TABLE.
-func analyzeExec(ctx context.Context, l local, script, sql string, phs []placeholder, aq endtoend.AnalyzedQuery) (endtoend.AnalyzedQuery, error) {
+func analyzeExec(ctx context.Context, l local, script, sql string, phs []placeholder, aq analysis.Query) (analysis.Query, error) {
 	m := insertValuesRe.FindStringSubmatch(sql)
 	if m != nil {
 		script += "DESCRIBE TABLE " + m[1] + ";\n"
 	}
 	results, err := l.run(ctx, script)
 	if err != nil {
-		return endtoend.AnalyzedQuery{}, err
+		return analysis.Query{}, err
 	}
 
-	var targets []endtoend.AnalyzedColumn
+	var targets []analysis.Column
 	if m != nil && len(results) == 1 {
-		byName := map[string]endtoend.AnalyzedColumn{}
-		var all []endtoend.AnalyzedColumn
+		byName := map[string]analysis.Column{}
+		var all []analysis.Column
 		table := strings.Trim(m[1][strings.LastIndexByte(m[1], '.')+1:], "`\"")
 		for _, row := range results[0].Data {
 			var name, typ string
@@ -258,14 +259,14 @@ func analyzeExec(ctx context.Context, l local, script, sql string, phs []placeho
 		}
 	}
 	for i, ph := range phs {
-		ac := endtoend.AnalyzedColumn{}
+		ac := analysis.Column{}
 		if len(targets) > 0 {
 			ac = targets[i%len(targets)]
 		}
 		if ph.Name != "" {
 			ac.Name = ph.Name
 		}
-		aq.Params = append(aq.Params, endtoend.AnalyzedParam{Number: ph.Number, Column: ac})
+		aq.Params = append(aq.Params, analysis.Param{Number: ph.Number, Column: ac})
 	}
 	return aq, nil
 }

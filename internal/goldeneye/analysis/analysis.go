@@ -1,34 +1,33 @@
-package endtoend
+// Package analysis is the shape of an engine's answer about a query: the
+// JSON `sqlc analyze` prints, so that a case's committed stdout.json can be
+// compared with what the database itself reports, byte for byte.
+package analysis
 
 import (
 	"bytes"
 	"encoding/json"
 )
 
-// An engine's answer is written in the JSON `sqlc analyze` prints, so that
-// a case's committed stdout.json can be compared with it byte for byte.
-
-// AnalyzedQuery is what was found out about one query.
-type AnalyzedQuery struct {
-	Name    string           `json:"name"`
-	Cmd     string           `json:"cmd"`
-	Columns []AnalyzedColumn `json:"columns"`
-	Params  []AnalyzedParam  `json:"params"`
+// Query is what was found out about one query.
+type Query struct {
+	Name    string   `json:"name"`
+	Cmd     string   `json:"cmd"`
+	Columns []Column `json:"columns"`
+	Params  []Param  `json:"params"`
 }
 
-// AnalyzedColumn describes a result column, or the column a parameter
-// stands in for.
-type AnalyzedColumn struct {
+// Column describes a result column, or the column a parameter stands in
+// for.
+type Column struct {
 	Name  string    `json:"name"`
 	Type  *TypeExpr `json:"type,omitempty"`
 	Table string    `json:"table,omitempty"`
 }
 
-// AnalyzedParam is one parameter and what it is compared with or assigned
-// to.
-type AnalyzedParam struct {
-	Number int            `json:"number"`
-	Column AnalyzedColumn `json:"column"`
+// Param is one parameter and what it is compared with or assigned to.
+type Param struct {
+	Number int    `json:"number"`
+	Column Column `json:"column"`
 }
 
 // TypeExpr is a type as a call expression: a lowercased name applied to an
@@ -51,7 +50,7 @@ type TypeArg struct {
 }
 
 // Encode prints the answer the way sqlc analyze does.
-func Encode(queries []AnalyzedQuery) ([]byte, error) {
+func Encode(queries []Query) ([]byte, error) {
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	enc.SetIndent("", "  ")
