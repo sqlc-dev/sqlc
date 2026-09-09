@@ -50,7 +50,7 @@ const Dir = "dolphin"
 // Major is the MySQL major release the dialect is generated from. Bumping
 // it is a deliberate change: every release adds tables and columns to the
 // system schemas, so regenerate and review the dialect after changing it.
-const Major = 9
+const Major = 26
 
 // Locate returns the server to generate from, named by MYSQL_SERVER_URI.
 func Locate() (string, error) {

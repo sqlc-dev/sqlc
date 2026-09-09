@@ -251,8 +251,9 @@ func (a *analyzer) analyzeQuery(ctx context.Context, q endtoend.Query) (analysis
 	}
 
 	// EXPLAIN resolves and optimises the statement without running it,
-	// leaving its note and its trace behind.
-	if err := drain(a.conn.QueryContext(ctx, "EXPLAIN "+sql)); err != nil {
+	// leaving its note and its trace behind. Only the traditional format
+	// leaves the note, and since MySQL 26 the default format is the tree.
+	if err := drain(a.conn.QueryContext(ctx, "EXPLAIN FORMAT=TRADITIONAL "+sql)); err != nil {
 		return analysis.Query{}, err
 	}
 	note, err := readNote(ctx, a.conn)
