@@ -441,10 +441,13 @@ func single(kinds map[string]bool) string {
 // signature derives what the source says a SQL function returns and takes.
 // A result of one kind is that type. A function that returns one of its
 // arguments, or a mixture of kinds, takes the type of its first argument,
-// which the seed spells "any" — except that integer and real together widen
-// to real, as SQLite's own arithmetic does, and text and blob together to
-// text, since a function that returns either is handing back the bytes it
-// was given, and the legacy compiler cannot follow "any" to an argument.
+// which the seed spells "any" — except that integer and real together are
+// real, and Numeric, since abs, ceil and sum hand back an integer for an
+// integer and a real for a real, and a real for the text or blob they
+// convert, unless the function is one of the few whose choice turns on
+// something else; and text and blob together are text, since a function
+// that returns either is handing back the bytes it was given, and the
+// legacy compiler cannot follow "any" to an argument.
 func (s *source) signature(name string) (signature, error) {
 	r, ok := s.regs[strings.ToLower(name)]
 	if !ok {
@@ -482,6 +485,7 @@ func (s *source) signature(name string) (signature, error) {
 			sig.Returns = r.json
 		case len(kinds) == 2 && kinds["integer"] && kinds["real"]:
 			sig.Returns = "real"
+			sig.Numeric = !realResults[strings.ToLower(name)]
 		case len(kinds) == 2 && kinds["text"] && kinds["blob"]:
 			sig.Returns = "text"
 		default:

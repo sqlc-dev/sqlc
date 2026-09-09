@@ -70,7 +70,7 @@ var engines = []engine{
 	{clickhouse.Engine, clickhouse.Locate, clickhouse.Version, clickhouse.Generate, clickhouse.Analyze},
 	{duckdb.Engine, duckdb.Locate, duckdb.Version, duckdb.Generate, nil},
 	{postgresql.Engine, postgresql.Locate, postgresql.Version, postgresql.Generate, nil},
-	{sqlite.Engine, sqlite.Locate, sqlite.Version, sqlite.Generate, nil},
+	{sqlite.Engine, sqlite.Locate, sqlite.Version, sqlite.Generate, sqlite.Analyze},
 }
 
 // installer puts the binary an engine is read through in place, for the

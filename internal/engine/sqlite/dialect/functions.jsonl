@@ -1,6 +1,19 @@
 {"name":"-\u003e","args":[{"type":"any"},{"type":"any"}],"returns":"text","nullable":true}
 {"name":"-\u003e\u003e","args":[{"type":"any"},{"type":"any"}],"returns":"any","nullable":true}
 {"name":"abs","args":[{"type":"any"}],"returns":"real"}
+{"name":"abs","args":[{"type":"integer"}],"returns":"integer"}
+{"name":"abs","args":[{"type":"int"}],"returns":"integer"}
+{"name":"abs","args":[{"type":"tinyint"}],"returns":"integer"}
+{"name":"abs","args":[{"type":"smallint"}],"returns":"integer"}
+{"name":"abs","args":[{"type":"mediumint"}],"returns":"integer"}
+{"name":"abs","args":[{"type":"bigint"}],"returns":"integer"}
+{"name":"abs","args":[{"type":"unsigned big int"}],"returns":"integer"}
+{"name":"abs","args":[{"type":"int2"}],"returns":"integer"}
+{"name":"abs","args":[{"type":"int8"}],"returns":"integer"}
+{"name":"abs","args":[{"type":"real"}],"returns":"real"}
+{"name":"abs","args":[{"type":"double"}],"returns":"real"}
+{"name":"abs","args":[{"type":"double precision"}],"returns":"real"}
+{"name":"abs","args":[{"type":"float"}],"returns":"real"}
 {"name":"acos","args":[{"type":"real"}],"returns":"real"}
 {"name":"acosh","args":[{"type":"real"}],"returns":"real"}
 {"name":"asin","args":[{"type":"real"}],"returns":"real"}
@@ -10,7 +23,33 @@
 {"name":"atanh","args":[{"type":"real"}],"returns":"real"}
 {"name":"avg","kind":"a","args":[{"type":"any"}],"returns":"real","nullable":true}
 {"name":"ceil","args":[{"type":"any"}],"returns":"real"}
+{"name":"ceil","args":[{"type":"integer"}],"returns":"integer"}
+{"name":"ceil","args":[{"type":"int"}],"returns":"integer"}
+{"name":"ceil","args":[{"type":"tinyint"}],"returns":"integer"}
+{"name":"ceil","args":[{"type":"smallint"}],"returns":"integer"}
+{"name":"ceil","args":[{"type":"mediumint"}],"returns":"integer"}
+{"name":"ceil","args":[{"type":"bigint"}],"returns":"integer"}
+{"name":"ceil","args":[{"type":"unsigned big int"}],"returns":"integer"}
+{"name":"ceil","args":[{"type":"int2"}],"returns":"integer"}
+{"name":"ceil","args":[{"type":"int8"}],"returns":"integer"}
+{"name":"ceil","args":[{"type":"real"}],"returns":"real"}
+{"name":"ceil","args":[{"type":"double"}],"returns":"real"}
+{"name":"ceil","args":[{"type":"double precision"}],"returns":"real"}
+{"name":"ceil","args":[{"type":"float"}],"returns":"real"}
 {"name":"ceiling","args":[{"type":"any"}],"returns":"real"}
+{"name":"ceiling","args":[{"type":"integer"}],"returns":"integer"}
+{"name":"ceiling","args":[{"type":"int"}],"returns":"integer"}
+{"name":"ceiling","args":[{"type":"tinyint"}],"returns":"integer"}
+{"name":"ceiling","args":[{"type":"smallint"}],"returns":"integer"}
+{"name":"ceiling","args":[{"type":"mediumint"}],"returns":"integer"}
+{"name":"ceiling","args":[{"type":"bigint"}],"returns":"integer"}
+{"name":"ceiling","args":[{"type":"unsigned big int"}],"returns":"integer"}
+{"name":"ceiling","args":[{"type":"int2"}],"returns":"integer"}
+{"name":"ceiling","args":[{"type":"int8"}],"returns":"integer"}
+{"name":"ceiling","args":[{"type":"real"}],"returns":"real"}
+{"name":"ceiling","args":[{"type":"double"}],"returns":"real"}
+{"name":"ceiling","args":[{"type":"double precision"}],"returns":"real"}
+{"name":"ceiling","args":[{"type":"float"}],"returns":"real"}
 {"name":"changes","returns":"integer"}
 {"name":"char","args":[{"type":"integer","mode":"v"}],"returns":"text"}
 {"name":"coalesce","args":[{"type":"any"},{"type":"any"},{"type":"any","mode":"v"}],"returns":"any"}
@@ -31,6 +70,19 @@
 {"name":"exp","args":[{"type":"real"}],"returns":"real"}
 {"name":"first_value","kind":"w","args":[{"type":"any"}],"returns":"any","nullable":true}
 {"name":"floor","args":[{"type":"any"}],"returns":"real"}
+{"name":"floor","args":[{"type":"integer"}],"returns":"integer"}
+{"name":"floor","args":[{"type":"int"}],"returns":"integer"}
+{"name":"floor","args":[{"type":"tinyint"}],"returns":"integer"}
+{"name":"floor","args":[{"type":"smallint"}],"returns":"integer"}
+{"name":"floor","args":[{"type":"mediumint"}],"returns":"integer"}
+{"name":"floor","args":[{"type":"bigint"}],"returns":"integer"}
+{"name":"floor","args":[{"type":"unsigned big int"}],"returns":"integer"}
+{"name":"floor","args":[{"type":"int2"}],"returns":"integer"}
+{"name":"floor","args":[{"type":"int8"}],"returns":"integer"}
+{"name":"floor","args":[{"type":"real"}],"returns":"real"}
+{"name":"floor","args":[{"type":"double"}],"returns":"real"}
+{"name":"floor","args":[{"type":"double precision"}],"returns":"real"}
+{"name":"floor","args":[{"type":"float"}],"returns":"real"}
 {"name":"format","args":[{"type":"text","has_default":true},{"type":"any","mode":"v"}],"returns":"text"}
 {"name":"glob","args":[{"type":"text"},{"type":"text"}],"returns":"integer"}
 {"name":"group_concat","kind":"a","args":[{"type":"text"}],"returns":"text","nullable":true}
@@ -137,6 +189,19 @@
 {"name":"substring","args":[{"type":"any"},{"type":"integer"},{"type":"integer"}],"returns":"text"}
 {"name":"subtype","args":[{"type":"any"}],"returns":"integer"}
 {"name":"sum","kind":"a","args":[{"type":"any"}],"returns":"real","nullable":true}
+{"name":"sum","kind":"a","args":[{"type":"integer"}],"returns":"integer","nullable":true}
+{"name":"sum","kind":"a","args":[{"type":"int"}],"returns":"integer","nullable":true}
+{"name":"sum","kind":"a","args":[{"type":"tinyint"}],"returns":"integer","nullable":true}
+{"name":"sum","kind":"a","args":[{"type":"smallint"}],"returns":"integer","nullable":true}
+{"name":"sum","kind":"a","args":[{"type":"mediumint"}],"returns":"integer","nullable":true}
+{"name":"sum","kind":"a","args":[{"type":"bigint"}],"returns":"integer","nullable":true}
+{"name":"sum","kind":"a","args":[{"type":"unsigned big int"}],"returns":"integer","nullable":true}
+{"name":"sum","kind":"a","args":[{"type":"int2"}],"returns":"integer","nullable":true}
+{"name":"sum","kind":"a","args":[{"type":"int8"}],"returns":"integer","nullable":true}
+{"name":"sum","kind":"a","args":[{"type":"real"}],"returns":"real","nullable":true}
+{"name":"sum","kind":"a","args":[{"type":"double"}],"returns":"real","nullable":true}
+{"name":"sum","kind":"a","args":[{"type":"double precision"}],"returns":"real","nullable":true}
+{"name":"sum","kind":"a","args":[{"type":"float"}],"returns":"real","nullable":true}
 {"name":"tan","args":[{"type":"real"}],"returns":"real"}
 {"name":"tanh","args":[{"type":"real"}],"returns":"real"}
 {"name":"time","args":[{"type":"any","mode":"v"}],"returns":"text","nullable":true}
@@ -146,6 +211,19 @@
 {"name":"trim","args":[{"type":"text"}],"returns":"text"}
 {"name":"trim","args":[{"type":"text"},{"type":"text"}],"returns":"text"}
 {"name":"trunc","args":[{"type":"any"}],"returns":"real"}
+{"name":"trunc","args":[{"type":"integer"}],"returns":"integer"}
+{"name":"trunc","args":[{"type":"int"}],"returns":"integer"}
+{"name":"trunc","args":[{"type":"tinyint"}],"returns":"integer"}
+{"name":"trunc","args":[{"type":"smallint"}],"returns":"integer"}
+{"name":"trunc","args":[{"type":"mediumint"}],"returns":"integer"}
+{"name":"trunc","args":[{"type":"bigint"}],"returns":"integer"}
+{"name":"trunc","args":[{"type":"unsigned big int"}],"returns":"integer"}
+{"name":"trunc","args":[{"type":"int2"}],"returns":"integer"}
+{"name":"trunc","args":[{"type":"int8"}],"returns":"integer"}
+{"name":"trunc","args":[{"type":"real"}],"returns":"real"}
+{"name":"trunc","args":[{"type":"double"}],"returns":"real"}
+{"name":"trunc","args":[{"type":"double precision"}],"returns":"real"}
+{"name":"trunc","args":[{"type":"float"}],"returns":"real"}
 {"name":"typeof","args":[{"type":"any"}],"returns":"text"}
 {"name":"unhex","args":[{"type":"text"}],"returns":"blob","nullable":true}
 {"name":"unhex","args":[{"type":"text"},{"type":"text"}],"returns":"blob","nullable":true}

@@ -150,8 +150,8 @@ from a live database by `/internal/goldeneye`, a nested module, and its tests
 verify the committed files against one byte for byte. The same module checks
 the `analyze_*` cases under `/internal/endtoend/testdata/` against what the
 database itself reports for them, so a `fixture.sql` next to a case's schema
-gives the queries rows to run against. Engines whose database is not
-available skip.
+gives the queries rows to run against. ClickHouse and SQLite have the check
+today; engines whose database is not available skip.
 
 ```bash
 cd internal/goldeneye

@@ -181,12 +181,25 @@ type shell struct {
 // option lists changed would otherwise describe the wrong dialect.
 func readShell(ctx context.Context, dir string, b build) (*shell, error) {
 	s := &shell{build: b, binary: b.binary(dir)}
+	if err := checkOptions(ctx, dir, b); err != nil {
+		return nil, err
+	}
+	if err := query(ctx, s.binary, functionList, &s.rows); err != nil {
+		return nil, err
+	}
+	return s, nil
+}
+
+// checkOptions asks a build's shell whether it was compiled with every
+// option any build turns on, and fails when the answers do not match the
+// build's own list.
+func checkOptions(ctx context.Context, dir string, b build) error {
 	var used []struct {
 		Option string `json:"option"`
 		Used   int    `json:"used"`
 	}
 	known := map[string]bool{}
-	for _, b := range builds() {
+	for _, b := range shells() {
 		for _, opt := range b.flags() {
 			known[opt] = true
 		}
@@ -195,8 +208,8 @@ func readShell(ctx context.Context, dir string, b build) (*shell, error) {
 	for _, opt := range slices.Sorted(maps.Keys(known)) {
 		clauses = append(clauses, fmt.Sprintf("SELECT '%s' AS option, sqlite_compileoption_used('%s') AS used", opt, opt))
 	}
-	if err := query(ctx, s.binary, strings.Join(clauses, " UNION ALL "), &used); err != nil {
-		return nil, err
+	if err := query(ctx, b.binary(dir), strings.Join(clauses, " UNION ALL "), &used); err != nil {
+		return err
 	}
 	for _, u := range used {
 		want := 0
@@ -204,13 +217,10 @@ func readShell(ctx context.Context, dir string, b build) (*shell, error) {
 			want = 1
 		}
 		if u.Used != want {
-			return nil, fmt.Errorf("sqlite: the %s shell was not built with the options it should have been (%s is %d): remove %s and run `go run ./cmd/goldeneye install sqlite` again", b.name, u.Option, u.Used, dir)
+			return fmt.Errorf("sqlite: the %s shell was not built with the options it should have been (%s is %d): remove %s and run `go run ./cmd/goldeneye install sqlite` again", b.name, u.Option, u.Used, filepath.Join(dir, b.name))
 		}
 	}
-	if err := query(ctx, s.binary, functionList, &s.rows); err != nil {
-		return nil, err
-	}
-	return s, nil
+	return nil
 }
 
 // generator accumulates the functions of every build, reading their
@@ -221,6 +231,9 @@ type generator struct {
 	ctx      context.Context
 	src      *source
 	reported map[string]bool
+	// numeric holds every spelling types.jsonl gives integer and real, in
+	// its order, for the functions written once per spelling.
+	numeric map[string][]string
 }
 
 // overload is one row of a shell's list with what was found out about it.
@@ -273,13 +286,30 @@ func (g *generator) functions(s *shell, base bool) ([]dialect.Function, error) {
 		if o.kind == "a" {
 			isNullable = empty[o.row.key()] == "null"
 		}
-		funcs = append(funcs, dialect.Function{
+		fn := dialect.Function{
 			Name:     o.row.Name,
 			Kind:     o.kind,
 			Args:     o.sig.args(o.row.NArg),
 			Returns:  o.sig.Returns,
 			Nullable: isNullable,
-		})
+		}
+		funcs = append(funcs, fn)
+		// A function that returns an integer for an integer and a real for
+		// a real is written once more per spelling of each, the way
+		// PostgreSQL's catalog has a sum per numeric type. The overload over
+		// any comes first: the analysis core picks the overload whose
+		// parameter is the argument's type, but the legacy compiler takes
+		// the first of the right arity, and keeps what it had.
+		if o.sig.Numeric && len(fn.Args) > 0 {
+			for _, typ := range []string{"integer", "real"} {
+				for _, spelling := range g.numeric[typ] {
+					typed := fn
+					typed.Args = append([]dialect.Arg{{Type: spelling}}, fn.Args[1:]...)
+					typed.Returns = typ
+					funcs = append(funcs, typed)
+				}
+			}
+		}
 	}
 	return funcs, nil
 }
@@ -355,7 +385,20 @@ func Generate(ctx context.Context, dir string) (dialect.Files, error) {
 	if err != nil {
 		return nil, err
 	}
-	g := &generator{ctx: ctx, src: src, reported: map[string]bool{}}
+	g := &generator{ctx: ctx, src: src, reported: map[string]bool{}, numeric: map[string][]string{}}
+	dialectDir, err := dialect.Dir(Engine)
+	if err != nil {
+		return nil, err
+	}
+	types, err := dialect.ReadTypes(dialectDir)
+	if err != nil {
+		return nil, err
+	}
+	for _, t := range types {
+		if t.Name == "integer" || t.Name == "real" {
+			g.numeric[t.Name] = append([]string{t.Name}, t.Aliases...)
+		}
+	}
 	all := builds()
 	base, err := readShell(ctx, dir, all[0])
 	if err != nil {
@@ -386,7 +429,7 @@ func Generate(ctx context.Context, dir string) (dialect.Files, error) {
 		}
 	}
 	var stale []string
-	for _, list := range []map[string]bool{omitted, nullable} {
+	for _, list := range []map[string]bool{omitted, nullable, realResults} {
 		for name := range list {
 			if !g.reported[name] {
 				stale = append(stale, name)

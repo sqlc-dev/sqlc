@@ -1,12 +1,10 @@
 package clickhouse
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
 	"os"
 
+	"github.com/sqlc-dev/sqlc/internal/goldeneye/analysis"
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/endtoend"
 )
 
@@ -23,25 +21,15 @@ func Analyze(ctx context.Context, binary string, c endtoend.Case) ([]byte, error
 			return nil, err
 		}
 	}
-	src, err := os.ReadFile(c.Query)
+	queries, err := c.Queries()
 	if err != nil {
 		return nil, err
-	}
-	queries, err := parseQueries(string(src))
-	if err != nil {
-		return nil, fmt.Errorf("%s: %w", c.Query, err)
 	}
 	out, err := analyze(ctx, local{binary: binary}, string(schema), string(fixture), queries)
 	if err != nil {
 		return nil, err
 	}
-	var buf bytes.Buffer
-	enc := json.NewEncoder(&buf)
-	enc.SetIndent("", "  ")
-	if err := enc.Encode(out); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+	return analysis.Encode(out)
 }
 
 // Check compares what ClickHouse reports for a case with the output the
