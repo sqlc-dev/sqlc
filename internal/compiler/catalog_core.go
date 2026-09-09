@@ -10,17 +10,19 @@ import (
 
 // coreResultCatalog dumps the core catalog into the legacy catalog shape a
 // Result carries, so codegen sees the same table models either way a query
-// set was analyzed. Only relations make the trip: codegen reads tables and
-// their columns to build models, and none of the types, functions or
-// operators the core catalog also holds.
+// set was analyzed. Relations and enums make the trip: codegen reads tables
+// and their columns to build models and enums to build their Go types, and
+// none of the functions or operators the core catalog also holds.
 func coreResultCatalog(c *core.Catalog) (*catalog.Catalog, error) {
 	cat := catalog.New("public")
 	namespaces, err := c.Namespaces()
 	if err != nil {
 		return nil, err
 	}
+	schemas := map[string]*catalog.Schema{}
 	for _, ns := range namespaces {
 		schema := &catalog.Schema{Name: ns.Name}
+		schemas[ns.Name] = schema
 		tables, err := c.TablesInNamespace(ns.OID)
 		if err != nil {
 			return nil, err
@@ -51,6 +53,30 @@ func coreResultCatalog(c *core.Catalog) (*catalog.Catalog, error) {
 			schema.Tables = append(schema.Tables, t)
 		}
 		cat.Schemas = append(cat.Schemas, schema)
+	}
+
+	// The catalog spells an enum's schema in its name, and a schema that
+	// holds only types has no namespace of its own, so one is made here.
+	enums, err := c.Enums()
+	if err != nil {
+		return nil, err
+	}
+	for _, enum := range enums {
+		labels, err := c.EnumLabels(enum.OID)
+		if err != nil {
+			return nil, err
+		}
+		schemaName, name := core.SplitTypeName(enum.Name)
+		if schemaName == "" {
+			schemaName = cat.DefaultSchema
+		}
+		schema, ok := schemas[schemaName]
+		if !ok {
+			schema = &catalog.Schema{Name: schemaName}
+			schemas[schemaName] = schema
+			cat.Schemas = append(cat.Schemas, schema)
+		}
+		schema.Types = append(schema.Types, &catalog.Enum{Name: name, Vals: labels})
 	}
 	return cat, nil
 }

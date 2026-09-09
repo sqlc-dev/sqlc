@@ -67,6 +67,26 @@ SELECT oid, name, category, typtype, preferred
 FROM sql_type
 WHERE oid = ?;
 
+-- name: ListEnumTypes :many
+SELECT oid, name FROM sql_type
+WHERE typtype = 'e'
+ORDER BY oid;
+
+-- name: RenameType :exec
+UPDATE sql_type SET name = sqlc.arg(name) WHERE oid = sqlc.arg(oid);
+
+-- name: DeleteType :exec
+DELETE FROM sql_type WHERE oid = ?;
+
+-- name: CreateEnumLabel :exec
+INSERT INTO sql_enum_label (type_oid, ord, label) VALUES (?, ?, ?);
+
+-- name: ListEnumLabels :many
+SELECT label FROM sql_enum_label WHERE type_oid = ? ORDER BY ord;
+
+-- name: DeleteEnumLabels :exec
+DELETE FROM sql_enum_label WHERE type_oid = ?;
+
 -- =============================== sql_class =============================
 
 -- name: CreateClass :execlastid

@@ -210,6 +210,21 @@ func (q *Queries) CreateDialect(ctx context.Context, name string) (int64, error)
 	return result.LastInsertId()
 }
 
+const createEnumLabel = `-- name: CreateEnumLabel :exec
+INSERT INTO sql_enum_label (type_oid, ord, label) VALUES (?, ?, ?)
+`
+
+type CreateEnumLabelParams struct {
+	TypeOid int64
+	Ord     int64
+	Label   string
+}
+
+func (q *Queries) CreateEnumLabel(ctx context.Context, arg CreateEnumLabelParams) error {
+	_, err := q.db.ExecContext(ctx, createEnumLabel, arg.TypeOid, arg.Ord, arg.Label)
+	return err
+}
+
 const createNamespace = `-- name: CreateNamespace :execlastid
 
 
@@ -392,6 +407,24 @@ DELETE FROM sql_class WHERE oid = ?
 
 func (q *Queries) DeleteClass(ctx context.Context, oid int64) error {
 	_, err := q.db.ExecContext(ctx, deleteClass, oid)
+	return err
+}
+
+const deleteEnumLabels = `-- name: DeleteEnumLabels :exec
+DELETE FROM sql_enum_label WHERE type_oid = ?
+`
+
+func (q *Queries) DeleteEnumLabels(ctx context.Context, typeOid int64) error {
+	_, err := q.db.ExecContext(ctx, deleteEnumLabels, typeOid)
+	return err
+}
+
+const deleteType = `-- name: DeleteType :exec
+DELETE FROM sql_type WHERE oid = ?
+`
+
+func (q *Queries) DeleteType(ctx context.Context, oid int64) error {
+	_, err := q.db.ExecContext(ctx, deleteType, oid)
 	return err
 }
 
@@ -639,6 +672,67 @@ func (q *Queries) ListClassColumns(ctx context.Context, classOid int64) ([]ListC
 	return items, nil
 }
 
+const listEnumLabels = `-- name: ListEnumLabels :many
+SELECT label FROM sql_enum_label WHERE type_oid = ? ORDER BY ord
+`
+
+func (q *Queries) ListEnumLabels(ctx context.Context, typeOid int64) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, listEnumLabels, typeOid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var label string
+		if err := rows.Scan(&label); err != nil {
+			return nil, err
+		}
+		items = append(items, label)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listEnumTypes = `-- name: ListEnumTypes :many
+SELECT oid, name FROM sql_type
+WHERE typtype = 'e'
+ORDER BY oid
+`
+
+type ListEnumTypesRow struct {
+	Oid  int64
+	Name string
+}
+
+func (q *Queries) ListEnumTypes(ctx context.Context) ([]ListEnumTypesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listEnumTypes)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListEnumTypesRow
+	for rows.Next() {
+		var i ListEnumTypesRow
+		if err := rows.Scan(&i.Oid, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listNamespaces = `-- name: ListNamespaces :many
 SELECT oid, name FROM sql_namespace ORDER BY oid
 `
@@ -848,6 +942,20 @@ type RenameClassParams struct {
 
 func (q *Queries) RenameClass(ctx context.Context, arg RenameClassParams) error {
 	_, err := q.db.ExecContext(ctx, renameClass, arg.NewName, arg.Oid)
+	return err
+}
+
+const renameType = `-- name: RenameType :exec
+UPDATE sql_type SET name = ?1 WHERE oid = ?2
+`
+
+type RenameTypeParams struct {
+	Name string
+	Oid  int64
+}
+
+func (q *Queries) RenameType(ctx context.Context, arg RenameTypeParams) error {
+	_, err := q.db.ExecContext(ctx, renameType, arg.Name, arg.Oid)
 	return err
 }
 
