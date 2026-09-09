@@ -70,15 +70,16 @@ func ParseQueries(src string) ([]Query, error) {
 	return queries, nil
 }
 
-var namedArgRe = regexp.MustCompile(`^sqlc\.(n?arg)\(\s*'?([A-Za-z_][A-Za-z0-9_]*)'?\s*\)`)
+var namedArgRe = regexp.MustCompile(`^sqlc\.(n?arg|slice)\(\s*'?([A-Za-z_][A-Za-z0-9_]*)'?\s*\)`)
 
-// Rewrite replaces every parameter reference in a query — ?, sqlc.arg(name)
-// and sqlc.narg(name) — with what bind returns for it, in order of
-// appearance, skipping string literals, quoted identifiers and comments.
-// bind is handed the name, empty for a ?, and the word before the
+// Rewrite replaces every parameter reference in a query — ?, sqlc.arg(name),
+// sqlc.narg(name) and sqlc.slice(name) — with what bind returns for it, in
+// order of appearance, skipping string literals, quoted identifiers and
+// comments. bind is handed the name, empty for a ?, and the word before the
 // reference, so that a LIMIT or OFFSET can be bound differently from a
-// value. Each engine decides what a reference becomes and how the
-// references are numbered.
+// value; the second count of a LIMIT ?, ? is handed LIMIT as well. Each
+// engine decides what a reference becomes and how the references are
+// numbered.
 func Rewrite(sql string, bind func(name, lastWord string) string) string {
 	var (
 		out      strings.Builder
@@ -112,12 +113,12 @@ func Rewrite(sql string, bind func(name, lastWord string) string) string {
 			i = end
 		case c == '?':
 			out.WriteString(bind("", lastWord))
-			lastWord = ""
+			lastWord = afterReference(lastWord)
 			i++
 		case c == 's' && namedArgRe.MatchString(sql[i:]):
 			m := namedArgRe.FindStringSubmatch(sql[i:])
 			out.WriteString(bind(m[2], lastWord))
-			lastWord = ""
+			lastWord = afterReference(lastWord)
 			i += len(m[0])
 		case isWordByte(c):
 			end := i
@@ -136,6 +137,16 @@ func Rewrite(sql string, bind func(name, lastWord string) string) string {
 		}
 	}
 	return out.String()
+}
+
+// afterReference is the word the reference after one is preceded by: a
+// LIMIT's, so that both counts of LIMIT ?, ? are bound as counts, and
+// otherwise none.
+func afterReference(lastWord string) string {
+	if strings.EqualFold(lastWord, "limit") {
+		return lastWord
+	}
+	return ""
 }
 
 func isWordByte(c byte) bool {

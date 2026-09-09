@@ -34,6 +34,35 @@ jobs:
     - name: Fail if the committed dialect differs
       run: git add -N internal/engine/postgresql && git diff --exit-code --stat -- internal/engine/postgresql
 
+  mysql:
+    name: generate mysql dialect
+    runs-on: ubuntu-24.04
+    services:
+      mysql:
+        image: mysql:9.1
+        env:
+          MYSQL_ROOT_PASSWORD: mysecretpassword
+        ports:
+        - 3306:3306
+        options: --health-cmd "mysqladmin ping -h 127.0.0.1 -pmysecretpassword" --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-go@v7
+      with:
+        go-version-file: internal/goldeneye/go.mod
+        check-latest: true
+    - run: go run ./cmd/goldeneye generate mysql
+      working-directory: internal/goldeneye
+      env:
+        MYSQL_SERVER_URI: root:mysecretpassword@tcp(localhost:${{ job.services.mysql.ports['3306'] }})/mysql
+    - name: Save results
+      uses: actions/upload-artifact@v7
+      with:
+        name: dialect-mysql
+        path: internal/engine/dolphin/dialect
+    - name: Fail if the committed dialect differs
+      run: git add -N internal/engine/dolphin && git diff --exit-code --stat -- internal/engine/dolphin
+
   clickhouse:
     name: generate clickhouse dialect
     runs-on: ubuntu-24.04

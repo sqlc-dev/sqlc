@@ -29,6 +29,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/dialect"
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/duckdb"
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/endtoend"
+	"github.com/sqlc-dev/sqlc/internal/goldeneye/mysql"
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/postgresql"
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/sqlite"
 )
@@ -48,12 +49,16 @@ const usage = `usage:
       rewrite the generated dialect files from the database, for every available engine or one
   goldeneye check [engine]
       compare the committed dialect files and analyze cases with the database, for every available engine or one
+      postgresql and mysql read the server POSTGRESQL_SERVER_URI and MYSQL_SERVER_URI name
 
-engines: clickhouse, duckdb, postgresql, sqlite`
+engines: clickhouse, duckdb, mysql, postgresql, sqlite`
 
 // engine is one database goldeneye knows how to read a dialect from.
 type engine struct {
 	name string
+	// dir is the engine directory the dialect lives under, when it is not
+	// named after the engine: MySQL's is dolphin, after its parser.
+	dir string
 	// locate finds the database — a binary or a connection URL — or says
 	// why it is not available.
 	locate func() (string, error)
@@ -67,10 +72,19 @@ type engine struct {
 }
 
 var engines = []engine{
-	{clickhouse.Engine, clickhouse.Locate, clickhouse.Version, clickhouse.Generate, clickhouse.Analyze},
-	{duckdb.Engine, duckdb.Locate, duckdb.Version, duckdb.Generate, nil},
-	{postgresql.Engine, postgresql.Locate, postgresql.Version, postgresql.Generate, nil},
-	{sqlite.Engine, sqlite.Locate, sqlite.Version, sqlite.Generate, sqlite.Analyze},
+	{clickhouse.Engine, "", clickhouse.Locate, clickhouse.Version, clickhouse.Generate, clickhouse.Analyze},
+	{duckdb.Engine, "", duckdb.Locate, duckdb.Version, duckdb.Generate, nil},
+	{mysql.Engine, mysql.Dir, mysql.Locate, mysql.Version, mysql.Generate, mysql.Analyze},
+	{postgresql.Engine, "", postgresql.Locate, postgresql.Version, postgresql.Generate, nil},
+	{sqlite.Engine, "", sqlite.Locate, sqlite.Version, sqlite.Generate, sqlite.Analyze},
+}
+
+// dialectDir returns the engine's dialect directory.
+func (e engine) dialectDir() (string, error) {
+	if e.dir != "" {
+		return dialect.Dir(e.dir)
+	}
+	return dialect.Dir(e.name)
 }
 
 // installer puts the binary an engine is read through in place, for the
@@ -177,7 +191,7 @@ func generate(ctx context.Context, e engine, handle string, stderr io.Writer) er
 	if err != nil {
 		return err
 	}
-	dir, err := dialect.Dir(e.name)
+	dir, err := e.dialectDir()
 	if err != nil {
 		return err
 	}
@@ -198,7 +212,7 @@ func check(ctx context.Context, e engine, handle string, stderr io.Writer) error
 	if err != nil {
 		return err
 	}
-	dir, err := dialect.Dir(e.name)
+	dir, err := e.dialectDir()
 	if err != nil {
 		return err
 	}
