@@ -1095,11 +1095,12 @@ func convertCreateFunctionStmt(n *pg.CreateFunctionStmt) *ast.CreateFunctionStmt
 		panic(err)
 	}
 	return &ast.CreateFunctionStmt{
-		Replace:    n.Replace,
-		Func:       rel.FuncName(),
-		Params:     convertSlice(n.Parameters),
-		ReturnType: convertTypeName(n.ReturnType),
-		Options:    convertSlice(n.Options),
+		Replace:     n.Replace,
+		IsProcedure: n.IsProcedure,
+		Func:        rel.FuncName(),
+		Params:      convertSlice(n.Parameters),
+		ReturnType:  convertTypeName(n.ReturnType),
+		Options:     convertSlice(n.Options),
 	}
 }
 

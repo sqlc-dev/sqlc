@@ -78,7 +78,7 @@ func (a *analyzer) typeExpr(n ast.Node) (exprType, error) {
 		return a.typeSubLink(e)
 
 	case *ast.CollateExpr:
-		return a.typeExpr(e.Arg)
+		return a.typeExpr(collated(e))
 
 	case *ast.IntervalExpr:
 		// A dialect with no interval type of its own leaves it untyped.
@@ -231,6 +231,18 @@ func (a *analyzer) inferParam(number int, t exprType) {
 	a.params[number] = cur
 }
 
+// nameParam gives a placeholder a name when nothing has named it yet.
+func (a *analyzer) nameParam(number int, name string) {
+	if name == "" {
+		return
+	}
+	cur := a.params[number]
+	if cur.Name == "" && cur.Source == nil {
+		cur.Name = name
+		a.params[number] = cur
+	}
+}
+
 // nameParamAfter names a placeholder compared with a function call after
 // the function, the way a placeholder compared with a column is named after
 // the column.
@@ -296,12 +308,12 @@ func (a *analyzer) typeAExpr(e *ast.A_Expr) (exprType, error) {
 		return exprType{}, err
 	}
 
-	if pr, ok := e.Lexpr.(*ast.ParamRef); ok && rightT.typeOID != 0 {
+	if pr, ok := bareParam(e.Lexpr); ok && rightT.typeOID != 0 {
 		a.inferParam(pr.Number, rightT)
 		a.nameParamAfter(pr.Number, e.Rexpr)
 		leftT = rightT
 	}
-	if pr, ok := e.Rexpr.(*ast.ParamRef); ok && leftT.typeOID != 0 {
+	if pr, ok := bareParam(e.Rexpr); ok && leftT.typeOID != 0 {
 		a.inferParam(pr.Number, leftT)
 		a.nameParamAfter(pr.Number, e.Lexpr)
 		rightT = leftT
@@ -351,10 +363,8 @@ func (a *analyzer) typePredicateList(e *ast.A_Expr) (exprType, error) {
 		return exprType{}, err
 	}
 	if l, ok := e.Rexpr.(*ast.List); ok {
-		for _, item := range listItems(l) {
-			if err := a.typeOperands(item, leftT); err != nil {
-				return exprType{}, err
-			}
+		if err := a.typeMembers(e.Lexpr, leftT, listItems(l)); err != nil {
+			return exprType{}, err
 		}
 		return a.boolType(false)
 	}
@@ -364,6 +374,33 @@ func (a *analyzer) typePredicateList(e *ast.A_Expr) (exprType, error) {
 	return a.boolType(false)
 }
 
+// typeMembers types the members of an IN list against the expression on
+// the left. When that expression is a bare placeholder, the members type
+// it instead, the way the other operand of a comparison would.
+func (a *analyzer) typeMembers(left ast.Node, leftT exprType, members []ast.Node) error {
+	for _, item := range members {
+		if err := a.typeOperands(item, leftT); err != nil {
+			return err
+		}
+	}
+	pr, ok := bareParam(left)
+	if !ok || leftT.typeOID != 0 {
+		return nil
+	}
+	for _, item := range members {
+		t, err := a.typeExpr(item)
+		if err != nil {
+			return err
+		}
+		if t.typeOID != 0 {
+			a.inferParam(pr.Number, t)
+			a.nameParamAfter(pr.Number, item)
+			return nil
+		}
+	}
+	return nil
+}
+
 // typeIn types the IN node the engines that have one report, where the values
 // compared against are held apart from the expression.
 func (a *analyzer) typeIn(e *ast.In) (exprType, error) {
@@ -371,14 +408,17 @@ func (a *analyzer) typeIn(e *ast.In) (exprType, error) {
 	if err != nil {
 		return exprType{}, err
 	}
-	for _, item := range e.List {
-		if err := a.typeOperands(item, leftT); err != nil {
-			return exprType{}, err
-		}
+	if err := a.typeMembers(e.Expr, leftT, e.List); err != nil {
+		return exprType{}, err
 	}
 	// "x IN (SELECT ...)" compares x against the subquery's column, and the
-	// subquery's own placeholders are reported with the rest.
-	if sel, ok := e.Sel.(*ast.SelectStmt); ok {
+	// subquery's own placeholders are reported with the rest. An engine may
+	// report the subquery wrapped in a sublink.
+	subselect := e.Sel
+	if sl, ok := subselect.(*ast.SubLink); ok {
+		subselect = sl.Subselect
+	}
+	if sel, ok := subselect.(*ast.SelectStmt); ok {
 		cols, err := a.subqueryColumns(sel)
 		if err != nil {
 			return exprType{}, err
@@ -582,10 +622,30 @@ func (a *analyzer) typeNullIf(e *ast.A_Expr) (exprType, error) {
 	return leftT, nil
 }
 
+// collated is the expression a COLLATE clause applies to. Engines disagree
+// on which field holds it: PostgreSQL puts the expression in Arg, SQLite
+// puts it in Xpr and the collation's name in Arg.
+func collated(e *ast.CollateExpr) ast.Node {
+	if _, isName := e.Arg.(*ast.String); e.Arg == nil || isName {
+		return e.Xpr
+	}
+	return e.Arg
+}
+
+// bareParam reports whether n is a placeholder, looking through a COLLATE
+// clause, which changes how a value compares and not what it is.
+func bareParam(n ast.Node) (*ast.ParamRef, bool) {
+	if c, ok := n.(*ast.CollateExpr); ok {
+		n = collated(c)
+	}
+	pr, ok := n.(*ast.ParamRef)
+	return pr, ok
+}
+
 // typeOperands types a node standing opposite one of known type, giving a bare
 // placeholder that type.
 func (a *analyzer) typeOperands(n ast.Node, other exprType) error {
-	if pr, ok := n.(*ast.ParamRef); ok {
+	if pr, ok := bareParam(n); ok {
 		if other.typeOID != 0 || other.typeName != "" {
 			a.inferParam(pr.Number, other)
 		}

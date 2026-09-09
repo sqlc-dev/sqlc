@@ -5,10 +5,13 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type CreateFunctionStmt struct {
 	Tag NodeTag[CreateFunctionStmt] `json:"tag"`
 
-	Replace    bool      `json:"replace"`
-	Params     *List     `json:"params,omitempty"`
-	ReturnType *TypeName `json:"return_type,omitempty"`
-	Func       *FuncName `json:"func,omitempty"`
+	Replace bool `json:"replace"`
+	// IsProcedure marks CREATE PROCEDURE, which is called rather than
+	// selected from and returns nothing.
+	IsProcedure bool      `json:"is_procedure"`
+	Params      *List     `json:"params,omitempty"`
+	ReturnType  *TypeName `json:"return_type,omitempty"`
+	Func        *FuncName `json:"func,omitempty"`
 	// TODO: Understand these two fields
 	Options    *List `json:"options,omitempty"`
 	WithClause *List `json:"with_clause,omitempty"`

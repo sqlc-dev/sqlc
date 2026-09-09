@@ -1788,7 +1788,8 @@ func (c *cc) convertProcedureInfo(n *pcast.ProcedureInfo) ast.Node {
 		})
 	}
 	return &ast.CreateFunctionStmt{
-		Params: &params,
+		IsProcedure: true,
+		Params:      &params,
 		Func: &ast.FuncName{
 			Schema: n.ProcedureName.Schema.L,
 			Name:   n.ProcedureName.Name.L,

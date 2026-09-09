@@ -915,6 +915,47 @@ func (q *Queries) ProcArgTypes(ctx context.Context, procOid int64) ([]int64, err
 	return items, nil
 }
 
+const procArgs = `-- name: ProcArgs :many
+SELECT name, type_oid, mode, has_default FROM sql_proc_arg
+WHERE proc_oid = ?
+ORDER BY ord
+`
+
+type ProcArgsRow struct {
+	Name       string
+	TypeOid    int64
+	Mode       string
+	HasDefault int64
+}
+
+func (q *Queries) ProcArgs(ctx context.Context, procOid int64) ([]ProcArgsRow, error) {
+	rows, err := q.db.QueryContext(ctx, procArgs, procOid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ProcArgsRow
+	for rows.Next() {
+		var i ProcArgsRow
+		if err := rows.Scan(
+			&i.Name,
+			&i.TypeOid,
+			&i.Mode,
+			&i.HasDefault,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const renameAttribute = `-- name: RenameAttribute :exec
 UPDATE sql_attribute SET name = ?1
 WHERE class_oid = ?2 AND name = ?3

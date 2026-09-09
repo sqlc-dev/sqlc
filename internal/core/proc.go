@@ -163,3 +163,30 @@ func (c *Catalog) FindProcs(name string, namespaceOIDs []int64) ([]ProcOverload,
 func (c *Catalog) procArgTypes(procOID int64) ([]int64, error) {
 	return c.q.ProcArgTypes(context.Background(), procOID)
 }
+
+// ProcArgs returns a proc's declared arguments in order, names included.
+func (c *Catalog) ProcArgs(procOID int64) ([]ProcArg, error) {
+	rows, err := c.q.ProcArgs(context.Background(), procOID)
+	if err != nil {
+		return nil, fmt.Errorf("proc args %d: %w", procOID, err)
+	}
+	out := make([]ProcArg, 0, len(rows))
+	for _, r := range rows {
+		out = append(out, ProcArg{
+			Name:       r.Name,
+			TypeOID:    r.TypeOid,
+			Mode:       r.Mode,
+			HasDefault: r.HasDefault != 0,
+		})
+	}
+	return out, nil
+}
+
+// VoidTypeOID is the pseudo type a procedure returns, which is nothing. A
+// dialect's seed lists no such type, so the first procedure registers it.
+func (c *Catalog) VoidTypeOID() (int64, error) {
+	if oid, err := c.TypeOID("void"); err == nil {
+		return oid, nil
+	}
+	return c.CreateTypeSpec(TypeSpec{Name: "void", Typtype: "p", Category: "P", DialectOID: c.dialectOID})
+}

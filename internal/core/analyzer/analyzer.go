@@ -37,6 +37,11 @@ func Prepare(cat *core.Catalog, stmt ast.Node) (core.PrepareResult, error) {
 			return core.PrepareResult{}, err
 		}
 		a.command = core.CommandDelete
+	case *ast.CallStmt:
+		if err := a.analyzeCall(s); err != nil {
+			return core.PrepareResult{}, err
+		}
+		a.command = core.CommandCall
 	default:
 		return core.PrepareResult{}, fmt.Errorf("analyzer: unsupported statement %T", stmt)
 	}
@@ -174,7 +179,7 @@ func (a *analyzer) analyzeSelect(s *ast.SelectStmt) error {
 		if err := a.analyzeSetOperation(s); err != nil {
 			return err
 		}
-		return nil
+		return a.typeLimits(s)
 	}
 
 	sc, err := a.buildScope(s.FromClause)
@@ -234,6 +239,11 @@ func (a *analyzer) analyzeSelect(s *ast.SelectStmt) error {
 			}
 		}
 	}
+	return a.typeLimits(s)
+}
+
+// typeLimits types a SELECT's LIMIT and OFFSET.
+func (a *analyzer) typeLimits(s *ast.SelectStmt) error {
 	for _, n := range []ast.Node{s.LimitCount, s.LimitOffset} {
 		if err := a.typeLimit(n); err != nil {
 			return fmt.Errorf("limit: %w", err)

@@ -555,11 +555,12 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			rt = rel.TypeName()
 		}
 		stmt := &ast.CreateFunctionStmt{
-			Func:       fn.FuncName(),
-			ReturnType: rt,
-			Replace:    n.Replace,
-			Params:     &ast.List{},
-			Options:    convertSlice(n.Options),
+			Func:        fn.FuncName(),
+			ReturnType:  rt,
+			Replace:     n.Replace,
+			IsProcedure: n.IsProcedure,
+			Params:      &ast.List{},
+			Options:     convertSlice(n.Options),
 		}
 		for _, item := range n.Parameters {
 			arg := item.Node.(*nodes.Node_FunctionParameter).FunctionParameter

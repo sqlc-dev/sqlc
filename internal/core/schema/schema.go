@@ -566,12 +566,23 @@ func applyDropType(cat *core.Catalog, stmt *ast.DropTypeStmt) error {
 }
 
 func applyCreateFunction(cat *core.Catalog, stmt *ast.CreateFunctionStmt) error {
-	// A procedure returns nothing, so there is no result for a query to
-	// select and nothing worth recording.
-	if stmt.Func == nil || stmt.Func.Name == "" || stmt.ReturnType == nil {
+	if stmt.Func == nil || stmt.Func.Name == "" {
 		return nil
 	}
-	returnOID, err := cat.ResolveType(stmt.ReturnType)
+	// A procedure returns nothing, so there is no result for a query to
+	// select; it is recorded for the arguments a CALL passes it.
+	kind := "f"
+	var returnOID int64
+	var err error
+	switch {
+	case stmt.IsProcedure:
+		kind = "p"
+		returnOID, err = cat.VoidTypeOID()
+	case stmt.ReturnType == nil:
+		return nil
+	default:
+		returnOID, err = cat.ResolveType(stmt.ReturnType)
+	}
 	if err != nil {
 		return fmt.Errorf("function %q: %w", stmt.Func.Name, err)
 	}
@@ -599,6 +610,7 @@ func applyCreateFunction(cat *core.Catalog, stmt *ast.CreateFunctionStmt) error 
 	}
 	_, err = cat.CreateProc(core.ProcSpec{
 		Name:          stmt.Func.Name,
+		Kind:          kind,
 		ReturnTypeOID: returnOID,
 		ReturnSet:     stmt.ReturnType != nil && stmt.ReturnType.Setof,
 		Args:          args,

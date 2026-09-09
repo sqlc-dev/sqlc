@@ -201,6 +201,11 @@ INSERT INTO sql_proc
      return_type_oid, return_set, return_nullable, strict, variadic_kind)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
+-- name: ProcArgs :many
+SELECT name, type_oid, mode, has_default FROM sql_proc_arg
+WHERE proc_oid = ?
+ORDER BY ord;
+
 -- name: CreateProcArg :exec
 INSERT INTO sql_proc_arg (proc_oid, ord, name, type_oid, mode, has_default)
 VALUES (?, ?, ?, ?, ?, ?);
