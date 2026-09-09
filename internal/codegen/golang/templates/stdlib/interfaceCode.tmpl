@@ -11,6 +11,15 @@
             {{end -}}
             {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error)
         {{- end}}
+        {{- if and (eq .Cmd ":first") ($dbtxParam) }}
+            {{range .Comments}}//{{.}}
+            {{end -}}
+            {{.MethodName}}(ctx context.Context, db DBTX, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error)
+        {{- else if eq .Cmd ":first"}}
+            {{range .Comments}}//{{.}}
+            {{end -}}
+            {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ({{.Ret.DefineType}}, error)
+        {{- end}}
         {{- if and (eq .Cmd ":many") ($dbtxParam) }}
             {{range .Comments}}//{{.}}
             {{end -}}
