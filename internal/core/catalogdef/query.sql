@@ -98,9 +98,9 @@ SELECT oid FROM sql_class WHERE namespace_oid = ? AND name = ?;
 -- name: ClassOIDByName :one
 SELECT oid FROM sql_class WHERE name = ? LIMIT 1;
 
--- name: ListTablesInNamespace :many
+-- name: ListModelClassesInNamespace :many
 SELECT oid, name FROM sql_class
-WHERE namespace_oid = ? AND kind = 'r'
+WHERE namespace_oid = ? AND kind IN ('r', 'v')
 ORDER BY oid;
 
 -- name: DeleteClass :exec

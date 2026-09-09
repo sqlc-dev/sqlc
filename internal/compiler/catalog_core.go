@@ -11,8 +11,8 @@ import (
 // coreResultCatalog dumps the core catalog into the legacy catalog shape a
 // Result carries, so codegen sees the same table models either way a query
 // set was analyzed. Relations and enums make the trip: codegen reads tables
-// and their columns to build models and enums to build their Go types, and
-// none of the functions or operators the core catalog also holds.
+// and views with their columns to build models and enums to build their Go
+// types, and none of the functions or operators the core catalog also holds.
 func coreResultCatalog(c *core.Catalog) (*catalog.Catalog, error) {
 	cat := catalog.New("public")
 	namespaces, err := c.Namespaces()
@@ -23,7 +23,7 @@ func coreResultCatalog(c *core.Catalog) (*catalog.Catalog, error) {
 	for _, ns := range namespaces {
 		schema := &catalog.Schema{Name: ns.Name}
 		schemas[ns.Name] = schema
-		tables, err := c.TablesInNamespace(ns.OID)
+		tables, err := c.ModelClassesInNamespace(ns.OID)
 		if err != nil {
 			return nil, err
 		}

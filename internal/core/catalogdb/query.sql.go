@@ -733,19 +733,26 @@ func (q *Queries) ListEnumTypes(ctx context.Context) ([]ListEnumTypesRow, error)
 	return items, nil
 }
 
-const listNamespaces = `-- name: ListNamespaces :many
-SELECT oid, name FROM sql_namespace ORDER BY oid
+const listModelClassesInNamespace = `-- name: ListModelClassesInNamespace :many
+SELECT oid, name FROM sql_class
+WHERE namespace_oid = ? AND kind IN ('r', 'v')
+ORDER BY oid
 `
 
-func (q *Queries) ListNamespaces(ctx context.Context) ([]SqlNamespace, error) {
-	rows, err := q.db.QueryContext(ctx, listNamespaces)
+type ListModelClassesInNamespaceRow struct {
+	Oid  int64
+	Name string
+}
+
+func (q *Queries) ListModelClassesInNamespace(ctx context.Context, namespaceOid int64) ([]ListModelClassesInNamespaceRow, error) {
+	rows, err := q.db.QueryContext(ctx, listModelClassesInNamespace, namespaceOid)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []SqlNamespace
+	var items []ListModelClassesInNamespaceRow
 	for rows.Next() {
-		var i SqlNamespace
+		var i ListModelClassesInNamespaceRow
 		if err := rows.Scan(&i.Oid, &i.Name); err != nil {
 			return nil, err
 		}
@@ -760,26 +767,19 @@ func (q *Queries) ListNamespaces(ctx context.Context) ([]SqlNamespace, error) {
 	return items, nil
 }
 
-const listTablesInNamespace = `-- name: ListTablesInNamespace :many
-SELECT oid, name FROM sql_class
-WHERE namespace_oid = ? AND kind = 'r'
-ORDER BY oid
+const listNamespaces = `-- name: ListNamespaces :many
+SELECT oid, name FROM sql_namespace ORDER BY oid
 `
 
-type ListTablesInNamespaceRow struct {
-	Oid  int64
-	Name string
-}
-
-func (q *Queries) ListTablesInNamespace(ctx context.Context, namespaceOid int64) ([]ListTablesInNamespaceRow, error) {
-	rows, err := q.db.QueryContext(ctx, listTablesInNamespace, namespaceOid)
+func (q *Queries) ListNamespaces(ctx context.Context) ([]SqlNamespace, error) {
+	rows, err := q.db.QueryContext(ctx, listNamespaces)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListTablesInNamespaceRow
+	var items []SqlNamespace
 	for rows.Next() {
-		var i ListTablesInNamespaceRow
+		var i SqlNamespace
 		if err := rows.Scan(&i.Oid, &i.Name); err != nil {
 			return nil, err
 		}
