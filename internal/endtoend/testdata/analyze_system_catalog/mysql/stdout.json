@@ -1,0 +1,67 @@
+[
+  {
+    "name": "ListColumns",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "table_name",
+        "type": {
+          "name": "varchar"
+        },
+        "table": "columns"
+      },
+      {
+        "name": "column_name",
+        "type": {
+          "name": "varchar",
+          "nullable": true
+        },
+        "table": "columns"
+      },
+      {
+        "name": "data_type",
+        "type": {
+          "name": "longtext",
+          "nullable": true
+        },
+        "table": "columns"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "table_schema",
+          "type": {
+            "name": "varchar"
+          },
+          "table": "columns"
+        }
+      }
+    ]
+  },
+  {
+    "name": "CountTables",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "total",
+        "type": {
+          "name": "bigint"
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "table_type",
+          "type": {
+            "name": "enum"
+          },
+          "table": "tables"
+        }
+      }
+    ]
+  }
+]

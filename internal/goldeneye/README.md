@@ -9,9 +9,10 @@ here asks the database what it knows, writes the answer in that shape, and
 the tests compare it with what is committed, byte for byte. A difference
 means the committed dialect has drifted from the database.
 
-It is a nested Go module, so its only dependency beyond the standard library
-is the PostgreSQL driver, and it never shares code with the analysis that
-reads the files: the files are the contract. Run it from this directory:
+It is a nested Go module, so its only dependencies beyond the standard
+library are the PostgreSQL and MySQL drivers, and it never shares code with
+the analysis that reads the files: the files are the contract. Run it from
+this directory:
 
 ```bash
 go run ./cmd/goldeneye install clickhouse   # download the pinned clickhouse binary once
@@ -41,6 +42,24 @@ the hand-written files alone, and the checks do not look at them.
   catalog's list. The server has to be the major release pinned in
   `postgresql.Major`, since every release adds to the catalogs; the top-level
   `types.jsonl` and `operators.jsonl` are hand-written.
+- **`mysql`** reads a live server named by `MYSQL_SERVER_URI`, a go-sql-driver
+  DSN such as `root:mysecretpassword@tcp(127.0.0.1:3306)/mysql`, and writes
+  into `internal/engine/dolphin/dialect`, since sqlc's MySQL engine is named
+  after its parser. MySQL keeps no catalog of its types, functions or
+  operators — the help tables describe a built-in function no further than
+  its name — so `types.jsonl`, `functions.jsonl` and `operators.jsonl` are
+  hand-written. What it does describe is its data dictionary:
+  `relations.jsonl` is every view of `information_schema`, read from
+  `information_schema` itself, with their names in lower case, since MySQL
+  matches them in any case and sqlc's parser lowercases every identifier. A
+  column's type is spelled the way a declaration does, `bigint unsigned`
+  included, which `types.jsonl` lists as an alias of `bigint`. The other
+  schemas `mysqld --initialize` creates — `mysql`, `performance_schema`, `sys`
+  — are tables rather than views, and every table a dialect seeds is one the
+  analysis core hands codegen as a model, so they are left out until codegen
+  knows a system schema when it sees one. The server has to be the major
+  release pinned in `mysql.Major`, since every release adds to
+  `information_schema`.
 - **`duckdb`** reads the DuckDB CLI named by `DUCKDB`, or `duckdb` on `PATH`:
   `types.jsonl`, `functions.jsonl` and `operators.jsonl` come from
   `duckdb_types()` and `duckdb_functions()`. The CLI has to be the DuckDB 2.0
@@ -98,9 +117,9 @@ the hand-written files alone, and the checks do not look at them.
 - `endtoend/` — finds the analyze cases, splits their query files, and
   compares an engine's answer with a case's committed output.
 - `analysis/` — the shape of that answer: the JSON `sqlc analyze` prints.
-- `postgresql/`, `duckdb/`, `clickhouse/`, `sqlite/` — one package per
-  engine, each exposing `Locate`, `Version` and `Generate`, `Analyze` where
-  the engine has an analysis check, and tests that run the checks.
+- `postgresql/`, `mysql/`, `duckdb/`, `clickhouse/`, `sqlite/` — one package
+  per engine, each exposing `Locate`, `Version` and `Generate`, `Analyze`
+  where the engine has an analysis check, and tests that run the checks.
 - `cmd/goldeneye/` — the command.
 
 ## Analysis checks
@@ -147,5 +166,33 @@ asks for `--ast` is skipped, since only sqlc can print that.
   selected alongside an aggregate is NULL over no rows, and so nullable, and
   a comparison such as `x IS NULL` is an integer, since that is what SQLite
   returns.
+
+- **`mysql`** runs each case in a database of its own on the server named by
+  `MYSQL_SERVER_URI`, and asks the server three things about a query. What a
+  driver sees: the query is run, with every parameter a user variable set to
+  NULL, and each result column's name, type and nullability are read from
+  the result set's metadata as go-sql-driver reports them. What the resolver
+  made of it: the optimizer trace prints each query block back after name
+  resolution and before optimisation, with every column qualified, every
+  alias kept and every `SELECT *` expanded, which says which table a result
+  column is read from and what a parameter is compared with or assigned to.
+  And for a statement the trace does not expand — an `INSERT ... VALUES`, a
+  single-table `UPDATE` or `DELETE` — the note `EXPLAIN` leaves, which prints
+  the statement the same way; a `SELECT` cannot be read from the note, since
+  it is printed after optimisation, and a lookup on a unique key against an
+  empty table has folded to `NULL = (@x)` there. Views and derived tables are
+  kept as the query wrote them rather than merged, so that a column read
+  through one is reported as its column and an `information_schema` view is
+  not resolved away into the dictionary tables behind it. MySQL itself
+  reports nothing about a parameter but its position, so a parameter is
+  described by its partner: a column's type and nullability come from
+  `information_schema`, a column of a derived table or CTE from what its
+  block projects, and an expression's from running it, over the tables it
+  reads, as a query of its own; a `LIMIT` or `OFFSET` count is a `bigint
+  unsigned`. Two things the driver keeps to itself: the table a result
+  column comes from, which is why the trace is read for it, and the length
+  beside the one wire type every size of `TEXT` and `BLOB` is sent as, which
+  is why a column read from a table, directly or through a derived table,
+  is spelled the way the table declares it.
 
 The other engines have no analysis check yet.

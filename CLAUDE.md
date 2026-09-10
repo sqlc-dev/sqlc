@@ -23,7 +23,7 @@ go run ./cmd/sqlc-test-setup install
 This will:
 - Configure the apt proxy (if `http_proxy` is set, e.g. in Claude Code remote environments)
 - Install PostgreSQL via apt
-- Download and install MySQL 9 from Oracle's deb bundle
+- Download and install MySQL 26.7 from Oracle's deb bundle
 - Resolve all dependencies automatically
 - Skip anything already installed
 
@@ -150,14 +150,15 @@ from a live database by `/internal/goldeneye`, a nested module, and its tests
 verify the committed files against one byte for byte. The same module checks
 the `analyze_*` cases under `/internal/endtoend/testdata/` against what the
 database itself reports for them, so a `fixture.sql` next to a case's schema
-gives the queries rows to run against. ClickHouse and SQLite have the check
-today; engines whose database is not available skip.
+gives the queries rows to run against. ClickHouse, MySQL and SQLite have the
+check today; engines whose database is not available skip.
 
 ```bash
 cd internal/goldeneye
 go run ./cmd/goldeneye install clickhouse   # download the pinned clickhouse binary once
 go run ./cmd/goldeneye install sqlite       # build the pinned sqlite3 shells once; needs a C compiler
-POSTGRESQL_SERVER_URI="postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable" go test ./...
+POSTGRESQL_SERVER_URI="postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable" \
+MYSQL_SERVER_URI="root:mysecretpassword@tcp(127.0.0.1:3306)/mysql" go test ./...
 go run ./cmd/goldeneye generate postgresql  # rewrite the files after a change
 ```
 
@@ -180,7 +181,7 @@ The `docker-compose.yml` provides test databases:
   - Password: `mysecretpassword`
   - Database: `postgres`
 
-- **MySQL 9** - Port 3306
+- **MySQL 26.7** - Port 3306
   - User: `root`
   - Password: `mysecretpassword`
   - Database: `dinotest`

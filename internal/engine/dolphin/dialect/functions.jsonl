@@ -17,7 +17,7 @@
 {"name":"ASIN","args":[{"type":"double precision"}],"returns":"double precision"}
 {"name":"ATAN","args":[{"type":"double precision"}],"returns":"double precision"}
 {"name":"ATAN2","args":[{"type":"double precision"}],"returns":"double precision"}
-{"name":"AVG","args":[{"type":"any"}],"returns":"any"}
+{"name":"AVG","args":[{"type":"any"}],"returns":"any","nullable":true}
 {"name":"BENCHMARK","args":[{"type":"int"},{"type":"any"}],"returns":"int"}
 {"name":"BIN","args":[{"type":"int"}],"returns":"text"}
 {"name":"BIN_TO_UUID","args":[{"type":"binary"}],"returns":"text"}
@@ -130,7 +130,7 @@
 {"name":"IS_USED_LOCK","args":[{"type":"text"}],"returns":"bool"}
 {"name":"IS_UUID","args":[{"type":"text"}],"returns":"bool"}
 {"name":"JSON_ARRAY","args":[{"type":"any","mode":"v"}],"returns":"json"}
-{"name":"JSON_ARRAYAGG","args":[{"type":"any"}],"returns":"json"}
+{"name":"JSON_ARRAYAGG","args":[{"type":"any"}],"returns":"json","nullable":true}
 {"name":"JSON_ARRAY_APPEND","args":[{"type":"text"},{"type":"text"},{"type":"any"},{"type":"any","mode":"v"}],"returns":"json"}
 {"name":"JSON_ARRAY_INSERT","args":[{"type":"text"},{"type":"text"},{"type":"any"},{"type":"any","mode":"v"}],"returns":"json"}
 {"name":"JSON_CONTAINS","args":[{"type":"text"},{"type":"text"}],"returns":"bool"}
@@ -147,7 +147,7 @@
 {"name":"JSON_MERGE_PATCH","args":[{"type":"text"},{"type":"text"},{"type":"text","mode":"v"}],"returns":"json"}
 {"name":"JSON_MERGE_PRESERVE","args":[{"type":"text"},{"type":"text"},{"type":"text","mode":"v"}],"returns":"json"}
 {"name":"JSON_OBJECT","args":[{"type":"any","mode":"v"}],"returns":"json"}
-{"name":"JSON_OBJECTAGG","args":[{"type":"any"},{"type":"any"}],"returns":"json"}
+{"name":"JSON_OBJECTAGG","args":[{"type":"any"},{"type":"any"}],"returns":"json","nullable":true}
 {"name":"JSON_OVERLAPS","args":[{"type":"text"},{"type":"text"}],"returns":"bool"}
 {"name":"JSON_PRETTY","args":[{"type":"text"}],"returns":"any"}
 {"name":"JSON_QUOTE","args":[{"type":"text"}],"returns":"text"}
@@ -196,7 +196,7 @@
 {"name":"MASTER_POS_WAIT","args":[{"type":"text"},{"type":"int"}],"returns":"int"}
 {"name":"MASTER_POS_WAIT","args":[{"type":"text"},{"type":"int"},{"type":"int"}],"returns":"int"}
 {"name":"MASTER_POS_WAIT","args":[{"type":"text"},{"type":"int"},{"type":"int"},{"type":"text"}],"returns":"int"}
-{"name":"MAX","args":[{"type":"any"}],"returns":"any"}
+{"name":"MAX","args":[{"type":"any"}],"returns":"any","nullable":true}
 {"name":"MBRCONTAINS","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
 {"name":"MBRCOVEREDBY","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
 {"name":"MBRCOVERS","args":[{"type":"any"},{"type":"any"}],"returns":"bool"}
@@ -209,7 +209,7 @@
 {"name":"MD5","args":[{"type":"text"}],"returns":"text"}
 {"name":"MICROSECOND","args":[{"type":"time"}],"returns":"int"}
 {"name":"MID","args":[{"type":"text"},{"type":"int"},{"type":"int"}],"returns":"text"}
-{"name":"MIN","args":[{"type":"any"}],"returns":"any"}
+{"name":"MIN","args":[{"type":"any"}],"returns":"any","nullable":true}
 {"name":"MINUTE","args":[{"type":"time"}],"returns":"int"}
 {"name":"MOD","args":[{"type":"int"},{"type":"int"}],"returns":"int"}
 {"name":"MONTH","args":[{"type":"date"}],"returns":"int"}
@@ -277,10 +277,10 @@
 {"name":"SQRT","args":[{"type":"double precision"}],"returns":"double precision"}
 {"name":"STATEMENT_DIGEST","args":[{"type":"text"}],"returns":"text"}
 {"name":"STATEMENT_DIGEST_TEXT","args":[{"type":"text"}],"returns":"text"}
-{"name":"STD","args":[{"type":"any"}],"returns":"any"}
-{"name":"STDDEV","args":[{"type":"any"}],"returns":"any"}
-{"name":"STDDEV_POP","args":[{"type":"any"}],"returns":"any"}
-{"name":"STDDEV_SAMP","args":[{"type":"any"}],"returns":"any"}
+{"name":"STD","args":[{"type":"any"}],"returns":"any","nullable":true}
+{"name":"STDDEV","args":[{"type":"any"}],"returns":"any","nullable":true}
+{"name":"STDDEV_POP","args":[{"type":"any"}],"returns":"any","nullable":true}
+{"name":"STDDEV_SAMP","args":[{"type":"any"}],"returns":"any","nullable":true}
 {"name":"STRCMP","args":[{"type":"text"},{"type":"text"}],"returns":"tinyint"}
 {"name":"STR_TO_DATE","args":[{"type":"text"},{"type":"text"}],"returns":"datetime"}
 {"name":"ST_AREA","args":[{"type":"any"}],"returns":"double precision"}
@@ -468,7 +468,7 @@
 {"name":"SUBSTRING","args":[{"type":"text"},{"type":"int"},{"type":"int"}],"returns":"text"}
 {"name":"SUBSTRING_INDEX","args":[{"type":"text"},{"type":"int"},{"type":"int"}],"returns":"text"}
 {"name":"SUBTIME","args":[{"type":"time"},{"type":"time"}],"returns":"time"}
-{"name":"SUM","args":[{"type":"any"}],"returns":"any"}
+{"name":"SUM","args":[{"type":"any"}],"returns":"any","nullable":true}
 {"name":"SYSDATE","returns":"datetime"}
 {"name":"SYSDATE","args":[{"type":"int"}],"returns":"datetime"}
 {"name":"SYSTEM_USER","returns":"text"}
@@ -505,9 +505,9 @@
 {"name":"UUID_TO_BIN","args":[{"type":"text"},{"type":"tinyint"}],"returns":"binary"}
 {"name":"VALIDATE_PASSWORD_STRENGTH","args":[{"type":"text"}],"returns":"int"}
 {"name":"VALUES","args":[{"type":"any"}],"returns":"any"}
-{"name":"VARIANCE","args":[{"type":"any"}],"returns":"any"}
-{"name":"VAR_POP","args":[{"type":"any"}],"returns":"any"}
-{"name":"VAR_SAMP","args":[{"type":"any"}],"returns":"any"}
+{"name":"VARIANCE","args":[{"type":"any"}],"returns":"any","nullable":true}
+{"name":"VAR_POP","args":[{"type":"any"}],"returns":"any","nullable":true}
+{"name":"VAR_SAMP","args":[{"type":"any"}],"returns":"any","nullable":true}
 {"name":"VERSION","returns":"text"}
 {"name":"WAIT_FOR_EXECUTED_GTID_SET","args":[{"type":"text"},{"type":"int","has_default":true}],"returns":"bool"}
 {"name":"WAIT_UNTIL_SQL_THREAD_AFTER_GTIDS","args":[{"type":"text"},{"type":"int","has_default":true},{"type":"text","has_default":true}],"returns":"bool"}
