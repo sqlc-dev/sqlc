@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -86,7 +87,16 @@ func commandExists(name string) bool {
 	return err == nil
 }
 
-// isMySQLVersionOK checks if the mysqld --version output indicates MySQL 9+.
+// The MySQL release the tests run against. Everything that names a MySQL
+// version — the docker-compose service, the goldeneye dialect generator and
+// its gen workflow — is pinned to the same release.
+const (
+	mysqlMajor   = 26
+	mysqlVersion = "26.7.0"
+)
+
+// isMySQLVersionOK checks if the mysqld --version output indicates the
+// pinned major release or a later one.
 // Example version string: "/usr/sbin/mysqld  Ver 8.0.44-0ubuntu0.24.04.2 ..."
 func isMySQLVersionOK(versionOutput string) bool {
 	// Look for "Ver X.Y.Z" pattern
@@ -95,11 +105,11 @@ func isMySQLVersionOK(versionOutput string) bool {
 		if strings.EqualFold(f, "Ver") && i+1 < len(fields) {
 			ver := strings.Split(fields[i+1], ".")
 			if len(ver) > 0 {
-				major := strings.TrimLeft(ver[0], "0")
-				if major == "" {
+				major, err := strconv.Atoi(ver[0])
+				if err != nil {
 					return false
 				}
-				return major[0] >= '9'
+				return major >= mysqlMajor
 			}
 		}
 	}
@@ -302,7 +312,7 @@ func sha256File(path string) (string, error) {
 }
 
 func installMySQL() error {
-	log.Println("--- Installing MySQL 9 ---")
+	log.Printf("--- Installing MySQL %s ---", mysqlVersion)
 
 	if commandExists("mysqld") {
 		out, err := runOutput("mysqld", "--version")
@@ -310,10 +320,10 @@ func installMySQL() error {
 			version := strings.TrimSpace(out)
 			log.Printf("mysql is already installed: %s", version)
 			if isMySQLVersionOK(version) {
-				log.Println("mysql version is 9+, skipping installation")
+				log.Printf("mysql version is %d+, skipping installation", mysqlMajor)
 				return nil
 			}
-			log.Println("mysql version is too old, upgrading to MySQL 9")
+			log.Printf("mysql version is too old, upgrading to MySQL %s", mysqlVersion)
 			// Stop existing MySQL before upgrading
 			_ = exec.Command("sudo", "service", "mysql", "stop").Run()
 			_ = exec.Command("sudo", "pkill", "-f", "mysqld").Run()
@@ -322,7 +332,7 @@ func installMySQL() error {
 			log.Println("removing old mysql packages")
 			_ = run("sudo", "apt-get", "remove", "-y", "mysql-server", "mysql-client", "mysql-common",
 				"mysql-server-core-*", "mysql-client-core-*")
-			// Clear old data directory so MySQL 9 can initialize fresh
+			// Clear old data directory so the new release can initialize fresh
 			log.Println("clearing old mysql data directory")
 			_ = run("sudo", "rm", "-rf", "/var/lib/mysql")
 			_ = run("sudo", "mkdir", "-p", "/var/lib/mysql")
@@ -330,12 +340,14 @@ func installMySQL() error {
 		}
 	}
 
-	bundleURL := "https://dev.mysql.com/get/Downloads/MySQL-9.1/mysql-server_9.1.0-1ubuntu24.04_amd64.deb-bundle.tar"
-	bundleTar := "/tmp/mysql-server-bundle.tar"
-	extractDir := "/tmp/mysql9"
+	major, minor, _ := strings.Cut(mysqlVersion, ".")
+	minor, _, _ = strings.Cut(minor, ".")
+	bundleURL := fmt.Sprintf("https://dev.mysql.com/get/Downloads/MySQL-%s.%s/mysql-server_%s-1ubuntu24.04_amd64.deb-bundle.tar", major, minor, mysqlVersion)
+	bundleTar := fmt.Sprintf("/tmp/mysql-server-%s-bundle.tar", mysqlVersion)
+	extractDir := "/tmp/mysql-server-" + mysqlVersion
 
 	if _, err := os.Stat(bundleTar); err != nil {
-		log.Printf("downloading MySQL 9 bundle from %s", bundleURL)
+		log.Printf("downloading MySQL %s bundle from %s", mysqlVersion, bundleURL)
 		if err := run("curl", "-L", "-o", bundleTar, bundleURL); err != nil {
 			return fmt.Errorf("downloading mysql bundle: %w", err)
 		}
@@ -378,7 +390,7 @@ func installMySQL() error {
 		return fmt.Errorf("apt-get install -f: %w", err)
 	}
 
-	log.Println("mysql 9 installed successfully")
+	log.Printf("mysql %s installed successfully", mysqlVersion)
 	return nil
 }
 

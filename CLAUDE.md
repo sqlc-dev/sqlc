@@ -23,7 +23,7 @@ go run ./cmd/sqlc-test-setup install
 This will:
 - Configure the apt proxy (if `http_proxy` is set, e.g. in Claude Code remote environments)
 - Install PostgreSQL via apt
-- Download and install MySQL 9 from Oracle's deb bundle
+- Download and install MySQL 26.7 from Oracle's deb bundle
 - Resolve all dependencies automatically
 - Skip anything already installed
 
@@ -181,7 +181,7 @@ The `docker-compose.yml` provides test databases:
   - Password: `mysecretpassword`
   - Database: `postgres`
 
-- **MySQL 9** - Port 3306
+- **MySQL 26.7** - Port 3306
   - User: `root`
   - Password: `mysecretpassword`
   - Database: `dinotest`
