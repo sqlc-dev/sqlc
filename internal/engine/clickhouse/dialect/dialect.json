@@ -1,5 +1,6 @@
 {
   "dialect": "clickhouse",
+  "default_schema": "default",
   "const": {
     "integer": "Int64",
     "float": "Float64",

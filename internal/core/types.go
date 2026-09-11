@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"sync"
 
@@ -53,9 +54,26 @@ func (t TypeInfo) IsFamily() bool { return t.FamilyOID == 0 }
 // answer is good for the life of the catalog. Analysis runs concurrently on
 // a restored catalog, so the cache is locked.
 type typeCache struct {
-	mu    sync.RWMutex
-	infos map[int64]TypeInfo
-	exprs map[int64]*TypeExpr
+	mu         sync.RWMutex
+	infos      map[int64]TypeInfo
+	exprs      map[int64]*TypeExpr
+	namespaces map[int64]string
+}
+
+func (c *typeCache) namespace(oid int64) (string, bool) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	name, ok := c.namespaces[oid]
+	return name, ok
+}
+
+func (c *typeCache) putNamespace(oid int64, name string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.namespaces == nil {
+		c.namespaces = map[int64]string{}
+	}
+	c.namespaces[oid] = name
 }
 
 func (c *typeCache) info(oid int64) (TypeInfo, bool) {
@@ -425,6 +443,22 @@ func (c *Catalog) LookupType(oid int64) (TypeInfo, error) {
 	return info, nil
 }
 
+// namespaceName is the name of a namespace row, remembered once read.
+func (c *Catalog) namespaceName(oid int64) (string, error) {
+	if name, ok := c.types.namespace(oid); ok {
+		return name, nil
+	}
+	namespaces, err := c.Namespaces()
+	if err != nil {
+		return "", err
+	}
+	for _, ns := range namespaces {
+		c.types.putNamespace(ns.OID, ns.Name)
+	}
+	name, _ := c.types.namespace(oid)
+	return name, nil
+}
+
 // TypeExprOf is the expression a type row stands for, read back from its
 // arguments: the family's name for a family, the family applied to its
 // arguments for an instance. The result is the caller's to change.
@@ -437,6 +471,11 @@ func (c *Catalog) TypeExprOf(oid int64) (*TypeExpr, error) {
 		return nil, err
 	}
 	expr := &TypeExpr{Name: info.Name}
+	// A type outside the default namespaces is named with its namespace,
+	// as format_type prints a type off the search path.
+	if ns, err := c.namespaceName(info.NamespaceOID); err == nil && ns != "" && !slices.Contains(c.DefaultNamespaces(), ns) {
+		expr.Name = ns + "." + info.Name
+	}
 	if !info.IsFamily() {
 		rows, err := c.q.TypeArgs(context.Background(), oid)
 		if err != nil {

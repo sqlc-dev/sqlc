@@ -1,5 +1,6 @@
 {
   "dialect": "mssql",
+  "default_schema": "dbo",
   "const": {
     "integer": "int",
     "float": "float",

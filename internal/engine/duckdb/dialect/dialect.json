@@ -1,5 +1,6 @@
 {
   "dialect": "duckdb",
+  "default_schema": "main",
   "const": {
     "integer": "integer",
     "float": "double",

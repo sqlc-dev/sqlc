@@ -250,7 +250,7 @@
       {
         "name": "mm",
         "type": {
-          "name": "mood",
+          "name": "myschema.mood",
           "nullable": true
         },
         "table": "things"
@@ -509,7 +509,7 @@
       {
         "name": "k",
         "type": {
-          "name": "mood"
+          "name": "myschema.mood"
         }
       }
     ],
@@ -624,7 +624,7 @@
         "column": {
           "name": "",
           "type": {
-            "name": "mood"
+            "name": "myschema.mood"
           }
         }
       }

@@ -105,6 +105,11 @@ type Settings struct {
 	// enable_fts5 compile option adds.
 	Modules map[string]string `json:"modules,omitempty"`
 
+	// DefaultSchema names the schema a dialect puts an unqualified object
+	// in when it is not the catalog's own default: SQL Server's dbo,
+	// DuckDB's main. A type in it is reported unqualified.
+	DefaultSchema string `json:"default_schema,omitempty"`
+
 	// Alias says what an alias in types.jsonl is. "canonical", the default,
 	// makes it another spelling of the type, which a column declared with
 	// it is reported as, the way PostgreSQL reports int as integer. "base"
@@ -553,6 +558,11 @@ func (b *builder) consts() error {
 			return fmt.Errorf("seed %s: constant %s names unknown type %q", b.settings.Dialect, kind, name)
 		}
 		if err := b.cat.SetConstType(b.dialectOID, kind, name); err != nil {
+			return err
+		}
+	}
+	if b.settings.DefaultSchema != "" {
+		if err := b.cat.SetDialectFlag(b.dialectOID, core.FlagDefaultSchema, strings.ToLower(b.settings.DefaultSchema)); err != nil {
 			return err
 		}
 	}

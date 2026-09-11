@@ -37,6 +37,11 @@ func TypeExprOfTypeName(tn *ast.TypeName) *TypeExpr {
 	if name == "" {
 		return nil
 	}
+	// An engine that reports the schema apart from the name qualifies it
+	// the way a dotted name does, so the type resolves in its namespace.
+	if schema := strings.ToLower(tn.Schema); schema != "" && schema != "pg_catalog" && !strings.Contains(name, ".") {
+		name = schema + "." + name
+	}
 	// A name an engine spelled with its own arguments or array suffix reads
 	// the same way a spelling does.
 	t := ParseTypeExpr(name)
