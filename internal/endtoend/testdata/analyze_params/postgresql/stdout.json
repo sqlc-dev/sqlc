@@ -121,7 +121,12 @@
         "name": "title",
         "type": {
           "name": "character varying",
-          "nullable": true
+          "nullable": true,
+          "args": [
+            {
+              "int": 255
+            }
+          ]
         },
         "table": "posts"
       }

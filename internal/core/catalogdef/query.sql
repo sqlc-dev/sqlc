@@ -66,6 +66,10 @@ ORDER BY
     ns.name
 LIMIT 1;
 
+-- name: TypeOIDByNameInNamespace :one
+SELECT oid FROM sql_type
+WHERE namespace_oid = ? AND name = ? AND family_oid IS NULL;
+
 -- name: TypeOIDByExprInNamespace :one
 SELECT oid FROM sql_type WHERE namespace_oid = ? AND expr = ?;
 

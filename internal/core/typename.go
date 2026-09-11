@@ -74,18 +74,26 @@ func ColumnTypeExpr(col *ast.ColumnDef) *TypeExpr {
 	return t
 }
 
-// typmodArg reads one type modifier as an argument: an integer, a string, or
-// a bare word, which is an identifier such as the max of nvarchar(max).
+// typmodArg reads one type modifier as an argument: an integer, a quoted
+// string, or a bare word, which is an identifier such as the max of
+// nvarchar(max) or the day to second of an interval. A constant node holds
+// a literal; a bare String node holds a word.
 func typmodArg(n ast.Node) (TypeArg, bool) {
 	switch v := n.(type) {
 	case *ast.A_Const:
-		return typmodArg(v.Val)
+		switch val := v.Val.(type) {
+		case *ast.String:
+			s := val.Str
+			return TypeArg{String: &s}, true
+		default:
+			return typmodArg(v.Val)
+		}
 	case *ast.Integer:
 		i := v.Ival
 		return TypeArg{Int: &i}, true
 	case *ast.String:
-		s := v.Str
-		return TypeArg{String: &s}, true
+		s := strings.ToLower(v.Str)
+		return TypeArg{Ident: &s}, true
 	case *ast.ColumnRef:
 		parts := make([]string, 0, len(listItems(v.Fields)))
 		for _, item := range listItems(v.Fields) {

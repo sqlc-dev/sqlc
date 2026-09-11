@@ -142,11 +142,16 @@ func (c *Catalog) CreateUserType(name, category string) (int64, error) {
 	if category == "E" {
 		typtype = "e"
 	}
+	nsOID, bare, err := c.declaredTypeNamespace(strings.ToLower(name))
+	if err != nil {
+		return 0, fmt.Errorf("create type %q: %w", name, err)
+	}
 	oid, err := c.CreateTypeSpec(TypeSpec{
-		Name:       name,
-		Typtype:    typtype,
-		Category:   category,
-		DialectOID: c.dialectOID,
+		Name:         bare,
+		NamespaceOID: nsOID,
+		Typtype:      typtype,
+		Category:     category,
+		DialectOID:   c.dialectOID,
 	})
 	if err != nil {
 		return 0, err
@@ -215,6 +220,112 @@ func (c *Catalog) TypeOID(name string) (int64, error) {
 // familyOIDByName finds the family row spelled name, alias rows included.
 func (c *Catalog) familyOIDByName(name string) (int64, error) {
 	return c.q.TypeOIDByName(context.Background(), name)
+}
+
+// familyOIDByQualifiedName is familyOIDByName for a name that may carry its
+// namespace, as myschema.mood does: a qualified name is looked up in that
+// namespace alone, a bare one in every namespace.
+func (c *Catalog) familyOIDByQualifiedName(name string) (int64, error) {
+	ns, bare := splitQualifiedName(name)
+	if ns == "" {
+		return c.familyOIDByName(bare)
+	}
+	nsOID, err := c.NamespaceOID(ns)
+	if err != nil {
+		return 0, err
+	}
+	return c.q.TypeOIDByNameInNamespace(context.Background(), catalogdb.TypeOIDByNameInNamespaceParams{
+		NamespaceOid: nsOID,
+		Name:         bare,
+	})
+}
+
+// splitQualifiedName splits "myschema.mood" into its namespace and name. A
+// name with no dot has no namespace.
+func splitQualifiedName(name string) (ns, bare string) {
+	if i := strings.LastIndexByte(name, '.'); i > 0 {
+		return name[:i], name[i+1:]
+	}
+	return "", name
+}
+
+// declaredTypeNamespace is the namespace a declared type's row goes in: the
+// one its name qualifies, created if the schema has not, or the default.
+func (c *Catalog) declaredTypeNamespace(name string) (int64, string, error) {
+	ns, bare := splitQualifiedName(name)
+	if ns == "" {
+		return 0, bare, nil
+	}
+	oid, err := c.NamespaceOID(ns)
+	if err != nil {
+		if oid, err = c.CreateNamespace(ns); err != nil {
+			return 0, "", err
+		}
+	}
+	return oid, bare, nil
+}
+
+// CreateTypeWithArgs registers a declared type that has arguments of its own
+// — a composite's fields, an enum's labels — as a family row carrying them.
+// The arguments' types are interned first.
+func (c *Catalog) CreateTypeWithArgs(spec TypeSpec, args []TypeArg) (int64, error) {
+	nsOID, bare, err := c.declaredTypeNamespace(strings.ToLower(spec.Name))
+	if err != nil {
+		return 0, fmt.Errorf("create type %q: %w", spec.Name, err)
+	}
+	spec.Name = bare
+	if nsOID != 0 {
+		spec.NamespaceOID = nsOID
+	}
+	if spec.DialectOID == 0 {
+		spec.DialectOID = c.dialectOID
+	}
+	argOIDs := make([]int64, len(args))
+	for i, a := range args {
+		if a.Type == nil {
+			continue
+		}
+		oid, _, err := c.internType(a.Type, func(name string) (int64, error) {
+			return c.CreateUserType(name, "U")
+		})
+		if err != nil {
+			return 0, fmt.Errorf("create type %q: %w", spec.Name, err)
+		}
+		argOIDs[i] = oid
+	}
+	oid, err := c.CreateTypeSpec(spec)
+	if err != nil {
+		return 0, err
+	}
+	if err := c.createComparisons(oid); err != nil {
+		return 0, err
+	}
+	return oid, c.insertTypeArgs(oid, spec.Expr, args, argOIDs)
+}
+
+// insertTypeArgs writes a type's argument rows.
+func (c *Catalog) insertTypeArgs(oid int64, key string, args []TypeArg, argOIDs []int64) error {
+	ctx := context.Background()
+	for i, a := range args {
+		p := catalogdb.CreateTypeArgParams{TypeOid: oid, Ord: int64(i + 1), Label: a.Label}
+		switch {
+		case a.Type != nil:
+			p.ArgTypeOid = nullInt64(argOIDs[i])
+			p.Nullable = boolToInt64(a.Type.Nullable)
+		case a.Int != nil:
+			p.IntValue = sql.NullInt64{Int64: *a.Int, Valid: true}
+		case a.Bool != nil:
+			p.BoolValue = sql.NullInt64{Int64: boolToInt64(*a.Bool), Valid: true}
+		case a.String != nil:
+			p.StringValue = sql.NullString{String: *a.String, Valid: true}
+		case a.Ident != nil:
+			p.Ident = sql.NullString{String: *a.Ident, Valid: true}
+		}
+		if err := c.q.CreateTypeArg(ctx, p); err != nil {
+			return fmt.Errorf("type %q: argument %d: %w", key, i+1, err)
+		}
+	}
+	return nil
 }
 
 // canonicalOID follows an alias row to the row it stands for.
@@ -428,8 +539,9 @@ func (c *Catalog) internType(t *TypeExpr, newFamily func(name string) (int64, er
 	if t == nil || strings.TrimSpace(t.Name) == "" {
 		return 0, nil, fmt.Errorf("missing type name")
 	}
+	t = c.canonicalize(t)
 	name := strings.ToLower(strings.TrimSpace(t.Name))
-	familyOID, err := c.familyOIDByName(name)
+	familyOID, err := c.familyOIDByQualifiedName(name)
 	if err != nil {
 		if name == ArrayTypeName {
 			// Every dialect has arrays, whether or not its seed lists the
@@ -503,24 +615,8 @@ func (c *Catalog) internType(t *TypeExpr, newFamily func(name string) (int64, er
 	if err != nil {
 		return 0, nil, err
 	}
-	for i, a := range canonical.Args {
-		p := catalogdb.CreateTypeArgParams{TypeOid: oid, Ord: int64(i + 1), Label: a.Label}
-		switch {
-		case a.Type != nil:
-			p.ArgTypeOid = nullInt64(argOIDs[i])
-			p.Nullable = boolToInt64(a.Type.Nullable)
-		case a.Int != nil:
-			p.IntValue = sql.NullInt64{Int64: *a.Int, Valid: true}
-		case a.Bool != nil:
-			p.BoolValue = sql.NullInt64{Int64: boolToInt64(*a.Bool), Valid: true}
-		case a.String != nil:
-			p.StringValue = sql.NullString{String: *a.String, Valid: true}
-		case a.Ident != nil:
-			p.Ident = sql.NullString{String: *a.Ident, Valid: true}
-		}
-		if err := c.q.CreateTypeArg(ctx, p); err != nil {
-			return 0, nil, fmt.Errorf("type %q: argument %d: %w", key, i+1, err)
-		}
+	if err := c.insertTypeArgs(oid, key, canonical.Args, argOIDs); err != nil {
+		return 0, nil, err
 	}
 	return oid, canonical, nil
 }

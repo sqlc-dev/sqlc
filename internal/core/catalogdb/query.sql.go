@@ -1221,6 +1221,23 @@ func (q *Queries) TypeOIDByName(ctx context.Context, name string) (int64, error)
 	return oid, err
 }
 
+const typeOIDByNameInNamespace = `-- name: TypeOIDByNameInNamespace :one
+SELECT oid FROM sql_type
+WHERE namespace_oid = ? AND name = ? AND family_oid IS NULL
+`
+
+type TypeOIDByNameInNamespaceParams struct {
+	NamespaceOid int64
+	Name         string
+}
+
+func (q *Queries) TypeOIDByNameInNamespace(ctx context.Context, arg TypeOIDByNameInNamespaceParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, typeOIDByNameInNamespace, arg.NamespaceOid, arg.Name)
+	var oid int64
+	err := row.Scan(&oid)
+	return oid, err
+}
+
 const typeOIDsInCategory = `-- name: TypeOIDsInCategory :many
 SELECT oid FROM sql_type
 WHERE dialect_oid = ? AND category = ?
