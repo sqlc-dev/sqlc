@@ -16,6 +16,7 @@ the files: the files are the contract. Run it from this directory:
 
 ```bash
 go run ./cmd/goldeneye install clickhouse   # download the pinned clickhouse binary once
+go run ./cmd/goldeneye install duckdb       # download the current DuckDB 2.0 preview build once
 go run ./cmd/goldeneye install sqlite       # build the pinned sqlite3 shells once; needs a C compiler
 go run ./cmd/goldeneye check                # check every engine whose database is available
 go run ./cmd/goldeneye check postgresql     # check one engine
@@ -61,10 +62,20 @@ the hand-written files alone, and the checks do not look at them.
   knows a system schema when it sees one. The server has to be the major
   release pinned in `mysql.Major`, since every release adds to
   `information_schema`.
-- **`duckdb`** reads the DuckDB CLI named by `DUCKDB`, or `duckdb` on `PATH`:
-  `types.jsonl`, `functions.jsonl` and `operators.jsonl` come from
-  `duckdb_types()` and `duckdb_functions()`. The CLI has to be the DuckDB 2.0
-  build darkwing is pinned against, which has no release to download yet.
+- **`duckdb`** reads the DuckDB CLI named by `DUCKDB`, or the one `install`
+  put in the user cache directory, or `duckdb` on `PATH`: `types.jsonl`,
+  `functions.jsonl` and `operators.jsonl` come from `duckdb_types()` and
+  `duckdb_functions()`. The CLI has to be a DuckDB 2.0 build, the release
+  darkwing is pinned against, which has no release to download yet: until
+  2.0 is out, `install` downloads the current build of DuckDB's v2.0
+  preview channel, `duckdb.DefaultVersion`, a rolling tarball per platform
+  under `artifacts.duckdb.org` with no per-build download and no checksum
+  to pin, so what a run logs is the version the CLI reports, and
+  `duckdb.GeneratedFrom` records the build the committed dialect came
+  from. A check against a later build reports what the later build added;
+  regenerate, and update `GeneratedFrom`, to move the dialect along. Once
+  2.0 is released, the installer should pin the release and its checksums
+  the way the clickhouse one does.
 - **`clickhouse`** needs no server: `types.jsonl` comes from
   `system.data_type_families` of an ephemeral `clickhouse local` process,
   every family that is not an alias becoming a type carrying the spellings
@@ -232,6 +243,34 @@ asks for `--ast` is skipped, since only sqlc can print that.
   is why a column read from a table, directly or through a derived table,
   is spelled the way the table declares it.
 
+- **`duckdb`** runs each case through the CLI, which loads the schema and
+  fixture into an in-memory database of their own, one process per
+  question, and is asked four things about each query. What its
+  parameters are: the query is prepared and explained with a string
+  sentinel bound to each parameter, `EXECUTE q('goldeneye_1', ...)`, and
+  the unoptimized logical plan the CLI prints under
+  `explain_output = 'all'` shows each as `CAST('goldeneye_k' AS T)`, `T`
+  being the type the binder gave the parameter; a sentinel the binder
+  converts on the spot, as an `INSERT`'s `VALUES` are, is bound to NULL
+  instead. What its result columns are: `DESCRIBE`, with each parameter
+  replaced by a NULL of its type, names and types them; DuckDB describes
+  no DML, so a `RETURNING` column is the target table's column it names.
+  Which table a result column is read from and which column a parameter
+  stands in for: DuckDB prints a plan with every column by its bare name
+  and every aliased expression by its alias, so these are read from the
+  query text, the select list's items, a star expanded to its table's
+  columns, and the operand beside each parameter, resolved against the
+  `FROM` clause and the catalog, `duckdb_columns()`, from which a column
+  read from a table takes its declared type and nullability; a parameter
+  the query casts takes the cast's type as DuckDB spells it. And whether
+  an expression can be NULL, which DuckDB does not track: the query is
+  run, with each parameter bound to a value of its type, over the fixture
+  and over no rows, and a column is nullable when either run returns a
+  NULL for it. DuckDB spells an enum column by its labels whether the
+  schema named the type or not, so labels that are those of an enum the
+  schema created name that type, and a spelling `types.jsonl` lists as an
+  alias — `json`, which DuckDB's own catalog lists as a spelling of
+  `varchar` — is reported by the dialect's name for it.
 - **`mssql`** describes each case in a database of its own on the server
   named by `MSSQL_SERVER_URI`, without running anything: the schema is
   loaded one statement at a time, since a `CREATE TYPE` has to be its own

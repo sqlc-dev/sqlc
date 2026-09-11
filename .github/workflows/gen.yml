@@ -166,3 +166,27 @@ jobs:
         path: internal/engine/googlesql/dialect
     - name: Fail if the committed dialect differs
       run: git add -N internal/engine/googlesql && git diff --exit-code --stat -- internal/engine/googlesql
+
+  duckdb:
+    name: generate duckdb dialect
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-go@v7
+      with:
+        go-version-file: internal/goldeneye/go.mod
+        check-latest: true
+    # The current build of DuckDB's v2.0 preview channel, until 2.0 is
+    # released: a later build than the dialect was generated from shows up
+    # as a difference.
+    - run: go run ./cmd/goldeneye install duckdb
+      working-directory: internal/goldeneye
+    - run: go run ./cmd/goldeneye generate duckdb
+      working-directory: internal/goldeneye
+    - name: Save results
+      uses: actions/upload-artifact@v7
+      with:
+        name: dialect-duckdb
+        path: internal/engine/duckdb/dialect
+    - name: Fail if the committed dialect differs
+      run: git add -N internal/engine/duckdb && git diff --exit-code --stat -- internal/engine/duckdb

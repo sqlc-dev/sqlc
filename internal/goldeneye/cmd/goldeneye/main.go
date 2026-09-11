@@ -6,6 +6,7 @@
 // Usage, from internal/goldeneye:
 //
 //	go run ./cmd/goldeneye install clickhouse   # download the pinned clickhouse binary
+//	go run ./cmd/goldeneye install duckdb       # download the current DuckDB 2.0 preview build
 //	go run ./cmd/goldeneye install sqlite       # build the pinned sqlite3 shells from source
 //	go run ./cmd/goldeneye generate [engine]    # rewrite the generated files from the database
 //	go run ./cmd/goldeneye check [engine]       # compare the committed files and analyze cases with the database
@@ -44,9 +45,10 @@ func main() {
 }
 
 const usage = `usage:
-  goldeneye install clickhouse|sqlite [-version V]
+  goldeneye install clickhouse|duckdb|sqlite [-version V]
       put the pinned release of an engine into the user cache directory: clickhouse is
-      downloaded, sqlite is built from the downloaded amalgamation with cc or $CC
+      downloaded, duckdb is downloaded from its v2.0 preview channel, sqlite is built from
+      the downloaded amalgamation with cc or $CC
   goldeneye generate [engine]
       rewrite the generated dialect files from the database, for every available engine or one
   goldeneye check [engine]
@@ -81,7 +83,7 @@ type engine struct {
 
 var engines = []engine{
 	{clickhouse.Engine, "", "", clickhouse.Locate, clickhouse.Version, clickhouse.Generate, clickhouse.Analyze},
-	{duckdb.Engine, "", "", duckdb.Locate, duckdb.Version, duckdb.Generate, nil},
+	{duckdb.Engine, "", "", duckdb.Locate, duckdb.Version, duckdb.Generate, duckdb.Analyze},
 	{mssql.Engine, "", "", mssql.Locate, mssql.Version, mssql.Generate, mssql.Analyze},
 	{mysql.Engine, mysql.Dir, "", mysql.Locate, mysql.Version, mysql.Generate, mysql.Analyze},
 	{postgresql.Engine, "", "", postgresql.Locate, postgresql.Version, postgresql.Generate, nil},
@@ -106,6 +108,7 @@ type installer struct {
 
 var installers = map[string]installer{
 	clickhouse.Engine: {clickhouse.DefaultVersion, clickhouse.Install},
+	duckdb.Engine:     {duckdb.DefaultVersion, duckdb.Install},
 	sqlite.Engine:     {sqlite.DefaultVersion, sqlite.Install},
 }
 
@@ -131,11 +134,11 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 
 func install(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	if len(args) == 0 {
-		return errors.New("install takes the engine to install: clickhouse or sqlite")
+		return errors.New("install takes the engine to install: clickhouse, duckdb or sqlite")
 	}
 	inst, ok := installers[args[0]]
 	if !ok {
-		return fmt.Errorf("install takes the engine to install, clickhouse or sqlite, not %q", args[0])
+		return fmt.Errorf("install takes the engine to install, clickhouse, duckdb or sqlite, not %q", args[0])
 	}
 	fs := flag.NewFlagSet("install "+args[0], flag.ContinueOnError)
 	fs.SetOutput(stderr)
