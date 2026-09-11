@@ -104,3 +104,65 @@ jobs:
         path: internal/engine/sqlite/dialect
     - name: Fail if the committed dialect differs
       run: git add -N internal/engine/sqlite && git diff --exit-code --stat -- internal/engine/sqlite
+
+  mssql:
+    name: generate mssql dialect
+    runs-on: ubuntu-24.04
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2025-latest
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_SA_PASSWORD: Mysecretpassword1!
+        ports:
+        - 1433:1433
+        options: --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P 'Mysecretpassword1!' -Q 'SELECT 1'" --health-interval 10s --health-timeout 5s --health-retries 10
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-go@v7
+      with:
+        go-version-file: internal/goldeneye/go.mod
+        check-latest: true
+    - run: go run ./cmd/goldeneye generate mssql
+      working-directory: internal/goldeneye
+      env:
+        MSSQL_SERVER_URI: sqlserver://sa:Mysecretpassword1!@localhost:${{ job.services.mssql.ports['1433'] }}?encrypt=disable
+    - name: Save results
+      uses: actions/upload-artifact@v7
+      with:
+        name: dialect-mssql
+        path: internal/engine/mssql/dialect
+    - name: Fail if the committed dialect differs
+      run: git add -N internal/engine/mssql && git diff --exit-code --stat -- internal/engine/mssql
+
+  spanner:
+    name: generate googlesql dialect
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-go@v7
+      with:
+        go-version-file: internal/goldeneye/go.mod
+        check-latest: true
+    # Spanner Omni is run the way its quickstart runs it, on the host
+    # network, since a service container cannot be given a command.
+    - name: Start Spanner Omni
+      run: |
+        docker run -d --name spanneromni --network host us-docker.pkg.dev/spanner-omni/images/spanner-omni:2026.r2.1-beta start-single-server
+        for i in $(seq 1 60); do
+          if docker exec spanneromni /google/spanner/bin/spanner databases list >/dev/null 2>&1; then exit 0; fi
+          sleep 5
+        done
+        docker logs spanneromni
+        exit 1
+    - run: go run ./cmd/goldeneye generate spanner
+      working-directory: internal/goldeneye
+      env:
+        SPANNER_SERVER_URI: localhost:15000
+    - name: Save results
+      uses: actions/upload-artifact@v7
+      with:
+        name: dialect-googlesql
+        path: internal/engine/googlesql/dialect
+    - name: Fail if the committed dialect differs
+      run: git add -N internal/engine/googlesql && git diff --exit-code --stat -- internal/engine/googlesql

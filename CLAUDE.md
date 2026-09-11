@@ -150,15 +150,18 @@ from a live database by `/internal/goldeneye`, a nested module, and its tests
 verify the committed files against one byte for byte. The same module checks
 the `analyze_*` cases under `/internal/endtoend/testdata/` against what the
 database itself reports for them, so a `fixture.sql` next to a case's schema
-gives the queries rows to run against. ClickHouse, MySQL and SQLite have the
-check today; engines whose database is not available skip.
+gives the queries rows to run against. ClickHouse, MySQL, SQLite, SQL Server
+and Spanner have the check today; engines whose database is not available
+skip.
 
 ```bash
 cd internal/goldeneye
 go run ./cmd/goldeneye install clickhouse   # download the pinned clickhouse binary once
 go run ./cmd/goldeneye install sqlite       # build the pinned sqlite3 shells once; needs a C compiler
 POSTGRESQL_SERVER_URI="postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable" \
-MYSQL_SERVER_URI="root:mysecretpassword@tcp(127.0.0.1:3306)/mysql" go test ./...
+MYSQL_SERVER_URI="root:mysecretpassword@tcp(127.0.0.1:3306)/mysql" \
+MSSQL_SERVER_URI="sqlserver://sa:Mysecretpassword1!@127.0.0.1:1433?encrypt=disable" \
+SPANNER_SERVER_URI="localhost:15000" go test ./...
 go run ./cmd/goldeneye generate postgresql  # rewrite the files after a change
 ```
 

@@ -19,3 +19,21 @@ services:
       POSTGRES_DB: postgres
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_USER: postgres
+
+  mssql:
+    image: "mcr.microsoft.com/mssql/server:2025-latest"
+    ports:
+      - "1433:1433"
+    restart: always
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Mysecretpassword1!"
+
+  # Spanner Omni, the downloadable Spanner, serves plaintext gRPC on port
+  # 15000 and its console on 15026; its quickstart runs it on the host
+  # network.
+  spanner:
+    image: "us-docker.pkg.dev/spanner-omni/images/spanner-omni:2026.r2.1-beta"
+    command: start-single-server
+    network_mode: host
+    restart: always

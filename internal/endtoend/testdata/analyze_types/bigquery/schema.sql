@@ -2,15 +2,20 @@ CREATE TABLE things (
   id INT64 NOT NULL,
   s STRING(10),
   smax STRING(MAX),
-  n NUMERIC,
+  n NUMERIC(10,2),
+  bn BIGNUMERIC,
   byt BYTES(MAX),
   ai ARRAY<INT64>,
   as2 ARRAY<STRING(MAX)>,
+  st STRUCT<a INT64, b STRING>,
+  ast ARRAY<STRUCT<x INT64>>,
   ts TIMESTAMP,
   d DATE,
   j JSON,
+  g GEOGRAPHY,
+  iv INTERVAL,
   b BOOL,
   f FLOAT64,
   f32 FLOAT32,
-  u UUID
+  tl TOKENLIST
 ) PRIMARY KEY (id);

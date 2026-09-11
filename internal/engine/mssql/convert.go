@@ -1064,9 +1064,17 @@ func (c *cc) convertColumnDefinition(n *tsql.ColumnDefinition, tablePrimaryKey m
 		Location: c.loc(n),
 	}
 
-	// T-SQL columns are nullable unless declared otherwise.
+	// T-SQL columns are nullable unless declared otherwise, except that a
+	// rowversion column is NOT NULL unless declared nullable, and sysname
+	// is defined as nvarchar(128) NOT NULL.
 	if n.Nullable != nil && !n.Nullable.Nullable {
 		colDef.IsNotNull = true
+	}
+	if n.Nullable == nil {
+		switch colDef.TypeName.Name {
+		case "rowversion", "timestamp", "sysname":
+			colDef.IsNotNull = true
+		}
 	}
 	// IDENTITY columns are always NOT NULL.
 	if n.IdentityOptions != nil {
