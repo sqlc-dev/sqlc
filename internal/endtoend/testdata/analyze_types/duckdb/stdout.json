@@ -1,0 +1,709 @@
+[
+  {
+    "name": "AllTypes",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "integer"
+        },
+        "table": "things"
+      },
+      {
+        "name": "ints",
+        "type": {
+          "name": "array",
+          "nullable": true,
+          "args": [
+            {
+              "type": {
+                "name": "integer"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "fixed",
+        "type": {
+          "name": "array",
+          "nullable": true,
+          "args": [
+            {
+              "type": {
+                "name": "integer"
+              }
+            },
+            {
+              "int": 3
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "point",
+        "type": {
+          "name": "struct",
+          "nullable": true,
+          "args": [
+            {
+              "label": "a",
+              "type": {
+                "name": "integer"
+              }
+            },
+            {
+              "label": "b",
+              "type": {
+                "name": "varchar"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "attrs",
+        "type": {
+          "name": "map",
+          "nullable": true,
+          "args": [
+            {
+              "type": {
+                "name": "varchar"
+              }
+            },
+            {
+              "type": {
+                "name": "integer"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "either",
+        "type": {
+          "name": "union",
+          "nullable": true,
+          "args": [
+            {
+              "label": "num",
+              "type": {
+                "name": "integer"
+              }
+            },
+            {
+              "label": "str",
+              "type": {
+                "name": "varchar"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "price",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 18
+            },
+            {
+              "int": 3
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "title",
+        "type": {
+          "name": "varchar",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "kind",
+        "type": {
+          "name": "enum",
+          "nullable": true,
+          "args": [
+            {
+              "string": "a"
+            },
+            {
+              "string": "b"
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "m",
+        "type": {
+          "name": "mood",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "mm",
+        "type": {
+          "name": "mood",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "big",
+        "type": {
+          "name": "hugeint",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "ubig",
+        "type": {
+          "name": "uhugeint",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "data",
+        "type": {
+          "name": "blob",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "bits",
+        "type": {
+          "name": "bit",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "uid",
+        "type": {
+          "name": "uuid",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "tstz",
+        "type": {
+          "name": "timestamp with time zone",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "tsns",
+        "type": {
+          "name": "timestamp_ns",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "iv",
+        "type": {
+          "name": "interval",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "doc",
+        "type": {
+          "name": "varchar",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "grid",
+        "type": {
+          "name": "array",
+          "nullable": true,
+          "args": [
+            {
+              "type": {
+                "name": "array",
+                "args": [
+                  {
+                    "type": {
+                      "name": "integer"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "vi",
+        "type": {
+          "name": "bignum",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "f4",
+        "type": {
+          "name": "float",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "points",
+        "type": {
+          "name": "array",
+          "nullable": true,
+          "args": [
+            {
+              "type": {
+                "name": "struct",
+                "args": [
+                  {
+                    "label": "a",
+                    "type": {
+                      "name": "integer"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "lists",
+        "type": {
+          "name": "map",
+          "nullable": true,
+          "args": [
+            {
+              "type": {
+                "name": "varchar"
+              }
+            },
+            {
+              "type": {
+                "name": "array",
+                "args": [
+                  {
+                    "type": {
+                      "name": "integer"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "body",
+        "type": {
+          "name": "varchar",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "n",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 18
+            },
+            {
+              "int": 3
+            }
+          ]
+        },
+        "table": "things"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Casts",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "a",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 5
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "b",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "integer"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "c",
+        "type": {
+          "name": "struct",
+          "args": [
+            {
+              "label": "a",
+              "type": {
+                "name": "integer"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "d",
+        "type": {
+          "name": "mood"
+        }
+      },
+      {
+        "name": "e",
+        "type": {
+          "name": "varchar"
+        }
+      },
+      {
+        "name": "f",
+        "type": {
+          "name": "map",
+          "args": [
+            {
+              "type": {
+                "name": "varchar"
+              }
+            },
+            {
+              "type": {
+                "name": "integer"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "g",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "integer"
+              }
+            },
+            {
+              "int": 3
+            }
+          ]
+        }
+      },
+      {
+        "name": "h",
+        "type": {
+          "name": "mood"
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "decimal",
+            "args": [
+              {
+                "int": 5
+              },
+              {
+                "int": 2
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "array",
+            "args": [
+              {
+                "type": {
+                  "name": "integer"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "struct",
+            "args": [
+              {
+                "label": "a",
+                "type": {
+                  "name": "integer"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "mood"
+          }
+        }
+      },
+      {
+        "number": 5,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "varchar"
+          }
+        }
+      },
+      {
+        "number": 6,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "map",
+            "args": [
+              {
+                "type": {
+                  "name": "varchar"
+                }
+              },
+              {
+                "type": {
+                  "name": "integer"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 7,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "array",
+            "args": [
+              {
+                "type": {
+                  "name": "integer"
+                }
+              },
+              {
+                "int": 3
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 8,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "mood"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "Params",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "integer"
+        },
+        "table": "things"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "ints",
+          "type": {
+            "name": "array",
+            "nullable": true,
+            "args": [
+              {
+                "type": {
+                  "name": "integer"
+                }
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "point",
+          "type": {
+            "name": "struct",
+            "nullable": true,
+            "args": [
+              {
+                "label": "a",
+                "type": {
+                  "name": "integer"
+                }
+              },
+              {
+                "label": "b",
+                "type": {
+                  "name": "varchar"
+                }
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "price",
+          "type": {
+            "name": "decimal",
+            "nullable": true,
+            "args": [
+              {
+                "int": 18
+              },
+              {
+                "int": 3
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "m",
+          "type": {
+            "name": "mood",
+            "nullable": true
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 5,
+        "column": {
+          "name": "either",
+          "type": {
+            "name": "union",
+            "nullable": true,
+            "args": [
+              {
+                "label": "num",
+                "type": {
+                  "name": "integer"
+                }
+              },
+              {
+                "label": "str",
+                "type": {
+                  "name": "varchar"
+                }
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 6,
+        "column": {
+          "name": "grid",
+          "type": {
+            "name": "array",
+            "nullable": true,
+            "args": [
+              {
+                "type": {
+                  "name": "array",
+                  "args": [
+                    {
+                      "type": {
+                        "name": "integer"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "table": "things"
+        }
+      }
+    ]
+  }
+]

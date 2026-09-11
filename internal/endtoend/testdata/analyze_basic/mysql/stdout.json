@@ -13,7 +13,12 @@
       {
         "name": "name",
         "type": {
-          "name": "varchar"
+          "name": "varchar",
+          "args": [
+            {
+              "int": 255
+            }
+          ]
         },
         "table": "users"
       }

@@ -37,14 +37,54 @@ SELECT value FROM sql_dialect_flag WHERE dialect_oid = ? AND key = ?;
 
 -- name: CreateType :execlastid
 INSERT INTO sql_type
-    (name, size, typtype, category, preferred, namespace_oid, dialect_oid, element_oid)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+    (name, expr, typtype, category, preferred, namespace_oid, dialect_oid,
+     family_oid, element_oid, base_oid, canonical_oid, not_null)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
--- name: TypeOIDByName :one
+-- name: CreateTypeArg :exec
+INSERT INTO sql_type_arg
+    (type_oid, ord, label, arg_type_oid, nullable, int_value, bool_value, string_value, ident)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- name: TypeArgs :many
+SELECT ord, label, arg_type_oid, nullable, int_value, bool_value, string_value, ident
+FROM sql_type_arg
+WHERE type_oid = ?
+ORDER BY ord;
+
+-- name: TypeOIDByExpr :one
 SELECT t.oid
 FROM sql_type t
 JOIN sql_namespace ns ON ns.oid = t.namespace_oid
-WHERE t.name = sqlc.arg(name)
+WHERE t.expr = sqlc.arg(expr)
+ORDER BY
+    CASE ns.name
+        WHEN 'pg_catalog' THEN 0
+        WHEN 'public' THEN 1
+        ELSE 2
+    END,
+    ns.name
+LIMIT 1;
+
+-- name: TypeOIDsByNameInNamespaces :many
+SELECT oid, namespace_oid FROM sql_type
+WHERE name = sqlc.arg(name) AND family_oid IS NULL
+  AND namespace_oid IN (sqlc.slice(namespace_oids));
+
+-- name: TypeOIDByNameInNamespace :one
+SELECT oid FROM sql_type
+WHERE namespace_oid = ? AND name = ? AND family_oid IS NULL;
+
+-- name: TypeOIDByExprInNamespace :one
+SELECT oid FROM sql_type WHERE namespace_oid = ? AND expr = ?;
+
+-- name: TypeOIDByName :one
+-- The family spelled name: an instance carries its family's name too, and
+-- is found by its expression instead.
+SELECT t.oid
+FROM sql_type t
+JOIN sql_namespace ns ON ns.oid = t.namespace_oid
+WHERE t.name = sqlc.arg(name) AND t.family_oid IS NULL
 ORDER BY
     CASE ns.name
         WHEN 'pg_catalog' THEN 0
@@ -58,14 +98,34 @@ LIMIT 1;
 SELECT name FROM sql_type WHERE oid = ?;
 
 -- name: TypeOIDsInCategory :many
+-- The families of a category: an instance inherits its family's category
+-- and an alias stands for the row it points at, so neither is listed.
 SELECT oid FROM sql_type
 WHERE dialect_oid = ? AND category = ?
+  AND family_oid IS NULL AND canonical_oid IS NULL
 ORDER BY oid;
 
 -- name: LookupType :one
-SELECT oid, name, category, typtype, preferred
+SELECT oid, namespace_oid, name, expr, category, typtype, preferred,
+       family_oid, element_oid, base_oid, canonical_oid, not_null
 FROM sql_type
 WHERE oid = ?;
+
+-- name: CreateTypeRewrite :exec
+INSERT INTO sql_type_rewrite (dialect_oid, ord, pattern, template, cond)
+VALUES (?, ?, ?, ?, ?);
+
+-- name: ListTypeRewrites :many
+SELECT pattern, template, cond FROM sql_type_rewrite
+WHERE dialect_oid = ? ORDER BY ord;
+
+-- name: CreateTypeAffinity :exec
+INSERT INTO sql_type_affinity (dialect_oid, ord, words, type_oid)
+VALUES (?, ?, ?, ?);
+
+-- name: ListTypeAffinities :many
+SELECT words, type_oid FROM sql_type_affinity
+WHERE dialect_oid = ? ORDER BY ord;
 
 -- =============================== sql_class =============================
 
@@ -94,9 +154,8 @@ UPDATE sql_class SET name = sqlc.arg(new_name) WHERE oid = sqlc.arg(oid);
 -- name: CreateAttribute :exec
 INSERT INTO sql_attribute (
     class_oid, name, type_oid, not_null, has_default, num,
-    decl_type, type_length, type_scale,
-    auto_increment, is_primary_key, is_unique, hidden
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    decl_type, auto_increment, is_primary_key, is_unique, hidden
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- name: SetAttributePrimaryKey :exec
 UPDATE sql_attribute SET is_primary_key = 1, not_null = 1
@@ -129,8 +188,7 @@ SELECT CAST(COALESCE(MAX(num), 0) AS INTEGER) AS num FROM sql_attribute WHERE cl
 
 -- name: ResolveColumn :one
 SELECT a.oid, a.class_oid, a.name, t.name AS type_name, a.type_oid, a.not_null,
-       a.decl_type, a.type_length, a.type_scale,
-       a.auto_increment, a.is_primary_key, a.is_unique
+       a.decl_type, a.auto_increment, a.is_primary_key, a.is_unique
 FROM sql_attribute a
 JOIN sql_class c ON c.oid = a.class_oid
 JOIN sql_type t ON t.oid = a.type_oid
@@ -138,8 +196,7 @@ WHERE c.name = sqlc.arg(table_name) AND a.name = sqlc.arg(column_name);
 
 -- name: TableColumns :many
 SELECT a.oid, a.class_oid, a.name, t.name AS type_name, a.type_oid, a.not_null,
-       a.decl_type, a.type_length, a.type_scale,
-       a.auto_increment, a.is_primary_key, a.is_unique
+       a.decl_type, a.auto_increment, a.is_primary_key, a.is_unique
 FROM sql_attribute a
 JOIN sql_class c ON c.oid = a.class_oid
 JOIN sql_type t ON t.oid = a.type_oid
@@ -153,7 +210,7 @@ WHERE class_oid = ?
 ORDER BY num;
 
 -- name: ListClassColumns :many
-SELECT a.name AS column_name, t.name AS type_name, a.not_null
+SELECT a.name AS column_name, a.type_oid, a.not_null
 FROM sql_attribute a
 JOIN sql_type t ON t.oid = a.type_oid
 WHERE a.class_oid = ? AND a.hidden = 0
@@ -161,8 +218,7 @@ ORDER BY a.num;
 
 -- name: LookupAttribute :one
 SELECT ns.name AS schema_name, cls.name AS table_name, a.name AS column_name, a.num,
-       a.decl_type, a.type_length, a.type_scale,
-       a.auto_increment, a.is_primary_key, a.is_unique, a.not_null
+       a.decl_type, a.auto_increment, a.is_primary_key, a.is_unique, a.not_null
 FROM sql_attribute a
 JOIN sql_class cls ON cls.oid = a.class_oid
 JOIN sql_namespace ns ON ns.oid = cls.namespace_oid
@@ -178,8 +234,8 @@ INSERT INTO sql_constraint (class_oid, name, kind, columns) VALUES (?, ?, ?, ?);
 -- name: CreateProc :execlastid
 INSERT INTO sql_proc
     (namespace_oid, dialect_oid, name, kind,
-     return_type_oid, return_set, return_nullable, strict, variadic_kind)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+     return_type_oid, return_set, return_nullable, return_template, strict, variadic_kind)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- name: CreateProcArg :exec
 INSERT INTO sql_proc_arg (proc_oid, ord, name, type_oid, mode, has_default)
@@ -191,12 +247,12 @@ WHERE proc_oid = ? AND mode IN ('i', 'b', 'v')
 ORDER BY ord;
 
 -- name: FindProcsAnyNamespace :many
-SELECT oid, name, kind, return_type_oid, return_nullable
+SELECT oid, name, kind, return_type_oid, return_nullable, return_template
 FROM sql_proc
 WHERE name = ?;
 
 -- name: FindProcsInNamespaces :many
-SELECT oid, name, kind, return_type_oid, return_nullable
+SELECT oid, name, kind, return_type_oid, return_nullable, return_template
 FROM sql_proc
 WHERE name = sqlc.arg(name)
   AND namespace_oid IN (sqlc.slice(namespace_oids));

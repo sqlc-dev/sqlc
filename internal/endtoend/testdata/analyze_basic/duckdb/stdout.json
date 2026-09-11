@@ -13,14 +13,14 @@
       {
         "name": "name",
         "type": {
-          "name": "text"
+          "name": "varchar"
         },
         "table": "authors"
       },
       {
         "name": "bio",
         "type": {
-          "name": "text",
+          "name": "varchar",
           "nullable": true
         },
         "table": "authors"
@@ -28,7 +28,15 @@
       {
         "name": "royalties",
         "type": {
-          "name": "decimal"
+          "name": "decimal",
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
         },
         "table": "authors"
       },

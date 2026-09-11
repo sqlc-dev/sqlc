@@ -13,7 +13,12 @@
       {
         "name": "name",
         "type": {
-          "name": "varchar"
+          "name": "varchar",
+          "args": [
+            {
+              "int": 255
+            }
+          ]
         },
         "table": "users"
       },
@@ -48,7 +53,12 @@
       {
         "name": "name",
         "type": {
-          "name": "varchar"
+          "name": "varchar",
+          "args": [
+            {
+              "int": 255
+            }
+          ]
         },
         "table": "users"
       },
@@ -70,7 +80,12 @@
         "name": "title",
         "type": {
           "name": "varchar",
-          "nullable": true
+          "nullable": true,
+          "args": [
+            {
+              "int": 255
+            }
+          ]
         },
         "table": "posts"
       },
@@ -88,7 +103,12 @@
         "column": {
           "name": "name",
           "type": {
-            "name": "varchar"
+            "name": "varchar",
+            "args": [
+              {
+                "int": 255
+              }
+            ]
           },
           "table": "users"
         }
@@ -110,7 +130,12 @@
         "name": "title",
         "type": {
           "name": "varchar",
-          "nullable": true
+          "nullable": true,
+          "args": [
+            {
+              "int": 255
+            }
+          ]
         },
         "table": "posts"
       }
@@ -122,7 +147,12 @@
           "name": "title",
           "type": {
             "name": "varchar",
-            "nullable": true
+            "nullable": true,
+            "args": [
+              {
+                "int": 255
+              }
+            ]
           },
           "table": "posts"
         }
@@ -146,7 +176,12 @@
       {
         "name": "name",
         "type": {
-          "name": "varchar"
+          "name": "varchar",
+          "args": [
+            {
+              "int": 255
+            }
+          ]
         },
         "table": "users"
       },

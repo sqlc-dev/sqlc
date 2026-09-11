@@ -1,5 +1,6 @@
 {
   "dialect": "mssql",
+  "default_schema": "dbo",
   "const": {
     "integer": "int",
     "float": "float",
@@ -11,5 +12,73 @@
   "comparison_categories": "NBSD",
   "arithmetic": ["+", "-", "*", "/", "%"],
   "arithmetic_categories": "N",
-  "cast_categories": "NSD"
+  "cast_categories": "NSD",
+  "idents": ["max"],
+  "rewrites": [
+    {
+      "from": "sysname",
+      "to": "nvarchar(128)"
+    },
+    {
+      "from": "float($1)",
+      "to": "real",
+      "where": "$1 <= 24"
+    },
+    {
+      "from": "float($1)",
+      "to": "float"
+    },
+    {
+      "from": "char",
+      "to": "char(1)"
+    },
+    {
+      "from": "varchar",
+      "to": "varchar(1)"
+    },
+    {
+      "from": "nchar",
+      "to": "nchar(1)"
+    },
+    {
+      "from": "nvarchar",
+      "to": "nvarchar(1)"
+    },
+    {
+      "from": "binary",
+      "to": "binary(1)"
+    },
+    {
+      "from": "varbinary",
+      "to": "varbinary(1)"
+    },
+    {
+      "from": "decimal",
+      "to": "decimal(18, 0)"
+    },
+    {
+      "from": "decimal($1)",
+      "to": "decimal($1, 0)"
+    },
+    {
+      "from": "numeric",
+      "to": "numeric(18, 0)"
+    },
+    {
+      "from": "numeric($1)",
+      "to": "numeric($1, 0)"
+    },
+    {
+      "from": "datetime2",
+      "to": "datetime2(7)"
+    },
+    {
+      "from": "time",
+      "to": "time(7)"
+    },
+    {
+      "from": "datetimeoffset",
+      "to": "datetimeoffset(7)"
+    }
+  ]
 }

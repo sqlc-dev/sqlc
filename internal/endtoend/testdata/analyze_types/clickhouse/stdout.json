@@ -86,11 +86,11 @@
         "name": "kind",
         "type": {
           "name": "lowcardinality",
+          "nullable": true,
           "args": [
             {
               "type": {
-                "name": "string",
-                "nullable": true
+                "name": "string"
               }
             }
           ]
@@ -260,6 +260,109 @@
         "name": "flag",
         "type": {
           "name": "bool"
+        },
+        "table": "things"
+      },
+      {
+        "name": "small",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 9
+            },
+            {
+              "int": 4
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "plain",
+        "type": {
+          "name": "enum8",
+          "args": [
+            {
+              "label": "x",
+              "int": 1
+            },
+            {
+              "label": "y",
+              "int": 2
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "either",
+        "type": {
+          "name": "variant",
+          "args": [
+            {
+              "type": {
+                "name": "int64"
+              }
+            },
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "n.a",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "uint8"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "n.b",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "total",
+        "type": {
+          "name": "simpleaggregatefunction",
+          "args": [
+            {
+              "ident": "sum"
+            },
+            {
+              "type": {
+                "name": "uint64"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "whole",
+        "type": {
+          "name": "int32"
         },
         "table": "things"
       }
@@ -353,11 +456,11 @@
         "name": "kind",
         "type": {
           "name": "lowcardinality",
+          "nullable": true,
           "args": [
             {
               "type": {
-                "name": "string",
-                "nullable": true
+                "name": "string"
               }
             }
           ]
@@ -529,8 +632,250 @@
           "name": "bool"
         },
         "table": "things"
+      },
+      {
+        "name": "small",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 9
+            },
+            {
+              "int": 4
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "plain",
+        "type": {
+          "name": "enum8",
+          "args": [
+            {
+              "label": "x",
+              "int": 1
+            },
+            {
+              "label": "y",
+              "int": 2
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "either",
+        "type": {
+          "name": "variant",
+          "args": [
+            {
+              "type": {
+                "name": "int64"
+              }
+            },
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "n.a",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "uint8"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "n.b",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "total",
+        "type": {
+          "name": "simpleaggregatefunction",
+          "args": [
+            {
+              "ident": "sum"
+            },
+            {
+              "type": {
+                "name": "uint64"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "whole",
+        "type": {
+          "name": "int32"
+        },
+        "table": "things"
       }
     ],
     "params": []
+  },
+  {
+    "name": "Casts",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "a",
+        "type": {
+          "name": "string"
+        }
+      },
+      {
+        "name": "b",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 18
+            },
+            {
+              "int": 4
+            }
+          ]
+        }
+      },
+      {
+        "name": "c",
+        "type": {
+          "name": "string",
+          "nullable": true
+        }
+      },
+      {
+        "name": "d",
+        "type": {
+          "name": "datetime64",
+          "args": [
+            {
+              "int": 3
+            }
+          ]
+        }
+      },
+      {
+        "name": "e",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "f",
+        "type": {
+          "name": "string",
+          "nullable": true
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Placeholders",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "uint64"
+        },
+        "table": "things"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "p1",
+          "type": {
+            "name": "uint64"
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "p2",
+          "type": {
+            "name": "string"
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "p3",
+          "type": {
+            "name": "float64"
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "p4",
+          "type": {
+            "name": "string",
+            "nullable": true
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 5,
+        "column": {
+          "name": "p5",
+          "type": {
+            "name": "decimal",
+            "args": [
+              {
+                "int": 10
+              },
+              {
+                "int": 2
+              }
+            ]
+          },
+          "table": "things"
+        }
+      }
+    ]
   }
 ]

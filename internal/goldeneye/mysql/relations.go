@@ -34,10 +34,9 @@ ORDER BY t.TABLE_NAME, c.ORDINAL_POSITION`
 // in lower case: information_schema names its views in upper case and
 // matches them in any case, MySQL matches every column name in any case,
 // and sqlc's MySQL parser lowercases every identifier, so lower case is
-// how a query reaches them. A column's type is its data type as MySQL
-// names it, with UNSIGNED kept as part of the name the way a column
-// declaration spells it; the length and precision a declaration adds are
-// not part of the type.
+// how a query reaches them. A column's type is spelled the way a
+// declaration does, as COLUMN_TYPE reports it, arguments and UNSIGNED
+// included: varchar(64), bigint unsigned.
 func readRelations(ctx context.Context, conn *sql.Conn, schema string) ([]dialect.Relation, error) {
 	rows, err := conn.QueryContext(ctx, relationQuery, schema)
 	if err != nil {
@@ -69,13 +68,32 @@ func readRelations(ctx context.Context, conn *sql.Conn, schema string) ([]dialec
 	return relations, rows.Err()
 }
 
-// typeName spells a column's type the way a declaration does, from the
-// DATA_TYPE and COLUMN_TYPE information_schema reports for it: "bigint",
-// or "bigint unsigned" when the column is unsigned.
+// typeName spells a column's type the way a declaration does, which is
+// COLUMN_TYPE as information_schema reports it: "varchar(64)", "bigint
+// unsigned", "enum('a','b')". The family is spelled in lower case; the
+// members of an enum or set are values and keep theirs.
 func typeName(dataType, columnType string) string {
-	name := strings.ToLower(dataType)
-	if strings.Contains(strings.ToLower(columnType), " unsigned") {
-		name += " unsigned"
+	if columnType == "" {
+		return strings.ToLower(dataType)
 	}
-	return name
+	var out strings.Builder
+	quoted := false
+	for i := 0; i < len(columnType); i++ {
+		c := columnType[i]
+		switch {
+		case quoted && c == '\\' && i+1 < len(columnType):
+			out.WriteByte(c)
+			i++
+			out.WriteByte(columnType[i])
+			continue
+		case c == '\'':
+			quoted = !quoted
+		}
+		if quoted {
+			out.WriteByte(c)
+		} else {
+			out.WriteString(strings.ToLower(string(c)))
+		}
+	}
+	return out.String()
 }

@@ -1,0 +1,921 @@
+[
+  {
+    "name": "AllTypes",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "things"
+      },
+      {
+        "name": "price",
+        "type": {
+          "name": "numeric",
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "amount",
+        "type": {
+          "name": "numeric",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "title",
+        "type": {
+          "name": "character varying",
+          "nullable": true,
+          "args": [
+            {
+              "int": 255
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "code",
+        "type": {
+          "name": "character varying",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "tag",
+        "type": {
+          "name": "character",
+          "nullable": true,
+          "args": [
+            {
+              "int": 5
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "raw",
+        "type": {
+          "name": "character",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "count",
+        "type": {
+          "name": "integer",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "ints",
+        "type": {
+          "name": "array",
+          "nullable": true,
+          "args": [
+            {
+              "type": {
+                "name": "integer"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "grid",
+        "type": {
+          "name": "array",
+          "nullable": true,
+          "args": [
+            {
+              "type": {
+                "name": "array",
+                "args": [
+                  {
+                    "type": {
+                      "name": "integer"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "bounded",
+        "type": {
+          "name": "array",
+          "nullable": true,
+          "args": [
+            {
+              "type": {
+                "name": "integer"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "words",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "text"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "prices",
+        "type": {
+          "name": "array",
+          "nullable": true,
+          "args": [
+            {
+              "type": {
+                "name": "numeric",
+                "args": [
+                  {
+                    "int": 10
+                  },
+                  {
+                    "int": 2
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "ts",
+        "type": {
+          "name": "timestamp without time zone",
+          "nullable": true,
+          "args": [
+            {
+              "int": 3
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "tstz",
+        "type": {
+          "name": "timestamp with time zone"
+        },
+        "table": "things"
+      },
+      {
+        "name": "ttz",
+        "type": {
+          "name": "time with time zone",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "iv",
+        "type": {
+          "name": "interval",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "ivd",
+        "type": {
+          "name": "interval",
+          "nullable": true,
+          "args": [
+            {
+              "ident": "day to second"
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "iv3",
+        "type": {
+          "name": "interval",
+          "nullable": true,
+          "args": [
+            {
+              "int": 3
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "m",
+        "type": {
+          "name": "mood",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "mm",
+        "type": {
+          "name": "myschema.mood",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "mms",
+        "type": {
+          "name": "array",
+          "nullable": true,
+          "args": [
+            {
+              "type": {
+                "name": "myschema.mood"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "p",
+        "type": {
+          "name": "posint",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "sn",
+        "type": {
+          "name": "shortname"
+        },
+        "table": "things"
+      },
+      {
+        "name": "pt",
+        "type": {
+          "name": "point2",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "pts",
+        "type": {
+          "name": "array",
+          "nullable": true,
+          "args": [
+            {
+              "type": {
+                "name": "point2"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "fr",
+        "type": {
+          "name": "floatrange",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "ir",
+        "type": {
+          "name": "int4range",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "b",
+        "type": {
+          "name": "bit",
+          "nullable": true,
+          "args": [
+            {
+              "int": 8
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "vb",
+        "type": {
+          "name": "bit varying",
+          "nullable": true,
+          "args": [
+            {
+              "int": 16
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "js",
+        "type": {
+          "name": "jsonb",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "u",
+        "type": {
+          "name": "uuid",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "h",
+        "type": {
+          "name": "hstore",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "moods",
+        "type": {
+          "name": "array",
+          "nullable": true,
+          "args": [
+            {
+              "type": {
+                "name": "mood"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "dp",
+        "type": {
+          "name": "double precision",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "ts2",
+        "type": {
+          "name": "timestamp without time zone",
+          "nullable": true
+        },
+        "table": "things"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Casts",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "a",
+        "type": {
+          "name": "numeric",
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "b",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "integer"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "c",
+        "type": {
+          "name": "text"
+        }
+      },
+      {
+        "name": "d",
+        "type": {
+          "name": "mood"
+        }
+      },
+      {
+        "name": "e",
+        "type": {
+          "name": "character varying",
+          "args": [
+            {
+              "int": 20
+            }
+          ]
+        }
+      },
+      {
+        "name": "f",
+        "type": {
+          "name": "posint"
+        }
+      },
+      {
+        "name": "g",
+        "type": {
+          "name": "bigint"
+        }
+      },
+      {
+        "name": "h",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "array",
+                "args": [
+                  {
+                    "type": {
+                      "name": "integer"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "i",
+        "type": {
+          "name": "numeric",
+          "args": [
+            {
+              "int": 5
+            },
+            {
+              "int": 1
+            }
+          ]
+        }
+      },
+      {
+        "name": "j",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "integer"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "k",
+        "type": {
+          "name": "myschema.mood"
+        }
+      },
+      {
+        "name": "l",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "character varying",
+                "args": [
+                  {
+                    "int": 10
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "m",
+        "type": {
+          "name": "interval",
+          "args": [
+            {
+              "ident": "day to second"
+            }
+          ]
+        }
+      },
+      {
+        "name": "n",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "myschema.mood"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "o",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "mood"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "numeric",
+            "args": [
+              {
+                "int": 10
+              },
+              {
+                "int": 2
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "array",
+            "args": [
+              {
+                "type": {
+                  "name": "integer"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "mood"
+          }
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "character varying",
+            "args": [
+              {
+                "int": 20
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 5,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "posint"
+          }
+        }
+      },
+      {
+        "number": 6,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "array",
+            "args": [
+              {
+                "type": {
+                  "name": "array",
+                  "args": [
+                    {
+                      "type": {
+                        "name": "integer"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 7,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "numeric",
+            "args": [
+              {
+                "int": 5
+              },
+              {
+                "int": 1
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 8,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "myschema.mood"
+          }
+        }
+      },
+      {
+        "number": 9,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "array",
+            "args": [
+              {
+                "type": {
+                  "name": "character varying",
+                  "args": [
+                    {
+                      "int": 10
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 10,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "interval",
+            "args": [
+              {
+                "ident": "day to second"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 11,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "array",
+            "args": [
+              {
+                "type": {
+                  "name": "myschema.mood"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 12,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "array",
+            "args": [
+              {
+                "type": {
+                  "name": "mood"
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "Params",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "things"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "price",
+          "type": {
+            "name": "numeric",
+            "args": [
+              {
+                "int": 10
+              },
+              {
+                "int": 2
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "ints",
+          "type": {
+            "name": "array",
+            "nullable": true,
+            "args": [
+              {
+                "type": {
+                  "name": "integer"
+                }
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "m",
+          "type": {
+            "name": "mood",
+            "nullable": true
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "p",
+          "type": {
+            "name": "posint",
+            "nullable": true
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 5,
+        "column": {
+          "name": "title",
+          "type": {
+            "name": "character varying",
+            "nullable": true,
+            "args": [
+              {
+                "int": 255
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 6,
+        "column": {
+          "name": "grid",
+          "type": {
+            "name": "array",
+            "nullable": true,
+            "args": [
+              {
+                "type": {
+                  "name": "array",
+                  "args": [
+                    {
+                      "type": {
+                        "name": "integer"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 7,
+        "column": {
+          "name": "sn",
+          "type": {
+            "name": "shortname"
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 8,
+        "column": {
+          "name": "fr",
+          "type": {
+            "name": "floatrange",
+            "nullable": true
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 9,
+        "column": {
+          "name": "ivd",
+          "type": {
+            "name": "interval",
+            "nullable": true,
+            "args": [
+              {
+                "ident": "day to second"
+              }
+            ]
+          },
+          "table": "things"
+        }
+      }
+    ]
+  }
+]

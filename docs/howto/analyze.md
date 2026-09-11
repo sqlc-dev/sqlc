@@ -71,7 +71,7 @@ reports the result columns and parameters:
       {
         "name": "id",
         "type": {
-          "name": "bigserial"
+          "name": "bigint"
         },
         "table": "authors"
       },
@@ -97,7 +97,7 @@ reports the result columns and parameters:
         "column": {
           "name": "id",
           "type": {
-            "name": "bigserial"
+            "name": "bigint"
           },
           "table": "authors"
         }
@@ -109,10 +109,20 @@ reports the result columns and parameters:
 
 A column's `type` is written as a call expression: a `name` applied to
 `args`, each of which carries an optional `label` and exactly one of `type`,
-`int`, `bool` or `string`, with `nullable` set at whatever depth it applies.
-An array of text is `array` applied to `text`; a `Map(String, Nullable(UInt8))`
-in ClickHouse is `map` applied to `string` and a nullable `uint8`. Names are
-recorded as the engine reports them.
+`int`, `bool`, `string` or `ident`, with `nullable` set at whatever depth it
+applies. A `numeric(10,2)` column is `numeric` applied to `10` and `2`; an
+array of text is `array` applied to `text`, and an array of arrays nests
+one `array` per dimension; a `Map(String, Nullable(UInt8))` in ClickHouse is
+`map` applied to `string` and a nullable `uint8`; a `STRUCT<a INT64>` in
+GoogleSQL is `struct` applied to an `int64` labelled `a`; the `MAX` of SQL
+Server's `nvarchar(max)` is the identifier `max`.
+
+Types are reported the way the engine itself stores and reports them rather
+than the way the schema spelled them: PostgreSQL's `int` and `bigserial` are
+`integer` and `bigint`, as `format_type` prints them; MySQL's `BOOLEAN` is
+`tinyint(1)`; ClickHouse's `Decimal32(4)` is `decimal(9, 4)`; DuckDB's
+`TEXT` is `varchar`; SQL Server's `FLOAT(24)` is `real`. SQLite, which
+keeps a declared type as written, is reported as written.
 
 Pass `--ast` to also include each statement's parsed AST under an `ast` key. It
 has the same shape as the output of [`parse`](parse.md), with every node tagged

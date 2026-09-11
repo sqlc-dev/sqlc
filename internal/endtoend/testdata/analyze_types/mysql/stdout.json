@@ -1,0 +1,608 @@
+[
+  {
+    "name": "AllTypes",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint unsigned"
+        },
+        "table": "things"
+      },
+      {
+        "name": "flag",
+        "type": {
+          "name": "tinyint",
+          "nullable": true,
+          "args": [
+            {
+              "int": 1
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "count",
+        "type": {
+          "name": "int unsigned"
+        },
+        "table": "things"
+      },
+      {
+        "name": "price",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "uprice",
+        "type": {
+          "name": "decimal unsigned",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "plain",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 0
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "dd",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 7
+            },
+            {
+              "int": 2
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "ratio",
+        "type": {
+          "name": "float",
+          "nullable": true,
+          "args": [
+            {
+              "int": 7
+            },
+            {
+              "int": 4
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "f",
+        "type": {
+          "name": "float",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "title",
+        "type": {
+          "name": "varchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 255
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "code",
+        "type": {
+          "name": "char",
+          "nullable": true,
+          "args": [
+            {
+              "int": 3
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "kind",
+        "type": {
+          "name": "enum",
+          "nullable": true,
+          "args": [
+            {
+              "string": "a"
+            },
+            {
+              "string": "b"
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "flags",
+        "type": {
+          "name": "set",
+          "nullable": true,
+          "args": [
+            {
+              "string": "x"
+            },
+            {
+              "string": "y"
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "doc",
+        "type": {
+          "name": "json",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "key16",
+        "type": {
+          "name": "binary",
+          "nullable": true,
+          "args": [
+            {
+              "int": 16
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "blob255",
+        "type": {
+          "name": "varbinary",
+          "nullable": true,
+          "args": [
+            {
+              "int": 255
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "created",
+        "type": {
+          "name": "datetime",
+          "nullable": true,
+          "args": [
+            {
+              "int": 6
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "updated",
+        "type": {
+          "name": "timestamp",
+          "nullable": true,
+          "args": [
+            {
+              "int": 3
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "y",
+        "type": {
+          "name": "year",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "bits",
+        "type": {
+          "name": "bit",
+          "nullable": true,
+          "args": [
+            {
+              "int": 8
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "body",
+        "type": {
+          "name": "text",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "bin",
+        "type": {
+          "name": "varbinary",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "geo",
+        "type": {
+          "name": "geometry",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "ok",
+        "type": {
+          "name": "tinyint",
+          "nullable": true,
+          "args": [
+            {
+              "int": 1
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "d",
+        "type": {
+          "name": "double",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "small",
+        "type": {
+          "name": "mediumint unsigned",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "i",
+        "type": {
+          "name": "int",
+          "nullable": true
+        },
+        "table": "things"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Casts",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "a",
+        "type": {
+          "name": "bigint unsigned"
+        }
+      },
+      {
+        "name": "b",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 5
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "c",
+        "type": {
+          "name": "varchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        }
+      },
+      {
+        "name": "d",
+        "type": {
+          "name": "bigint"
+        }
+      },
+      {
+        "name": "e",
+        "type": {
+          "name": "json",
+          "nullable": true
+        }
+      },
+      {
+        "name": "f",
+        "type": {
+          "name": "datetime",
+          "nullable": true,
+          "args": [
+            {
+              "int": 3
+            }
+          ]
+        }
+      },
+      {
+        "name": "g",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 0
+            }
+          ]
+        }
+      },
+      {
+        "name": "h",
+        "type": {
+          "name": "varbinary",
+          "nullable": true,
+          "args": [
+            {
+              "int": 8
+            }
+          ]
+        }
+      },
+      {
+        "name": "i",
+        "type": {
+          "name": "double",
+          "nullable": true
+        }
+      },
+      {
+        "name": "j",
+        "type": {
+          "name": "float",
+          "nullable": true
+        }
+      },
+      {
+        "name": "k",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 6
+            },
+            {
+              "int": 1
+            }
+          ]
+        }
+      },
+      {
+        "name": "l",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 5
+            },
+            {
+              "int": 0
+            }
+          ]
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Params",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint unsigned"
+        },
+        "table": "things"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "count",
+          "type": {
+            "name": "int unsigned"
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "price",
+          "type": {
+            "name": "decimal",
+            "args": [
+              {
+                "int": 10
+              },
+              {
+                "int": 2
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "kind",
+          "type": {
+            "name": "enum",
+            "nullable": true,
+            "args": [
+              {
+                "string": "a"
+              },
+              {
+                "string": "b"
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "flags",
+          "type": {
+            "name": "set",
+            "nullable": true,
+            "args": [
+              {
+                "string": "x"
+              },
+              {
+                "string": "y"
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 5,
+        "column": {
+          "name": "title",
+          "type": {
+            "name": "varchar",
+            "nullable": true,
+            "args": [
+              {
+                "int": 255
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 6,
+        "column": {
+          "name": "uprice",
+          "type": {
+            "name": "decimal unsigned",
+            "nullable": true,
+            "args": [
+              {
+                "int": 10
+              },
+              {
+                "int": 2
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 7,
+        "column": {
+          "name": "flag",
+          "type": {
+            "name": "tinyint",
+            "nullable": true,
+            "args": [
+              {
+                "int": 1
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 8,
+        "column": {
+          "name": "created",
+          "type": {
+            "name": "datetime",
+            "nullable": true,
+            "args": [
+              {
+                "int": 6
+              }
+            ]
+          },
+          "table": "things"
+        }
+      }
+    ]
+  }
+]

@@ -1,12 +1,20 @@
 {"name": "bool", "category": "B", "aliases": ["boolean"]}
-{"name": "tinyint", "category": "N", "aliases": ["tinyint unsigned"]}
-{"name": "smallint", "category": "N", "aliases": ["smallint unsigned"]}
-{"name": "mediumint", "category": "N", "aliases": ["mediumint unsigned"]}
-{"name": "int", "category": "N", "aliases": ["integer", "int unsigned"]}
-{"name": "bigint", "category": "N", "aliases": ["signed", "unsigned", "bigint unsigned"]}
-{"name": "float", "category": "N", "aliases": ["float unsigned"]}
-{"name": "double", "category": "N", "aliases": ["double precision", "real", "double unsigned"]}
-{"name": "decimal", "category": "N", "aliases": ["numeric", "dec", "fixed", "decimal unsigned"]}
+{"name": "tinyint", "category": "N"}
+{"name": "tinyint unsigned", "category": "N", "base": "tinyint"}
+{"name": "smallint", "category": "N"}
+{"name": "smallint unsigned", "category": "N", "base": "smallint"}
+{"name": "mediumint", "category": "N"}
+{"name": "mediumint unsigned", "category": "N", "base": "mediumint"}
+{"name": "int", "category": "N", "aliases": ["integer"]}
+{"name": "int unsigned", "category": "N", "base": "int", "aliases": ["integer unsigned"]}
+{"name": "bigint", "category": "N", "aliases": ["signed", "bigint signed"]}
+{"name": "bigint unsigned", "category": "N", "base": "bigint", "aliases": ["unsigned"]}
+{"name": "float", "category": "N"}
+{"name": "float unsigned", "category": "N", "base": "float"}
+{"name": "double", "category": "N", "aliases": ["double precision", "real"]}
+{"name": "double unsigned", "category": "N", "base": "double", "aliases": ["double precision unsigned", "real unsigned"]}
+{"name": "decimal", "category": "N", "aliases": ["numeric", "dec", "fixed"]}
+{"name": "decimal unsigned", "category": "N", "base": "decimal", "aliases": ["numeric unsigned", "dec unsigned", "fixed unsigned"]}
 {"name": "bit", "category": "N"}
 {"name": "char", "category": "S"}
 {"name": "varchar", "category": "S"}

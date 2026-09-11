@@ -28,6 +28,12 @@ func Apply(cat *core.Catalog, n ast.Node) error {
 		return applyDropTable(cat, v)
 	case *ast.CreateEnumStmt:
 		return applyCreateEnum(cat, v)
+	case *ast.CreateDomainStmt:
+		return applyCreateDomain(cat, v)
+	case *ast.CompositeTypeStmt:
+		return applyCompositeType(cat, v)
+	case *ast.CreateRangeStmt:
+		return applyCreateRange(cat, v)
 	case *ast.CreateExtensionStmt:
 		if v.Extname == nil {
 			return nil
@@ -167,7 +173,7 @@ func applyCreateTable(cat *core.Catalog, stmt *ast.CreateTableStmt) error {
 			Name:         col.Colname,
 			TypeOID:      typeOID,
 			Num:          i + 1,
-			NotNull:      col.IsNotNull || col.PrimaryKey,
+			NotNull:      col.IsNotNull || col.PrimaryKey || typeNotNull(cat, typeOID),
 			IsPrimaryKey: col.PrimaryKey,
 			DeclType:     declType(col.TypeName),
 			Hidden:       col.IsHidden,
@@ -239,7 +245,7 @@ func applyAlterTable(cat *core.Catalog, stmt *ast.AlterTableStmt) error {
 				Name:         cmd.Def.Colname,
 				TypeOID:      typeOID,
 				Num:          num,
-				NotNull:      cmd.Def.IsNotNull || cmd.Def.PrimaryKey,
+				NotNull:      cmd.Def.IsNotNull || cmd.Def.PrimaryKey || typeNotNull(cat, typeOID),
 				IsPrimaryKey: cmd.Def.PrimaryKey,
 				DeclType:     declType(cmd.Def.TypeName),
 			}); err != nil {
@@ -264,7 +270,7 @@ func applyAlterTable(cat *core.Catalog, stmt *ast.AlterTableStmt) error {
 			if err != nil {
 				return err
 			}
-			if err := cat.SetAttributeType(classOID, name, typeOID, cmd.Def.TypeName.Name); err != nil {
+			if err := cat.SetAttributeType(classOID, name, typeOID, declType(cmd.Def.TypeName)); err != nil {
 				return err
 			}
 			// An engine that reports a column's whole new definition also
@@ -351,19 +357,132 @@ func listItems(l *ast.List) []ast.Node {
 	return l.Items
 }
 
+// applyCreateEnum records an enum as a type whose arguments are its labels,
+// in order, the way pg_enum keeps them.
 func applyCreateEnum(cat *core.Catalog, stmt *ast.CreateEnumStmt) error {
 	if stmt.TypeName == nil {
 		return fmt.Errorf("create type with nil name")
 	}
-	name := core.TypeNameString(stmt.TypeName)
+	name := declaredTypeName(stmt.TypeName)
 	if name == "" {
 		return fmt.Errorf("create type with empty name")
 	}
-	if _, err := cat.TypeOID(name); err == nil {
+	if cat.TypeDeclared(name) {
 		return nil
 	}
-	_, err := cat.CreateUserType(name, "E")
+	var labels []core.TypeArg
+	for _, label := range listStrings(stmt.Vals) {
+		l := label
+		labels = append(labels, core.TypeArg{String: &l})
+	}
+	_, err := cat.CreateTypeWithArgs(core.TypeSpec{Name: name, Typtype: "e", Category: "E"}, labels)
 	return err
+}
+
+// applyCreateDomain records a domain: a type of its own that stands on its
+// base, which is what it resolves through, and that may forbid NULL.
+func applyCreateDomain(cat *core.Catalog, stmt *ast.CreateDomainStmt) error {
+	name := strings.ToLower(strings.Join(listStrings(stmt.Domainname), "."))
+	if name == "" || stmt.TypeName == nil {
+		return fmt.Errorf("create domain: missing name or type")
+	}
+	if cat.TypeDeclared(name) {
+		return nil
+	}
+	baseOID, err := cat.ResolveType(stmt.TypeName)
+	if err != nil {
+		return fmt.Errorf("domain %q: %w", name, err)
+	}
+	base, err := cat.LookupType(baseOID)
+	if err != nil {
+		return err
+	}
+	notNull := false
+	for _, item := range listItems(stmt.Constraints) {
+		if con, ok := item.(*ast.Constraint); ok && con.Contype == ast.ConstrTypeNotNull {
+			notNull = true
+		}
+	}
+	_, err = cat.CreateTypeWithArgs(core.TypeSpec{
+		Name:     name,
+		Typtype:  "d",
+		Category: base.Category,
+		BaseOID:  baseOID,
+		NotNull:  notNull,
+	}, nil)
+	return err
+}
+
+// applyCompositeType records a composite type as a type whose arguments are
+// its fields, labelled by name.
+func applyCompositeType(cat *core.Catalog, stmt *ast.CompositeTypeStmt) error {
+	if stmt.TypeName == nil {
+		return fmt.Errorf("create type with nil name")
+	}
+	name := declaredTypeName(stmt.TypeName)
+	if name == "" {
+		return fmt.Errorf("create type with empty name")
+	}
+	if cat.TypeDeclared(name) {
+		return nil
+	}
+	var fields []core.TypeArg
+	for _, item := range listItems(stmt.Coldeflist) {
+		col, ok := item.(*ast.ColumnDef)
+		if !ok || col.TypeName == nil {
+			continue
+		}
+		t := core.ColumnTypeExpr(col)
+		if t == nil {
+			continue
+		}
+		fields = append(fields, core.TypeArg{Label: col.Colname, Type: t})
+	}
+	_, err := cat.CreateTypeWithArgs(core.TypeSpec{Name: name, Typtype: "c", Category: "C"}, fields)
+	return err
+}
+
+// applyCreateRange records a range type over its subtype, which is what a
+// bound of it has.
+func applyCreateRange(cat *core.Catalog, stmt *ast.CreateRangeStmt) error {
+	name := strings.ToLower(strings.Join(listStrings(stmt.TypeName), "."))
+	if name == "" {
+		return fmt.Errorf("create type with empty name")
+	}
+	if cat.TypeDeclared(name) {
+		return nil
+	}
+	spec := core.TypeSpec{Name: name, Typtype: "r", Category: "R"}
+	for _, item := range listItems(stmt.Params) {
+		def, ok := item.(*ast.DefElem)
+		if !ok || def.Defname == nil || *def.Defname != "subtype" {
+			continue
+		}
+		tn, ok := def.Arg.(*ast.TypeName)
+		if !ok {
+			continue
+		}
+		oid, err := cat.ResolveType(tn)
+		if err != nil {
+			return fmt.Errorf("range %q: %w", name, err)
+		}
+		spec.ElementOID = oid
+	}
+	_, err := cat.CreateTypeWithArgs(spec, nil)
+	return err
+}
+
+// declaredTypeName is the name a CREATE TYPE gives, qualified by its schema
+// when it names one.
+func declaredTypeName(tn *ast.TypeName) string {
+	t := core.TypeExprOfTypeName(tn)
+	if t == nil {
+		return ""
+	}
+	if tn.Schema != "" && !strings.Contains(t.Name, ".") {
+		return strings.ToLower(tn.Schema) + "." + t.Name
+	}
+	return t.Name
 }
 
 func applyCreateFunction(cat *core.Catalog, stmt *ast.CreateFunctionStmt) error {
@@ -422,17 +541,20 @@ func resolveOrCreateNamespace(cat *core.Catalog, schema string) (int64, error) {
 	return cat.CreateNamespace(name)
 }
 
-// columnTypeOID resolves a column's type. Engines report an array column
-// either on the type name or on the column itself.
+// typeNotNull reports whether a column of the type can never be NULL
+// because the type itself says so, as a domain declared NOT NULL does.
+func typeNotNull(cat *core.Catalog, typeOID int64) bool {
+	info, err := cat.LookupType(typeOID)
+	return err == nil && info.NotNull
+}
+
+// columnTypeOID interns a column's type and returns its row.
 func columnTypeOID(cat *core.Catalog, col *ast.ColumnDef) (int64, error) {
-	name := core.TypeNameString(col.TypeName)
-	if name == "" {
+	t := core.ColumnTypeExpr(col)
+	if t == nil {
 		return 0, fmt.Errorf("missing type name")
 	}
-	if (col.IsArray || col.ArrayDims > 0) && !strings.HasSuffix(name, core.ArraySuffix) {
-		name += core.ArraySuffix
-	}
-	return cat.ResolveTypeName(name)
+	return cat.ResolveTypeExpr(t)
 }
 
 // declType is the type as the schema spelled it: an engine that folds or

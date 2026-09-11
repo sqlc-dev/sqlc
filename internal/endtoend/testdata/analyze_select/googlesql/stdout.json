@@ -70,7 +70,12 @@
         "name": "title",
         "type": {
           "name": "string",
-          "nullable": true
+          "nullable": true,
+          "args": [
+            {
+              "int": 255
+            }
+          ]
         },
         "table": "posts"
       },

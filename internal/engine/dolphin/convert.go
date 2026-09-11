@@ -317,6 +317,24 @@ func convertColumnDef(def *pcast.ColumnDef) *ast.ColumnDef {
 			}
 			typeName.Typmods = &ast.List{Items: mods}
 		}
+	// MySQL drops an integer's display width except the one that means
+	// something: tinyint(1) is what drivers and codegen read as a boolean,
+	// and BOOLEAN itself is spelled that way.
+	case mysql.TypeTiny:
+		if flen == 1 {
+			typeName.Typmods = &ast.List{Items: []ast.Node{&ast.Integer{Ival: 1}}}
+		}
+	// A bit column's width is part of its type, and is 1 when left out.
+	case mysql.TypeBit:
+		if flen >= 0 {
+			typeName.Typmods = &ast.List{Items: []ast.Node{&ast.Integer{Ival: int64(flen)}}}
+		}
+	// A fractional-seconds precision is part of the type; zero is the
+	// default and is not written.
+	case mysql.TypeDatetime, mysql.TypeTimestamp, mysql.TypeDuration:
+		if fsp := def.Tp.GetDecimal(); fsp > 0 {
+			typeName.Typmods = &ast.List{Items: []ast.Node{&ast.Integer{Ival: int64(fsp)}}}
+		}
 	}
 
 	columnDef := ast.ColumnDef{
@@ -1112,7 +1130,8 @@ func (c *cc) convertFrameClause(n *pcast.FrameClause) ast.Node {
 }
 
 func (c *cc) convertFuncCastExpr(n *pcast.FuncCastExpr) ast.Node {
-	typeName := types.TypeStr(n.Tp.GetType())
+	tp := n.Tp.GetType()
+	typeName := types.TypeToStr(tp, n.Tp.GetCharset())
 
 	// MySQL CAST AS UNSIGNED/SIGNED uses bigint internally.
 	// We need to preserve the signed/unsigned info for formatting.
@@ -1123,10 +1142,50 @@ func (c *cc) convertFuncCastExpr(n *pcast.FuncCastExpr) ast.Node {
 			typeName = "bigint signed"
 		}
 	}
+	// CAST(x AS CHAR) and CAST(x AS BINARY) are typed by the parser as the
+	// wire's var_string, which is no SQL type, or as a char or binary.
+	// MySQL types the result as a varchar or a varbinary — its metadata
+	// and a view over it both say so.
+	switch typeName {
+	case "var_string", "char":
+		typeName = "varchar"
+		if n.Tp.GetCharset() == "binary" {
+			typeName = "varbinary"
+		}
+	case "binary":
+		typeName = "varbinary"
+	}
+
+	out := &ast.TypeName{Name: typeName}
+	flen, dec := n.Tp.GetFlen(), n.Tp.GetDecimal()
+	switch tp {
+	case mysql.TypeNewDecimal:
+		// A decimal's precision and scale are part of its type, and a
+		// scale left out is 0: CAST(x AS DECIMAL(5)) is a decimal(5,0).
+		if flen >= 0 && flen != types.UnspecifiedLength {
+			mods := []ast.Node{&ast.Integer{Ival: int64(flen)}}
+			if dec >= 0 && dec != types.UnspecifiedLength {
+				mods = append(mods, &ast.Integer{Ival: int64(dec)})
+			}
+			out.Typmods = &ast.List{Items: mods}
+		}
+	case mysql.TypeFloat, mysql.TypeDouble:
+		// The parser fills in a display width for a float or double, and
+		// a precision written as FLOAT(p) only picks between the two; the
+		// result is a plain float or double.
+	case mysql.TypeVarchar, mysql.TypeVarString, mysql.TypeString:
+		if flen > 0 && flen != types.UnspecifiedLength {
+			out.Typmods = &ast.List{Items: []ast.Node{&ast.Integer{Ival: int64(flen)}}}
+		}
+	case mysql.TypeDatetime, mysql.TypeTimestamp, mysql.TypeDuration:
+		if dec > 0 && dec != types.UnspecifiedLength {
+			out.Typmods = &ast.List{Items: []ast.Node{&ast.Integer{Ival: int64(dec)}}}
+		}
+	}
 
 	return &ast.TypeCast{
 		Arg:      c.convert(n.Expr),
-		TypeName: &ast.TypeName{Name: typeName},
+		TypeName: out,
 	}
 }
 

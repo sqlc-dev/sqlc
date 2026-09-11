@@ -2811,7 +2811,7 @@ func convertTypeName(n *pg.TypeName) *ast.TypeName {
 	if n == nil {
 		return nil
 	}
-	return &ast.TypeName{
+	out := &ast.TypeName{
 		Names:       convertSlice(n.Names),
 		TypeOid:     ast.Oid(n.TypeOid),
 		Setof:       n.Setof,
@@ -2821,6 +2821,43 @@ func convertTypeName(n *pg.TypeName) *ast.TypeName {
 		ArrayBounds: convertSlice(n.ArrayBounds),
 		Location:    int(n.Location),
 	}
+	decodeIntervalTypmods(out)
+	return out
+}
+
+// decodeIntervalTypmods turns the field mask an interval's first type
+// modifier carries — what the parser reports for CAST(x AS interval day to
+// second) — into the words format_type prints, as a column definition's
+// type does; the full range is dropped.
+func decodeIntervalTypmods(tn *ast.TypeName) {
+	if tn.Typmods == nil || len(tn.Typmods.Items) == 0 || len(tn.Names.Items) == 0 {
+		return
+	}
+	last, ok := tn.Names.Items[len(tn.Names.Items)-1].(*ast.String)
+	if !ok || last.Str != "interval" {
+		return
+	}
+	c, ok := tn.Typmods.Items[0].(*ast.A_Const)
+	if !ok {
+		return
+	}
+	mask, ok := c.Val.(*ast.Integer)
+	if !ok {
+		return
+	}
+	fields, ok := intervalFields[int32(mask.Ival)]
+	if !ok {
+		return
+	}
+	rest := tn.Typmods.Items[1:]
+	if fields != "" {
+		rest = append([]ast.Node{&ast.String{Str: fields}}, rest...)
+	}
+	if len(rest) == 0 {
+		tn.Typmods = nil
+		return
+	}
+	tn.Typmods = &ast.List{Items: rest}
 }
 
 func convertUnlistenStmt(n *pg.UnlistenStmt) *ast.UnlistenStmt {

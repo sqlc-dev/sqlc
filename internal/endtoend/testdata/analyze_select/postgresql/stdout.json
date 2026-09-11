@@ -6,7 +6,7 @@
       {
         "name": "id",
         "type": {
-          "name": "bigserial"
+          "name": "bigint"
         },
         "table": "users"
       },
@@ -55,29 +55,34 @@
       {
         "name": "id",
         "type": {
-          "name": "bigserial"
+          "name": "bigint"
         },
         "table": "posts"
       },
       {
         "name": "user_id",
         "type": {
-          "name": "int8"
+          "name": "bigint"
         },
         "table": "posts"
       },
       {
         "name": "title",
         "type": {
-          "name": "varchar",
-          "nullable": true
+          "name": "character varying",
+          "nullable": true,
+          "args": [
+            {
+              "int": 255
+            }
+          ]
         },
         "table": "posts"
       },
       {
         "name": "created",
         "type": {
-          "name": "timestamptz"
+          "name": "timestamp with time zone"
         },
         "table": "posts"
       }
@@ -102,15 +107,20 @@
       {
         "name": "id",
         "type": {
-          "name": "bigserial"
+          "name": "bigint"
         },
         "table": "posts"
       },
       {
         "name": "title",
         "type": {
-          "name": "varchar",
-          "nullable": true
+          "name": "character varying",
+          "nullable": true,
+          "args": [
+            {
+              "int": 255
+            }
+          ]
         },
         "table": "posts"
       }
@@ -121,8 +131,13 @@
         "column": {
           "name": "title",
           "type": {
-            "name": "varchar",
-            "nullable": true
+            "name": "character varying",
+            "nullable": true,
+            "args": [
+              {
+                "int": 255
+              }
+            ]
           },
           "table": "posts"
         }
@@ -132,7 +147,7 @@
         "column": {
           "name": "created",
           "type": {
-            "name": "timestamptz"
+            "name": "timestamp with time zone"
           },
           "table": "posts"
         }
@@ -153,7 +168,7 @@
       {
         "name": "created",
         "type": {
-          "name": "timestamptz"
+          "name": "timestamp with time zone"
         }
       }
     ],

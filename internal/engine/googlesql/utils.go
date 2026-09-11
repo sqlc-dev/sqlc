@@ -182,33 +182,78 @@ func decodeEscapes(s string) string {
 
 // typeName renders a zetajones type node (used by CAST) as a lowercased type
 // name. Nested types degrade to a readable representation.
+// typeName spells a type the way the analysis core reads one: a family
+// applied to its arguments, with an array's element, a struct's labelled
+// fields, a range's subtype and a map's key and value nested, and a
+// parameter list's integers and MAX written as they were.
 func typeName(node zjast.Node) string {
 	switch t := node.(type) {
 	case *zjast.SimpleType:
-		return strings.ToLower(strings.Join(pathParts(t.Name), "."))
+		return strings.ToLower(strings.Join(pathParts(t.Name), ".")) + typeParameters(t.TypeParameters)
 	case *zjast.ArrayType:
-		return "array<" + typeName(t.ElementType) + ">"
+		return "array(" + typeName(t.ElementType) + ")"
 	case *zjast.StructType:
-		return "struct"
+		fields := make([]string, 0, len(t.Fields))
+		for _, f := range t.Fields {
+			field := typeName(f.Type)
+			if f.Name != nil {
+				field = identifier(f.Name.Name) + ": " + field
+			}
+			fields = append(fields, field)
+		}
+		return "struct(" + strings.Join(fields, ", ") + ")"
 	case *zjast.RangeType:
-		return "range<" + typeName(t.ElementType) + ">"
+		return "range(" + typeName(t.ElementType) + ")"
 	case *zjast.MapType:
-		return "map"
+		return "map(" + typeName(t.KeyType) + ", " + typeName(t.ValueType) + ")"
 	default:
 		return ""
 	}
 }
 
+// typeParameters spells a parameter list, STRING(10) or BYTES(MAX), as the
+// arguments of a call.
+func typeParameters(params *zjast.TypeParameterList) string {
+	if params == nil || len(params.Parameters) == 0 {
+		return ""
+	}
+	parts := make([]string, 0, len(params.Parameters))
+	for _, p := range params.Parameters {
+		switch v := p.(type) {
+		case *zjast.IntLiteral:
+			parts = append(parts, v.Image)
+		case *zjast.MaxLiteral:
+			parts = append(parts, "max")
+		default:
+			continue
+		}
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	return "(" + strings.Join(parts, ", ") + ")"
+}
+
 // columnSchemaTypeName renders a CREATE TABLE column schema as a lowercased
 // type name. Nested types degrade to a readable representation.
+// columnSchemaTypeName spells a column's type the way typeName spells a
+// type.
 func columnSchemaTypeName(node zjast.Node) string {
 	switch t := node.(type) {
 	case *zjast.SimpleColumnSchema:
-		return strings.ToLower(strings.Join(pathParts(t.Type), "."))
+		return strings.ToLower(strings.Join(pathParts(t.Type), ".")) + typeParameters(t.TypeParameters)
 	case *zjast.ArrayColumnSchema:
-		return "array<" + columnSchemaTypeName(t.ElementSchema) + ">"
+		return "array(" + columnSchemaTypeName(t.ElementSchema) + ")"
 	case *zjast.StructColumnSchema:
-		return "struct"
+		fields := make([]string, 0, len(t.Fields))
+		for _, f := range t.Fields {
+			field := columnSchemaTypeName(f.Schema)
+			if f.Name != nil {
+				field = identifier(f.Name.Name) + ": " + field
+			}
+			fields = append(fields, field)
+		}
+		return "struct(" + strings.Join(fields, ", ") + ")"
 	default:
 		return ""
 	}

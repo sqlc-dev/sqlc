@@ -77,6 +77,11 @@ const FlagPropagateNullable = "functions.propagate_nullable"
 // e.id.
 const FlagQualifyDuplicateColumns = "columns.qualify_duplicates"
 
+// FlagDefaultSchema holds the schema the dialect puts an unqualified object
+// in, when that is not the catalog's own default: a type in it is reported
+// without its schema.
+const FlagDefaultSchema = "schema.default"
+
 // FlagCastCategories holds the categories whose types are all implicitly
 // castable to one another, as the dialect's seed declared them, so that a type
 // arriving after the seed — an extension's, say — can join its category.
@@ -189,4 +194,17 @@ func (c *Catalog) QualifiesDuplicateColumns() bool {
 	}
 	v, _ := c.DialectFlag(c.dialectOID, FlagQualifyDuplicateColumns)
 	return v == "true"
+}
+
+// DefaultNamespaces lists the namespaces a type is reported from without
+// qualification: the catalog's default, PostgreSQL's system catalog, and
+// the dialect's own default schema when it names one.
+func (c *Catalog) DefaultNamespaces() []string {
+	out := []string{"public", "pg_catalog"}
+	if c.dialectOID != 0 {
+		if name, _ := c.DialectFlag(c.dialectOID, FlagDefaultSchema); name != "" {
+			out = append(out, name)
+		}
+	}
+	return out
 }

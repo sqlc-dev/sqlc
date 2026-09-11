@@ -6,7 +6,7 @@
       {
         "name": "id",
         "type": {
-          "name": "bigserial"
+          "name": "bigint"
         },
         "table": "users"
       },
@@ -24,7 +24,7 @@
         "column": {
           "name": "id",
           "type": {
-            "name": "bigserial"
+            "name": "bigint"
           },
           "table": "users"
         }
@@ -38,7 +38,7 @@
       {
         "name": "id",
         "type": {
-          "name": "bigserial"
+          "name": "bigint"
         },
         "table": "users"
       },
@@ -81,7 +81,7 @@
       {
         "name": "id",
         "type": {
-          "name": "bigserial"
+          "name": "bigint"
         },
         "table": "users"
       },
@@ -99,7 +99,7 @@
         "column": {
           "name": "ids",
           "type": {
-            "name": "bigserial"
+            "name": "bigint"
           },
           "table": "users"
         }
@@ -113,15 +113,20 @@
       {
         "name": "id",
         "type": {
-          "name": "bigserial"
+          "name": "bigint"
         },
         "table": "posts"
       },
       {
         "name": "title",
         "type": {
-          "name": "varchar",
-          "nullable": true
+          "name": "character varying",
+          "nullable": true,
+          "args": [
+            {
+              "int": 255
+            }
+          ]
         },
         "table": "posts"
       }
@@ -132,7 +137,7 @@
         "column": {
           "name": "created",
           "type": {
-            "name": "timestamptz"
+            "name": "timestamp with time zone"
           },
           "table": "posts"
         }
@@ -142,7 +147,7 @@
         "column": {
           "name": "created",
           "type": {
-            "name": "timestamptz"
+            "name": "timestamp with time zone"
           },
           "table": "posts"
         }

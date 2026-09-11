@@ -2,6 +2,7 @@ package clickhouse
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -691,15 +692,23 @@ func (c *cc) convertFunctionCall(n *chast.FunctionCall) *ast.FuncCall {
 
 func (c *cc) convertParameter(n *chast.Parameter) ast.Node {
 	c.paramCount++
-	// Use the parameter name if available
-	name := n.Name
-	if name == "" {
-		name = strconv.Itoa(c.paramCount)
-	}
-	return &ast.ParamRef{
+	ref := &ast.ParamRef{
 		Number:   c.paramCount,
+		Name:     n.Name,
 		Location: pos(n),
 	}
+	// A parameter written {name:Type} declares its type, which is what a
+	// cast of a placeholder says.
+	if n.Type != nil {
+		spelling := renderDataType(n.Type)
+		base, _, _ := unwrapTypeString(spelling)
+		return &ast.TypeCast{
+			Arg:      ref,
+			TypeName: &ast.TypeName{Name: base, Spelling: spelling, Canonical: canonicalDataType(n.Type)},
+			Location: pos(n),
+		}
+	}
+	return ref
 }
 
 func (c *cc) convertAsterisk(n *chast.Asterisk) *ast.ColumnRef {
@@ -751,9 +760,11 @@ func (c *cc) convertCastExpr(n *chast.CastExpr) *ast.TypeCast {
 	}
 
 	if n.Type != nil {
-		tc.TypeName = &ast.TypeName{
-			Name: n.Type.Name,
-		}
+		// The whole type is handed over as its spelling, arguments and
+		// nesting included, the way a column's is.
+		spelling := renderDataType(n.Type)
+		base, _, _ := unwrapTypeString(spelling)
+		tc.TypeName = &ast.TypeName{Name: base, Spelling: spelling, Canonical: canonicalDataType(n.Type)}
 	}
 
 	return tc
@@ -965,8 +976,13 @@ func (c *cc) convertCreateQuery(n *chast.CreateQuery) ast.Node {
 			stmt.Name.Schema = identifier(n.Database)
 		}
 
-		// Convert columns
+		// Convert columns. A Nested column is what ClickHouse stores as
+		// one array column per element, named n.a, and reports as those.
 		for _, col := range n.Columns {
+			if cols, ok := c.convertNestedColumn(col); ok {
+				stmt.Cols = append(stmt.Cols, cols...)
+				continue
+			}
 			colDef := c.convertColumnDeclaration(col)
 			stmt.Cols = append(stmt.Cols, colDef)
 		}
@@ -994,6 +1010,30 @@ func (c *cc) convertCreateQuery(n *chast.CreateQuery) ast.Node {
 	return &ast.TODO{}
 }
 
+// convertNestedColumn expands a column declared Nested(a T, b U) into the
+// columns n.a Array(T) and n.b Array(U), which is how ClickHouse's
+// system.columns lists it and what a query selects.
+func (c *cc) convertNestedColumn(n *chast.ColumnDeclaration) ([]*ast.ColumnDef, bool) {
+	if n.Type == nil || !strings.EqualFold(n.Type.Name, "Nested") {
+		return nil, false
+	}
+	var cols []*ast.ColumnDef
+	for _, p := range n.Type.Parameters {
+		pair, ok := p.(*chast.NameTypePair)
+		if !ok {
+			continue
+		}
+		spelling := "Array(" + renderDataType(pair.Type) + ")"
+		cols = append(cols, &ast.ColumnDef{
+			Colname:   identifier(n.Name) + "." + identifier(pair.Name),
+			TypeName:  &ast.TypeName{Name: "array", Spelling: spelling, Canonical: "Array(" + canonicalDataType(pair.Type) + ")"},
+			IsArray:   true,
+			IsNotNull: true,
+		})
+	}
+	return cols, len(cols) > 0
+}
+
 func (c *cc) convertColumnDeclaration(n *chast.ColumnDeclaration) *ast.ColumnDef {
 	colDef := &ast.ColumnDef{
 		Colname:   identifier(n.Name),
@@ -1005,7 +1045,7 @@ func (c *cc) convertColumnDeclaration(n *chast.ColumnDeclaration) *ast.ColumnDef
 		base, isArray, nullable := unwrapTypeString(spelling)
 		// The catalog resolves the base type; the full spelling, with its
 		// arguments and nesting, is kept for the analysis to report.
-		colDef.TypeName = &ast.TypeName{Name: base, Spelling: spelling}
+		colDef.TypeName = &ast.TypeName{Name: base, Spelling: spelling, Canonical: canonicalDataType(n.Type)}
 		colDef.IsArray = isArray
 		if nullable {
 			colDef.IsNotNull = false
@@ -1030,24 +1070,86 @@ func (c *cc) convertColumnDeclaration(n *chast.ColumnDeclaration) *ast.ColumnDef
 	return colDef
 }
 
+// renderDataType spells a type as the author wrote it, which the formatter
+// prints back.
 func renderDataType(dt *chast.DataType) string {
+	return renderType(dt, false)
+}
+
+// canonicalDataType spells a type the way ClickHouse stores it, which the
+// analysis core reads: an Enum's members are numbered and the family
+// sized by their count, a Variant's members are sorted, and a named
+// element is written label first, so that Enum('a', 'b') is Enum8('a' =
+// 1, 'b' = 2), Variant(String, Int64) is Variant(Int64, String) and
+// Tuple(lat Float64) is Tuple(lat: Float64).
+func canonicalDataType(dt *chast.DataType) string {
+	return renderType(dt, true)
+}
+
+func renderType(dt *chast.DataType, canonical bool) string {
 	if dt == nil {
 		return ""
 	}
 	if len(dt.Parameters) == 0 {
 		return dt.Name
 	}
+	name := dt.Name
 	parts := make([]string, 0, len(dt.Parameters))
-	for _, p := range dt.Parameters {
-		parts = append(parts, renderTypeParam(p))
+	switch lower := strings.ToLower(name); {
+	case canonical && (lower == "enum" || lower == "enum8" || lower == "enum16"):
+		if lower == "enum" {
+			name = "Enum8"
+			if len(dt.Parameters) > 127 {
+				name = "Enum16"
+			}
+		}
+		next := int64(1)
+		for _, p := range dt.Parameters {
+			switch v := p.(type) {
+			case *chast.BinaryExpr:
+				// 'a' = 3 numbers itself, and the next bare member follows it.
+				parts = append(parts, renderParam(v, canonical))
+				if lit, ok := v.Right.(*chast.Literal); ok {
+					if n, err := strconv.ParseInt(fmt.Sprint(lit.Value), 10, 64); err == nil {
+						next = n + 1
+					}
+				}
+			default:
+				parts = append(parts, renderParam(p, canonical)+" = "+strconv.FormatInt(next, 10))
+				next++
+			}
+		}
+	case canonical && lower == "lowcardinality" && len(dt.Parameters) == 1:
+		// ClickHouse spells a nullable low-cardinality column as
+		// LowCardinality(Nullable(T)), the only order it accepts. The
+		// nullability is the column's, so the canonical form is
+		// Nullable(LowCardinality(T)), which reads as a nullable
+		// LowCardinality(T).
+		if inner, ok := dt.Parameters[0].(*chast.DataType); ok && strings.EqualFold(inner.Name, "nullable") && len(inner.Parameters) == 1 {
+			return "Nullable(LowCardinality(" + renderParam(inner.Parameters[0], canonical) + "))"
+		}
+		parts = append(parts, renderParam(dt.Parameters[0], canonical))
+	case canonical && lower == "variant":
+		for _, p := range dt.Parameters {
+			parts = append(parts, renderParam(p, canonical))
+		}
+		sort.Strings(parts)
+	default:
+		for _, p := range dt.Parameters {
+			parts = append(parts, renderParam(p, canonical))
+		}
 	}
-	return dt.Name + "(" + strings.Join(parts, ", ") + ")"
+	return name + "(" + strings.Join(parts, ", ") + ")"
 }
 
 func renderTypeParam(e chast.Expression) string {
+	return renderParam(e, false)
+}
+
+func renderParam(e chast.Expression, canonical bool) string {
 	switch v := e.(type) {
 	case *chast.DataType:
-		return renderDataType(v)
+		return renderType(v, canonical)
 	case *chast.Literal:
 		if v.Type == chast.LiteralString {
 			return quoteString(fmt.Sprint(v.Value))
@@ -1059,11 +1161,15 @@ func renderTypeParam(e chast.Expression) string {
 	case *chast.Identifier:
 		return strings.Join(v.Parts, ".")
 	case *chast.NameTypePair:
-		// A named tuple or nested element: `lat Float64`.
-		return v.Name + " " + renderDataType(v.Type)
+		// A named tuple or nested element: `lat Float64`, or `lat: Float64`
+		// in the canonical form.
+		if canonical {
+			return v.Name + ": " + renderType(v.Type, canonical)
+		}
+		return v.Name + " " + renderType(v.Type, canonical)
 	case *chast.BinaryExpr:
 		// An enum member: `'active' = 1`.
-		return renderTypeParam(v.Left) + " " + v.Op + " " + renderTypeParam(v.Right)
+		return renderParam(v.Left, canonical) + " " + v.Op + " " + renderParam(v.Right, canonical)
 	default:
 		return ""
 	}
@@ -1079,14 +1185,16 @@ func unwrapTypeString(s string) (name string, isArray, nullable bool) {
 		}
 		return strings.ToLower(base), false, true
 	case "lowcardinality":
+		// LowCardinality is an encoding of the type it wraps, and a
+		// column of LowCardinality(Nullable(String)) holds NULLs.
 		if len(args) == 1 {
 			return unwrapTypeString(args[0])
 		}
 		return strings.ToLower(base), false, false
 	case "array":
 		if len(args) == 1 {
-			inner, _, nul := unwrapTypeString(args[0])
-			return inner, true, nul
+			inner, _, _ := unwrapTypeString(args[0])
+			return inner, true, false
 		}
 		return strings.ToLower(base), true, false
 	default:

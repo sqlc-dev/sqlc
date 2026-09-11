@@ -19,10 +19,14 @@ type ProcSpec struct {
 	ReturnNullable bool
 	// NeverNull marks a function whose result is never NULL even when an
 	// argument is, in a dialect that otherwise propagates nullability.
-	NeverNull    bool
-	Strict       bool
-	VariadicKind string
-	Args         []ProcArg
+	NeverNull bool
+	// ReturnTemplate is the result as an expression over the call's
+	// arguments, when it depends on their values: Decimal(18, $2) for
+	// toDecimal64(x, s).
+	ReturnTemplate string
+	Strict         bool
+	VariadicKind   string
+	Args           []ProcArg
 }
 
 // The proc table stores nullability as one integer: 0 leaves it to the
@@ -56,6 +60,7 @@ func (c *Catalog) CreateProc(p ProcSpec) (int64, error) {
 		ReturnTypeOid:  p.ReturnTypeOID,
 		ReturnSet:      boolToInt64(p.ReturnSet),
 		ReturnNullable: returnNullable(p),
+		ReturnTemplate: p.ReturnTemplate,
 		Strict:         boolToInt64(p.Strict),
 		VariadicKind:   p.VariadicKind,
 	})
@@ -99,6 +104,7 @@ type ProcOverload struct {
 	ReturnTypeOID  int64
 	ReturnNullable bool
 	NeverNull      bool
+	ReturnTemplate string
 	ArgTypes       []int64
 }
 
@@ -123,6 +129,7 @@ func (c *Catalog) FindProcs(name string, namespaceOIDs []int64) ([]ProcOverload,
 				ReturnTypeOID:  r.ReturnTypeOid,
 				ReturnNullable: r.ReturnNullable == nullableAlways,
 				NeverNull:      r.ReturnNullable == nullableNever,
+				ReturnTemplate: r.ReturnTemplate,
 			})
 		}
 	} else {
@@ -146,6 +153,7 @@ func (c *Catalog) FindProcs(name string, namespaceOIDs []int64) ([]ProcOverload,
 				ReturnTypeOID:  r.ReturnTypeOid,
 				ReturnNullable: r.ReturnNullable == nullableAlways,
 				NeverNull:      r.ReturnNullable == nullableNever,
+				ReturnTemplate: r.ReturnTemplate,
 			})
 		}
 	}

@@ -202,6 +202,7 @@ func findColumn(rel scopeRel, name string) (core.ClassColumn, bool) {
 func columnType(rel scopeRel, col core.ClassColumn) exprType {
 	return exprType{
 		typeOID:            col.TypeOID,
+		expr:               col.Type,
 		nullable:           !col.NotNull,
 		sourceClassOID:     rel.classOID,
 		sourceAttributeOID: col.AttOID,

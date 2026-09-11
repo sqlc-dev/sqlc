@@ -11,5 +11,40 @@
   "comparison_categories": "BNSDU",
   "arithmetic": ["+", "-", "*", "/", "%", "DIV"],
   "arithmetic_categories": "N",
-  "cast_categories": "NSD"
+  "cast_categories": "NSD",
+  "rewrites": [
+    {
+      "from": "boolean",
+      "to": "tinyint(1)"
+    },
+    {
+      "from": "bool",
+      "to": "tinyint(1)"
+    },
+    {
+      "from": "decimal",
+      "to": "decimal(10, 0)"
+    },
+    {
+      "from": "decimal($1)",
+      "to": "decimal($1, 0)"
+    },
+    {
+      "from": "decimal unsigned",
+      "to": "decimal unsigned(10, 0)"
+    },
+    {
+      "from": "decimal unsigned($1)",
+      "to": "decimal unsigned($1, 0)"
+    },
+    {
+      "from": "float($1)",
+      "to": "float",
+      "where": "$1 <= 24"
+    },
+    {
+      "from": "float($1)",
+      "to": "double"
+    }
+  ]
 }

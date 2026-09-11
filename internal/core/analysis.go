@@ -65,8 +65,6 @@ type Column struct {
 	SourceAttributeOID int64         `json:"source_attribute_oid,omitempty"`
 	Source             *ColumnSource `json:"source,omitempty"`
 	DeclType           string        `json:"decl_type,omitempty"`
-	TypeLength         int           `json:"type_length,omitempty"`
-	TypeScale          int           `json:"type_scale,omitempty"`
 	IsPrimaryKey       bool          `json:"is_primary_key,omitempty"`
 	IsUnique           bool          `json:"is_unique,omitempty"`
 	IsAutoIncrement    bool          `json:"is_auto_increment,omitempty"`

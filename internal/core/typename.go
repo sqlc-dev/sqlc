@@ -7,12 +7,23 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
-// TypeNameString is the catalog's name for the type an AST node names: the type
-// as it was written, lowercased, with "[]" appended for an array. Engines
-// report a type either as a plain name or as a list of qualifying parts.
-func TypeNameString(tn *ast.TypeName) string {
+// TypeExprOfTypeName reads the type an AST node names into an expression.
+// An engine that renders the whole type as a call expression — DuckDB's
+// struct(a: integer, b: varchar) — hands it over in Canonical; one that
+// folds it into the spelling the formatter prints back — ClickHouse's
+// Array(Nullable(String)), SQLite's VARYING CHARACTER(10) — in Spelling.
+// Otherwise the name comes from Name or the qualifying parts of Names, the
+// type modifiers become integer or string arguments, and each array bound
+// wraps the result in an array.
+func TypeExprOfTypeName(tn *ast.TypeName) *TypeExpr {
 	if tn == nil {
-		return ""
+		return nil
+	}
+	if tn.Canonical != "" {
+		return ParseTypeExpr(tn.Canonical)
+	}
+	if tn.Spelling != "" {
+		return ParseTypeExpr(tn.Spelling)
 	}
 	name := strings.TrimSpace(tn.Name)
 	if name == "" && tn.Names != nil {
@@ -27,33 +38,113 @@ func TypeNameString(tn *ast.TypeName) string {
 		name = strings.Join(parts, ".")
 	}
 	name = strings.ToLower(name)
-	if name != "" && tn.ArrayBounds != nil && len(tn.ArrayBounds.Items) > 0 {
-		name += ArraySuffix
+	if name == "" {
+		return nil
 	}
-	return name
+	// An engine that reports the schema apart from the name qualifies it
+	// the way a dotted name does, so the type resolves in its namespace.
+	if schema := strings.ToLower(tn.Schema); schema != "" && schema != "pg_catalog" && !strings.Contains(name, ".") {
+		name = schema + "." + name
+	}
+	// A name an engine spelled with its own arguments or array suffix reads
+	// the same way a spelling does.
+	t := ParseTypeExpr(name)
+	for _, item := range listItems(tn.Typmods) {
+		if arg, ok := typmodArg(item); ok {
+			t.Args = append(t.Args, arg)
+		}
+	}
+	for range listItems(tn.ArrayBounds) {
+		t = Array(t)
+	}
+	return t
 }
 
-// ResolveType returns the type an AST node names, registering it when the
+// ColumnTypeExpr reads a column definition's type. Engines report an array
+// column either on the type name or on the column itself.
+func ColumnTypeExpr(col *ast.ColumnDef) *TypeExpr {
+	if col == nil {
+		return nil
+	}
+	t := TypeExprOfTypeName(col.TypeName)
+	if t == nil {
+		return nil
+	}
+	// MySQL reports an unsigned column on the definition, and the
+	// members of an enum or set apart from the type's name.
+	if col.IsUnsigned && !strings.Contains(t.Name, " unsigned") {
+		t.Name += " unsigned"
+	}
+	if vals := listItems(col.Vals); len(vals) > 0 && len(t.Args) == 0 {
+		for _, item := range vals {
+			if s, ok := item.(*ast.String); ok {
+				v := s.Str
+				t.Args = append(t.Args, TypeArg{String: &v})
+			}
+		}
+	}
+	if col.TypeName.Canonical != "" || col.TypeName.Spelling != "" || listItems(col.TypeName.ArrayBounds) != nil {
+		return t
+	}
+	dims := col.ArrayDims
+	if dims == 0 && col.IsArray {
+		dims = 1
+	}
+	for i := 0; i < dims; i++ {
+		t = Array(t)
+	}
+	return t
+}
+
+// typmodArg reads one type modifier as an argument: an integer, a quoted
+// string, or a bare word, which is an identifier such as the max of
+// nvarchar(max) or the day to second of an interval. A constant node holds
+// a literal; a bare String node holds a word.
+func typmodArg(n ast.Node) (TypeArg, bool) {
+	switch v := n.(type) {
+	case *ast.A_Const:
+		switch val := v.Val.(type) {
+		case *ast.String:
+			s := val.Str
+			return TypeArg{String: &s}, true
+		default:
+			return typmodArg(v.Val)
+		}
+	case *ast.Integer:
+		i := v.Ival
+		return TypeArg{Int: &i}, true
+	case *ast.String:
+		s := strings.ToLower(v.Str)
+		return TypeArg{Ident: &s}, true
+	case *ast.ColumnRef:
+		parts := make([]string, 0, len(listItems(v.Fields)))
+		for _, item := range listItems(v.Fields) {
+			if s, ok := item.(*ast.String); ok {
+				parts = append(parts, s.Str)
+			}
+		}
+		if len(parts) == 0 {
+			return TypeArg{}, false
+		}
+		ident := strings.ToLower(strings.Join(parts, "."))
+		return TypeArg{Ident: &ident}, true
+	}
+	return TypeArg{}, false
+}
+
+func listItems(l *ast.List) []ast.Node {
+	if l == nil {
+		return nil
+	}
+	return l.Items
+}
+
+// ResolveType interns the type an AST node names, registering it when the
 // dialect's seed did not: a schema is free to declare types of its own.
 func (c *Catalog) ResolveType(tn *ast.TypeName) (int64, error) {
-	name := TypeNameString(tn)
-	if name == "" {
+	t := TypeExprOfTypeName(tn)
+	if t == nil {
 		return 0, fmt.Errorf("missing type name")
 	}
-	return c.ResolveTypeName(name)
-}
-
-// ResolveTypeName is ResolveType for a type already reduced to its name.
-func (c *Catalog) ResolveTypeName(name string) (int64, error) {
-	if oid, err := c.TypeOID(name); err == nil {
-		return oid, nil
-	}
-	if element, ok := strings.CutSuffix(name, ArraySuffix); ok {
-		elementOID, err := c.ResolveTypeName(element)
-		if err != nil {
-			return 0, err
-		}
-		return c.CreateArrayType(name, elementOID)
-	}
-	return c.CreateUserType(name, "U")
+	return c.ResolveTypeExpr(t)
 }

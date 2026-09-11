@@ -17,8 +17,6 @@ type SqlAttribute struct {
 	HasDefault    int64
 	Num           int64
 	DeclType      string
-	TypeLength    int64
-	TypeScale     int64
 	AutoIncrement int64
 	IsPrimaryKey  int64
 	IsUnique      int64
@@ -86,6 +84,7 @@ type SqlProc struct {
 	ReturnTypeOid  int64
 	ReturnSet      int64
 	ReturnNullable int64
+	ReturnTemplate string
 	Strict         int64
 	VariadicKind   string
 }
@@ -104,9 +103,40 @@ type SqlType struct {
 	NamespaceOid int64
 	DialectOid   sql.NullInt64
 	Name         string
-	Size         int64
+	Expr         string
 	Typtype      string
 	Category     sql.NullString
 	Preferred    int64
+	FamilyOid    sql.NullInt64
 	ElementOid   sql.NullInt64
+	BaseOid      sql.NullInt64
+	CanonicalOid sql.NullInt64
+	NotNull      int64
+}
+
+type SqlTypeAffinity struct {
+	DialectOid int64
+	Ord        int64
+	Words      string
+	TypeOid    int64
+}
+
+type SqlTypeArg struct {
+	TypeOid     int64
+	Ord         int64
+	Label       string
+	ArgTypeOid  sql.NullInt64
+	Nullable    int64
+	IntValue    sql.NullInt64
+	BoolValue   sql.NullInt64
+	StringValue sql.NullString
+	Ident       sql.NullString
+}
+
+type SqlTypeRewrite struct {
+	DialectOid int64
+	Ord        int64
+	Pattern    string
+	Template   string
+	Cond       string
 }

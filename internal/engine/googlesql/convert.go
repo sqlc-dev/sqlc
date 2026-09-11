@@ -452,7 +452,7 @@ func (c *cc) convertExpr(node zjast.Node) ast.Node {
 	case *zjast.CastExpression:
 		return &ast.TypeCast{
 			Arg:      c.convertExpr(n.Expr),
-			TypeName: &ast.TypeName{Name: typeName(n.Type)},
+			TypeName: spelledTypeName(typeName(n.Type)),
 			Location: n.Pos(),
 		}
 	case *zjast.ExpressionSubquery:
@@ -918,7 +918,7 @@ func (c *cc) convertCreateTableStatement(n *zjast.CreateTableStatement) ast.Node
 func (c *cc) convertColumnDefinition(n *zjast.ColumnDefinition) *ast.ColumnDef {
 	col := &ast.ColumnDef{
 		Location: n.Pos(),
-		TypeName: &ast.TypeName{Name: columnSchemaTypeName(n.Schema)},
+		TypeName: spelledTypeName(columnSchemaTypeName(n.Schema)),
 	}
 	if n.Name != nil {
 		col.Colname = identifier(n.Name.Name)
@@ -936,13 +936,6 @@ func (c *cc) convertColumnDefinition(n *zjast.ColumnDefinition) *ast.ColumnDef {
 	}
 
 	if simple, ok := n.Schema.(*zjast.SimpleColumnSchema); ok {
-		// Type parameters, e.g. STRING(10) or NUMERIC(10, 2).
-		if simple.TypeParameters != nil {
-			col.TypeName.Typmods = &ast.List{}
-			for _, param := range simple.TypeParameters.Parameters {
-				col.TypeName.Typmods.Items = append(col.TypeName.Typmods.Items, c.convertExpr(param))
-			}
-		}
 		if simple.DefaultExpression != nil {
 			col.RawDefault = c.convertExpr(simple.DefaultExpression)
 		}
@@ -970,4 +963,15 @@ func (c *cc) convertTruncateStatement(n *zjast.TruncateStatement) ast.Node {
 	return &ast.TruncateStmt{
 		Relations: &ast.List{Items: []ast.Node{parseRangeVar(n.Target)}},
 	}
+}
+
+// spelledTypeName is a type name the core reads from its spelling, whose
+// name is the family the spelling applies: string for string(10), array
+// for array(int64).
+func spelledTypeName(spelling string) *ast.TypeName {
+	name := spelling
+	if i := strings.IndexByte(name, '('); i >= 0 {
+		name = name[:i]
+	}
+	return &ast.TypeName{Name: name, Canonical: spelling}
 }

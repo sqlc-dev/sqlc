@@ -2871,7 +2871,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -2884,13 +2884,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "attoptions",
@@ -2910,13 +2910,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "attfdwoptions",
@@ -2936,13 +2936,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "attmissingval",
@@ -3993,7 +3993,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 64,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -4006,13 +4006,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_name"
+                  "name": "name"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "comment",
@@ -5671,7 +5671,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -5684,13 +5684,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "reloptions",
@@ -5710,13 +5710,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "relpartbound",
@@ -6923,7 +6923,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 2,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -6936,20 +6936,20 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_int2"
+                  "name": "int2"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "confkey",
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 2,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -6962,20 +6962,20 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_int2"
+                  "name": "int2"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "conpfeqop",
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -6988,20 +6988,20 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_oid"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "conppeqop",
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -7014,20 +7014,20 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_oid"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "conffeqop",
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -7040,20 +7040,20 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_oid"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "confdelsetcols",
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 2,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -7066,20 +7066,20 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_int2"
+                  "name": "int2"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "conexclop",
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -7092,13 +7092,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_oid"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "conbin",
@@ -8253,7 +8253,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -8266,13 +8266,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -8510,13 +8510,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -8793,7 +8793,7 @@
                 "not_null": true,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -8806,13 +8806,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -10042,13 +10042,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -10377,7 +10377,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -10390,13 +10390,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_oid"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "extcondition",
@@ -10416,13 +10416,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -10917,7 +10917,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -10930,13 +10930,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "fdwoptions",
@@ -10956,13 +10956,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -11291,7 +11291,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -11304,13 +11304,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "srvoptions",
@@ -11330,13 +11330,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -11574,13 +11574,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -11649,7 +11649,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -11662,13 +11662,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_oid"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -11802,13 +11802,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "user_name",
@@ -11828,13 +11828,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "address",
@@ -11932,13 +11932,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "error",
@@ -12717,7 +12717,7 @@
               {
                 "name": "indkey",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
                 "length": -1,
                 "is_named_param": false,
@@ -12743,7 +12743,7 @@
               {
                 "name": "indcollation",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
                 "length": -1,
                 "is_named_param": false,
@@ -12769,7 +12769,7 @@
               {
                 "name": "indclass",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
                 "length": -1,
                 "is_named_param": false,
@@ -12795,7 +12795,7 @@
               {
                 "name": "indoption",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
                 "length": -1,
                 "is_named_param": false,
@@ -13555,7 +13555,7 @@
                 "not_null": true,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -13568,13 +13568,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -13955,7 +13955,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -13968,13 +13968,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -14443,7 +14443,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -14456,13 +14456,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -15331,7 +15331,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -15344,13 +15344,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -16827,7 +16827,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -16840,13 +16840,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -17121,7 +17121,7 @@
               {
                 "name": "partattrs",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
                 "length": -1,
                 "is_named_param": false,
@@ -17147,7 +17147,7 @@
               {
                 "name": "partclass",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
                 "length": -1,
                 "is_named_param": false,
@@ -17173,7 +17173,7 @@
               {
                 "name": "partcollation",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
                 "length": -1,
                 "is_named_param": false,
@@ -17341,7 +17341,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 64,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -17354,13 +17354,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_name"
+                  "name": "name"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "cmd",
@@ -17741,7 +17741,7 @@
                 "not_null": true,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -17754,13 +17754,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_oid"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "polqual",
@@ -17907,7 +17907,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -17920,20 +17920,20 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_regtype"
+                  "name": "regtype"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "result_types",
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -17946,13 +17946,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_regtype"
+                  "name": "regtype"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "from_sql",
@@ -18835,7 +18835,7 @@
               {
                 "name": "proargtypes",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
                 "length": -1,
                 "is_named_param": false,
@@ -18863,7 +18863,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -18876,20 +18876,20 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_oid"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "proargmodes",
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -18902,13 +18902,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_char"
+                  "name": "char"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "proargnames",
@@ -18928,13 +18928,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "proargdefaults",
@@ -18967,7 +18967,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -18980,13 +18980,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_oid"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "prosrc",
@@ -19084,20 +19084,20 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "proacl",
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -19110,13 +19110,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -20035,7 +20035,7 @@
               {
                 "name": "prattrs",
                 "not_null": false,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
                 "length": -1,
                 "is_named_param": false,
@@ -20151,7 +20151,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 64,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -20164,13 +20164,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_name"
+                  "name": "name"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "rowfilter",
@@ -21992,13 +21992,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "oid",
@@ -23638,13 +23638,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "boot_val",
@@ -24012,13 +24012,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -38717,7 +38717,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -38730,20 +38730,20 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "stanumbers2",
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -38756,20 +38756,20 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "stanumbers3",
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -38782,20 +38782,20 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "stanumbers4",
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -38808,20 +38808,20 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "stanumbers5",
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -38834,13 +38834,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "stavalues1",
@@ -39297,7 +39297,7 @@
               {
                 "name": "stxkeys",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
                 "length": -1,
                 "is_named_param": false,
@@ -39325,7 +39325,7 @@
                 "not_null": true,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -39338,13 +39338,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_char"
+                  "name": "char"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "stxexprs",
@@ -39686,13 +39686,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_pg_statistic"
+                  "name": "pg_statistic"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -39917,7 +39917,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -39930,13 +39930,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "histogram_bounds",
@@ -40021,7 +40021,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40034,20 +40034,20 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "elem_count_histogram",
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40060,13 +40060,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -40213,7 +40213,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 64,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40226,13 +40226,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_name"
+                  "name": "name"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "exprs",
@@ -40252,20 +40252,20 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "kinds",
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40278,13 +40278,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_char"
+                  "name": "char"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "inherited",
@@ -40382,20 +40382,20 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "most_common_val_nulls",
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40408,20 +40408,20 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_bool"
+                  "name": "bool"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "most_common_freqs",
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 8,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40434,20 +40434,20 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float8"
+                  "name": "float8"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "most_common_base_freqs",
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 8,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40460,13 +40460,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float8"
+                  "name": "float8"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -40769,7 +40769,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40782,13 +40782,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "histogram_bounds",
@@ -40873,7 +40873,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40886,20 +40886,20 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "elem_count_histogram",
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40912,13 +40912,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -41494,13 +41494,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "suborigin",
@@ -42265,7 +42265,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -42278,13 +42278,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "spcoptions",
@@ -42304,13 +42304,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -43343,7 +43343,7 @@
               {
                 "name": "tgattr",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
                 "length": -1,
                 "is_named_param": false,
@@ -46005,7 +46005,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -46018,13 +46018,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -46262,13 +46262,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -46532,13 +46532,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -46698,13 +46698,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -46908,13 +46908,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "foreign_data_wrapper_catalog",
@@ -47074,13 +47074,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "foreign_server_catalog",
@@ -47370,13 +47370,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -47484,13 +47484,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "foreign_server_catalog",
@@ -47624,13 +47624,13 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "umuser",
