@@ -162,6 +162,10 @@ type Type struct {
 	Name     string   `json:"name"`
 	Category string   `json:"category"`
 	Aliases  []string `json:"aliases,omitempty"`
+	// Base names the family this one stands on, which must be listed
+	// before it: MySQL's bigint unsigned is a type of its own that
+	// resolves as a bigint where nothing takes it as itself.
+	Base string `json:"base,omitempty"`
 }
 
 // Operator is a single operator overload.
@@ -305,6 +309,11 @@ func apply(cat *core.Catalog, fsys fs.FS, settings Settings) error {
 	if err := stream(fsys, TypesFile, b.addType); err != nil {
 		return err
 	}
+	// Every dialect has arrays, whether or not its list names the family,
+	// and a lookup of one against the cached catalog cannot add it then.
+	if _, err := b.createType(core.ArrayTypeName, "A", 0); err != nil {
+		return err
+	}
 	if err := b.consts(); err != nil {
 		return err
 	}
@@ -439,6 +448,9 @@ func Relations(fsys fs.FS, dir, schema string) ([]*catalog.Table, error) {
 				IsNotNull: col.NotNull,
 				IsArray:   col.Array,
 			}
+			if col.Array {
+				column.ArrayDims = 1
+			}
 			if col.Length > 0 {
 				length := col.Length
 				column.Length = &length
@@ -513,7 +525,15 @@ type categorized struct {
 }
 
 func (b *builder) addType(t Type) error {
-	oid, err := b.createType(t.Name, t.Category)
+	var baseOID int64
+	if t.Base != "" {
+		oid, ok := b.oids[strings.ToLower(t.Base)]
+		if !ok {
+			return fmt.Errorf("type %q: base %q is not a type listed before it", t.Name, t.Base)
+		}
+		baseOID = oid
+	}
+	oid, err := b.createType(t.Name, t.Category, baseOID)
 	if err != nil {
 		return fmt.Errorf("type %q: %w", t.Name, err)
 	}
@@ -553,7 +573,7 @@ func (b *builder) addAlias(name string, typeOID int64, category string) error {
 	return nil
 }
 
-func (b *builder) createType(name, category string) (int64, error) {
+func (b *builder) createType(name, category string, baseOID int64) (int64, error) {
 	key := strings.ToLower(name)
 	if oid, ok := b.oids[key]; ok {
 		return oid, nil
@@ -562,6 +582,7 @@ func (b *builder) createType(name, category string) (int64, error) {
 		Name:       key,
 		Typtype:    "b",
 		Category:   category,
+		BaseOID:    baseOID,
 		DialectOID: b.dialectOID,
 	})
 	if err != nil {

@@ -11,6 +11,7 @@ CREATE TABLE things (
   title VARCHAR(10),
   kind ENUM('a','b'),
   m mood,
+  mm main.mood,
   big HUGEINT,
   ubig UHUGEINT,
   data BLOB,

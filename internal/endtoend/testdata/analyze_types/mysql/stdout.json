@@ -78,6 +78,22 @@
         "table": "things"
       },
       {
+        "name": "dd",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 7
+            },
+            {
+              "int": 2
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
         "name": "ratio",
         "type": {
           "name": "float",
@@ -392,6 +408,48 @@
           "args": [
             {
               "int": 8
+            }
+          ]
+        }
+      },
+      {
+        "name": "i",
+        "type": {
+          "name": "double",
+          "nullable": true
+        }
+      },
+      {
+        "name": "j",
+        "type": {
+          "name": "float",
+          "nullable": true
+        }
+      },
+      {
+        "name": "k",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 6
+            },
+            {
+              "int": 1
+            }
+          ]
+        }
+      },
+      {
+        "name": "l",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 5
+            },
+            {
+              "int": 0
             }
           ]
         }

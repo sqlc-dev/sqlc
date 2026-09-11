@@ -93,24 +93,26 @@ type column struct {
 // "enum('a','b')" is enum applied to its members. A trailing word such as
 // zerofill is part of the family too.
 func typeOfColumn(columnType string) *analysis.TypeExpr {
-	s := strings.ToLower(strings.TrimSpace(columnType))
+	s := strings.TrimSpace(columnType)
 	open := strings.IndexByte(s, '(')
 	if open < 0 {
-		return &analysis.TypeExpr{Name: s}
+		return &analysis.TypeExpr{Name: strings.ToLower(s)}
 	}
 	close := strings.LastIndexByte(s, ')')
 	if close < open {
-		return &analysis.TypeExpr{Name: s}
+		return &analysis.TypeExpr{Name: strings.ToLower(s)}
 	}
-	name := strings.TrimSpace(s[:open])
-	if rest := strings.TrimSpace(s[close+1:]); rest != "" {
+	// The family is spelled in lower case; an enum's members keep theirs,
+	// since they are values.
+	name := strings.ToLower(strings.TrimSpace(s[:open]))
+	if rest := strings.ToLower(strings.TrimSpace(s[close+1:])); rest != "" {
 		name += " " + rest
 	}
 	t := &analysis.TypeExpr{Name: name}
 	for _, a := range splitArgs(s[open+1 : close]) {
 		a = strings.TrimSpace(a)
 		if strings.HasPrefix(a, "'") && strings.HasSuffix(a, "'") && len(a) >= 2 {
-			v := strings.ReplaceAll(a[1:len(a)-1], "''", "'")
+			v := unquoteMember(a[1 : len(a)-1])
 			t.Args = append(t.Args, analysis.TypeArg{String: &v})
 			continue
 		}
@@ -121,12 +123,15 @@ func typeOfColumn(columnType string) *analysis.TypeExpr {
 	return t
 }
 
-// splitArgs splits a type's argument list on the commas outside quotes.
+// splitArgs splits a type's argument list on the commas outside quotes. A
+// backslash inside a quoted member escapes the character after it.
 func splitArgs(s string) []string {
 	var out []string
 	start, quoted := 0, false
 	for i := 0; i < len(s); i++ {
 		switch {
+		case quoted && s[i] == '\\':
+			i++
 		case s[i] == '\'':
 			quoted = !quoted
 		case s[i] == ',' && !quoted:
@@ -135,6 +140,26 @@ func splitArgs(s string) []string {
 		}
 	}
 	return append(out, s[start:])
+}
+
+// unquoteMember reads the body of a quoted enum or set member as
+// information_schema spells it: a quote is doubled and a backslash escapes
+// the character after it.
+func unquoteMember(s string) string {
+	var out strings.Builder
+	for i := 0; i < len(s); i++ {
+		switch {
+		case s[i] == '\\' && i+1 < len(s):
+			i++
+			out.WriteByte(s[i])
+		case s[i] == '\'' && i+1 < len(s) && s[i+1] == '\'':
+			i++
+			out.WriteByte('\'')
+		default:
+			out.WriteByte(s[i])
+		}
+	}
+	return out.String()
 }
 
 // withNullable copies a type with its nullability set.

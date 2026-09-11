@@ -1119,6 +1119,16 @@ func renderType(dt *chast.DataType, canonical bool) string {
 				next++
 			}
 		}
+	case canonical && lower == "lowcardinality" && len(dt.Parameters) == 1:
+		// ClickHouse spells a nullable low-cardinality column as
+		// LowCardinality(Nullable(T)), the only order it accepts. The
+		// nullability is the column's, so the canonical form is
+		// Nullable(LowCardinality(T)), which reads as a nullable
+		// LowCardinality(T).
+		if inner, ok := dt.Parameters[0].(*chast.DataType); ok && strings.EqualFold(inner.Name, "nullable") && len(inner.Parameters) == 1 {
+			return "Nullable(LowCardinality(" + renderParam(inner.Parameters[0], canonical) + "))"
+		}
+		parts = append(parts, renderParam(dt.Parameters[0], canonical))
 	case canonical && lower == "variant":
 		for _, p := range dt.Parameters {
 			parts = append(parts, renderParam(p, canonical))
@@ -1175,12 +1185,10 @@ func unwrapTypeString(s string) (name string, isArray, nullable bool) {
 		}
 		return strings.ToLower(base), false, true
 	case "lowcardinality":
-		// Only a Nullable at the top makes the column nullable: the
-		// analysis reports LowCardinality(Nullable(String)) with the
-		// nullability inside, as ClickHouse does.
+		// LowCardinality is an encoding of the type it wraps, and a
+		// column of LowCardinality(Nullable(String)) holds NULLs.
 		if len(args) == 1 {
-			inner, arr, _ := unwrapTypeString(args[0])
-			return inner, arr, false
+			return unwrapTypeString(args[0])
 		}
 		return strings.ToLower(base), false, false
 	case "array":

@@ -1,4 +1,5 @@
 CREATE TYPE dbo.PhoneNumber FROM varchar(20) NOT NULL;
+CREATE TYPE Code FROM char(3);
 
 CREATE TABLE things (
   id BIGINT IDENTITY(1,1) PRIMARY KEY,
@@ -30,5 +31,7 @@ CREATE TABLE things (
   vec VECTOR(3),
   sn sysname,
   phone dbo.PhoneNumber,
+  code2 dbo.Code,
+  code3 Code,
   bare VARCHAR
 );

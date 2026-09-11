@@ -53,6 +53,13 @@ func parseType(t string) *analysis.TypeExpr {
 	for _, a := range args {
 		expr.Args = append(expr.Args, parseArg(a))
 	}
+	// LowCardinality(Nullable(T)) is the only order ClickHouse accepts for
+	// a nullable low-cardinality column, and the nullability is the
+	// column's: it reads as a nullable LowCardinality(T).
+	if name == "lowcardinality" && len(expr.Args) == 1 && expr.Args[0].Type != nil && expr.Args[0].Type.Nullable {
+		expr.Nullable = true
+		expr.Args[0].Type.Nullable = false
+	}
 	// The function an aggregate-function type names is a word, not a type.
 	if name == "aggregatefunction" || name == "simpleaggregatefunction" {
 		if len(expr.Args) > 0 && expr.Args[0].Type != nil && len(expr.Args[0].Type.Args) == 0 {

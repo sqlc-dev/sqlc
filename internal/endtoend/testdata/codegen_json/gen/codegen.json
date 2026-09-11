@@ -2888,7 +2888,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "attoptions",
@@ -2914,7 +2914,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "attfdwoptions",
@@ -2940,7 +2940,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "attmissingval",
@@ -4010,7 +4010,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "comment",
@@ -5688,7 +5688,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "reloptions",
@@ -5714,7 +5714,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "relpartbound",
@@ -6940,7 +6940,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "confkey",
@@ -6966,7 +6966,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "conpfeqop",
@@ -6992,7 +6992,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "conppeqop",
@@ -7018,7 +7018,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "conffeqop",
@@ -7044,7 +7044,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "confdelsetcols",
@@ -7070,7 +7070,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "conexclop",
@@ -7096,7 +7096,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "conbin",
@@ -8270,7 +8270,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -8514,7 +8514,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -8810,7 +8810,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -10046,7 +10046,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -10394,7 +10394,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "extcondition",
@@ -10420,7 +10420,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -10934,7 +10934,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "fdwoptions",
@@ -10960,7 +10960,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -11308,7 +11308,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "srvoptions",
@@ -11334,7 +11334,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -11578,7 +11578,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -11666,7 +11666,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -11806,7 +11806,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "user_name",
@@ -11832,7 +11832,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "address",
@@ -11936,7 +11936,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "error",
@@ -12715,9 +12715,9 @@
               {
                 "name": "indkey",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
-                "length": 2,
+                "length": -1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -12730,7 +12730,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "int2"
+                  "name": "int2vector"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -12741,9 +12741,9 @@
               {
                 "name": "indcollation",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
-                "length": 4,
+                "length": -1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -12756,7 +12756,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "oid"
+                  "name": "oidvector"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -12767,9 +12767,9 @@
               {
                 "name": "indclass",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
-                "length": 4,
+                "length": -1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -12782,7 +12782,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "oid"
+                  "name": "oidvector"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -12793,9 +12793,9 @@
               {
                 "name": "indoption",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
-                "length": 2,
+                "length": -1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -12808,7 +12808,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "int2"
+                  "name": "int2vector"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -13572,7 +13572,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -13972,7 +13972,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -14460,7 +14460,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -15348,7 +15348,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -16844,7 +16844,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -17119,9 +17119,9 @@
               {
                 "name": "partattrs",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
-                "length": 2,
+                "length": -1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -17134,7 +17134,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "int2"
+                  "name": "int2vector"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -17145,9 +17145,9 @@
               {
                 "name": "partclass",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
-                "length": 4,
+                "length": -1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -17160,7 +17160,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "oid"
+                  "name": "oidvector"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -17171,9 +17171,9 @@
               {
                 "name": "partcollation",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
-                "length": 4,
+                "length": -1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -17186,7 +17186,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "oid"
+                  "name": "oidvector"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -17358,7 +17358,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "cmd",
@@ -17758,7 +17758,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "polqual",
@@ -17924,7 +17924,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "result_types",
@@ -17950,7 +17950,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "from_sql",
@@ -18833,9 +18833,9 @@
               {
                 "name": "proargtypes",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
-                "length": 4,
+                "length": -1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -18848,7 +18848,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "oid"
+                  "name": "oidvector"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -18880,7 +18880,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "proargmodes",
@@ -18906,7 +18906,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "proargnames",
@@ -18932,7 +18932,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "proargdefaults",
@@ -18984,7 +18984,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "prosrc",
@@ -19088,7 +19088,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "proacl",
@@ -19114,7 +19114,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -20033,9 +20033,9 @@
               {
                 "name": "prattrs",
                 "not_null": false,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
-                "length": 2,
+                "length": -1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -20048,7 +20048,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "int2"
+                  "name": "int2vector"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -20168,7 +20168,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "rowfilter",
@@ -21996,7 +21996,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "oid",
@@ -23642,7 +23642,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "boot_val",
@@ -24016,7 +24016,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -38734,7 +38734,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "stanumbers2",
@@ -38760,7 +38760,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "stanumbers3",
@@ -38786,7 +38786,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "stanumbers4",
@@ -38812,7 +38812,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "stanumbers5",
@@ -38838,7 +38838,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "stavalues1",
@@ -39295,9 +39295,9 @@
               {
                 "name": "stxkeys",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
-                "length": 2,
+                "length": -1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -39310,7 +39310,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "int2"
+                  "name": "int2vector"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -39342,7 +39342,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "stxexprs",
@@ -39690,7 +39690,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -39934,7 +39934,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "histogram_bounds",
@@ -40038,7 +40038,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "elem_count_histogram",
@@ -40064,7 +40064,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -40230,7 +40230,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "exprs",
@@ -40256,7 +40256,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "kinds",
@@ -40282,7 +40282,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "inherited",
@@ -40386,7 +40386,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "most_common_val_nulls",
@@ -40412,7 +40412,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "most_common_freqs",
@@ -40438,7 +40438,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "most_common_base_freqs",
@@ -40464,7 +40464,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -40786,7 +40786,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "histogram_bounds",
@@ -40890,7 +40890,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "elem_count_histogram",
@@ -40916,7 +40916,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -41498,7 +41498,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "suborigin",
@@ -42282,7 +42282,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "spcoptions",
@@ -42308,7 +42308,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -43341,9 +43341,9 @@
               {
                 "name": "tgattr",
                 "not_null": true,
-                "is_array": true,
+                "is_array": false,
                 "comment": "",
-                "length": 2,
+                "length": -1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -43356,7 +43356,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "int2"
+                  "name": "int2vector"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -46022,7 +46022,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -46266,7 +46266,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -46536,7 +46536,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -46702,7 +46702,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -46912,7 +46912,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "foreign_data_wrapper_catalog",
@@ -47078,7 +47078,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "foreign_server_catalog",
@@ -47374,7 +47374,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               }
             ],
             "comment": ""
@@ -47488,7 +47488,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "foreign_server_catalog",
@@ -47628,7 +47628,7 @@
                 "embed_table": null,
                 "original_name": "",
                 "unsigned": false,
-                "array_dims": 0
+                "array_dims": 1
               },
               {
                 "name": "umuser",

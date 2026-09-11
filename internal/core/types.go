@@ -362,11 +362,18 @@ func splitQualifiedName(name string) (ns, bare string) {
 }
 
 // declaredTypeNamespace is the namespace a declared type's row goes in: the
-// one its name qualifies, created if the schema has not, or the default.
+// one its name qualifies, created if the schema has not, or the dialect's
+// default schema — dbo, main — so that a bare CREATE TYPE and a qualified
+// reference to it name one row.
 func (c *Catalog) declaredTypeNamespace(name string) (int64, string, error) {
 	ns, bare := splitQualifiedName(name)
 	if ns == "" {
-		return 0, bare, nil
+		if c.dialectOID != 0 {
+			ns, _ = c.DialectFlag(c.dialectOID, FlagDefaultSchema)
+		}
+		if ns == "" {
+			return 0, bare, nil
+		}
 	}
 	oid, err := c.NamespaceOID(ns)
 	if err != nil {
@@ -551,12 +558,7 @@ func (c *Catalog) TypeExprOf(oid int64) (*TypeExpr, error) {
 	if err != nil {
 		return nil, err
 	}
-	expr := &TypeExpr{Name: info.Name}
-	// A type outside the default namespaces is named with its namespace,
-	// as format_type prints a type off the search path.
-	if ns, err := c.namespaceName(info.NamespaceOID); err == nil && ns != "" && !slices.Contains(c.DefaultNamespaces(), ns) {
-		expr.Name = ns + "." + info.Name
-	}
+	expr := &TypeExpr{Name: c.qualifiedName(info)}
 	if !info.IsFamily() {
 		rows, err := c.q.TypeArgs(context.Background(), oid)
 		if err != nil {
@@ -590,6 +592,18 @@ func (c *Catalog) TypeExprOf(oid int64) (*TypeExpr, error) {
 	}
 	c.types.put(info, expr)
 	return expr.Clone(), nil
+}
+
+// qualifiedName is the name a type row is known by in an expression: its
+// name, qualified with its namespace when that is not one of the dialect's
+// defaults, as format_type prints a type off the search path. An
+// instance's key is built from these, so the array of one schema's mood is
+// a row apart from the array of another's.
+func (c *Catalog) qualifiedName(info TypeInfo) string {
+	if ns, err := c.namespaceName(info.NamespaceOID); err == nil && ns != "" && !slices.Contains(c.DefaultNamespaces(), ns) {
+		return ns + "." + info.Name
+	}
+	return info.Name
 }
 
 // ResolveTypeExpr interns the type an expression names and returns its row:
@@ -680,7 +694,7 @@ func (c *Catalog) internType(t *TypeExpr, newFamily func(name string) (int64, er
 	name := strings.ToLower(strings.TrimSpace(t.Name))
 	familyOID, err := c.familyOIDByQualifiedName(name)
 	if err != nil {
-		if name == ArrayTypeName {
+		if name == ArrayTypeName && write {
 			// Every dialect has arrays, whether or not its seed lists the
 			// family; one that does not gets it as an array type rather
 			// than a user type.
@@ -700,14 +714,17 @@ func (c *Catalog) internType(t *TypeExpr, newFamily func(name string) (int64, er
 		return 0, nil, err
 	}
 	if len(t.Args) == 0 {
-		return familyOID, &TypeExpr{Name: family.Name}, nil
+		return familyOID, &TypeExpr{Name: c.qualifiedName(family)}, nil
 	}
 
 	// The instance's canonical spelling is the family applied to its
 	// arguments as the catalog spells them, so each argument type is
-	// resolved first and read back.
-	canonical := &TypeExpr{Name: family.Name, Args: make([]TypeArg, len(t.Args))}
+	// resolved first and read back. An argument whose own instance is not
+	// a row, in a lookup that may not write, still has a canonical
+	// spelling, which the whole expression's is built from.
+	canonical := &TypeExpr{Name: c.qualifiedName(family), Args: make([]TypeArg, len(t.Args))}
 	argOIDs := make([]int64, len(t.Args))
+	unknown := false
 	for i, a := range t.Args {
 		canonical.Args[i] = a
 		if a.Type == nil {
@@ -715,11 +732,17 @@ func (c *Catalog) internType(t *TypeExpr, newFamily func(name string) (int64, er
 		}
 		oid, argExpr, err := c.internType(a.Type, newFamily, write)
 		if err != nil {
-			return 0, nil, err
+			if !errors.Is(err, errUnknownType) || argExpr == nil {
+				return 0, nil, err
+			}
+			unknown = true
 		}
 		argOIDs[i] = oid
 		argExpr.Nullable = a.Type.Nullable
 		canonical.Args[i].Type = argExpr
+	}
+	if unknown {
+		return 0, canonical, errUnknownType
 	}
 	key := canonical.Key()
 	ctx := context.Background()

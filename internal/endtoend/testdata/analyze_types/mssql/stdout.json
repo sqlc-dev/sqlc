@@ -317,6 +317,22 @@
         "table": "things"
       },
       {
+        "name": "code2",
+        "type": {
+          "name": "code",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "code3",
+        "type": {
+          "name": "code",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
         "name": "bare",
         "type": {
           "name": "varchar",
@@ -393,6 +409,12 @@
         "name": "f",
         "type": {
           "name": "real"
+        }
+      },
+      {
+        "name": "g",
+        "type": {
+          "name": "code"
         }
       }
     ],
@@ -471,6 +493,15 @@
           "name": "",
           "type": {
             "name": "real"
+          }
+        }
+      },
+      {
+        "number": 7,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "code"
           }
         }
       }

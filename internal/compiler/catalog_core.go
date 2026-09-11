@@ -42,7 +42,7 @@ func coreResultCatalog(c *core.Catalog) (*catalog.Catalog, error) {
 				inner := expr.Innermost()
 				column := &catalog.Column{
 					Name:       col.Name,
-					Type:       ast.TypeName{Name: inner.Name},
+					Type:       ast.TypeName{Name: strings.TrimSuffix(inner.Name, " unsigned")},
 					IsNotNull:  col.NotNull,
 					IsArray:    expr.IsArray(),
 					ArrayDims:  expr.ArrayDims(),

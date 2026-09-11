@@ -8,7 +8,8 @@ SELECT
   CAST(@c AS VARCHAR(10)) AS c,
   CONVERT(DATETIME2(3), @d) AS d,
   CAST(@e AS dbo.PhoneNumber) AS e,
-  TRY_CAST(@f AS FLOAT(24)) AS f
+  TRY_CAST(@f AS FLOAT(24)) AS f,
+  CAST(@g AS dbo.Code) AS g
 FROM things;
 
 -- name: Params :one

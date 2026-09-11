@@ -29,6 +29,7 @@ CREATE TABLE things (
   iv3     interval(3),
   m       mood,
   mm      myschema.mood,
+  mms     myschema.mood[],
   p       posint,
   sn      shortname,
   pt      point2,

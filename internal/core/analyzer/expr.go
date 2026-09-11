@@ -575,7 +575,10 @@ func (a *analyzer) typeNameOf(t exprType) (string, bool) {
 	if e == nil {
 		return "", false
 	}
-	return e.Innermost().Name, e.IsArray()
+	// MySQL's unsigned families are their own types, but codegen reads
+	// the signed family and an unsigned flag, which the bridge derives
+	// from the expression.
+	return strings.TrimSuffix(e.Innermost().Name, " unsigned"), e.IsArray()
 }
 
 // columnExprType is the type a result column of a nested query has, as an

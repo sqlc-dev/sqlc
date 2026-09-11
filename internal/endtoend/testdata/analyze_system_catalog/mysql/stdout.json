@@ -75,13 +75,13 @@
             "name": "enum",
             "args": [
               {
-                "string": "base table"
+                "string": "BASE TABLE"
               },
               {
-                "string": "view"
+                "string": "VIEW"
               },
               {
-                "string": "system view"
+                "string": "SYSTEM VIEW"
               }
             ]
           },

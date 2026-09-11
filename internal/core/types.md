@@ -658,7 +658,9 @@ and details settled on the way:
   `float($1)` to `real` where `$1 <= 24`, `decimal` to `decimal(18, 0)`,
   `Decimal32($1)` to `Decimal(9, $1)`, `sysname` to `nvarchar(128)` — which
   the seed loads into `sql_type_rewrite` and the catalog applies before
-  interning, first match winning; `idents` and `ident_args`, the words and
+  interning, first match winning, tried once with the name as spelled and
+  once with its alias resolved so that `dec` meets a rule on `decimal`;
+  `idents` and `ident_args`, the words and
   argument positions that are identifiers rather than types, kept as dialect
   flags; and `affinity`, SQLite's ordered rule for a family the seed does
   not list, loaded into `sql_type_affinity` and asked when a schema
@@ -672,7 +674,22 @@ and details settled on the way:
 - A bare type name resolves in the default namespaces only — the catalog's
   own, `pg_catalog` and the dialect's default schema — and `CREATE TYPE`
   deduplicates within the namespace it names, so `foo.mood` and `mood` are
-  two types and a bare `mood` never binds to `foo.mood`.
+  two types and a bare `mood` never binds to `foo.mood`. A bare `CREATE
+  TYPE` lands in the dialect's default schema when it has one, so SQL
+  Server's `PhoneNumber` and `dbo.PhoneNumber` are one row. A type outside
+  the default namespaces is spelled with its namespace wherever the catalog
+  spells it, including inside an instance's key, so `array(foo.mood)` and
+  `array(mood)` are two rows.
+- A lookup that may not write — the analyzer's, against the cached catalog
+  — still canonicalizes an expression whose instance is not a row, however
+  deep the missing instance sits, so `$1::varchar(10)[]` reports
+  `array(character varying(10))` against the `array` family. The seed
+  gives every dialect the `array` family for that reason, whether or not
+  its `types.jsonl` lists it.
+- A family in `types.jsonl` may name a `base` listed before it, which is
+  how MySQL's unsigned families stand on their signed ones: `bigint
+  unsigned` is a type of its own, and resolves as a `bigint` where nothing
+  takes it as itself.
 - SQLite's `dialect.json` says `"alias": "base"`, which makes each alias in
   its `types.jsonl` a type of its own standing on the type it aliases,
   rather than another spelling of it.
@@ -690,7 +707,13 @@ and details settled on the way:
   placeholder gives itself.
 - A cast is NULL when its operand is, or when its type says so, as
   `Nullable(String)` does; a cast of a placeholder types the placeholder
-  and takes its name and source from what it is compared with.
+  and takes its name and source from what it is compared with. A cast to
+  `interval day to second` decodes the field mask the parser reports the
+  way a column definition does.
+- ClickHouse's `LowCardinality(Nullable(T))`, the only order it accepts,
+  is a nullable column, and the converter and `goldeneye` both read it as
+  `lowcardinality(T)` with the nullability on the outside, where the
+  column's nullability lives.
 - MySQL types `CAST(x AS CHAR(10))` as `varchar(10)` and `CAST(x AS
   BINARY(8))` as `varbinary(8)`, which is what its metadata and a view over
   the cast both report, rather than the `char(10)` the table above
@@ -705,7 +728,10 @@ and details settled on the way:
   not its labels, since the canonicalizer cannot see the catalog. A
   GoogleSQL array or struct constructor in a select list is still untyped.
 - PostgreSQL's `relations.jsonl` spells an array column as its element with
-  the array flag, which `goldeneye` now writes from `typelem`.
+  the array flag, which `goldeneye` now writes from `typelem` for the
+  `_`-prefixed array types alone; `int2vector` and `oidvector` share the
+  array category but stay types of their own. MySQL's keeps the case of an
+  enum's members, which are values.
 
 ## Order of work
 

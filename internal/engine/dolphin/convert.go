@@ -1159,14 +1159,20 @@ func (c *cc) convertFuncCastExpr(n *pcast.FuncCastExpr) ast.Node {
 	out := &ast.TypeName{Name: typeName}
 	flen, dec := n.Tp.GetFlen(), n.Tp.GetDecimal()
 	switch tp {
-	case mysql.TypeNewDecimal, mysql.TypeFloat, mysql.TypeDouble:
+	case mysql.TypeNewDecimal:
+		// A decimal's precision and scale are part of its type, and a
+		// scale left out is 0: CAST(x AS DECIMAL(5)) is a decimal(5,0).
 		if flen >= 0 && flen != types.UnspecifiedLength {
 			mods := []ast.Node{&ast.Integer{Ival: int64(flen)}}
-			if dec > 0 && dec != types.UnspecifiedLength {
+			if dec >= 0 && dec != types.UnspecifiedLength {
 				mods = append(mods, &ast.Integer{Ival: int64(dec)})
 			}
 			out.Typmods = &ast.List{Items: mods}
 		}
+	case mysql.TypeFloat, mysql.TypeDouble:
+		// The parser fills in a display width for a float or double, and
+		// a precision written as FLOAT(p) only picks between the two; the
+		// result is a plain float or double.
 	case mysql.TypeVarchar, mysql.TypeVarString, mysql.TypeString:
 		if flen > 0 && flen != types.UnspecifiedLength {
 			out.Typmods = &ast.List{Items: []ast.Node{&ast.Integer{Ival: int64(flen)}}}

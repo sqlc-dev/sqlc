@@ -9,7 +9,8 @@ SELECT
   $4::mood AS d,
   CAST($5 AS VARCHAR(5)) AS e,
   $6::MAP(VARCHAR, INTEGER) AS f,
-  $7::INTEGER[3] AS g
+  $7::INTEGER[3] AS g,
+  $8::main.mood AS h
 FROM things;
 
 -- name: Params :one

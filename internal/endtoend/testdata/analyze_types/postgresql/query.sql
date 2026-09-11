@@ -13,7 +13,11 @@ SELECT
   $6::int4[][] AS h,
   $7::numeric(5,1) AS i,
   ARRAY[1, 2] AS j,
-  $8::myschema.mood AS k
+  $8::myschema.mood AS k,
+  $9::varchar(10)[] AS l,
+  $10::interval day to second AS m,
+  $11::myschema.mood[] AS n,
+  $12::mood[] AS o
 FROM things;
 
 -- name: Params :one

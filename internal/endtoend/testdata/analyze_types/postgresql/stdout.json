@@ -256,6 +256,21 @@
         "table": "things"
       },
       {
+        "name": "mms",
+        "type": {
+          "name": "array",
+          "nullable": true,
+          "args": [
+            {
+              "type": {
+                "name": "myschema.mood"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
         "name": "p",
         "type": {
           "name": "posint",
@@ -511,6 +526,61 @@
         "type": {
           "name": "myschema.mood"
         }
+      },
+      {
+        "name": "l",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "character varying",
+                "args": [
+                  {
+                    "int": 10
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "m",
+        "type": {
+          "name": "interval",
+          "args": [
+            {
+              "ident": "day to second"
+            }
+          ]
+        }
+      },
+      {
+        "name": "n",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "myschema.mood"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "o",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "mood"
+              }
+            }
+          ]
+        }
       }
     ],
     "params": [
@@ -625,6 +695,73 @@
           "name": "",
           "type": {
             "name": "myschema.mood"
+          }
+        }
+      },
+      {
+        "number": 9,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "array",
+            "args": [
+              {
+                "type": {
+                  "name": "character varying",
+                  "args": [
+                    {
+                      "int": 10
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 10,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "interval",
+            "args": [
+              {
+                "ident": "day to second"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 11,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "array",
+            "args": [
+              {
+                "type": {
+                  "name": "myschema.mood"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 12,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "array",
+            "args": [
+              {
+                "type": {
+                  "name": "mood"
+                }
+              }
+            ]
           }
         }
       }

@@ -846,8 +846,8 @@ func (c *cc) elementTypeName(t *dw.TypeExpression) (*ast.TypeName, int) {
 // is written as it was.
 func renderTypeExpression(t *dw.TypeExpression) string {
 	name := identifier(t.TypeName)
-	if t.Schema != "" {
-		name = schemaName(t.Schema) + "." + name
+	if schema := schemaName(t.Schema); schema != "" {
+		name = schema + "." + name
 	}
 	if name == "list" {
 		name = "array"

@@ -156,6 +156,14 @@
         "table": "things"
       },
       {
+        "name": "mm",
+        "type": {
+          "name": "mood",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
         "name": "big",
         "type": {
           "name": "hugeint",
@@ -432,6 +440,12 @@
             }
           ]
         }
+      },
+      {
+        "name": "h",
+        "type": {
+          "name": "mood"
+        }
       }
     ],
     "params": [
@@ -540,6 +554,15 @@
                 "int": 3
               }
             ]
+          }
+        }
+      },
+      {
+        "number": 8,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "mood"
           }
         }
       }

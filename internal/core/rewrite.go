@@ -213,13 +213,33 @@ func (c *Catalog) userTypeBase(name string) (int64, error) {
 
 // canonicalize applies the dialect's identifier settings and rewrites to
 // an expression: the first rewrite whose pattern matches is applied, and
-// its result is not rewritten again.
+// its result is not rewritten again. A rewrite names a family as the
+// dialect spells it, so an expression spelled with an alias — dec(10) for
+// a rule on decimal — is tried again with the alias resolved.
 func (c *Catalog) canonicalize(t *TypeExpr) (*TypeExpr, error) {
 	r, err := c.loadRules()
 	if err != nil {
 		return nil, err
 	}
 	t = r.identify(t)
+	if len(r.rewrites) == 0 {
+		return t, nil
+	}
+	if out, ok := r.rewrite(t); ok {
+		return out, nil
+	}
+	if canonical, ok := c.canonicalFamilyName(t.Name); ok && !strings.EqualFold(canonical, t.Name) {
+		resolved := t.Clone()
+		resolved.Name = canonical
+		if out, ok := r.rewrite(resolved); ok {
+			return out, nil
+		}
+	}
+	return t, nil
+}
+
+// rewrite applies the first rewrite whose pattern matches the expression.
+func (r *rules) rewrite(t *TypeExpr) (*TypeExpr, bool) {
 	name := strings.ToLower(t.Name)
 	for _, rw := range r.rewrites {
 		if strings.ToLower(rw.pattern.Name) != name || len(rw.pattern.Args) != len(t.Args) {
@@ -231,9 +251,26 @@ func (c *Catalog) canonicalize(t *TypeExpr) (*TypeExpr, error) {
 		}
 		out := substitute(rw.template, bindings)
 		out.Nullable = t.Nullable
-		return out, nil
+		return out, true
 	}
-	return t, nil
+	return nil, false
+}
+
+// canonicalFamilyName is the name the catalog spells a family by, with
+// aliases resolved, or false when the name is not a family it holds.
+func (c *Catalog) canonicalFamilyName(name string) (string, bool) {
+	oid, err := c.familyOIDByQualifiedName(strings.ToLower(strings.TrimSpace(name)))
+	if err != nil {
+		return "", false
+	}
+	if oid, err = c.canonicalOID(oid); err != nil {
+		return "", false
+	}
+	info, err := c.LookupType(oid)
+	if err != nil {
+		return "", false
+	}
+	return c.qualifiedName(info), true
 }
 
 // identify turns the bare words the dialect calls identifiers into

@@ -86,11 +86,11 @@
         "name": "kind",
         "type": {
           "name": "lowcardinality",
+          "nullable": true,
           "args": [
             {
               "type": {
-                "name": "string",
-                "nullable": true
+                "name": "string"
               }
             }
           ]
@@ -456,11 +456,11 @@
         "name": "kind",
         "type": {
           "name": "lowcardinality",
+          "nullable": true,
           "args": [
             {
               "type": {
-                "name": "string",
-                "nullable": true
+                "name": "string"
               }
             }
           ]

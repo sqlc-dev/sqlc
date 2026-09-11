@@ -70,10 +70,30 @@ func readRelations(ctx context.Context, conn *sql.Conn, schema string) ([]dialec
 
 // typeName spells a column's type the way a declaration does, which is
 // COLUMN_TYPE as information_schema reports it: "varchar(64)", "bigint
-// unsigned", "enum('a','b')", in lower case.
+// unsigned", "enum('a','b')". The family is spelled in lower case; the
+// members of an enum or set are values and keep theirs.
 func typeName(dataType, columnType string) string {
 	if columnType == "" {
 		return strings.ToLower(dataType)
 	}
-	return strings.ToLower(columnType)
+	var out strings.Builder
+	quoted := false
+	for i := 0; i < len(columnType); i++ {
+		c := columnType[i]
+		switch {
+		case quoted && c == '\\' && i+1 < len(columnType):
+			out.WriteByte(c)
+			i++
+			out.WriteByte(columnType[i])
+			continue
+		case c == '\'':
+			quoted = !quoted
+		}
+		if quoted {
+			out.WriteByte(c)
+		} else {
+			out.WriteString(strings.ToLower(string(c)))
+		}
+	}
+	return out.String()
 }

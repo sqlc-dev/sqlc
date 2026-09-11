@@ -5,6 +5,7 @@ CREATE TABLE things (
   price DECIMAL(10,2) NOT NULL,
   uprice DECIMAL(10,2) UNSIGNED,
   plain DECIMAL,
+  dd DEC(7,2),
   ratio FLOAT(7,4),
   f FLOAT,
   title VARCHAR(255),
