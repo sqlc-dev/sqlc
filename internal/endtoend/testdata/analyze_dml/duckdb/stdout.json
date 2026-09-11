@@ -27,7 +27,7 @@
         "column": {
           "name": "name",
           "type": {
-            "name": "text"
+            "name": "varchar"
           },
           "table": "authors"
         }
@@ -37,7 +37,7 @@
         "column": {
           "name": "bio",
           "type": {
-            "name": "text",
+            "name": "varchar",
             "nullable": true
           },
           "table": "authors"
@@ -55,7 +55,7 @@
         "column": {
           "name": "name",
           "type": {
-            "name": "text"
+            "name": "varchar"
           },
           "table": "authors"
         }
@@ -65,7 +65,7 @@
         "column": {
           "name": "bio",
           "type": {
-            "name": "text",
+            "name": "varchar",
             "nullable": true
           },
           "table": "authors"
@@ -93,7 +93,7 @@
         "column": {
           "name": "name",
           "type": {
-            "name": "text"
+            "name": "varchar"
           },
           "table": "authors"
         }
@@ -114,7 +114,7 @@
       {
         "name": "title",
         "type": {
-          "name": "text"
+          "name": "varchar"
         },
         "table": "books"
       }

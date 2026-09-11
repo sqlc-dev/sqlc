@@ -216,7 +216,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		}
 		return "sql.NullTime"
 
-	case "pg_catalog.time":
+	case "pg_catalog.time", "time", "time without time zone":
 		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Time"
 		}
@@ -228,7 +228,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		}
 		return "sql.NullTime"
 
-	case "pg_catalog.timetz":
+	case "pg_catalog.timetz", "timetz", "time with time zone":
 		if notNull {
 			return "time.Time"
 		}
@@ -237,7 +237,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		}
 		return "sql.NullTime"
 
-	case "pg_catalog.timestamp", "timestamp":
+	case "pg_catalog.timestamp", "timestamp", "timestamp without time zone":
 		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Timestamp"
 		}
@@ -249,7 +249,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		}
 		return "sql.NullTime"
 
-	case "pg_catalog.timestamptz", "timestamptz":
+	case "pg_catalog.timestamptz", "timestamptz", "timestamp with time zone":
 		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Timestamptz"
 		}
@@ -261,7 +261,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		}
 		return "sql.NullTime"
 
-	case "text", "pg_catalog.varchar", "pg_catalog.bpchar", "string", "citext", "name":
+	case "text", "pg_catalog.varchar", "varchar", "character varying", "pg_catalog.bpchar", "bpchar", "character", "string", "citext", "name":
 		if notNull {
 			return "string"
 		}
@@ -470,7 +470,7 @@ func postgresType(req *plugin.GenerateRequest, options *opts.Options, col *plugi
 		}
 		return "any"
 
-	case "bit", "varbit", "pg_catalog.bit", "pg_catalog.varbit":
+	case "bit", "varbit", "bit varying", "pg_catalog.bit", "pg_catalog.varbit":
 		if driver == opts.SQLDriverPGXV5 {
 			return "pgtype.Bits"
 		}

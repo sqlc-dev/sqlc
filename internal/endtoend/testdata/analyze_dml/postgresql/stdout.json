@@ -6,7 +6,7 @@
       {
         "name": "id",
         "type": {
-          "name": "bigserial"
+          "name": "bigint"
         },
         "table": "users"
       },
@@ -71,7 +71,7 @@
         "column": {
           "name": "id",
           "type": {
-            "name": "bigserial"
+            "name": "bigint"
           },
           "table": "users"
         }
@@ -85,7 +85,7 @@
       {
         "name": "id",
         "type": {
-          "name": "bigserial"
+          "name": "bigint"
         },
         "table": "users"
       },
@@ -113,7 +113,7 @@
         "column": {
           "name": "id",
           "type": {
-            "name": "bigserial"
+            "name": "bigint"
           },
           "table": "users"
         }
@@ -130,7 +130,7 @@
         "column": {
           "name": "id",
           "type": {
-            "name": "bigserial"
+            "name": "bigint"
           },
           "table": "users"
         }
@@ -144,7 +144,7 @@
       {
         "name": "id",
         "type": {
-          "name": "bigserial"
+          "name": "bigint"
         },
         "table": "users"
       }
@@ -155,7 +155,7 @@
         "column": {
           "name": "id",
           "type": {
-            "name": "bigserial"
+            "name": "bigint"
           },
           "table": "users"
         }

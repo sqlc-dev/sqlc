@@ -59,7 +59,7 @@
         "column": {
           "name": "relkind",
           "type": {
-            "name": "char"
+            "name": "character"
           },
           "table": "pg_class"
         }

@@ -105,13 +105,22 @@ type Settings struct {
 	// enable_fts5 compile option adds.
 	Modules map[string]string `json:"modules,omitempty"`
 
+	// Alias says what an alias in types.jsonl is. "canonical", the default,
+	// makes it another spelling of the type, which a column declared with
+	// it is reported as, the way PostgreSQL reports int as integer. "base"
+	// makes it a type of its own that stands on the one it aliases, which
+	// is how SQLite keeps a column's declared spelling while comparing it
+	// by its affinity.
+	Alias string `json:"alias,omitempty"`
+
 	// fsys is the dialect directory the settings were read from.
 	fsys fs.FS
 }
 
-// Type is a type the dialect defines. Aliases are spellings of the same type
-// that a schema may use in a column definition; each becomes its own catalog
-// type, with implicit casts registered between them.
+// Type is a type family the dialect defines. Aliases are other spellings of
+// it that a schema may use in a column definition; each becomes a row that
+// points at the type, as an alias of it or as a type standing on it,
+// depending on the dialect's Alias setting.
 type Type struct {
 	Name     string   `json:"name"`
 	Category string   `json:"category"`
@@ -435,8 +444,9 @@ type builder struct {
 	settings   Settings
 	dialectOID int64
 
-	// oids maps a lowercased type name to its OID, and categories records the
-	// category each was seeded under, in the order they were read.
+	// oids maps a lowercased type spelling to the row a seed record naming
+	// it means, and categories records the category each family was seeded
+	// under, in the order they were read.
 	oids       map[string]int64
 	categories []categorized
 
@@ -455,27 +465,42 @@ type categorized struct {
 }
 
 func (b *builder) addType(t Type) error {
-	for _, name := range append([]string{t.Name}, t.Aliases...) {
-		if _, err := b.createType(name, t.Category); err != nil {
-			return fmt.Errorf("type %q: %w", name, err)
+	oid, err := b.createType(t.Name, t.Category)
+	if err != nil {
+		return fmt.Errorf("type %q: %w", t.Name, err)
+	}
+	for _, alias := range t.Aliases {
+		if err := b.addAlias(alias, oid, t.Category); err != nil {
+			return fmt.Errorf("type %q: alias %q: %w", t.Name, alias, err)
 		}
 	}
-	return b.aliasCasts(t)
+	return nil
 }
 
-// aliasCasts makes every spelling of a type implicitly castable to every other,
-// so that a column declared "integer" and one declared "int4" compare.
-func (b *builder) aliasCasts(t Type) error {
-	names := append([]string{t.Name}, t.Aliases...)
-	for _, src := range names {
-		for _, tgt := range names {
-			if src == tgt {
-				continue
-			}
-			if err := b.addCast(Cast{Source: src, Target: tgt, Context: "i"}); err != nil {
-				return err
-			}
-		}
+// addAlias registers another spelling of a type: a row that points at the
+// type as its canonical form, or — for a dialect whose aliases are types of
+// their own — as its base.
+func (b *builder) addAlias(name string, typeOID int64, category string) error {
+	key := strings.ToLower(name)
+	if _, ok := b.oids[key]; ok {
+		return nil
+	}
+	spec := core.TypeSpec{Name: key, Typtype: "b", Category: category, DialectOID: b.dialectOID}
+	if b.settings.Alias == "base" {
+		spec.BaseOID = typeOID
+	} else {
+		spec.CanonicalOID = typeOID
+	}
+	oid, err := b.cat.CreateTypeSpec(spec)
+	if err != nil {
+		return err
+	}
+	// A record naming the alias means the type it stands for, unless the
+	// alias is a type of its own.
+	if b.settings.Alias == "base" {
+		b.oids[key] = oid
+	} else {
+		b.oids[key] = typeOID
 	}
 	return nil
 }
@@ -727,22 +752,21 @@ func (b *builder) addRelation(rel Relation) error {
 		return err
 	}
 	for i, col := range rel.Columns {
-		name := col.Type
+		t := core.ParseTypeExpr(col.Type)
 		if col.Array {
-			name += core.ArraySuffix
+			t = core.Array(t)
 		}
-		typeOID, err := b.columnType(name)
+		typeOID, err := b.columnType(t)
 		if err != nil {
 			return fmt.Errorf("relation %q column %q: %w", rel.Name, col.Name, err)
 		}
 		if err := b.cat.CreateAttributeSpec(core.AttributeSpec{
-			ClassOID:   classOID,
-			Name:       col.Name,
-			TypeOID:    typeOID,
-			Num:        i + 1,
-			NotNull:    col.NotNull,
-			DeclType:   col.Type,
-			TypeLength: col.Length,
+			ClassOID: classOID,
+			Name:     col.Name,
+			TypeOID:  typeOID,
+			Num:      i + 1,
+			NotNull:  col.NotNull,
+			DeclType: col.Type,
 		}); err != nil {
 			return fmt.Errorf("relation %q column %q: %w", rel.Name, col.Name, err)
 		}
@@ -769,14 +793,14 @@ func (b *builder) namespace(schema string) (int64, error) {
 	return oid, nil
 }
 
-// columnType resolves a column's type, which unlike a function signature may
-// name an array.
-func (b *builder) columnType(name string) (int64, error) {
-	key := strings.ToLower(name)
+// columnType resolves a column's type, which may be an array or carry
+// arguments.
+func (b *builder) columnType(t *core.TypeExpr) (int64, error) {
+	key := t.Key()
 	if oid, ok := b.oids[key]; ok {
 		return oid, nil
 	}
-	oid, err := b.cat.ResolveTypeName(key)
+	oid, err := b.cat.ResolveTypeExpr(t)
 	if err != nil {
 		return 0, err
 	}
@@ -791,5 +815,14 @@ func (b *builder) funcType(name string) (int64, error) {
 	if name == "" {
 		return 0, nil
 	}
-	return b.createType(name, "U")
+	key := strings.ToLower(name)
+	if oid, ok := b.oids[key]; ok {
+		return oid, nil
+	}
+	oid, err := b.cat.ResolvePseudoTypeExpr(core.ParseTypeExpr(name))
+	if err != nil {
+		return 0, err
+	}
+	b.oids[key] = oid
+	return oid, nil
 }

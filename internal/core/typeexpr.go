@@ -18,14 +18,98 @@ type TypeExpr struct {
 	Args     []TypeArg `json:"args,omitempty"`
 }
 
-// TypeArg is one argument of a TypeExpr: exactly one of Type, Int, Bool or
-// String is set.
+// TypeArg is one argument of a TypeExpr: exactly one of Type, Int, Bool,
+// String or Ident is set. Ident is a bare word that is not a type — the max
+// of nvarchar(max), the function of SimpleAggregateFunction(sum, UInt64),
+// the fields of interval day to second.
 type TypeArg struct {
 	Label  string    `json:"label,omitempty"`
 	Type   *TypeExpr `json:"type,omitempty"`
 	Int    *int64    `json:"int,omitempty"`
 	Bool   *bool     `json:"bool,omitempty"`
 	String *string   `json:"string,omitempty"`
+	Ident  *string   `json:"ident,omitempty"`
+}
+
+// ArrayTypeName is the family every dialect's array is an instance of: an
+// array of integers is array(integer), whatever the dialect spells it.
+const ArrayTypeName = "array"
+
+// Array wraps element in one array dimension.
+func Array(element *TypeExpr) *TypeExpr {
+	return &TypeExpr{Name: ArrayTypeName, Args: []TypeArg{{Type: element}}}
+}
+
+// IsArray reports whether the expression is an array.
+func (t *TypeExpr) IsArray() bool {
+	return t != nil && t.Name == ArrayTypeName && len(t.Args) > 0 && t.Args[0].Type != nil
+}
+
+// Element is an array's element type, or nil for anything else.
+func (t *TypeExpr) Element() *TypeExpr {
+	if !t.IsArray() {
+		return nil
+	}
+	return t.Args[0].Type
+}
+
+// ArrayDims counts the array dimensions wrapped around the expression's
+// innermost type, and Innermost is that type: the integer of an array of
+// arrays of integers.
+func (t *TypeExpr) ArrayDims() int {
+	dims := 0
+	for t.IsArray() {
+		dims++
+		t = t.Element()
+	}
+	return dims
+}
+
+func (t *TypeExpr) Innermost() *TypeExpr {
+	for t.IsArray() {
+		t = t.Element()
+	}
+	return t
+}
+
+// Clone copies the expression, arguments and all, so that a caller can set
+// nullability on the copy without touching a cached one.
+func (t *TypeExpr) Clone() *TypeExpr {
+	if t == nil {
+		return nil
+	}
+	out := &TypeExpr{Name: t.Name, Nullable: t.Nullable}
+	if len(t.Args) > 0 {
+		out.Args = make([]TypeArg, len(t.Args))
+		for i, a := range t.Args {
+			out.Args[i] = a
+			out.Args[i].Type = a.Type.Clone()
+		}
+	}
+	return out
+}
+
+// WithNullable returns a copy of the expression with its own nullability set
+// as given; the nullability of a nested type is left alone.
+func (t *TypeExpr) WithNullable(nullable bool) *TypeExpr {
+	out := t.Clone()
+	if out != nil {
+		out.Nullable = nullable
+	}
+	return out
+}
+
+// Key is the expression's canonical spelling, which identifies its row in
+// the catalog: the expression's own nullability is not part of it, since a
+// row is never nullable, while the nullability of a nested type is.
+func (t *TypeExpr) Key() string {
+	if t == nil {
+		return ""
+	}
+	if !t.Nullable {
+		return t.String()
+	}
+	return t.WithNullable(false).String()
 }
 
 // ParseTypeExpr reads a type spelled the way every dialect spells one, as a
@@ -36,7 +120,7 @@ type TypeArg struct {
 func ParseTypeExpr(s string) *TypeExpr {
 	s = strings.TrimSpace(s)
 	if element, ok := strings.CutSuffix(s, ArraySuffix); ok {
-		return &TypeExpr{Name: "array", Args: []TypeArg{{Type: ParseTypeExpr(element)}}}
+		return Array(ParseTypeExpr(element))
 	}
 	name, args := splitTypeArgs(s)
 	name = strings.ToLower(name)
@@ -187,6 +271,8 @@ func (t *TypeExpr) String() string {
 				b.WriteString(strconv.FormatBool(*a.Bool))
 			case a.String != nil:
 				b.WriteString("'" + strings.ReplaceAll(*a.String, "'", `\'`) + "'")
+			case a.Ident != nil:
+				b.WriteString(*a.Ident)
 			}
 		}
 		b.WriteByte(')')

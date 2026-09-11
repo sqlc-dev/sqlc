@@ -86,9 +86,8 @@ const createAttribute = `-- name: CreateAttribute :exec
 
 INSERT INTO sql_attribute (
     class_oid, name, type_oid, not_null, has_default, num,
-    decl_type, type_length, type_scale,
-    auto_increment, is_primary_key, is_unique, hidden
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    decl_type, auto_increment, is_primary_key, is_unique, hidden
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 type CreateAttributeParams struct {
@@ -99,8 +98,6 @@ type CreateAttributeParams struct {
 	HasDefault    int64
 	Num           int64
 	DeclType      string
-	TypeLength    int64
-	TypeScale     int64
 	AutoIncrement int64
 	IsPrimaryKey  int64
 	IsUnique      int64
@@ -117,8 +114,6 @@ func (q *Queries) CreateAttribute(ctx context.Context, arg CreateAttributeParams
 		arg.HasDefault,
 		arg.Num,
 		arg.DeclType,
-		arg.TypeLength,
-		arg.TypeScale,
 		arg.AutoIncrement,
 		arg.IsPrimaryKey,
 		arg.IsUnique,
@@ -330,37 +325,79 @@ func (q *Queries) CreateProcArg(ctx context.Context, arg CreateProcArgParams) er
 const createType = `-- name: CreateType :execlastid
 
 INSERT INTO sql_type
-    (name, size, typtype, category, preferred, namespace_oid, dialect_oid, element_oid)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    (name, expr, typtype, category, preferred, namespace_oid, dialect_oid,
+     family_oid, element_oid, base_oid, canonical_oid, not_null)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 type CreateTypeParams struct {
 	Name         string
-	Size         int64
+	Expr         string
 	Typtype      string
 	Category     sql.NullString
 	Preferred    int64
 	NamespaceOid int64
 	DialectOid   sql.NullInt64
+	FamilyOid    sql.NullInt64
 	ElementOid   sql.NullInt64
+	BaseOid      sql.NullInt64
+	CanonicalOid sql.NullInt64
+	NotNull      int64
 }
 
 // =============================== sql_type ==============================
 func (q *Queries) CreateType(ctx context.Context, arg CreateTypeParams) (int64, error) {
 	result, err := q.db.ExecContext(ctx, createType,
 		arg.Name,
-		arg.Size,
+		arg.Expr,
 		arg.Typtype,
 		arg.Category,
 		arg.Preferred,
 		arg.NamespaceOid,
 		arg.DialectOid,
+		arg.FamilyOid,
 		arg.ElementOid,
+		arg.BaseOid,
+		arg.CanonicalOid,
+		arg.NotNull,
 	)
 	if err != nil {
 		return 0, err
 	}
 	return result.LastInsertId()
+}
+
+const createTypeArg = `-- name: CreateTypeArg :exec
+INSERT INTO sql_type_arg
+    (type_oid, ord, label, arg_type_oid, nullable, int_value, bool_value, string_value, ident)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+`
+
+type CreateTypeArgParams struct {
+	TypeOid     int64
+	Ord         int64
+	Label       string
+	ArgTypeOid  sql.NullInt64
+	Nullable    int64
+	IntValue    sql.NullInt64
+	BoolValue   sql.NullInt64
+	StringValue sql.NullString
+	Ident       sql.NullString
+}
+
+func (q *Queries) CreateTypeArg(ctx context.Context, arg CreateTypeArgParams) error {
+	_, err := q.db.ExecContext(ctx, createTypeArg,
+		arg.TypeOid,
+		arg.Ord,
+		arg.Label,
+		arg.ArgTypeOid,
+		arg.Nullable,
+		arg.IntValue,
+		arg.BoolValue,
+		arg.StringValue,
+		arg.Ident,
+	)
+	return err
 }
 
 const deleteAttribute = `-- name: DeleteAttribute :exec
@@ -603,7 +640,7 @@ func (q *Queries) FindProcsInNamespaces(ctx context.Context, arg FindProcsInName
 }
 
 const listClassColumns = `-- name: ListClassColumns :many
-SELECT a.name AS column_name, t.name AS type_name, a.not_null
+SELECT a.name AS column_name, a.type_oid, a.not_null
 FROM sql_attribute a
 JOIN sql_type t ON t.oid = a.type_oid
 WHERE a.class_oid = ? AND a.hidden = 0
@@ -612,7 +649,7 @@ ORDER BY a.num
 
 type ListClassColumnsRow struct {
 	ColumnName string
-	TypeName   string
+	TypeOid    int64
 	NotNull    int64
 }
 
@@ -625,7 +662,7 @@ func (q *Queries) ListClassColumns(ctx context.Context, classOid int64) ([]ListC
 	var items []ListClassColumnsRow
 	for rows.Next() {
 		var i ListClassColumnsRow
-		if err := rows.Scan(&i.ColumnName, &i.TypeName, &i.NotNull); err != nil {
+		if err := rows.Scan(&i.ColumnName, &i.TypeOid, &i.NotNull); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -702,8 +739,7 @@ func (q *Queries) ListTablesInNamespace(ctx context.Context, namespaceOid int64)
 
 const lookupAttribute = `-- name: LookupAttribute :one
 SELECT ns.name AS schema_name, cls.name AS table_name, a.name AS column_name, a.num,
-       a.decl_type, a.type_length, a.type_scale,
-       a.auto_increment, a.is_primary_key, a.is_unique, a.not_null
+       a.decl_type, a.auto_increment, a.is_primary_key, a.is_unique, a.not_null
 FROM sql_attribute a
 JOIN sql_class cls ON cls.oid = a.class_oid
 JOIN sql_namespace ns ON ns.oid = cls.namespace_oid
@@ -716,8 +752,6 @@ type LookupAttributeRow struct {
 	ColumnName    string
 	Num           int64
 	DeclType      string
-	TypeLength    int64
-	TypeScale     int64
 	AutoIncrement int64
 	IsPrimaryKey  int64
 	IsUnique      int64
@@ -733,8 +767,6 @@ func (q *Queries) LookupAttribute(ctx context.Context, oid int64) (LookupAttribu
 		&i.ColumnName,
 		&i.Num,
 		&i.DeclType,
-		&i.TypeLength,
-		&i.TypeScale,
 		&i.AutoIncrement,
 		&i.IsPrimaryKey,
 		&i.IsUnique,
@@ -744,17 +776,25 @@ func (q *Queries) LookupAttribute(ctx context.Context, oid int64) (LookupAttribu
 }
 
 const lookupType = `-- name: LookupType :one
-SELECT oid, name, category, typtype, preferred
+SELECT oid, namespace_oid, name, expr, category, typtype, preferred,
+       family_oid, element_oid, base_oid, canonical_oid, not_null
 FROM sql_type
 WHERE oid = ?
 `
 
 type LookupTypeRow struct {
-	Oid       int64
-	Name      string
-	Category  sql.NullString
-	Typtype   string
-	Preferred int64
+	Oid          int64
+	NamespaceOid int64
+	Name         string
+	Expr         string
+	Category     sql.NullString
+	Typtype      string
+	Preferred    int64
+	FamilyOid    sql.NullInt64
+	ElementOid   sql.NullInt64
+	BaseOid      sql.NullInt64
+	CanonicalOid sql.NullInt64
+	NotNull      int64
 }
 
 func (q *Queries) LookupType(ctx context.Context, oid int64) (LookupTypeRow, error) {
@@ -762,10 +802,17 @@ func (q *Queries) LookupType(ctx context.Context, oid int64) (LookupTypeRow, err
 	var i LookupTypeRow
 	err := row.Scan(
 		&i.Oid,
+		&i.NamespaceOid,
 		&i.Name,
+		&i.Expr,
 		&i.Category,
 		&i.Typtype,
 		&i.Preferred,
+		&i.FamilyOid,
+		&i.ElementOid,
+		&i.BaseOid,
+		&i.CanonicalOid,
+		&i.NotNull,
 	)
 	return i, err
 }
@@ -853,8 +900,7 @@ func (q *Queries) RenameClass(ctx context.Context, arg RenameClassParams) error 
 
 const resolveColumn = `-- name: ResolveColumn :one
 SELECT a.oid, a.class_oid, a.name, t.name AS type_name, a.type_oid, a.not_null,
-       a.decl_type, a.type_length, a.type_scale,
-       a.auto_increment, a.is_primary_key, a.is_unique
+       a.decl_type, a.auto_increment, a.is_primary_key, a.is_unique
 FROM sql_attribute a
 JOIN sql_class c ON c.oid = a.class_oid
 JOIN sql_type t ON t.oid = a.type_oid
@@ -874,8 +920,6 @@ type ResolveColumnRow struct {
 	TypeOid       int64
 	NotNull       int64
 	DeclType      string
-	TypeLength    int64
-	TypeScale     int64
 	AutoIncrement int64
 	IsPrimaryKey  int64
 	IsUnique      int64
@@ -892,8 +936,6 @@ func (q *Queries) ResolveColumn(ctx context.Context, arg ResolveColumnParams) (R
 		&i.TypeOid,
 		&i.NotNull,
 		&i.DeclType,
-		&i.TypeLength,
-		&i.TypeScale,
 		&i.AutoIncrement,
 		&i.IsPrimaryKey,
 		&i.IsUnique,
@@ -1001,8 +1043,7 @@ func (q *Queries) SetDialectFlag(ctx context.Context, arg SetDialectFlagParams) 
 
 const tableColumns = `-- name: TableColumns :many
 SELECT a.oid, a.class_oid, a.name, t.name AS type_name, a.type_oid, a.not_null,
-       a.decl_type, a.type_length, a.type_scale,
-       a.auto_increment, a.is_primary_key, a.is_unique
+       a.decl_type, a.auto_increment, a.is_primary_key, a.is_unique
 FROM sql_attribute a
 JOIN sql_class c ON c.oid = a.class_oid
 JOIN sql_type t ON t.oid = a.type_oid
@@ -1018,8 +1059,6 @@ type TableColumnsRow struct {
 	TypeOid       int64
 	NotNull       int64
 	DeclType      string
-	TypeLength    int64
-	TypeScale     int64
 	AutoIncrement int64
 	IsPrimaryKey  int64
 	IsUnique      int64
@@ -1042,11 +1081,59 @@ func (q *Queries) TableColumns(ctx context.Context, name string) ([]TableColumns
 			&i.TypeOid,
 			&i.NotNull,
 			&i.DeclType,
-			&i.TypeLength,
-			&i.TypeScale,
 			&i.AutoIncrement,
 			&i.IsPrimaryKey,
 			&i.IsUnique,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const typeArgs = `-- name: TypeArgs :many
+SELECT ord, label, arg_type_oid, nullable, int_value, bool_value, string_value, ident
+FROM sql_type_arg
+WHERE type_oid = ?
+ORDER BY ord
+`
+
+type TypeArgsRow struct {
+	Ord         int64
+	Label       string
+	ArgTypeOid  sql.NullInt64
+	Nullable    int64
+	IntValue    sql.NullInt64
+	BoolValue   sql.NullInt64
+	StringValue sql.NullString
+	Ident       sql.NullString
+}
+
+func (q *Queries) TypeArgs(ctx context.Context, typeOid int64) ([]TypeArgsRow, error) {
+	rows, err := q.db.QueryContext(ctx, typeArgs, typeOid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []TypeArgsRow
+	for rows.Next() {
+		var i TypeArgsRow
+		if err := rows.Scan(
+			&i.Ord,
+			&i.Label,
+			&i.ArgTypeOid,
+			&i.Nullable,
+			&i.IntValue,
+			&i.BoolValue,
+			&i.StringValue,
+			&i.Ident,
 		); err != nil {
 			return nil, err
 		}
@@ -1072,11 +1159,11 @@ func (q *Queries) TypeNameByOID(ctx context.Context, oid int64) (string, error) 
 	return name, err
 }
 
-const typeOIDByName = `-- name: TypeOIDByName :one
+const typeOIDByExpr = `-- name: TypeOIDByExpr :one
 SELECT t.oid
 FROM sql_type t
 JOIN sql_namespace ns ON ns.oid = t.namespace_oid
-WHERE t.name = ?1
+WHERE t.expr = ?1
 ORDER BY
     CASE ns.name
         WHEN 'pg_catalog' THEN 0
@@ -1087,6 +1174,46 @@ ORDER BY
 LIMIT 1
 `
 
+func (q *Queries) TypeOIDByExpr(ctx context.Context, expr string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, typeOIDByExpr, expr)
+	var oid int64
+	err := row.Scan(&oid)
+	return oid, err
+}
+
+const typeOIDByExprInNamespace = `-- name: TypeOIDByExprInNamespace :one
+SELECT oid FROM sql_type WHERE namespace_oid = ? AND expr = ?
+`
+
+type TypeOIDByExprInNamespaceParams struct {
+	NamespaceOid int64
+	Expr         string
+}
+
+func (q *Queries) TypeOIDByExprInNamespace(ctx context.Context, arg TypeOIDByExprInNamespaceParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, typeOIDByExprInNamespace, arg.NamespaceOid, arg.Expr)
+	var oid int64
+	err := row.Scan(&oid)
+	return oid, err
+}
+
+const typeOIDByName = `-- name: TypeOIDByName :one
+SELECT t.oid
+FROM sql_type t
+JOIN sql_namespace ns ON ns.oid = t.namespace_oid
+WHERE t.name = ?1 AND t.family_oid IS NULL
+ORDER BY
+    CASE ns.name
+        WHEN 'pg_catalog' THEN 0
+        WHEN 'public' THEN 1
+        ELSE 2
+    END,
+    ns.name
+LIMIT 1
+`
+
+// The family spelled name: an instance carries its family's name too, and
+// is found by its expression instead.
 func (q *Queries) TypeOIDByName(ctx context.Context, name string) (int64, error) {
 	row := q.db.QueryRowContext(ctx, typeOIDByName, name)
 	var oid int64
@@ -1097,6 +1224,7 @@ func (q *Queries) TypeOIDByName(ctx context.Context, name string) (int64, error)
 const typeOIDsInCategory = `-- name: TypeOIDsInCategory :many
 SELECT oid FROM sql_type
 WHERE dialect_oid = ? AND category = ?
+  AND family_oid IS NULL AND canonical_oid IS NULL
 ORDER BY oid
 `
 
@@ -1105,6 +1233,8 @@ type TypeOIDsInCategoryParams struct {
 	Category   sql.NullString
 }
 
+// The families of a category: an instance inherits its family's category
+// and an alias stands for the row it points at, so neither is listed.
 func (q *Queries) TypeOIDsInCategory(ctx context.Context, arg TypeOIDsInCategoryParams) ([]int64, error) {
 	rows, err := q.db.QueryContext(ctx, typeOIDsInCategory, arg.DialectOid, arg.Category)
 	if err != nil {

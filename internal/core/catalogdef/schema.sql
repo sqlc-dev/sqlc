@@ -20,26 +20,66 @@ CREATE TABLE sql_dialect_flag (
     PRIMARY KEY (dialect_oid, key)
 );
 
--- sql_type: data types. Modeled on pg_type.
---   typtype:  'b'ase | 'c'omposite | 'd'omain | 'e'num | 'p'seudo | 'r'ange
---   category: 'N'umeric | 'S'tring | 'B'oolean | 'D'atetime | 'A'rray |
---             'C'omposite | 'E'num | 'U'serdef | 'X'unknown
---   preferred: tie-breaker for implicit cast resolution within a category
---   element_oid: for arrays, points at the element type
---   dialect_oid: NULL = standard / shared across dialects
+-- sql_type: data types, one row per type expression. Modeled on pg_type,
+-- with the arguments PostgreSQL keeps as a typmod on the use site held in
+-- the row instead.
+--
+-- A row is a family — a name the dialect or the schema declares: numeric,
+-- array, mood — or an instance, a family applied to arguments: numeric(10, 2),
+-- array(integer). expr is the canonical spelling of the whole expression and
+-- the row's identity; name is the family's name, on an instance too, so a
+-- lookup by name finds the family and an instance points at it.
+--
+--   typtype:       'b'ase | 'c'omposite | 'd'omain | 'e'num | 'p'seudo | 'r'ange
+--   category:      'N'umeric | 'S'tring | 'B'oolean | 'D'atetime | 'A'rray |
+--                  'C'omposite | 'E'num | 'U'serdef | 'X'unknown
+--   preferred:     tie-breaker for implicit cast resolution within a category
+--   family_oid:    NULL on a family; the family on an instance
+--   element_oid:   what the type holds: an array's element, a map's value,
+--                  a range's subtype
+--   base_oid:      what the type stands on: a domain's or alias type's base,
+--                  a wrapper's inner type, a SQLite spelling's affinity
+--   canonical_oid: the row the engine reports this one as: an alias spelling
+--                  points at the type it names
+--   not_null:      a domain or alias type declared NOT NULL
+--   dialect_oid:   NULL = standard / shared across dialects
 CREATE TABLE sql_type (
     oid           INTEGER PRIMARY KEY AUTOINCREMENT,
     namespace_oid INTEGER NOT NULL REFERENCES sql_namespace(oid),
     dialect_oid   INTEGER REFERENCES sql_dialect(oid),
     name          TEXT NOT NULL,
-    size          INTEGER NOT NULL DEFAULT 0,
+    expr          TEXT NOT NULL,
     typtype       TEXT NOT NULL DEFAULT 'b',
     category      TEXT,
     preferred     INTEGER NOT NULL DEFAULT 0,
+    family_oid    INTEGER REFERENCES sql_type(oid),
     element_oid   INTEGER REFERENCES sql_type(oid),
-    UNIQUE (namespace_oid, name)
+    base_oid      INTEGER REFERENCES sql_type(oid),
+    canonical_oid INTEGER REFERENCES sql_type(oid),
+    not_null      INTEGER NOT NULL DEFAULT 0,
+    UNIQUE (namespace_oid, expr)
 );
 CREATE INDEX idx_sql_type_name ON sql_type(name);
+
+-- sql_type_arg: the arguments of an instance, or the fields, labels or
+-- members of a declared composite, enum or set, in order. Exactly one of
+-- arg_type_oid, int_value, bool_value, string_value and ident is set.
+--   label:    a struct field, tuple element or enum label
+--   nullable: the argument type is nullable at this position, as the inner
+--             type of Array(Nullable(String)) is
+--   ident:    a bare word that is not a type: max, sum, day to second
+CREATE TABLE sql_type_arg (
+    type_oid     INTEGER NOT NULL REFERENCES sql_type(oid),
+    ord          INTEGER NOT NULL,
+    label        TEXT NOT NULL DEFAULT '',
+    arg_type_oid INTEGER REFERENCES sql_type(oid),
+    nullable     INTEGER NOT NULL DEFAULT 0,
+    int_value    INTEGER,
+    bool_value   INTEGER,
+    string_value TEXT,
+    ident        TEXT,
+    PRIMARY KEY (type_oid, ord)
+);
 
 -- sql_class: relations (tables, views, indexes).
 --   kind: 'r' = table, 'v' = view, 'i' = index, 'c' = composite type, 'f' = foreign
@@ -52,13 +92,9 @@ CREATE TABLE sql_class (
 );
 
 -- sql_attribute: columns of a relation.
---   decl_type:       original declared type string before normalization
---                    (e.g. VARCHAR(10), BIGINT UNSIGNED, INTEGER PRIMARY KEY).
---                    Useful for SQLite where multiple syntaxes collapse to
---                    one of five affinities, and as a debugging aid.
---   type_length:     length / precision (varchar(N), numeric(p,s).p,
---                    char(N), bit(N)). 0 = unspecified.
---   type_scale:      scale for numeric/decimal. 0 = unspecified.
+--   decl_type:       the type as the schema spelled it, before
+--                    canonicalization (VARCHAR(10), BIGINT UNSIGNED), which
+--                    is what a formatter prints back and what SQLite reports.
 --   auto_increment:  rowid alias (sqlite INTEGER PRIMARY KEY), AUTOINCREMENT,
 --                    pg serial/bigserial/identity, mysql AUTO_INCREMENT.
 --   is_primary_key:  this column participates in the relation's primary key.
@@ -77,8 +113,6 @@ CREATE TABLE sql_attribute (
     has_default    INTEGER NOT NULL DEFAULT 0,
     num            INTEGER NOT NULL, -- ordinal position (1-based)
     decl_type      TEXT    NOT NULL DEFAULT '',
-    type_length    INTEGER NOT NULL DEFAULT 0,
-    type_scale     INTEGER NOT NULL DEFAULT 0,
     auto_increment INTEGER NOT NULL DEFAULT 0,
     is_primary_key INTEGER NOT NULL DEFAULT 0,
     is_unique      INTEGER NOT NULL DEFAULT 0,

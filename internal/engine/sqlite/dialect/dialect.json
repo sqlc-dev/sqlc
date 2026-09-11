@@ -1,5 +1,6 @@
 {
   "dialect": "sqlite",
+  "alias": "base",
   "const": {
     "integer": "integer",
     "float": "real",

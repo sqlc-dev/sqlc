@@ -1079,14 +1079,18 @@ func unwrapTypeString(s string) (name string, isArray, nullable bool) {
 		}
 		return strings.ToLower(base), false, true
 	case "lowcardinality":
+		// Only a Nullable at the top makes the column nullable: the
+		// analysis reports LowCardinality(Nullable(String)) with the
+		// nullability inside, as ClickHouse does.
 		if len(args) == 1 {
-			return unwrapTypeString(args[0])
+			inner, arr, _ := unwrapTypeString(args[0])
+			return inner, arr, false
 		}
 		return strings.ToLower(base), false, false
 	case "array":
 		if len(args) == 1 {
-			inner, _, nul := unwrapTypeString(args[0])
-			return inner, true, nul
+			inner, _, _ := unwrapTypeString(args[0])
+			return inner, true, false
 		}
 		return strings.ToLower(base), true, false
 	default:

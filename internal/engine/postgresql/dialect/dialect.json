@@ -1,12 +1,12 @@
 {
   "dialect": "postgresql",
   "const": {
-    "integer": "int4",
+    "integer": "integer",
     "float": "numeric",
     "string": "text",
-    "bool": "bool"
+    "bool": "boolean"
   },
-  "bool": "bool",
+  "bool": "boolean",
   "comparison": ["=", "<>", "!=", "<", "<=", ">", ">=", "IS DISTINCT FROM", "IS NOT DISTINCT FROM"],
   "comparison_categories": "BNSDTU",
   "arithmetic": ["+", "-", "*", "/", "%"],

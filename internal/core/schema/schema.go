@@ -2,7 +2,6 @@ package schema
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/core/analyzer"
@@ -264,7 +263,7 @@ func applyAlterTable(cat *core.Catalog, stmt *ast.AlterTableStmt) error {
 			if err != nil {
 				return err
 			}
-			if err := cat.SetAttributeType(classOID, name, typeOID, cmd.Def.TypeName.Name); err != nil {
+			if err := cat.SetAttributeType(classOID, name, typeOID, declType(cmd.Def.TypeName)); err != nil {
 				return err
 			}
 			// An engine that reports a column's whole new definition also
@@ -355,14 +354,14 @@ func applyCreateEnum(cat *core.Catalog, stmt *ast.CreateEnumStmt) error {
 	if stmt.TypeName == nil {
 		return fmt.Errorf("create type with nil name")
 	}
-	name := core.TypeNameString(stmt.TypeName)
-	if name == "" {
+	t := core.TypeExprOfTypeName(stmt.TypeName)
+	if t == nil {
 		return fmt.Errorf("create type with empty name")
 	}
-	if _, err := cat.TypeOID(name); err == nil {
+	if _, err := cat.TypeOID(t.Name); err == nil {
 		return nil
 	}
-	_, err := cat.CreateUserType(name, "E")
+	_, err := cat.CreateUserType(t.Name, "E")
 	return err
 }
 
@@ -422,17 +421,13 @@ func resolveOrCreateNamespace(cat *core.Catalog, schema string) (int64, error) {
 	return cat.CreateNamespace(name)
 }
 
-// columnTypeOID resolves a column's type. Engines report an array column
-// either on the type name or on the column itself.
+// columnTypeOID interns a column's type and returns its row.
 func columnTypeOID(cat *core.Catalog, col *ast.ColumnDef) (int64, error) {
-	name := core.TypeNameString(col.TypeName)
-	if name == "" {
+	t := core.ColumnTypeExpr(col)
+	if t == nil {
 		return 0, fmt.Errorf("missing type name")
 	}
-	if (col.IsArray || col.ArrayDims > 0) && !strings.HasSuffix(name, core.ArraySuffix) {
-		name += core.ArraySuffix
-	}
-	return cat.ResolveTypeName(name)
+	return cat.ResolveTypeExpr(t)
 }
 
 // declType is the type as the schema spelled it: an engine that folds or

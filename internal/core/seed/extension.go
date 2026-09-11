@@ -130,13 +130,5 @@ func (e *extension) funcType(name string) (int64, error) {
 	if name == "" {
 		return 0, nil
 	}
-	if oid, err := e.cat.TypeOID(name); err == nil {
-		return oid, nil
-	}
-	return e.cat.CreateTypeSpec(core.TypeSpec{
-		Name:       name,
-		Typtype:    "b",
-		Category:   "U",
-		DialectOID: e.cat.SeededDialectOID(),
-	})
+	return e.cat.ResolvePseudoTypeExpr(core.ParseTypeExpr(name))
 }

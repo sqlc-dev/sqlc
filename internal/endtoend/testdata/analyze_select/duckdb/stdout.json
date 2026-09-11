@@ -13,7 +13,7 @@
       {
         "name": "name",
         "type": {
-          "name": "text"
+          "name": "varchar"
         },
         "table": "users"
       },
@@ -48,7 +48,7 @@
       {
         "name": "name",
         "type": {
-          "name": "text"
+          "name": "varchar"
         },
         "table": "users"
       },
@@ -69,14 +69,14 @@
       {
         "name": "title",
         "type": {
-          "name": "text"
+          "name": "varchar"
         },
         "table": "posts"
       },
       {
         "name": "body",
         "type": {
-          "name": "text",
+          "name": "varchar",
           "nullable": true
         },
         "table": "posts"
@@ -88,7 +88,7 @@
         "column": {
           "name": "name",
           "type": {
-            "name": "text"
+            "name": "varchar"
           },
           "table": "users"
         }
@@ -102,7 +102,7 @@
       {
         "name": "name",
         "type": {
-          "name": "text"
+          "name": "varchar"
         },
         "table": "users"
       },

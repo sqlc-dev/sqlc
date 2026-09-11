@@ -32,7 +32,7 @@ func (a *analyzer) projectTarget(rt *ast.ResTarget) error {
 				a.params[pr.Number] = p
 			}
 		}
-		if t.typeOID == 0 && t.typeName == "" {
+		if t.typeOID == 0 && t.expr == nil {
 			if oid, ok := a.cat.UntypedTypeOID(); ok {
 				t = exprType{typeOID: oid, nullable: true}
 			}
@@ -46,8 +46,8 @@ func (a *analyzer) projectTarget(rt *ast.ResTarget) error {
 		SourceAttributeOID: t.sourceAttributeOID,
 	}
 	col.DataType, col.IsArray = a.typeNameOf(t)
+	col.Type = a.typeExprOf(t)
 	a.decorateSource(&col, t.sourceAttributeOID, t.sourceTableAlias)
-	col.Type = a.typeExprOf(t, col.DeclType)
 	if rt.Name == nil || *rt.Name == "" {
 		a.qualifyDuplicate(&col, t.sourceTableAlias)
 	}
@@ -77,35 +77,6 @@ func (a *analyzer) qualifyDuplicate(col *core.Column, alias string) {
 	}
 }
 
-// typeExprOf writes a type as an expression. A source column's declared
-// spelling carries what the catalog's flat name cannot, so it is parsed
-// when there is one; otherwise the expression is the type's name, wrapped
-// in an array when the type is one. Nullability comes from the spelling
-// when the spelling says anything about it, and from the analysis
-// otherwise.
-func (a *analyzer) typeExprOf(t exprType, declType string) *core.TypeExpr {
-	name, isArray := a.typeNameOf(t)
-	if name == "" && declType == "" {
-		return nil
-	}
-	var expr *core.TypeExpr
-	if declType != "" {
-		expr = core.ParseTypeExpr(declType)
-		if isArray && expr.Name != "array" {
-			expr = &core.TypeExpr{Name: "array", Args: []core.TypeArg{{Type: expr}}}
-		}
-	} else {
-		expr = core.ParseTypeExpr(name)
-		if isArray {
-			expr = &core.TypeExpr{Name: "array", Args: []core.TypeArg{{Type: expr}}}
-		}
-	}
-	if !expr.HasNullable() {
-		expr.Nullable = t.nullable
-	}
-	return expr
-}
-
 func (a *analyzer) decorateSource(col *core.Column, attOID int64, tableAlias string) {
 	if attOID == 0 {
 		return
@@ -121,8 +92,6 @@ func (a *analyzer) decorateSource(col *core.Column, attOID int64, tableAlias str
 		Column:     ad.Column,
 	}
 	col.DeclType = ad.DeclType
-	col.TypeLength = ad.TypeLength
-	col.TypeScale = ad.TypeScale
 	col.IsPrimaryKey = ad.IsPrimaryKey
 	col.IsUnique = ad.IsUnique
 	col.IsAutoIncrement = ad.AutoIncrement
@@ -177,9 +146,10 @@ func (a *analyzer) emitStar(rt *ast.ResTarget, fields []string) {
 				SourceClassOID:     rel.classOID,
 				SourceAttributeOID: c.AttOID,
 			}
-			col.DataType, col.IsArray = a.typeNameOf(exprType{typeOID: c.TypeOID})
+			t := exprType{typeOID: c.TypeOID, expr: c.Type, nullable: !c.NotNull}
+			col.DataType, col.IsArray = a.typeNameOf(t)
+			col.Type = a.typeExprOf(t)
 			a.decorateSource(&col, c.AttOID, rel.alias)
-			col.Type = a.typeExprOf(exprType{typeOID: c.TypeOID, nullable: !c.NotNull}, col.DeclType)
 			a.qualifyDuplicate(&col, rel.alias)
 			a.columns = append(a.columns, col)
 			star.Columns = append(star.Columns, core.StarColumn{

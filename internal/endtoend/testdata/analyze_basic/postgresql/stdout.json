@@ -6,7 +6,7 @@
       {
         "name": "id",
         "type": {
-          "name": "bigserial"
+          "name": "bigint"
         },
         "table": "authors"
       },
@@ -32,7 +32,7 @@
         "column": {
           "name": "id",
           "type": {
-            "name": "bigserial"
+            "name": "bigint"
           },
           "table": "authors"
         }

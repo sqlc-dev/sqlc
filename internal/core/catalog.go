@@ -28,6 +28,9 @@ type Catalog struct {
 	// once per extension name: a schema is free to say CREATE EXTENSION twice.
 	loadExtension func(name string) error
 	extensions    map[string]bool
+
+	// types remembers the rows and expressions looked up so far.
+	types typeCache
 }
 
 type Option func(*Catalog) error

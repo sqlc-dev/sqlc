@@ -13,14 +13,14 @@
       {
         "name": "name",
         "type": {
-          "name": "text"
+          "name": "varchar"
         },
         "table": "authors"
       },
       {
         "name": "bio",
         "type": {
-          "name": "text",
+          "name": "varchar",
           "nullable": true
         },
         "table": "authors"
@@ -53,7 +53,7 @@
       {
         "name": "name",
         "type": {
-          "name": "text"
+          "name": "varchar"
         },
         "table": "authors"
       }
@@ -64,7 +64,7 @@
         "column": {
           "name": "name",
           "type": {
-            "name": "text"
+            "name": "varchar"
           },
           "table": "authors"
         }
@@ -99,7 +99,7 @@
         "column": {
           "name": "name",
           "type": {
-            "name": "text"
+            "name": "varchar"
           },
           "table": "authors"
         }

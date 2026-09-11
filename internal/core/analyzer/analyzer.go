@@ -112,6 +112,7 @@ func derivedRel(alias string, cols []core.Column) scopeRel {
 			AttOID:  col.SourceAttributeOID,
 			Name:    col.Name,
 			TypeOID: col.TypeOID,
+			Type:    col.Type.WithNullable(false),
 			NotNull: col.NotNull,
 		})
 	}
@@ -123,12 +124,12 @@ func (a *analyzer) result() core.PrepareResult {
 	// the dialect has such a type.
 	if oid, ok := a.cat.UntypedTypeOID(); ok {
 		for n, p := range a.params {
-			if p.TypeOID == 0 && p.DataType == "" {
+			if p.TypeOID == 0 && p.Type == nil {
 				t := exprType{typeOID: oid, nullable: true}
 				p.TypeOID = oid
 				p.DataType, p.IsArray = a.typeNameOf(t)
 				p.NotNull = false
-				p.Type = a.typeExprOf(t, "")
+				p.Type = a.typeExprOf(t)
 				a.params[n] = p
 			}
 		}

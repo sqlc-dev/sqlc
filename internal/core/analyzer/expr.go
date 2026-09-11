@@ -2,6 +2,7 @@ package analyzer
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/core"
@@ -9,12 +10,16 @@ import (
 )
 
 type exprType struct {
+	// typeOID is the type's row: the instance when the catalog holds one,
+	// else the family, else 0 for a type no dialect seeded and no schema
+	// declared.
 	typeOID int64
-	// typeName names a type the catalog does not hold — a cast to a type no
-	// dialect seeded and no schema declared, or an array of one. Analysis
-	// never adds a type: it reports the name the query used and carries on,
-	// so a query can be analyzed against a catalog it cannot write to.
-	typeName           string
+	// expr is the whole expression when it says more than the row does — a
+	// cast to numeric(5, 1) when only numeric is a row — or names a type
+	// the catalog does not hold. Analysis never adds a type: it reports the
+	// expression the query used and carries on, so a query can be analyzed
+	// against a catalog it cannot write to.
+	expr               *core.TypeExpr
 	nullable           bool
 	sourceClassOID     int64
 	sourceAttributeOID int64
@@ -167,13 +172,7 @@ func (a *analyzer) typeColumnRef(c *ast.ColumnRef) (exprType, error) {
 		}
 		return exprType{}, fmt.Errorf("unknown column %q", column)
 	}
-	return exprType{
-		typeOID:            col.TypeOID,
-		nullable:           !col.NotNull,
-		sourceClassOID:     rel.classOID,
-		sourceAttributeOID: col.AttOID,
-		sourceTableAlias:   rel.alias,
-	}, nil
+	return columnType(rel, col), nil
 }
 
 func flattenFields(fields *ast.List) []string {
@@ -207,12 +206,12 @@ func (a *analyzer) inferParam(number int, t exprType) {
 	if !ok {
 		cur = core.Parameter{Number: number}
 	}
-	typed := cur.TypeOID == 0 && cur.DataType == "" && (t.typeOID != 0 || t.typeName != "")
+	typed := cur.TypeOID == 0 && cur.Type == nil && (t.typeOID != 0 || t.expr != nil)
 	if typed {
 		cur.TypeOID = t.typeOID
 		cur.DataType, cur.IsArray = a.typeNameOf(t)
 		cur.NotNull = !t.nullable
-		cur.Type = a.typeExprOf(t, "")
+		cur.Type = a.typeExprOf(t)
 	}
 	if cur.Source == nil && t.sourceAttributeOID != 0 {
 		ad, err := a.cat.LookupAttribute(t.sourceAttributeOID)
@@ -222,9 +221,6 @@ func (a *analyzer) inferParam(number int, t exprType) {
 				Table:      ad.Table,
 				TableAlias: t.sourceTableAlias,
 				Column:     ad.Column,
-			}
-			if typed {
-				cur.Type = a.typeExprOf(t, ad.DeclType)
 			}
 		}
 	}
@@ -307,7 +303,7 @@ func (a *analyzer) typeAExpr(e *ast.A_Expr) (exprType, error) {
 		rightT = leftT
 	}
 
-	overload, err := a.resolveOperator(opName, leftT.typeOID, rightT.typeOID)
+	overload, err := a.resolveOperator(opName, leftT, rightT)
 	if err != nil {
 		return exprType{}, err
 	}
@@ -384,7 +380,7 @@ func (a *analyzer) typeIn(e *ast.In) (exprType, error) {
 			return exprType{}, err
 		}
 		if len(cols) > 0 {
-			if err := a.typeOperands(e.Expr, exprType{typeOID: cols[0].TypeOID, nullable: !cols[0].NotNull}); err != nil {
+			if err := a.typeOperands(e.Expr, columnExprType(cols[0])); err != nil {
 				return exprType{}, err
 			}
 		}
@@ -450,9 +446,9 @@ func (a *analyzer) typeCoalesce(e *ast.CoalesceExpr) (exprType, error) {
 		if err != nil {
 			return exprType{}, err
 		}
-		if !found && t.typeOID != 0 {
+		if !found && (t.typeOID != 0 || t.expr != nil) {
 			// The result is an expression's, not the column's it came from.
-			out = exprType{typeOID: t.typeOID, typeName: t.typeName}
+			out = exprType{typeOID: t.typeOID, expr: t.expr}
 			found = true
 		}
 		nullable = nullable && t.nullable
@@ -472,7 +468,7 @@ func (a *analyzer) typeFirstOf(nodes []ast.Node, nullable bool) (exprType, error
 		if err != nil {
 			return exprType{}, err
 		}
-		if !found && t.typeOID != 0 {
+		if !found && (t.typeOID != 0 || t.expr != nil) {
 			out = t
 			found = true
 		}
@@ -488,36 +484,85 @@ func (a *analyzer) typeArrayExpr(e *ast.A_ArrayExpr) (exprType, error) {
 	if err != nil {
 		return exprType{}, err
 	}
-	element, _ := a.typeNameOf(elemT)
-	if element == "" {
+	element := a.exprOf(elemT)
+	if element == nil {
 		return exprType{}, nil
 	}
-	return a.namedType(element + core.ArraySuffix), nil
+	return a.lookupType(core.Array(element.WithNullable(false))), nil
+}
+
+// lookupType is the type an expression refers to: its row when the catalog
+// holds one, its family's row when it holds only that, and the expression
+// alone when it holds neither.
+func (a *analyzer) lookupType(t *core.TypeExpr) exprType {
+	if t == nil {
+		return exprType{}
+	}
+	found, ok := a.cat.LookupTypeExpr(t)
+	if !ok {
+		return exprType{expr: t.WithNullable(false)}
+	}
+	out := exprType{typeOID: found.OID}
+	if found.OID == found.FamilyOID && len(found.Expr.Args) > 0 {
+		out.expr = found.Expr
+	}
+	return out
 }
 
 // namedType is the type a name refers to, or the name itself when the catalog
 // has no such type.
 func (a *analyzer) namedType(name string) exprType {
-	if oid, err := a.cat.TypeOID(name); err == nil {
-		return exprType{typeOID: oid}
-	}
-	return exprType{typeName: name}
+	return a.lookupType(core.ParseTypeExpr(name))
 }
 
-// typeNameOf reports a type's name and whether it is an array of that name,
-// whether the type is one the catalog holds or one only the query named.
+// exprOf is a type's expression: the one the analysis carries, or the one
+// its row stands for. It is a copy, and nil for an untyped expression.
+func (a *analyzer) exprOf(t exprType) *core.TypeExpr {
+	if t.expr != nil {
+		return t.expr.Clone()
+	}
+	if t.typeOID == 0 {
+		return nil
+	}
+	e, err := a.cat.TypeExprOf(t.typeOID)
+	if err != nil {
+		return nil
+	}
+	return e
+}
+
+// typeExprOf writes a type as the expression a result reports, with the
+// expression's own nullability set from the analysis.
+func (a *analyzer) typeExprOf(t exprType) *core.TypeExpr {
+	e := a.exprOf(t)
+	if e == nil {
+		return nil
+	}
+	e.Nullable = t.nullable
+	return e
+}
+
+// typeNameOf reports a type's innermost family name and whether the type is
+// an array, which is the flat view the legacy compiler reads.
 func (a *analyzer) typeNameOf(t exprType) (string, bool) {
-	name := t.typeName
-	if t.typeOID != 0 {
-		var err error
-		if name, err = a.cat.TypeName(t.typeOID); err != nil {
-			return "", false
-		}
+	e := a.exprOf(t)
+	if e == nil {
+		return "", false
 	}
-	if element, ok := strings.CutSuffix(name, core.ArraySuffix); ok {
-		return element, true
-	}
-	return name, false
+	return e.Innermost().Name, e.IsArray()
+}
+
+// columnExprType is the type a result column of a nested query has, as an
+// operand of the query around it.
+func columnExprType(col core.Column) exprType {
+	return exprType{typeOID: col.TypeOID, expr: col.Type.WithNullable(false), nullable: !col.NotNull}
+}
+
+// familyOID is the row everything about a type is registered on: the end of
+// its resolution chain.
+func (a *analyzer) familyOID(oid int64) int64 {
+	chain := a.cat.ResolutionChain(oid)
+	return chain[len(chain)-1]
 }
 
 // typeSubLink types a subquery used as an expression: EXISTS and IN yield a
@@ -543,7 +588,9 @@ func (a *analyzer) typeSubLink(e *ast.SubLink) (exprType, error) {
 			return exprType{nullable: true}, nil
 		}
 		// A subquery that matches no row yields NULL.
-		return exprType{typeOID: cols[0].TypeOID, nullable: true}, nil
+		t := columnExprType(cols[0])
+		t.nullable = true
+		return t, nil
 	default:
 		return a.boolType(false)
 	}
@@ -586,7 +633,7 @@ func (a *analyzer) typeNullIf(e *ast.A_Expr) (exprType, error) {
 // placeholder that type.
 func (a *analyzer) typeOperands(n ast.Node, other exprType) error {
 	if pr, ok := n.(*ast.ParamRef); ok {
-		if other.typeOID != 0 || other.typeName != "" {
+		if other.typeOID != 0 || other.expr != nil {
 			a.inferParam(pr.Number, other)
 		}
 		return nil
@@ -620,14 +667,26 @@ func opNameFromList(l *ast.List) string {
 	return strings.Join(parts, ".")
 }
 
-func (a *analyzer) resolveOperator(name string, leftOID, rightOID int64) (core.OperatorOverload, error) {
-	candidates, err := a.cat.FindOperators(name, leftOID, rightOID)
-	if err != nil {
-		return core.OperatorOverload{}, err
+// resolveOperator finds the overload of an operator over two operand types.
+// An operator is registered on a family, so an operand that is an instance,
+// an alias or a domain is looked up along its resolution chain: numeric(10,
+// 2) + numeric(5, 1) resolves on numeric.
+func (a *analyzer) resolveOperator(name string, leftT, rightT exprType) (core.OperatorOverload, error) {
+	leftChain := a.cat.ResolutionChain(leftT.typeOID)
+	rightChain := a.cat.ResolutionChain(rightT.typeOID)
+	for _, l := range leftChain {
+		for _, r := range rightChain {
+			candidates, err := a.cat.FindOperators(name, l, r)
+			if err != nil {
+				return core.OperatorOverload{}, err
+			}
+			if len(candidates) > 0 {
+				return candidates[0], nil
+			}
+		}
 	}
-	if len(candidates) > 0 {
-		return candidates[0], nil
-	}
+	leftOID := leftChain[len(leftChain)-1]
+	rightOID := rightChain[len(rightChain)-1]
 
 	all, err := a.cat.FindOperators(name, 0, 0)
 	if err != nil {
@@ -693,7 +752,7 @@ func (a *analyzer) typeFuncCall(f *ast.FuncCall) (exprType, error) {
 		if overloads, err := a.cat.FindProcs("count", nil); err == nil && len(overloads) > 0 {
 			return exprType{typeOID: overloads[0].ReturnTypeOID, nullable: overloads[0].ReturnNullable}, nil
 		}
-		oid, err := a.cat.TypeOID("int8")
+		oid, err := a.cat.TypeOID("bigint")
 		if err != nil {
 			return exprType{}, err
 		}
@@ -759,12 +818,12 @@ func (a *analyzer) returnType(p core.ProcOverload, argTypes []exprType) exprType
 	}
 	if n, ok := argIndex(name); ok {
 		if n < len(argTypes) {
-			return exprType{typeOID: argTypes[n].typeOID, typeName: argTypes[n].typeName}
+			return exprType{typeOID: argTypes[n].typeOID, expr: argTypes[n].expr}
 		}
 		return exprType{}
 	}
-	if isPolymorphic(name) && argTypes[0].typeOID != 0 {
-		return exprType{typeOID: argTypes[0].typeOID}
+	if isPolymorphic(name) && (argTypes[0].typeOID != 0 || argTypes[0].expr != nil) {
+		return exprType{typeOID: argTypes[0].typeOID, expr: argTypes[0].expr}
 	}
 	return exprType{typeOID: p.ReturnTypeOID}
 }
@@ -815,12 +874,19 @@ func isPolymorphic(typeName string) bool {
 }
 
 // pickOverload chooses the overload whose parameters the call's arguments
-// match best: an exact type match on a parameter beats a polymorphic one,
-// which beats a mismatch, and any overload of the right arity beats one of
-// the wrong arity.
+// match best: an exact type match on a parameter beats a match on the
+// argument's family, which beats a polymorphic parameter, which beats a
+// mismatch, and any overload of the right arity beats one of the wrong
+// arity.
 func (a *analyzer) pickOverload(overloads []core.ProcOverload, argTypes []int64) core.ProcOverload {
 	best := -1
 	bestScore := -1
+	chains := make([][]int64, len(argTypes))
+	for j, oid := range argTypes {
+		if oid != 0 {
+			chains[j] = a.cat.ResolutionChain(oid)
+		}
+	}
 	for i := range overloads {
 		ov := &overloads[i]
 		if len(ov.ArgTypes) != len(argTypes) {
@@ -830,6 +896,8 @@ func (a *analyzer) pickOverload(overloads []core.ProcOverload, argTypes []int64)
 		for j, oid := range argTypes {
 			switch {
 			case oid != 0 && oid == ov.ArgTypes[j]:
+				score += 3
+			case oid != 0 && slices.Contains(chains[j], ov.ArgTypes[j]):
 				score += 2
 			case a.isPolymorphicOID(ov.ArgTypes[j]):
 				score += 1
@@ -859,11 +927,11 @@ func (a *analyzer) typeTypeCast(c *ast.TypeCast) (exprType, error) {
 	if c.TypeName == nil {
 		return exprType{}, fmt.Errorf("cast: missing target type")
 	}
-	name := core.TypeNameString(c.TypeName)
-	if name == "" {
+	target := core.TypeExprOfTypeName(c.TypeName)
+	if target == nil {
 		return exprType{}, fmt.Errorf("cast: missing target type")
 	}
-	t := a.namedType(name)
+	t := a.lookupType(target)
 	// A cast is how a query says what an otherwise untyped placeholder holds.
 	if err := a.typeOperands(c.Arg, t); err != nil {
 		return exprType{}, err

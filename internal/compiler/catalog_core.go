@@ -32,19 +32,25 @@ func coreResultCatalog(c *core.Catalog) (*catalog.Catalog, error) {
 			}
 			t := &catalog.Table{Rel: &ast.TableName{Schema: ns.Name, Name: table.Name}}
 			for _, col := range cols {
-				// The catalog names an array type after its element with the
-				// suffix appended, which is codegen's data type and array
-				// flag in one string. The core catalog holds one dimension,
-				// and codegen renders a "[]" per dimension.
-				dataType, isArray := strings.CutSuffix(col.TypeName, core.ArraySuffix)
-				column := &catalog.Column{
-					Name:      col.Name,
-					Type:      ast.TypeName{Name: dataType},
-					IsNotNull: col.NotNull,
-					IsArray:   isArray,
+				// Codegen reads a data type and an array flag, and renders
+				// a "[]" per dimension, so an array of arrays of integers
+				// is the type integer with two dimensions.
+				expr, err := c.TypeExprOf(col.TypeOID)
+				if err != nil {
+					return nil, err
 				}
-				if isArray {
-					column.ArrayDims = 1
+				inner := expr.Innermost()
+				column := &catalog.Column{
+					Name:       col.Name,
+					Type:       ast.TypeName{Name: inner.Name},
+					IsNotNull:  col.NotNull,
+					IsArray:    expr.IsArray(),
+					ArrayDims:  expr.ArrayDims(),
+					IsUnsigned: strings.HasSuffix(inner.Name, " unsigned"),
+				}
+				if len(inner.Args) > 0 && inner.Args[0].Int != nil {
+					l := int(*inner.Args[0].Int)
+					column.Length = &l
 				}
 				t.Columns = append(t.Columns, column)
 			}

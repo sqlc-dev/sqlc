@@ -15,8 +15,6 @@ type AttributeSpec struct {
 	NotNull       bool
 	HasDefault    bool
 	DeclType      string
-	TypeLength    int
-	TypeScale     int
 	AutoIncrement bool
 	IsPrimaryKey  bool
 	IsUnique      bool
@@ -35,8 +33,6 @@ func (c *Catalog) CreateAttributeSpec(s AttributeSpec) error {
 		HasDefault:    boolToInt64(s.HasDefault),
 		Num:           int64(s.Num),
 		DeclType:      s.DeclType,
-		TypeLength:    int64(s.TypeLength),
-		TypeScale:     int64(s.TypeScale),
 		AutoIncrement: boolToInt64(s.AutoIncrement),
 		IsPrimaryKey:  boolToInt64(s.IsPrimaryKey),
 		IsUnique:      boolToInt64(s.IsUnique),
@@ -154,8 +150,6 @@ type ColumnInfo struct {
 	TypeOID       int64
 	NotNull       bool
 	DeclType      string
-	TypeLength    int
-	TypeScale     int
 	AutoIncrement bool
 	IsPrimaryKey  bool
 	IsUnique      bool
@@ -179,8 +173,6 @@ func (c *Catalog) ResolveColumn(table, column string) (*ColumnInfo, error) {
 		TypeOID:       r.TypeOid,
 		NotNull:       r.NotNull != 0,
 		DeclType:      r.DeclType,
-		TypeLength:    int(r.TypeLength),
-		TypeScale:     int(r.TypeScale),
 		AutoIncrement: r.AutoIncrement != 0,
 		IsPrimaryKey:  r.IsPrimaryKey != 0,
 		IsUnique:      r.IsUnique != 0,
@@ -203,8 +195,6 @@ func (c *Catalog) TableColumns(table string) ([]ColumnInfo, error) {
 			TypeOID:       r.TypeOid,
 			NotNull:       r.NotNull != 0,
 			DeclType:      r.DeclType,
-			TypeLength:    int(r.TypeLength),
-			TypeScale:     int(r.TypeScale),
 			AutoIncrement: r.AutoIncrement != 0,
 			IsPrimaryKey:  r.IsPrimaryKey != 0,
 			IsUnique:      r.IsUnique != 0,
@@ -217,6 +207,10 @@ type ClassColumn struct {
 	AttOID  int64
 	Name    string
 	TypeOID int64
+	// Type is the column's type as an expression, set for a column of a
+	// derived relation whose type the catalog holds no row for, or holds
+	// only the family of.
+	Type    *TypeExpr
 	NotNull bool
 	Hidden  bool
 }
@@ -241,9 +235,9 @@ func (c *Catalog) ClassColumns(classOID int64) ([]ClassColumn, error) {
 }
 
 type CodegenColumn struct {
-	Name     string
-	TypeName string
-	NotNull  bool
+	Name    string
+	TypeOID int64
+	NotNull bool
 }
 
 func (c *Catalog) ClassCodegenColumns(classOID int64) ([]CodegenColumn, error) {
@@ -254,9 +248,9 @@ func (c *Catalog) ClassCodegenColumns(classOID int64) ([]CodegenColumn, error) {
 	out := make([]CodegenColumn, 0, len(rows))
 	for _, r := range rows {
 		out = append(out, CodegenColumn{
-			Name:     r.ColumnName,
-			TypeName: r.TypeName,
-			NotNull:  r.NotNull != 0,
+			Name:    r.ColumnName,
+			TypeOID: r.TypeOid,
+			NotNull: r.NotNull != 0,
 		})
 	}
 	return out, nil
@@ -268,8 +262,6 @@ type AttributeDetails struct {
 	Column        string
 	Num           int
 	DeclType      string
-	TypeLength    int
-	TypeScale     int
 	AutoIncrement bool
 	IsPrimaryKey  bool
 	IsUnique      bool
@@ -287,8 +279,6 @@ func (c *Catalog) LookupAttribute(attOID int64) (AttributeDetails, error) {
 		Column:        r.ColumnName,
 		Num:           int(r.Num),
 		DeclType:      r.DeclType,
-		TypeLength:    int(r.TypeLength),
-		TypeScale:     int(r.TypeScale),
 		AutoIncrement: r.AutoIncrement != 0,
 		IsPrimaryKey:  r.IsPrimaryKey != 0,
 		IsUnique:      r.IsUnique != 0,
