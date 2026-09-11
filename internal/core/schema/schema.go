@@ -367,7 +367,7 @@ func applyCreateEnum(cat *core.Catalog, stmt *ast.CreateEnumStmt) error {
 	if name == "" {
 		return fmt.Errorf("create type with empty name")
 	}
-	if _, err := cat.TypeOID(name); err == nil {
+	if cat.TypeDeclared(name) {
 		return nil
 	}
 	var labels []core.TypeArg
@@ -386,7 +386,7 @@ func applyCreateDomain(cat *core.Catalog, stmt *ast.CreateDomainStmt) error {
 	if name == "" || stmt.TypeName == nil {
 		return fmt.Errorf("create domain: missing name or type")
 	}
-	if _, err := cat.TypeOID(name); err == nil {
+	if cat.TypeDeclared(name) {
 		return nil
 	}
 	baseOID, err := cat.ResolveType(stmt.TypeName)
@@ -423,7 +423,7 @@ func applyCompositeType(cat *core.Catalog, stmt *ast.CompositeTypeStmt) error {
 	if name == "" {
 		return fmt.Errorf("create type with empty name")
 	}
-	if _, err := cat.TypeOID(name); err == nil {
+	if cat.TypeDeclared(name) {
 		return nil
 	}
 	var fields []core.TypeArg
@@ -449,7 +449,7 @@ func applyCreateRange(cat *core.Catalog, stmt *ast.CreateRangeStmt) error {
 	if name == "" {
 		return fmt.Errorf("create type with empty name")
 	}
-	if _, err := cat.TypeOID(name); err == nil {
+	if cat.TypeDeclared(name) {
 		return nil
 	}
 	spec := core.TypeSpec{Name: name, Typtype: "r", Category: "R"}

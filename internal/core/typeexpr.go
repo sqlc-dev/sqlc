@@ -156,16 +156,19 @@ func parseTypeArg(a string) TypeArg {
 		b := strings.EqualFold(a, "true")
 		return TypeArg{Bool: &b}
 	}
-	// A label is a word before a space that comes before any parenthesis,
-	// as in `lat Float64` or `tags Array(String)`.
+	// A label is a word before a colon, as the canonical form writes it:
+	// `lat: Float64`. A word before a space is a label too, as ClickHouse
+	// writes `lat Float64`, but only when what follows is a single word,
+	// since `timestamp with time zone` is a name and not a label.
 	head := a
 	if p := strings.IndexByte(a, '('); p >= 0 {
 		head = a[:p]
 	}
-	if i := strings.IndexByte(head, ' '); i > 0 {
-		arg := parseTypeArg(a[i+1:])
-		arg.Label = a[:i]
-		return arg
+	if i := strings.IndexByte(head, ':'); i > 0 && !strings.ContainsAny(head[:i], " '\"") {
+		return TypeArg{Label: strings.TrimSpace(a[:i]), Type: ParseTypeExpr(a[i+1:])}
+	}
+	if i := strings.IndexByte(head, ' '); i > 0 && !strings.Contains(strings.TrimSpace(head[i+1:]), " ") {
+		return TypeArg{Label: a[:i], Type: ParseTypeExpr(a[i+1:])}
 	}
 	return TypeArg{Type: ParseTypeExpr(a)}
 }

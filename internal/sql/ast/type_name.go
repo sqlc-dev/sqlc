@@ -13,6 +13,11 @@ type TypeName struct {
 	// CHARACTER" resolves as "VARYINGCHARACTER" in the catalog), so the
 	// formatter prints this back instead of the folded form.
 	Spelling string `json:"spelling"`
+	// Canonical is the type as a call expression the analysis core reads,
+	// when an engine spells it differently from what the formatter prints
+	// back: DuckDB's STRUCT(a INTEGER, b VARCHAR) as struct(a: integer, b:
+	// varchar), ClickHouse's Enum('a', 'b') as Enum8('a' = 1, 'b' = 2).
+	Canonical string `json:"canonical,omitempty"`
 
 	// From pg.TypeName
 	Names       *List `json:"names,omitempty"`

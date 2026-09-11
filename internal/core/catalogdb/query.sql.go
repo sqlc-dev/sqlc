@@ -1357,6 +1357,56 @@ func (q *Queries) TypeOIDByNameInNamespace(ctx context.Context, arg TypeOIDByNam
 	return oid, err
 }
 
+const typeOIDsByNameInNamespaces = `-- name: TypeOIDsByNameInNamespaces :many
+SELECT oid, namespace_oid FROM sql_type
+WHERE name = ?1 AND family_oid IS NULL
+  AND namespace_oid IN (/*SLICE:namespace_oids*/?)
+`
+
+type TypeOIDsByNameInNamespacesParams struct {
+	Name          string
+	NamespaceOids []int64
+}
+
+type TypeOIDsByNameInNamespacesRow struct {
+	Oid          int64
+	NamespaceOid int64
+}
+
+func (q *Queries) TypeOIDsByNameInNamespaces(ctx context.Context, arg TypeOIDsByNameInNamespacesParams) ([]TypeOIDsByNameInNamespacesRow, error) {
+	query := typeOIDsByNameInNamespaces
+	var queryParams []any
+	queryParams = append(queryParams, arg.Name)
+	if len(arg.NamespaceOids) > 0 {
+		for _, v := range arg.NamespaceOids {
+			queryParams = append(queryParams, v)
+		}
+		query = strings.Replace(query, "/*SLICE:namespace_oids*/?", strings.Repeat(",?", len(arg.NamespaceOids))[1:], 1)
+	} else {
+		query = strings.Replace(query, "/*SLICE:namespace_oids*/?", "NULL", 1)
+	}
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []TypeOIDsByNameInNamespacesRow
+	for rows.Next() {
+		var i TypeOIDsByNameInNamespacesRow
+		if err := rows.Scan(&i.Oid, &i.NamespaceOid); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const typeOIDsInCategory = `-- name: TypeOIDsInCategory :many
 SELECT oid FROM sql_type
 WHERE dialect_oid = ? AND category = ?

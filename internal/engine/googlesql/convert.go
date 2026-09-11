@@ -973,5 +973,5 @@ func spelledTypeName(spelling string) *ast.TypeName {
 	if i := strings.IndexByte(name, '('); i >= 0 {
 		name = name[:i]
 	}
-	return &ast.TypeName{Name: name, Spelling: spelling}
+	return &ast.TypeName{Name: name, Canonical: spelling}
 }

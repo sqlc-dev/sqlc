@@ -704,7 +704,7 @@ func (c *cc) convertParameter(n *chast.Parameter) ast.Node {
 		base, _, _ := unwrapTypeString(spelling)
 		return &ast.TypeCast{
 			Arg:      ref,
-			TypeName: &ast.TypeName{Name: base, Spelling: spelling},
+			TypeName: &ast.TypeName{Name: base, Spelling: spelling, Canonical: canonicalDataType(n.Type)},
 			Location: pos(n),
 		}
 	}
@@ -764,7 +764,7 @@ func (c *cc) convertCastExpr(n *chast.CastExpr) *ast.TypeCast {
 		// nesting included, the way a column's is.
 		spelling := renderDataType(n.Type)
 		base, _, _ := unwrapTypeString(spelling)
-		tc.TypeName = &ast.TypeName{Name: base, Spelling: spelling}
+		tc.TypeName = &ast.TypeName{Name: base, Spelling: spelling, Canonical: canonicalDataType(n.Type)}
 	}
 
 	return tc
@@ -1026,7 +1026,7 @@ func (c *cc) convertNestedColumn(n *chast.ColumnDeclaration) ([]*ast.ColumnDef, 
 		spelling := "Array(" + renderDataType(pair.Type) + ")"
 		cols = append(cols, &ast.ColumnDef{
 			Colname:   identifier(n.Name) + "." + identifier(pair.Name),
-			TypeName:  &ast.TypeName{Name: "array", Spelling: spelling},
+			TypeName:  &ast.TypeName{Name: "array", Spelling: spelling, Canonical: "Array(" + canonicalDataType(pair.Type) + ")"},
 			IsArray:   true,
 			IsNotNull: true,
 		})
@@ -1045,7 +1045,7 @@ func (c *cc) convertColumnDeclaration(n *chast.ColumnDeclaration) *ast.ColumnDef
 		base, isArray, nullable := unwrapTypeString(spelling)
 		// The catalog resolves the base type; the full spelling, with its
 		// arguments and nesting, is kept for the analysis to report.
-		colDef.TypeName = &ast.TypeName{Name: base, Spelling: spelling}
+		colDef.TypeName = &ast.TypeName{Name: base, Spelling: spelling, Canonical: canonicalDataType(n.Type)}
 		colDef.IsArray = isArray
 		if nullable {
 			colDef.IsNotNull = false
@@ -1070,11 +1070,23 @@ func (c *cc) convertColumnDeclaration(n *chast.ColumnDeclaration) *ast.ColumnDef
 	return colDef
 }
 
-// renderDataType spells a type the way ClickHouse stores it: an Enum's
-// members are numbered and the family sized by their count, and a
-// Variant's members are sorted, so that Enum('a', 'b') is Enum8('a' = 1,
-// 'b' = 2) and Variant(String, Int64) is Variant(Int64, String).
+// renderDataType spells a type as the author wrote it, which the formatter
+// prints back.
 func renderDataType(dt *chast.DataType) string {
+	return renderType(dt, false)
+}
+
+// canonicalDataType spells a type the way ClickHouse stores it, which the
+// analysis core reads: an Enum's members are numbered and the family
+// sized by their count, a Variant's members are sorted, and a named
+// element is written label first, so that Enum('a', 'b') is Enum8('a' =
+// 1, 'b' = 2), Variant(String, Int64) is Variant(Int64, String) and
+// Tuple(lat Float64) is Tuple(lat: Float64).
+func canonicalDataType(dt *chast.DataType) string {
+	return renderType(dt, true)
+}
+
+func renderType(dt *chast.DataType, canonical bool) string {
 	if dt == nil {
 		return ""
 	}
@@ -1083,9 +1095,9 @@ func renderDataType(dt *chast.DataType) string {
 	}
 	name := dt.Name
 	parts := make([]string, 0, len(dt.Parameters))
-	switch strings.ToLower(name) {
-	case "enum", "enum8", "enum16":
-		if strings.EqualFold(name, "enum") {
+	switch lower := strings.ToLower(name); {
+	case canonical && (lower == "enum" || lower == "enum8" || lower == "enum16"):
+		if lower == "enum" {
 			name = "Enum8"
 			if len(dt.Parameters) > 127 {
 				name = "Enum16"
@@ -1096,34 +1108,38 @@ func renderDataType(dt *chast.DataType) string {
 			switch v := p.(type) {
 			case *chast.BinaryExpr:
 				// 'a' = 3 numbers itself, and the next bare member follows it.
-				parts = append(parts, renderTypeParam(v))
+				parts = append(parts, renderParam(v, canonical))
 				if lit, ok := v.Right.(*chast.Literal); ok {
 					if n, err := strconv.ParseInt(fmt.Sprint(lit.Value), 10, 64); err == nil {
 						next = n + 1
 					}
 				}
 			default:
-				parts = append(parts, renderTypeParam(p)+" = "+strconv.FormatInt(next, 10))
+				parts = append(parts, renderParam(p, canonical)+" = "+strconv.FormatInt(next, 10))
 				next++
 			}
 		}
-	case "variant":
+	case canonical && lower == "variant":
 		for _, p := range dt.Parameters {
-			parts = append(parts, renderTypeParam(p))
+			parts = append(parts, renderParam(p, canonical))
 		}
 		sort.Strings(parts)
 	default:
 		for _, p := range dt.Parameters {
-			parts = append(parts, renderTypeParam(p))
+			parts = append(parts, renderParam(p, canonical))
 		}
 	}
 	return name + "(" + strings.Join(parts, ", ") + ")"
 }
 
 func renderTypeParam(e chast.Expression) string {
+	return renderParam(e, false)
+}
+
+func renderParam(e chast.Expression, canonical bool) string {
 	switch v := e.(type) {
 	case *chast.DataType:
-		return renderDataType(v)
+		return renderType(v, canonical)
 	case *chast.Literal:
 		if v.Type == chast.LiteralString {
 			return quoteString(fmt.Sprint(v.Value))
@@ -1135,11 +1151,15 @@ func renderTypeParam(e chast.Expression) string {
 	case *chast.Identifier:
 		return strings.Join(v.Parts, ".")
 	case *chast.NameTypePair:
-		// A named tuple or nested element: `lat Float64`.
-		return v.Name + " " + renderDataType(v.Type)
+		// A named tuple or nested element: `lat Float64`, or `lat: Float64`
+		// in the canonical form.
+		if canonical {
+			return v.Name + ": " + renderType(v.Type, canonical)
+		}
+		return v.Name + " " + renderType(v.Type, canonical)
 	case *chast.BinaryExpr:
 		// An enum member: `'active' = 1`.
-		return renderTypeParam(v.Left) + " " + v.Op + " " + renderTypeParam(v.Right)
+		return renderParam(v.Left, canonical) + " " + v.Op + " " + renderParam(v.Right, canonical)
 	default:
 		return ""
 	}

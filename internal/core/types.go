@@ -54,10 +54,11 @@ func (t TypeInfo) IsFamily() bool { return t.FamilyOID == 0 }
 // answer is good for the life of the catalog. Analysis runs concurrently on
 // a restored catalog, so the cache is locked.
 type typeCache struct {
-	mu         sync.RWMutex
-	infos      map[int64]TypeInfo
-	exprs      map[int64]*TypeExpr
-	namespaces map[int64]string
+	mu            sync.RWMutex
+	infos         map[int64]TypeInfo
+	exprs         map[int64]*TypeExpr
+	namespaces    map[int64]string
+	namespaceOIDs map[string]int64
 }
 
 func (c *typeCache) namespace(oid int64) (string, bool) {
@@ -67,13 +68,22 @@ func (c *typeCache) namespace(oid int64) (string, bool) {
 	return name, ok
 }
 
+func (c *typeCache) namespaceOID(name string) (int64, bool) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	oid, ok := c.namespaceOIDs[name]
+	return oid, ok
+}
+
 func (c *typeCache) putNamespace(oid int64, name string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.namespaces == nil {
 		c.namespaces = map[int64]string{}
+		c.namespaceOIDs = map[string]int64{}
 	}
 	c.namespaces[oid] = name
+	c.namespaceOIDs[name] = oid
 }
 
 func (c *typeCache) info(oid int64) (TypeInfo, bool) {
@@ -254,20 +264,77 @@ func (c *Catalog) TypeOID(name string) (int64, error) {
 	return c.canonicalOID(oid)
 }
 
-// familyOIDByName finds the family row spelled name, alias rows included.
+// familyOIDByName finds the family row a bare name refers to, alias rows
+// included, in the default namespaces: the catalog's own, PostgreSQL's
+// system catalog and the dialect's default schema, in that order of
+// preference. A type in any other namespace is reached by qualifying it,
+// as PostgreSQL reaches one off the search path.
 func (c *Catalog) familyOIDByName(name string) (int64, error) {
-	return c.q.TypeOIDByName(context.Background(), name)
+	nsOIDs, err := c.defaultNamespaceOIDs()
+	if err != nil {
+		return 0, err
+	}
+	rows, err := c.q.TypeOIDsByNameInNamespaces(context.Background(), catalogdb.TypeOIDsByNameInNamespacesParams{
+		Name:          name,
+		NamespaceOids: nsOIDs,
+	})
+	if err != nil {
+		return 0, err
+	}
+	for _, ns := range nsOIDs {
+		for _, row := range rows {
+			if row.NamespaceOid == ns {
+				return row.Oid, nil
+			}
+		}
+	}
+	return 0, sql.ErrNoRows
+}
+
+// defaultNamespaceOIDs lists the namespaces a bare type name is looked up
+// in, in order of preference, skipping any the catalog does not have yet.
+func (c *Catalog) defaultNamespaceOIDs() ([]int64, error) {
+	names := []string{"pg_catalog", "public"}
+	if c.dialectOID != 0 {
+		if name, _ := c.DialectFlag(c.dialectOID, FlagDefaultSchema); name != "" {
+			names = append(names, name)
+		}
+	}
+	out := make([]int64, 0, len(names))
+	for _, name := range names {
+		oid, err := c.namespaceOIDByName(name)
+		if err != nil {
+			continue
+		}
+		out = append(out, oid)
+	}
+	return out, nil
+}
+
+// namespaceOIDByName is NamespaceOID with the answer remembered, since a
+// type lookup asks for the same few namespaces every time. A namespace
+// created after the answer was cached is found on the next miss.
+func (c *Catalog) namespaceOIDByName(name string) (int64, error) {
+	if oid, ok := c.types.namespaceOID(name); ok {
+		return oid, nil
+	}
+	oid, err := c.NamespaceOID(name)
+	if err != nil {
+		return 0, err
+	}
+	c.types.putNamespace(oid, name)
+	return oid, nil
 }
 
 // familyOIDByQualifiedName is familyOIDByName for a name that may carry its
 // namespace, as myschema.mood does: a qualified name is looked up in that
-// namespace alone, a bare one in every namespace.
+// namespace alone.
 func (c *Catalog) familyOIDByQualifiedName(name string) (int64, error) {
 	ns, bare := splitQualifiedName(name)
 	if ns == "" {
 		return c.familyOIDByName(bare)
 	}
-	nsOID, err := c.NamespaceOID(ns)
+	nsOID, err := c.namespaceOIDByName(ns)
 	if err != nil {
 		return 0, err
 	}
@@ -275,6 +342,14 @@ func (c *Catalog) familyOIDByQualifiedName(name string) (int64, error) {
 		NamespaceOid: nsOID,
 		Name:         bare,
 	})
+}
+
+// TypeDeclared reports whether a schema's CREATE TYPE would redeclare a
+// type: one of that name in the namespace the name qualifies, or in the
+// default namespaces for a bare name.
+func (c *Catalog) TypeDeclared(name string) bool {
+	_, err := c.familyOIDByQualifiedName(strings.ToLower(name))
+	return err == nil
 }
 
 // splitQualifiedName splits "myschema.mood" into its namespace and name. A
@@ -324,7 +399,7 @@ func (c *Catalog) CreateTypeWithArgs(spec TypeSpec, args []TypeArg) (int64, erro
 		}
 		oid, _, err := c.internType(a.Type, func(name string) (int64, error) {
 			return c.CreateUserType(name, "U")
-		})
+		}, true)
 		if err != nil {
 			return 0, fmt.Errorf("create type %q: %w", spec.Name, err)
 		}
@@ -525,7 +600,7 @@ func (c *Catalog) TypeExprOf(oid int64) (*TypeExpr, error) {
 func (c *Catalog) ResolveTypeExpr(t *TypeExpr) (int64, error) {
 	oid, _, err := c.internType(t, func(name string) (int64, error) {
 		return c.CreateUserType(name, "U")
-	})
+	}, true)
 	return oid, err
 }
 
@@ -536,7 +611,7 @@ func (c *Catalog) ResolveTypeExpr(t *TypeExpr) (int64, error) {
 func (c *Catalog) ResolvePseudoTypeExpr(t *TypeExpr) (int64, error) {
 	oid, _, err := c.internType(t, func(name string) (int64, error) {
 		return c.CreateTypeSpec(TypeSpec{Name: name, Category: "U", DialectOID: c.dialectOID})
-	})
+	}, true)
 	return oid, err
 }
 
@@ -565,10 +640,10 @@ type TypeLookup struct {
 // reports false when the family is not one the catalog holds.
 func (c *Catalog) LookupTypeExpr(t *TypeExpr) (TypeLookup, bool) {
 	refuse := func(string) (int64, error) { return 0, errUnknownType }
-	oid, canonical, err := c.internType(t, refuse)
+	oid, canonical, err := c.internType(t, refuse, false)
 	if errors.Is(err, errUnknownType) && canonical != nil {
 		// The family is known and the instance is not a row.
-		familyOID, _, err := c.internType(&TypeExpr{Name: canonical.Name}, refuse)
+		familyOID, _, err := c.internType(&TypeExpr{Name: canonical.Name}, refuse, false)
 		if err != nil {
 			return TypeLookup{}, false
 		}
@@ -589,11 +664,12 @@ func (c *Catalog) LookupTypeExpr(t *TypeExpr) (TypeLookup, bool) {
 }
 
 // internType resolves an expression to its row, creating the instance row
-// when there is none and calling newFamily for a family name the catalog
-// does not hold, which may refuse. Alongside the row it returns the
-// expression canonicalized; when the instance is not a row and newFamily
-// refuses, the canonical expression still comes back with the error.
-func (c *Catalog) internType(t *TypeExpr, newFamily func(name string) (int64, error)) (int64, *TypeExpr, error) {
+// when there is none and write allows it, and calling newFamily for a
+// family name the catalog does not hold, which may refuse. Alongside the
+// row it returns the expression canonicalized; when the instance is not a
+// row and writing is not allowed, the canonical expression still comes
+// back with errUnknownType.
+func (c *Catalog) internType(t *TypeExpr, newFamily func(name string) (int64, error), write bool) (int64, *TypeExpr, error) {
 	if t == nil || strings.TrimSpace(t.Name) == "" {
 		return 0, nil, fmt.Errorf("missing type name")
 	}
@@ -637,7 +713,7 @@ func (c *Catalog) internType(t *TypeExpr, newFamily func(name string) (int64, er
 		if a.Type == nil {
 			continue
 		}
-		oid, argExpr, err := c.internType(a.Type, newFamily)
+		oid, argExpr, err := c.internType(a.Type, newFamily, write)
 		if err != nil {
 			return 0, nil, err
 		}
@@ -656,7 +732,7 @@ func (c *Catalog) internType(t *TypeExpr, newFamily func(name string) (int64, er
 		return 0, nil, fmt.Errorf("type %q: %w", key, err)
 	}
 	// A lookup that may not write stops here, canonical expression in hand.
-	if _, err := newFamily(""); errors.Is(err, errUnknownType) {
+	if !write {
 		return 0, canonical, errUnknownType
 	}
 

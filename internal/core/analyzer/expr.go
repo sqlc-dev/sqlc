@@ -405,8 +405,8 @@ func (a *analyzer) typeIn(e *ast.In) (exprType, error) {
 		if err != nil {
 			return exprType{}, err
 		}
-		if len(cols) > 0 {
-			if err := a.typeOperands(e.Expr, columnExprType(cols[0])); err != nil {
+		if pr, ok := e.Expr.(*ast.ParamRef); ok && len(cols) > 0 {
+			if err := a.typeOperands(pr, columnExprType(cols[0])); err != nil {
 				return exprType{}, err
 			}
 		}
@@ -705,24 +705,29 @@ func opNameFromList(l *ast.List) string {
 func (a *analyzer) resolveOperator(name string, leftT, rightT exprType) (core.OperatorOverload, error) {
 	leftChain := a.cat.ResolutionChain(leftT.typeOID)
 	rightChain := a.cat.ResolutionChain(rightT.typeOID)
+	all, err := a.cat.FindOperators(name, 0, 0)
+	if err != nil {
+		return core.OperatorOverload{}, err
+	}
+	// The operator's overloads are read once; the pairs along the two
+	// chains are tried against them in order, nearest first.
+	byOperands := make(map[[2]int64]core.OperatorOverload, len(all))
+	for _, ov := range all {
+		key := [2]int64{ov.LeftTypeOID, ov.RightTypeOID}
+		if _, seen := byOperands[key]; !seen {
+			byOperands[key] = ov
+		}
+	}
 	for _, l := range leftChain {
 		for _, r := range rightChain {
-			candidates, err := a.cat.FindOperators(name, l, r)
-			if err != nil {
-				return core.OperatorOverload{}, err
-			}
-			if len(candidates) > 0 {
-				return candidates[0], nil
+			if ov, ok := byOperands[[2]int64{l, r}]; ok && l != 0 && r != 0 {
+				return ov, nil
 			}
 		}
 	}
 	leftOID := leftChain[len(leftChain)-1]
 	rightOID := rightChain[len(rightChain)-1]
 
-	all, err := a.cat.FindOperators(name, 0, 0)
-	if err != nil {
-		return core.OperatorOverload{}, err
-	}
 	for _, ov := range all {
 		if leftOID != 0 && ov.LeftTypeOID != 0 && leftOID != ov.LeftTypeOID {
 			ok, _ := a.cat.CastAllowed(leftOID, ov.LeftTypeOID, "i")

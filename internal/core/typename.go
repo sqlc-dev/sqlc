@@ -8,15 +8,19 @@ import (
 )
 
 // TypeExprOfTypeName reads the type an AST node names into an expression.
-// An engine that folds the whole type into a spelling — ClickHouse's
-// Array(Nullable(String)), SQLite's VARYING CHARACTER(10) — hands it over
-// in Spelling and the spelling is read as written. Otherwise the name comes
-// from Name or the qualifying parts of Names, the type modifiers become
-// integer or string arguments, and each array bound wraps the result in an
-// array.
+// An engine that renders the whole type as a call expression — DuckDB's
+// struct(a: integer, b: varchar) — hands it over in Canonical; one that
+// folds it into the spelling the formatter prints back — ClickHouse's
+// Array(Nullable(String)), SQLite's VARYING CHARACTER(10) — in Spelling.
+// Otherwise the name comes from Name or the qualifying parts of Names, the
+// type modifiers become integer or string arguments, and each array bound
+// wraps the result in an array.
 func TypeExprOfTypeName(tn *ast.TypeName) *TypeExpr {
 	if tn == nil {
 		return nil
+	}
+	if tn.Canonical != "" {
+		return ParseTypeExpr(tn.Canonical)
 	}
 	if tn.Spelling != "" {
 		return ParseTypeExpr(tn.Spelling)
@@ -79,7 +83,7 @@ func ColumnTypeExpr(col *ast.ColumnDef) *TypeExpr {
 			}
 		}
 	}
-	if col.TypeName.Spelling != "" || listItems(col.TypeName.ArrayBounds) != nil {
+	if col.TypeName.Canonical != "" || col.TypeName.Spelling != "" || listItems(col.TypeName.ArrayBounds) != nil {
 		return t
 	}
 	dims := col.ArrayDims

@@ -66,6 +66,11 @@ ORDER BY
     ns.name
 LIMIT 1;
 
+-- name: TypeOIDsByNameInNamespaces :many
+SELECT oid, namespace_oid FROM sql_type
+WHERE name = sqlc.arg(name) AND family_oid IS NULL
+  AND namespace_oid IN (sqlc.slice(namespace_oids));
+
 -- name: TypeOIDByNameInNamespace :one
 SELECT oid FROM sql_type
 WHERE namespace_oid = ? AND name = ? AND family_oid IS NULL;

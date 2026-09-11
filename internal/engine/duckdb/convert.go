@@ -818,7 +818,7 @@ func (c *cc) convertWindow(e *dw.WindowExpression) ast.Node {
 // its spelling, which is what the analysis core reads.
 func (c *cc) convertTypeExpression(t *dw.TypeExpression) (*ast.TypeName, int) {
 	typeName, dims := c.elementTypeName(t)
-	typeName.Spelling = renderTypeExpression(t)
+	typeName.Canonical = renderTypeExpression(t)
 	return typeName, dims
 }
 
@@ -862,7 +862,7 @@ func renderTypeExpression(t *dw.TypeExpression) string {
 		case *dw.TypeExpression:
 			part = renderTypeExpression(a)
 			if a.Alias != "" {
-				part = identifier(a.Alias) + " " + part
+				part = identifier(a.Alias) + ": " + part
 			}
 		case *dw.ConstantExpression:
 			switch {

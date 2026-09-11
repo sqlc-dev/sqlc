@@ -666,16 +666,26 @@ and details settled on the way:
   in `functions.jsonl` — `"returns": "Decimal(18, $2)"` — kept on
   `sql_proc.return_template` and filled in from the call's literals. What
   is genuinely about parsing stays in the engine's converter: ClickHouse
-  numbers an Enum's members and sorts a Variant's when it spells the type.
+  numbers an Enum's members and sorts a Variant's in the canonical
+  rendering it hands the core, while the spelling the formatter prints stays
+  the author's.
+- A bare type name resolves in the default namespaces only — the catalog's
+  own, `pg_catalog` and the dialect's default schema — and `CREATE TYPE`
+  deduplicates within the namespace it names, so `foo.mood` and `mood` are
+  two types and a bare `mood` never binds to `foo.mood`.
 - SQLite's `dialect.json` says `"alias": "base"`, which makes each alias in
   its `types.jsonl` a type of its own standing on the type it aliases,
   rather than another spelling of it.
-- An engine hands the core either a spelling (`TypeName.Spelling`, read by
-  `ParseTypeExpr`, which also reads words after a closing parenthesis as
-  part of the name, as in `decimal(10,2) unsigned`) or a name with
-  `Typmods` and `ArrayBounds`, where an integer constant is an integer
-  argument, a bare `ast.String` is an identifier and a quoted constant a
-  string. `ColumnDef.IsUnsigned` and `ColumnDef.Vals` add MySQL's unsigned
+- An engine hands the core one of three things: a canonical rendering
+  (`TypeName.Canonical`, a call expression with fields labelled `a: integer`,
+  which DuckDB, GoogleSQL and ClickHouse write and the formatter never
+  prints), the author's spelling (`TypeName.Spelling`, which the formatter
+  prints back and SQLite hands over as its type), or a name with `Typmods`
+  and `ArrayBounds`, where an integer constant is an integer argument, a
+  bare `ast.String` is an identifier and a quoted constant a string.
+  `ParseTypeExpr` reads a label before a colon, a label before a space only
+  when a single word follows, and words after a closing parenthesis as part
+  of the name, as in `decimal(10,2) unsigned`. `ColumnDef.IsUnsigned` and `ColumnDef.Vals` add MySQL's unsigned
   and enum members. `ParamRef.Name` carries the name a `{name:Type}`
   placeholder gives itself.
 - A cast is NULL when its operand is, or when its type says so, as

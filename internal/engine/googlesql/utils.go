@@ -197,7 +197,7 @@ func typeName(node zjast.Node) string {
 		for _, f := range t.Fields {
 			field := typeName(f.Type)
 			if f.Name != nil {
-				field = identifier(f.Name.Name) + " " + field
+				field = identifier(f.Name.Name) + ": " + field
 			}
 			fields = append(fields, field)
 		}
@@ -249,7 +249,7 @@ func columnSchemaTypeName(node zjast.Node) string {
 		for _, f := range t.Fields {
 			field := columnSchemaTypeName(f.Schema)
 			if f.Name != nil {
-				field = identifier(f.Name.Name) + " " + field
+				field = identifier(f.Name.Name) + ": " + field
 			}
 			fields = append(fields, field)
 		}
