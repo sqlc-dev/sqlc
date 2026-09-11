@@ -553,6 +553,98 @@ are an instance row and a family row respectively. A PostgreSQL check reads
 `format_type(atttypid, atttypmod)` and `attndims`. Every check keeps passing
 on the way, since a family with no arguments prints as it does now.
 
+## A worked example: an array of arrays of integers
+
+```sql
+CREATE TABLE grids (
+  id    bigint PRIMARY KEY,
+  cells int[][] NOT NULL
+);
+
+-- name: GetGrid :one
+SELECT id, cells, cells[1][2] AS cell FROM grids WHERE cells = $1;
+```
+
+The PostgreSQL parser hands over `pg_catalog.int4` with two array bounds,
+which reads into `array(array(int4))`; canonicalization makes it
+`array(array(integer))`. Interning walks it bottom-up, so the inner array
+gets its row before the outer one. With illustrative OIDs, `sql_type`
+holds the seeded families and the two rows the schema added:
+
+| oid | name | expr | typtype | category | family_oid | element_oid | canonical_oid |
+|---|---|---|---|---|---|---|---|
+| 23 | integer | integer | b | N | | | |
+| 24 | int4 | int4 | b | N | | | 23 |
+| 20 | bigint | bigint | b | N | | | |
+| 100 | array | array | b | A | | | |
+| 1001 | array | array(integer) | b | A | 100 | 23 | |
+| 1002 | array | array(array(integer)) | b | A | 100 | 1001 | |
+
+Row 1001 is what PostgreSQL calls `_int4`; row 1002 is the one PostgreSQL
+does not have, since its own type collapses the dimensions onto `attndims`.
+An instance takes its family's namespace. `sql_type_arg` has one row per
+argument position:
+
+| type_oid | ord | label | arg_type_oid | nullable |
+|---|---|---|---|---|
+| 1001 | 1 | | 23 | 0 |
+| 1002 | 1 | | 1001 | 0 |
+
+and `sql_attribute` points `grids.cells` at row 1002, `not_null` set, with
+`int[][]` in `decl_type`.
+
+Analysis resolves `cells` to that attribute, so its `exprType` is
+`{typeOID: 1002, expr: array(array(integer)), nullable: false}`, and the
+parameter compared with it takes the same type. `cells[1][2]` follows the
+dialect's subscript rule — PostgreSQL yields the innermost element however
+many subscripts are applied — which is a walk down `element_oid` from 1002
+to 1001 to 23, nullable because a subscript can miss. `sqlc analyze` prints:
+
+```json
+[
+  {
+    "name": "GetGrid",
+    "cmd": ":one",
+    "columns": [
+      { "name": "id", "type": { "name": "bigint" }, "table": "grids" },
+      {
+        "name": "cells",
+        "type": {
+          "name": "array",
+          "args": [
+            { "type": { "name": "array", "args": [ { "type": { "name": "integer" } } ] } }
+          ]
+        },
+        "table": "grids"
+      },
+      { "name": "cell", "type": { "name": "integer", "nullable": true } }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "cells",
+          "type": {
+            "name": "array",
+            "args": [
+              { "type": { "name": "array", "args": [ { "type": { "name": "integer" } } ] } }
+            ]
+          },
+          "table": "grids"
+        }
+      }
+    ]
+  }
+]
+```
+
+Its string form is `array(array(integer))`; today the same column prints
+`array(int4)`, one level, with `type_oid` pointing at a row named `int4[]`.
+The legacy bridge derives `DataType` `integer` and `ArrayDims` 2 from the
+nesting, so Go codegen renders `[][]int32` as the legacy path does.
+DuckDB's `INTEGER[][]` and ClickHouse's `Array(Array(Int32))` produce the
+same rows and output, with `int32` in ClickHouse's case.
+
 ## Order of work
 
 1. The tables and the interning entry point: `sql_type.expr`, `family_oid`,
