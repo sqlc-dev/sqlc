@@ -41,6 +41,7 @@ type tmplCtx struct {
 	EmitAllEnumValues         bool
 	UsesCopyFrom              bool
 	UsesBatch                 bool
+	EmitQueryBatch            bool
 	OmitSqlcVersion           bool
 	BuildTags                 string
 	WrapErrors                bool
@@ -184,7 +185,8 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		EmitEnumValidMethod:       options.EmitEnumValidMethod,
 		EmitAllEnumValues:         options.EmitAllEnumValues,
 		UsesCopyFrom:              usesCopyFrom(queries),
-		UsesBatch:                 usesBatch(queries),
+		UsesBatch:                 usesBatch(queries) || options.EmitQueryBatch,
+		EmitQueryBatch:            options.EmitQueryBatch,
 		SQLDriver:                 parseDriver(options.SqlPackage),
 		Q:                         "`",
 		Package:                   options.Package,
@@ -208,8 +210,12 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		tctx.SQLDriver = opts.SQLDriverGoSQLDriverMySQL
 	}
 
-	if tctx.UsesBatch && !tctx.SQLDriver.IsPGX() {
+	if usesBatch(queries) && !tctx.SQLDriver.IsPGX() {
 		return nil, errors.New(":batch* commands are only supported by pgx")
+	}
+
+	if options.EmitQueryBatch && tctx.SQLDriver != opts.SQLDriverPGXV5 {
+		return nil, errors.New("emit_query_batch is only supported by pgx/v5")
 	}
 
 	funcMap := template.FuncMap{
@@ -292,6 +298,11 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		batchFileName = options.OutputBatchFileName
 	}
 
+	queryBatchFileName := "query_batch.sql.go"
+	if options.OutputQueryBatchFileName != "" {
+		queryBatchFileName = options.OutputQueryBatchFileName
+	}
+
 	if err := execute(dbFileName, "dbFile"); err != nil {
 		return nil, err
 	}
@@ -310,8 +321,13 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 			return nil, err
 		}
 	}
-	if tctx.UsesBatch {
+	if usesBatch(queries) {
 		if err := execute(batchFileName, "batchFile"); err != nil {
+			return nil, err
+		}
+	}
+	if tctx.EmitQueryBatch {
+		if err := execute(queryBatchFileName, "queryBatchFile"); err != nil {
 			return nil, err
 		}
 	}
