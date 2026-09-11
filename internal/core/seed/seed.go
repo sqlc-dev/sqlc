@@ -31,6 +31,7 @@ import (
 	"io/fs"
 	"path"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/core"
@@ -110,6 +111,24 @@ type Settings struct {
 	// DuckDB's main. A type in it is reported unqualified.
 	DefaultSchema string `json:"default_schema,omitempty"`
 
+	// Rewrites are what the dialect does to a type before storing it, in
+	// order: the first whose pattern matches applies. A pattern's $1, $2
+	// bind whatever stands there, the template is what the match becomes,
+	// and Where bounds a binding, as "$1 <= 24" does.
+	Rewrites []Rewrite `json:"rewrites,omitempty"`
+
+	// Idents are the words that are identifiers wherever they stand as a
+	// type argument, such as the max of nvarchar(max), and IdentArgs the
+	// argument positions, counted from one, that are identifiers in a
+	// family, such as the first of SimpleAggregateFunction(sum, UInt64).
+	Idents    []string         `json:"idents,omitempty"`
+	IdentArgs map[string][]int `json:"ident_args,omitempty"`
+
+	// Affinity is the rule a type family the schema declares and the seed
+	// does not list stands on, in order: the first whose words the name
+	// contains names the base, and one with no words is the default.
+	Affinity []Affinity `json:"affinity,omitempty"`
+
 	// Alias says what an alias in types.jsonl is. "canonical", the default,
 	// makes it another spelling of the type, which a column declared with
 	// it is reported as, the way PostgreSQL reports int as integer. "base"
@@ -120,6 +139,19 @@ type Settings struct {
 
 	// fsys is the dialect directory the settings were read from.
 	fsys fs.FS
+}
+
+// Rewrite is one rewrite of a type expression.
+type Rewrite struct {
+	From  string `json:"from"`
+	To    string `json:"to"`
+	Where string `json:"where,omitempty"`
+}
+
+// Affinity is one step of the rule an unseeded family stands on.
+type Affinity struct {
+	Contains []string `json:"contains,omitempty"`
+	Type     string   `json:"type"`
 }
 
 // Type is a type family the dialect defines. Aliases are other spellings of
@@ -155,7 +187,8 @@ type Function struct {
 	Kind string `json:"kind,omitempty"`
 	Args []Arg  `json:"args,omitempty"`
 	// Returns names the result type, or "$1", "$2"... for the type of that
-	// argument.
+	// argument, or an expression over the arguments — Decimal(18, $2) —
+	// for a result that depends on an argument's value.
 	Returns  string `json:"returns"`
 	Nullable bool   `json:"nullable,omitempty"`
 	// NeverNull marks a result that is never NULL even when an argument
@@ -273,6 +306,9 @@ func apply(cat *core.Catalog, fsys fs.FS, settings Settings) error {
 		return err
 	}
 	if err := b.consts(); err != nil {
+		return err
+	}
+	if err := b.rules(); err != nil {
 		return err
 	}
 	if err := b.categoryOperators(); err != nil {
@@ -608,6 +644,54 @@ func (b *builder) consts() error {
 	return nil
 }
 
+// rules records what the dialect does to a type before storing it: its
+// rewrites, its identifier words and positions, and its affinity rule.
+func (b *builder) rules() error {
+	s := b.settings
+	for i, rw := range s.Rewrites {
+		if rw.From == "" || rw.To == "" {
+			return fmt.Errorf("seed %s: rewrite %d needs from and to", s.Dialect, i+1)
+		}
+		if err := b.cat.AddTypeRewrite(i+1, rw.From, rw.To, rw.Where); err != nil {
+			return err
+		}
+	}
+	if len(s.Idents) > 0 {
+		if err := b.cat.SetDialectFlag(b.dialectOID, core.FlagIdents, strings.ToLower(strings.Join(s.Idents, ","))); err != nil {
+			return err
+		}
+	}
+	if len(s.IdentArgs) > 0 {
+		families := make([]string, 0, len(s.IdentArgs))
+		for family := range s.IdentArgs {
+			families = append(families, family)
+		}
+		// In a fixed order, so the catalog comes out the same every time.
+		slices.Sort(families)
+		entries := make([]string, 0, len(families))
+		for _, family := range families {
+			positions := make([]string, 0, len(s.IdentArgs[family]))
+			for _, p := range s.IdentArgs[family] {
+				positions = append(positions, strconv.Itoa(p))
+			}
+			entries = append(entries, strings.ToLower(family)+":"+strings.Join(positions, ","))
+		}
+		if err := b.cat.SetDialectFlag(b.dialectOID, core.FlagIdentArgs, strings.Join(entries, ";")); err != nil {
+			return err
+		}
+	}
+	for i, a := range s.Affinity {
+		oid, ok := b.oids[strings.ToLower(a.Type)]
+		if !ok {
+			return fmt.Errorf("seed %s: affinity names unknown type %q", s.Dialect, a.Type)
+		}
+		if err := b.cat.AddTypeAffinity(i+1, a.Contains, oid); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (b *builder) categoryOperators() error {
 	s := b.settings
 	boolOID, ok := b.oids[strings.ToLower(s.Bool)]
@@ -715,7 +799,8 @@ func (b *builder) addCast(c Cast) error {
 }
 
 func (b *builder) addFunction(fn Function) error {
-	returnOID, err := b.funcType(fn.Returns)
+	returns, template := returnTemplate(fn.Returns)
+	returnOID, err := b.funcType(returns)
 	if err != nil {
 		return fmt.Errorf("function %q: %w", fn.Name, err)
 	}
@@ -744,12 +829,26 @@ func (b *builder) addFunction(fn Function) error {
 		ReturnTypeOID:  returnOID,
 		ReturnNullable: fn.Nullable,
 		NeverNull:      fn.NeverNull,
+		ReturnTemplate: template,
 		Args:           args,
 	})
 	if err != nil {
 		return fmt.Errorf("function %q: %w", fn.Name, err)
 	}
 	return nil
+}
+
+// returnTemplate splits a function's Returns into the type the catalog
+// records and the template it keeps: a result spelled over the arguments,
+// as Decimal(18, $2) is, records its family and keeps the whole spelling
+// to fill in at each call. A bare $n, the type of that argument, is a
+// pseudo-type of its own rather than a template.
+func returnTemplate(returns string) (string, string) {
+	if !strings.Contains(returns, "$") || strings.HasPrefix(returns, "$") {
+		return returns, ""
+	}
+	t := core.ParseTypeExpr(returns)
+	return t.Name, returns
 }
 
 func (b *builder) addRelation(rel Relation) error {

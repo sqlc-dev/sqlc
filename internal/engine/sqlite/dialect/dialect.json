@@ -20,5 +20,26 @@
     "geopoly": "enable_geopoly",
     "rtree": "enable_rtree",
     "rtree_i32": "enable_rtree"
-  }
+  },
+  "affinity": [
+    {
+      "contains": ["INT"],
+      "type": "integer"
+    },
+    {
+      "contains": ["CHAR", "CLOB", "TEXT"],
+      "type": "text"
+    },
+    {
+      "contains": ["BLOB"],
+      "type": "blob"
+    },
+    {
+      "contains": ["REAL", "FLOA", "DOUB"],
+      "type": "real"
+    },
+    {
+      "type": "numeric"
+    }
+  ]
 }

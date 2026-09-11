@@ -2,7 +2,6 @@ package postgresql
 
 import (
 	"embed"
-	"strings"
 	"sync"
 
 	"github.com/sqlc-dev/sqlc/internal/core"
@@ -30,20 +29,6 @@ var dialectFS embed.FS
 // Dialect returns the catalog option that seeds PostgreSQL's type system.
 func Dialect() core.Option {
 	return seed.Dialect(dialectFS, "dialect")
-}
-
-func init() {
-	core.RegisterCanonicalizer("postgresql", canonicalize)
-}
-
-// canonicalize rewrites what pg_type spells differently from format_type:
-// an array type's own name is its element's with an underscore in front,
-// which is how the system catalogs' columns are seeded.
-func canonicalize(t *core.TypeExpr) *core.TypeExpr {
-	if element, ok := strings.CutPrefix(t.Name, "_"); ok && len(t.Args) == 0 && element != "" {
-		return core.Array(&core.TypeExpr{Name: element, Nullable: t.Nullable})
-	}
-	return t
 }
 
 // pgCatalogFuncs is pg_catalog's functions in the form the catalog uses. The

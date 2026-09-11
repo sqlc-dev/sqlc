@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"runtime"
-	"sync"
 
 	"github.com/sqlc-dev/sqlc/internal/core/catalogdb"
 	"github.com/sqlc-dev/sqlc/internal/core/catalogdef"
@@ -30,15 +29,11 @@ type Catalog struct {
 	loadExtension func(name string) error
 	extensions    map[string]bool
 
-	// types remembers the rows and expressions looked up so far.
+	// types remembers the rows and expressions looked up so far, and rules
+	// what the dialect does to a type before storing it.
 	types typeCache
-
-	// dialect is the seeded dialect's name, read back once it is asked for.
-	dialect         string
-	dialectNameOnce sync.Once
+	rules rules
 }
-
-func contextBackground() context.Context { return context.Background() }
 
 type Option func(*Catalog) error
 

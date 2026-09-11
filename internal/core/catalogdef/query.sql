@@ -106,6 +106,22 @@ SELECT oid, namespace_oid, name, expr, category, typtype, preferred,
 FROM sql_type
 WHERE oid = ?;
 
+-- name: CreateTypeRewrite :exec
+INSERT INTO sql_type_rewrite (dialect_oid, ord, pattern, template, cond)
+VALUES (?, ?, ?, ?, ?);
+
+-- name: ListTypeRewrites :many
+SELECT pattern, template, cond FROM sql_type_rewrite
+WHERE dialect_oid = ? ORDER BY ord;
+
+-- name: CreateTypeAffinity :exec
+INSERT INTO sql_type_affinity (dialect_oid, ord, words, type_oid)
+VALUES (?, ?, ?, ?);
+
+-- name: ListTypeAffinities :many
+SELECT words, type_oid FROM sql_type_affinity
+WHERE dialect_oid = ? ORDER BY ord;
+
 -- =============================== sql_class =============================
 
 -- name: CreateClass :execlastid
@@ -213,8 +229,8 @@ INSERT INTO sql_constraint (class_oid, name, kind, columns) VALUES (?, ?, ?, ?);
 -- name: CreateProc :execlastid
 INSERT INTO sql_proc
     (namespace_oid, dialect_oid, name, kind,
-     return_type_oid, return_set, return_nullable, strict, variadic_kind)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+     return_type_oid, return_set, return_nullable, return_template, strict, variadic_kind)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- name: CreateProcArg :exec
 INSERT INTO sql_proc_arg (proc_oid, ord, name, type_oid, mode, has_default)
@@ -226,12 +242,12 @@ WHERE proc_oid = ? AND mode IN ('i', 'b', 'v')
 ORDER BY ord;
 
 -- name: FindProcsAnyNamespace :many
-SELECT oid, name, kind, return_type_oid, return_nullable
+SELECT oid, name, kind, return_type_oid, return_nullable, return_template
 FROM sql_proc
 WHERE name = ?;
 
 -- name: FindProcsInNamespaces :many
-SELECT oid, name, kind, return_type_oid, return_nullable
+SELECT oid, name, kind, return_type_oid, return_nullable, return_template
 FROM sql_proc
 WHERE name = sqlc.arg(name)
   AND namespace_oid IN (sqlc.slice(namespace_oids));

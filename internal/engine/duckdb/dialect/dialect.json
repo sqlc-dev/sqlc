@@ -12,5 +12,15 @@
   "comparison_categories": "BNSDU",
   "arithmetic": ["+", "-", "*", "/", "//", "%", "**", "^"],
   "arithmetic_categories": "N",
-  "cast_categories": "NSD"
+  "cast_categories": "NSD",
+  "rewrites": [
+    {
+      "from": "varchar($1)",
+      "to": "varchar"
+    },
+    {
+      "from": "decimal",
+      "to": "decimal(18, 3)"
+    }
+  ]
 }

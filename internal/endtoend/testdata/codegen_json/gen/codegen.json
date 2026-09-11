@@ -2869,7 +2869,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -2882,7 +2882,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -2908,7 +2908,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -2934,7 +2934,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -3991,7 +3991,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 64,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -4004,7 +4004,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_name"
+                  "name": "name"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -5669,7 +5669,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -5682,7 +5682,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -5708,7 +5708,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -6921,7 +6921,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 2,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -6934,7 +6934,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_int2"
+                  "name": "int2"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -6947,7 +6947,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 2,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -6960,7 +6960,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_int2"
+                  "name": "int2"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -6973,7 +6973,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -6986,7 +6986,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_oid"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -6999,7 +6999,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -7012,7 +7012,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_oid"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -7025,7 +7025,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -7038,7 +7038,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_oid"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -7051,7 +7051,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 2,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -7064,7 +7064,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_int2"
+                  "name": "int2"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -7077,7 +7077,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -7090,7 +7090,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_oid"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -8251,7 +8251,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -8264,7 +8264,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -8508,7 +8508,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -8791,7 +8791,7 @@
                 "not_null": true,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -8804,7 +8804,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -10040,7 +10040,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -10375,7 +10375,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -10388,7 +10388,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_oid"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -10414,7 +10414,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -10915,7 +10915,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -10928,7 +10928,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -10954,7 +10954,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -11289,7 +11289,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -11302,7 +11302,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -11328,7 +11328,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -11572,7 +11572,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -11647,7 +11647,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -11660,7 +11660,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_oid"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -11800,7 +11800,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -11826,7 +11826,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -11930,7 +11930,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -12717,7 +12717,7 @@
                 "not_null": true,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 2,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -12730,7 +12730,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "int2vector"
+                  "name": "int2"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -12743,7 +12743,7 @@
                 "not_null": true,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -12756,7 +12756,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "oidvector"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -12769,7 +12769,7 @@
                 "not_null": true,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -12782,7 +12782,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "oidvector"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -12795,7 +12795,7 @@
                 "not_null": true,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 2,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -12808,7 +12808,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "int2vector"
+                  "name": "int2"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -13553,7 +13553,7 @@
                 "not_null": true,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -13566,7 +13566,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -13953,7 +13953,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -13966,7 +13966,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -14441,7 +14441,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -14454,7 +14454,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -15329,7 +15329,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -15342,7 +15342,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -16825,7 +16825,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -16838,7 +16838,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -17121,7 +17121,7 @@
                 "not_null": true,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 2,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -17134,7 +17134,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "int2vector"
+                  "name": "int2"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -17147,7 +17147,7 @@
                 "not_null": true,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -17160,7 +17160,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "oidvector"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -17173,7 +17173,7 @@
                 "not_null": true,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -17186,7 +17186,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "oidvector"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -17339,7 +17339,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 64,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -17352,7 +17352,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_name"
+                  "name": "name"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -17739,7 +17739,7 @@
                 "not_null": true,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -17752,7 +17752,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_oid"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -17905,7 +17905,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -17918,7 +17918,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_regtype"
+                  "name": "regtype"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -17931,7 +17931,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -17944,7 +17944,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_regtype"
+                  "name": "regtype"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -18835,7 +18835,7 @@
                 "not_null": true,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -18848,7 +18848,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "oidvector"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -18861,7 +18861,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -18874,7 +18874,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_oid"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -18887,7 +18887,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -18900,7 +18900,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_char"
+                  "name": "char"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -18926,7 +18926,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -18965,7 +18965,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -18978,7 +18978,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_oid"
+                  "name": "oid"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -19082,7 +19082,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -19095,7 +19095,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -19108,7 +19108,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -20035,7 +20035,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 2,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -20048,7 +20048,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "int2vector"
+                  "name": "int2"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -20149,7 +20149,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 64,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -20162,7 +20162,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_name"
+                  "name": "name"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -21990,7 +21990,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -23636,7 +23636,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -24010,7 +24010,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -38715,7 +38715,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -38728,7 +38728,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -38741,7 +38741,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -38754,7 +38754,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -38767,7 +38767,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -38780,7 +38780,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -38793,7 +38793,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -38806,7 +38806,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -38819,7 +38819,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -38832,7 +38832,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -39297,7 +39297,7 @@
                 "not_null": true,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 2,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -39310,7 +39310,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "int2vector"
+                  "name": "int2"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -39323,7 +39323,7 @@
                 "not_null": true,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -39336,7 +39336,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_char"
+                  "name": "char"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -39684,7 +39684,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_pg_statistic"
+                  "name": "pg_statistic"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -39915,7 +39915,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -39928,7 +39928,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -40019,7 +40019,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40032,7 +40032,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -40045,7 +40045,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40058,7 +40058,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -40211,7 +40211,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 64,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40224,7 +40224,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_name"
+                  "name": "name"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -40250,7 +40250,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -40263,7 +40263,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40276,7 +40276,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_char"
+                  "name": "char"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -40380,7 +40380,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -40393,7 +40393,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 1,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40406,7 +40406,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_bool"
+                  "name": "bool"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -40419,7 +40419,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 8,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40432,7 +40432,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float8"
+                  "name": "float8"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -40445,7 +40445,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 8,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40458,7 +40458,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float8"
+                  "name": "float8"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -40767,7 +40767,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40780,7 +40780,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -40871,7 +40871,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40884,7 +40884,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -40897,7 +40897,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 4,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -40910,7 +40910,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_float4"
+                  "name": "float4"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -41492,7 +41492,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -42263,7 +42263,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -42276,7 +42276,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -42302,7 +42302,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -43343,7 +43343,7 @@
                 "not_null": true,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 2,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -43356,7 +43356,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "int2vector"
+                  "name": "int2"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -46003,7 +46003,7 @@
                 "not_null": false,
                 "is_array": true,
                 "comment": "",
-                "length": -1,
+                "length": 16,
                 "is_named_param": false,
                 "is_func_call": false,
                 "scope": "",
@@ -46016,7 +46016,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_aclitem"
+                  "name": "aclitem"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -46260,7 +46260,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -46530,7 +46530,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -46696,7 +46696,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -46906,7 +46906,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -47072,7 +47072,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -47368,7 +47368,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -47482,7 +47482,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,
@@ -47622,7 +47622,7 @@
                 "type": {
                   "catalog": "",
                   "schema": "",
-                  "name": "_text"
+                  "name": "text"
                 },
                 "is_sqlc_slice": false,
                 "embed_table": null,

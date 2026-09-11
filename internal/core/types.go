@@ -175,12 +175,18 @@ func (c *Catalog) CreateUserType(name, category string) (int64, error) {
 	// affinity rule does; the type then resolves through that base and
 	// needs no operators of its own.
 	if category == "U" {
-		if base, cat := c.userTypeBase(bare); base != "" {
-			if baseOID, err := c.TypeOID(base); err == nil {
-				spec.BaseOID = baseOID
-				spec.Category = cat
-				return c.CreateTypeSpec(spec)
+		baseOID, err := c.userTypeBase(bare)
+		if err != nil {
+			return 0, err
+		}
+		if baseOID != 0 {
+			base, err := c.LookupType(baseOID)
+			if err != nil {
+				return 0, err
 			}
+			spec.BaseOID = baseOID
+			spec.Category = base.Category
+			return c.CreateTypeSpec(spec)
 		}
 	}
 	oid, err := c.CreateTypeSpec(spec)
@@ -591,7 +597,10 @@ func (c *Catalog) internType(t *TypeExpr, newFamily func(name string) (int64, er
 	if t == nil || strings.TrimSpace(t.Name) == "" {
 		return 0, nil, fmt.Errorf("missing type name")
 	}
-	t = c.canonicalize(t)
+	t, err := c.canonicalize(t)
+	if err != nil {
+		return 0, nil, err
+	}
 	name := strings.ToLower(strings.TrimSpace(t.Name))
 	familyOID, err := c.familyOIDByQualifiedName(name)
 	if err != nil {

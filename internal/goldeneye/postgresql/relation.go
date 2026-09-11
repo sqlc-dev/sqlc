@@ -19,13 +19,17 @@ select
 	relations.name as tablename,
 	pg_attribute.attname as column_name,
 	attnotnull as column_notnull,
-	column_type.typname as column_type,
-	nullif(column_type.typlen, -1) as column_length,
+	-- An array column's type is its element's, with the array flag set,
+	-- rather than pg_type's own _text spelling of the array type.
+	coalesce(element_type.typname, column_type.typname) as column_type,
+	nullif(coalesce(element_type.typlen, column_type.typlen), -1) as column_length,
 	column_type.typcategory = 'A' as column_isarray
 from relations
 inner join pg_catalog.pg_class on pg_class.relname = relations.name
 left join pg_catalog.pg_attribute on pg_attribute.attrelid = pg_class.oid
 inner join pg_catalog.pg_type column_type on pg_attribute.atttypid = column_type.oid
+left join pg_catalog.pg_type element_type
+	on column_type.typcategory = 'A' and element_type.oid = column_type.typelem
 where relations.schemaname = $1
 -- Make sure these columns are always generated in the same order
 -- so that the output is stable

@@ -84,6 +84,7 @@ type SqlProc struct {
 	ReturnTypeOid  int64
 	ReturnSet      int64
 	ReturnNullable int64
+	ReturnTemplate string
 	Strict         int64
 	VariadicKind   string
 }
@@ -113,6 +114,13 @@ type SqlType struct {
 	NotNull      int64
 }
 
+type SqlTypeAffinity struct {
+	DialectOid int64
+	Ord        int64
+	Words      string
+	TypeOid    int64
+}
+
 type SqlTypeArg struct {
 	TypeOid     int64
 	Ord         int64
@@ -123,4 +131,12 @@ type SqlTypeArg struct {
 	BoolValue   sql.NullInt64
 	StringValue sql.NullString
 	Ident       sql.NullString
+}
+
+type SqlTypeRewrite struct {
+	DialectOid int64
+	Ord        int64
+	Pattern    string
+	Template   string
+	Cond       string
 }

@@ -352,12 +352,12 @@
 {"name": "toString", "args": [{"type": "any"}], "returns": "String"}
 {"name": "toDateTime", "args": [{"type": "any"}, {"type": "any"}], "returns": "DateTime"}
 {"name": "toDate", "args": [{"type": "any"}, {"type": "any"}], "returns": "Date"}
-{"name": "toDateTime64", "args": [{"type": "any"}, {"type": "any"}], "returns": "DateTime64"}
-{"name": "toDateTime64", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "DateTime64"}
-{"name": "toDecimal32", "args": [{"type": "any"}, {"type": "any"}], "returns": "Decimal32"}
-{"name": "toDecimal64", "args": [{"type": "any"}, {"type": "any"}], "returns": "Decimal64"}
-{"name": "toDecimal128", "args": [{"type": "any"}, {"type": "any"}], "returns": "Decimal128"}
-{"name": "toDecimal256", "args": [{"type": "any"}, {"type": "any"}], "returns": "Decimal256"}
+{"name": "toDateTime64", "args": [{"type": "any"}, {"type": "any"}], "returns": "DateTime64($2)"}
+{"name": "toDateTime64", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "DateTime64($2, $3)"}
+{"name": "toDecimal32", "args": [{"type": "any"}, {"type": "any"}], "returns": "Decimal(9, $2)"}
+{"name": "toDecimal64", "args": [{"type": "any"}, {"type": "any"}], "returns": "Decimal(18, $2)"}
+{"name": "toDecimal128", "args": [{"type": "any"}, {"type": "any"}], "returns": "Decimal(38, $2)"}
+{"name": "toDecimal256", "args": [{"type": "any"}, {"type": "any"}], "returns": "Decimal(76, $2)"}
 {"name": "toFixedString", "args": [{"type": "any"}, {"type": "any"}], "returns": "FixedString"}
 {"name": "toStringCutToZero", "args": [{"type": "any"}], "returns": "String"}
 {"name": "reinterpretAsString", "args": [{"type": "any"}], "returns": "String"}

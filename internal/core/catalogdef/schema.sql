@@ -81,6 +81,35 @@ CREATE TABLE sql_type_arg (
     PRIMARY KEY (type_oid, ord)
 );
 
+-- sql_type_rewrite: the rewrites a dialect applies to a type before it is
+-- interned, in order, which are how a dialect stores what only it spells:
+-- SQL Server keeps float(24) as real and a bare decimal as decimal(18,0),
+-- ClickHouse keeps Decimal32(4) as Decimal(9, 4). pattern is a type
+-- expression whose arguments may be $1, $2... binding whatever stands there;
+-- template is the expression the match becomes, with the bindings
+-- substituted; cond bounds a binding, as "$1 <= 24" does.
+CREATE TABLE sql_type_rewrite (
+    dialect_oid INTEGER NOT NULL REFERENCES sql_dialect(oid),
+    ord         INTEGER NOT NULL,
+    pattern     TEXT NOT NULL,
+    template    TEXT NOT NULL,
+    cond        TEXT NOT NULL DEFAULT '',
+    PRIMARY KEY (dialect_oid, ord)
+);
+
+-- sql_type_affinity: the rule a dialect resolves an unseeded type family
+-- by, in order: the first row one of whose words the family's name
+-- contains names the type it stands on, and a row with no words is the
+-- default. SQLite gives every declared spelling one of five affinities
+-- this way.
+CREATE TABLE sql_type_affinity (
+    dialect_oid INTEGER NOT NULL REFERENCES sql_dialect(oid),
+    ord         INTEGER NOT NULL,
+    words       TEXT NOT NULL DEFAULT '', -- comma-separated, upper case
+    type_oid    INTEGER NOT NULL REFERENCES sql_type(oid),
+    PRIMARY KEY (dialect_oid, ord)
+);
+
 -- sql_class: relations (tables, views, indexes).
 --   kind: 'r' = table, 'v' = view, 'i' = index, 'c' = composite type, 'f' = foreign
 CREATE TABLE sql_class (
@@ -136,6 +165,9 @@ CREATE TABLE sql_constraint (
 --   kind: 'f' = function, 'a' = aggregate, 'w' = window, 'p' = procedure
 --   variadic_kind: 'n' = none, 'a' = array (VARIADIC any[]), 'v' = variadic-any
 --   return_set: 1 if SETOF / table-returning
+--   return_template: the result as an expression over the call's arguments,
+--                    when it depends on their values: Decimal(18, $2) for
+--                    toDecimal64(x, s). Empty for a result the type says.
 CREATE TABLE sql_proc (
     oid             INTEGER PRIMARY KEY AUTOINCREMENT,
     namespace_oid   INTEGER REFERENCES sql_namespace(oid),
@@ -145,6 +177,7 @@ CREATE TABLE sql_proc (
     return_type_oid INTEGER NOT NULL REFERENCES sql_type(oid),
     return_set      INTEGER NOT NULL DEFAULT 0,
     return_nullable INTEGER NOT NULL DEFAULT 1,
+    return_template TEXT NOT NULL DEFAULT '',
     strict          INTEGER NOT NULL DEFAULT 0,
     variadic_kind   TEXT NOT NULL DEFAULT 'n'
 );

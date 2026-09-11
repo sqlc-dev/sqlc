@@ -10,5 +10,6 @@
   "comparison": ["=", "<>", "!=", "<", "<=", ">", ">="],
   "comparison_categories": "BNSDTU",
   "arithmetic": ["+", "-", "*", "/"],
-  "arithmetic_categories": "N"
+  "arithmetic_categories": "N",
+  "idents": ["max"]
 }

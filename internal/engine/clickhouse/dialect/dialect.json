@@ -15,5 +15,27 @@
   "comparison": ["=", "==", "<>", "!=", "<", "<=", ">", ">="],
   "comparison_categories": "NBSDU",
   "arithmetic": ["+", "-", "*", "/", "%"],
-  "arithmetic_categories": "N"
+  "arithmetic_categories": "N",
+  "rewrites": [
+    {
+      "from": "Decimal32($1)",
+      "to": "Decimal(9, $1)"
+    },
+    {
+      "from": "Decimal64($1)",
+      "to": "Decimal(18, $1)"
+    },
+    {
+      "from": "Decimal128($1)",
+      "to": "Decimal(38, $1)"
+    },
+    {
+      "from": "Decimal256($1)",
+      "to": "Decimal(76, $1)"
+    }
+  ],
+  "ident_args": {
+    "AggregateFunction": [1],
+    "SimpleAggregateFunction": [1]
+  }
 }

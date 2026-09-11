@@ -2,6 +2,7 @@ package clickhouse
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -1069,6 +1070,10 @@ func (c *cc) convertColumnDeclaration(n *chast.ColumnDeclaration) *ast.ColumnDef
 	return colDef
 }
 
+// renderDataType spells a type the way ClickHouse stores it: an Enum's
+// members are numbered and the family sized by their count, and a
+// Variant's members are sorted, so that Enum('a', 'b') is Enum8('a' = 1,
+// 'b' = 2) and Variant(String, Int64) is Variant(Int64, String).
 func renderDataType(dt *chast.DataType) string {
 	if dt == nil {
 		return ""
@@ -1076,11 +1081,43 @@ func renderDataType(dt *chast.DataType) string {
 	if len(dt.Parameters) == 0 {
 		return dt.Name
 	}
+	name := dt.Name
 	parts := make([]string, 0, len(dt.Parameters))
-	for _, p := range dt.Parameters {
-		parts = append(parts, renderTypeParam(p))
+	switch strings.ToLower(name) {
+	case "enum", "enum8", "enum16":
+		if strings.EqualFold(name, "enum") {
+			name = "Enum8"
+			if len(dt.Parameters) > 127 {
+				name = "Enum16"
+			}
+		}
+		next := int64(1)
+		for _, p := range dt.Parameters {
+			switch v := p.(type) {
+			case *chast.BinaryExpr:
+				// 'a' = 3 numbers itself, and the next bare member follows it.
+				parts = append(parts, renderTypeParam(v))
+				if lit, ok := v.Right.(*chast.Literal); ok {
+					if n, err := strconv.ParseInt(fmt.Sprint(lit.Value), 10, 64); err == nil {
+						next = n + 1
+					}
+				}
+			default:
+				parts = append(parts, renderTypeParam(p)+" = "+strconv.FormatInt(next, 10))
+				next++
+			}
+		}
+	case "variant":
+		for _, p := range dt.Parameters {
+			parts = append(parts, renderTypeParam(p))
+		}
+		sort.Strings(parts)
+	default:
+		for _, p := range dt.Parameters {
+			parts = append(parts, renderTypeParam(p))
+		}
 	}
-	return dt.Name + "(" + strings.Join(parts, ", ") + ")"
+	return name + "(" + strings.Join(parts, ", ") + ")"
 }
 
 func renderTypeParam(e chast.Expression) string {

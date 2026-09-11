@@ -372,13 +372,15 @@ are dialect data or dialect code:
    `decimal(18, 3)` and `varchar(10)` is `varchar`; PostgreSQL's `int[3]` is
    `array(int4)`. A family in `types.jsonl` may say `"defaults": [18, 0]`
    or `"args": 0`.
-3. **Rewrites that change the family by argument or member**, which are
-   code, since they are ClickHouse's enum numbering and MySQL's charset
-   folding: `Decimal32(s)` is `Decimal(9, s)`, `Enum('a', 'b')` is
-   `Enum8('a' = 1, 'b' = 2)`, `Variant(...)` sorts its members, `varchar(n)
-   character set binary` is `varbinary(n)`, `boolean` is `tinyint(1)`,
-   `float(24)` is `real`. An engine package registers a `Canonicalize(*TypeExpr)`
-   hook with its seed, and the catalog applies it before interning.
+3. **Rewrites that change the family by argument**, which are data too: an
+   ordered list of pattern, template and bound in `dialect.json` —
+   `Decimal32($1)` to `Decimal(9, $1)`, `float($1)` to `real` where `$1 <=
+   24`, `boolean` to `tinyint(1)`, `sysname` to `nvarchar(128)` — that the
+   seed loads into a table and the catalog applies before interning. What
+   only a parser can do stays in the engine's converter, which every engine
+   has anyway: ClickHouse numbers an Enum's members and sorts a Variant's
+   when it spells the type, and MySQL's parser folds `varchar(n) character
+   set binary` into `varbinary(n)`.
 
 The reported type is the canonical row's expression. The declared spelling
 is kept on the attribute in `decl_type`, for the formatter and for SQLite,
@@ -462,13 +464,13 @@ catalog; PostgreSQL's catalog says `numeric + numeric` is `numeric` and its
 results drop the typmod. The catalog can only ever answer at the family
 level, and that is the baseline every dialect gets: an operator or function
 result is the family the overload names, with the arguments of an `$n`
-result carried over from the argument it stands for. A dialect that reports
-more registers a `ResultType(op, args []*TypeExpr) *TypeExpr` hook beside
-its `Canonicalize` hook, and the analyzer applies it to the expression it
-reports. ClickHouse needs it for its arithmetic and for value-dependent
-results like `toDecimal64(x, 4)`, since its check compares whole
-expressions; MySQL's check reads the wire type, which is the family with
-its flags, so the baseline passes it.
+result carried over from the argument it stands for. A result that depends
+on an argument's value is a template in the seed — `"returns": "Decimal(18,
+$2)"` for `toDecimal64(x, s)` — that the analyzer fills in from the call's
+literals. ClickHouse needs it, since its check compares whole expressions;
+MySQL's check reads the wire type, which is the family with its flags, so
+the baseline passes it. Arithmetic promotion — `Int8 + UInt8` is `Int16` —
+is not expressed yet.
 
 ### What each engine hands the core
 
@@ -488,15 +490,15 @@ where it does not, the converter has a small change to make.
 | MySQL | `TINYINT(1)`, `DATETIME(6)`, `VARCHAR(255)`, `BOOLEAN` | `tinyint(1)`, `datetime(6)`, `varchar(255)`, `tinyint(1)`: the converter's `Typmods` are read, and `boolean` canonicalizes as MySQL does |
 | MySQL | `ENUM('a','b')`, `SET('x','y')` | `enum('a', 'b')`, `set('x', 'y')`: the converter renders `Vals` into the spelling |
 | MySQL | `CAST(x AS CHAR(10))` | `char(10)`: the cast converter names the SQL type, not the wire code `var_string` |
-| MySQL | `VARCHAR(10) CHARACTER SET binary` | `varbinary(10)`, by the canonicalization hook; collation is not part of the type |
+| MySQL | `VARCHAR(10) CHARACTER SET binary` | `varbinary(10)`, as the parser folds it; collation is not part of the type |
 | SQLite | any spelling | the spelling as an instance, `varchar(255)`, `foo bar(3)`, verbatim as `pragma_table_xinfo` reports it, with `base_oid` set by the affinity rule applied when the dialect resolves an unknown name; `types.jsonl`'s alias lists become the rule |
 | SQLite | `STRICT` tables, `ANY` | the family rows; a strict table's column names one of them or fails, as SQLite does |
 | SQLite | an expression | its storage class, `integer`, `real`, `text` or `blob`, which is what `typeof()` and the check report |
 | ClickHouse | every parametric type | the spelling, read as today, now also for casts, `{p:T}` placeholders and results |
 | ClickHouse | `Nullable(T)`, `LowCardinality(T)` | `T` with `nullable`; `lowcardinality(T)` with `base_oid` at `T` |
-| ClickHouse | `Decimal32(4)`, `Enum('a', 'b')`, `Variant(String, Int64)`, `INT` | `decimal(9, 4)`, `enum8(a: 1, b: 2)`, `variant(int64, string)`, `int32`, by the canonicalization hook |
+| ClickHouse | `Decimal32(4)`, `Enum('a', 'b')`, `Variant(String, Int64)`, `INT` | `decimal(9, 4)` by a rewrite, `enum8(a: 1, b: 2)` and `variant(int64, string)` by the converter, `int32` by an alias |
 | ClickHouse | `SimpleAggregateFunction(sum, UInt64)` | `simpleaggregatefunction(sum, uint64)` with `sum` an identifier argument |
-| ClickHouse | `toDecimal64(x, s)`, `Int8 + UInt8` | `decimal(18, s)`, `int16`, by the result-type hook |
+| ClickHouse | `toDecimal64(x, s)` | `decimal(18, s)`, by the seed's return template |
 | ClickHouse | `Nested(a UInt8, b String)` | a relation-shape rule, not a type: the column becomes `n.a array(uint8)` and `n.b array(string)` on load, as `system.columns` has them |
 | DuckDB | `STRUCT(a INTEGER, b VARCHAR)`, `MAP(K, V)`, `UNION(...)` | `struct(a: integer, b: varchar)`, `map(varchar, integer)`, `union(num: integer, str: varchar)`: the converter renders the darkwing type expression it already has instead of keeping its name |
 | DuckDB | `INTEGER[]`, `INTEGER[3]` | `array(integer)` and `array(integer, 3)`: a list is the cross-dialect array, a fixed size is its second argument |
@@ -504,7 +506,7 @@ where it does not, the converter has a small change to make.
 | GoogleSQL | `ARRAY<INT64>`, `STRUCT<a INT64, b STRING>`, `RANGE<DATE>` | `array(int64)`, `struct(a: int64, b: string)`, `range(date)`: the converter renders the zetajones type node in call form, or `ParseTypeExpr` accepts `<...>` |
 | GoogleSQL | `STRING(10)`, `STRING(MAX)`, `NUMERIC(10,2)`, `[1, 2]`, `STRUCT(1 AS x)` | the typmods are read, with `max` an identifier argument; the array and struct constructors are typed from their elements |
 | SQL Server | `NVARCHAR(MAX)`, `VARCHAR`, `DECIMAL` | `nvarchar(max)` with `max` an identifier argument; `varchar(1)` and `decimal(18, 0)` by the defaults `sys.types` applies |
-| SQL Server | `FLOAT(24)` | `float(24)` with `canonical_oid` at `real`, by the hook |
+| SQL Server | `FLOAT(24)` | `real`, by a rewrite |
 | SQL Server | `dbo.PhoneNumber`, `sysname` | a row in namespace `dbo`, `typtype` `d`, `base_oid` at `varchar(20)`, `not_null` set; `sysname` seeded the same way over `nvarchar(128)` |
 
 The `ident` argument is the one addition to `TypeExpr` and to
@@ -538,9 +540,9 @@ casts. A function's argument and return types may be expressions, and the
 return type may reference an argument's value as well as its type. The
 category rules in `dialect.json` apply to families; an instance inherits
 its family's category, which is how `numeric(10, 2)` joins the numeric
-casts without being seeded. An engine package may register two hooks with
-its seed, `Canonicalize` and `ResultType`, for what its catalog does in
-code.
+casts without being seeded. `dialect.json` also carries the dialect's
+rewrites, its identifier words and positions, and its affinity rule, so
+that nothing about a dialect is code.
 
 `goldeneye` checks the analyze cases against what each database reports, and
 its answer shape is the same `TypeExpr`. ClickHouse and DuckDB report whole
@@ -650,13 +652,21 @@ same rows and output, with `int32` in ClickHouse's case.
 The design above is implemented, engine by engine, with these departures
 and details settled on the way:
 
-- The three per-dialect hooks are registered by an engine package at init,
-  by the name its `dialect.json` records, and looked up by that name, so a
-  catalog restored from the cache — which runs no seed — has them:
-  `core.RegisterCanonicalizer`, `core.RegisterUserTypeBase` (SQLite's
-  affinity rule, applied when the schema declares a family the seed does
-  not list) and `core.RegisterResultType` (ClickHouse's `toDecimal64(x, 4)`
-  and `toDateTime64(x, 3)`).
+- What the note called hooks is data, so that an engine adds a dialect by
+  writing files and never by registering Go code. `dialect.json` carries
+  `rewrites`, an ordered list of pattern, template and optional bound —
+  `float($1)` to `real` where `$1 <= 24`, `decimal` to `decimal(18, 0)`,
+  `Decimal32($1)` to `Decimal(9, $1)`, `sysname` to `nvarchar(128)` — which
+  the seed loads into `sql_type_rewrite` and the catalog applies before
+  interning, first match winning; `idents` and `ident_args`, the words and
+  argument positions that are identifiers rather than types, kept as dialect
+  flags; and `affinity`, SQLite's ordered rule for a family the seed does
+  not list, loaded into `sql_type_affinity` and asked when a schema
+  declares one. A result that depends on an argument's value is a template
+  in `functions.jsonl` — `"returns": "Decimal(18, $2)"` — kept on
+  `sql_proc.return_template` and filled in from the call's literals. What
+  is genuinely about parsing stays in the engine's converter: ClickHouse
+  numbers an Enum's members and sorts a Variant's when it spells the type.
 - SQLite's `dialect.json` says `"alias": "base"`, which makes each alias in
   its `types.jsonl` a type of its own standing on the type it aliases,
   rather than another spelling of it.
@@ -684,8 +694,8 @@ and details settled on the way:
   type, so a JSON column reports `varchar`; a named enum reports its name,
   not its labels, since the canonicalizer cannot see the catalog. A
   GoogleSQL array or struct constructor in a select list is still untyped.
-- PostgreSQL's `relations.jsonl` still spells array columns as `pg_type`
-  does (`_text`), which the canonicalizer reads as `array(text)`.
+- PostgreSQL's `relations.jsonl` spells an array column as its element with
+  the array flag, which `goldeneye` now writes from `typelem`.
 
 ## Order of work
 
@@ -700,7 +710,7 @@ and details settled on the way:
    through the pointer chain. This is where ClickHouse's casts and
    parameters come right.
 3. The engines, one at a time, each with an `analyze_types/<engine>` case
-   alongside ClickHouse's and each with its `Canonicalize` hook: PostgreSQL
+   alongside ClickHouse's and each with its rewrites: PostgreSQL
    typmods, dimensions, declared types and `format_type` names; MySQL
    unsigned, typmods, members and `boolean`, plus the `var_string` leak;
    DuckDB's nested types and dropped arguments; GoogleSQL's angle brackets;
@@ -709,13 +719,13 @@ and details settled on the way:
    `ArrayDims` from the expression, and the `experiment_coreanalyzer` cases
    grow MySQL unsigned and boolean columns and a PostgreSQL two-dimensional
    array, so the core path generates what the legacy path does.
-5. Result-type hooks, ClickHouse first, and the value-dependent return
-   types its seed needs; then MySQL's precision arithmetic once its check
-   reads precision from the wire.
+5. Return templates for value-dependent results, ClickHouse first; then
+   MySQL's precision arithmetic once its check reads precision from the
+   wire.
 
 ## Open questions
 
-- How far a result-type hook goes. ClickHouse's arithmetic promotion and
+- How far a return template goes. ClickHouse's arithmetic promotion and
   `toDecimal64(x, 4)` are finite rules; `arrayMap(f, arr)` returns an array
   of the lambda's result, which needs the lambda typed first.
 - Whether DuckDB's dropped `VARCHAR(10)` length and reported anonymous enum

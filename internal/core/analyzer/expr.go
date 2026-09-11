@@ -829,9 +829,9 @@ func (a *analyzer) typeFuncCall(f *ast.FuncCall) (exprType, error) {
 		}
 	}
 	ret := a.returnType(p, argTypes)
-	// A dialect may know the result better than the catalog does, from the
-	// arguments' types and literal values.
-	if computed := a.resultTypeHook(name, args, argTypes); computed != nil {
+	// A result that depends on an argument's value is spelled by the seed
+	// as a template over the arguments, filled in from the call.
+	if computed := a.returnTemplate(p, args, argTypes); computed != nil {
 		ret = a.lookupType(computed)
 	}
 	ret.nullable = p.ReturnNullable
@@ -841,20 +841,46 @@ func (a *analyzer) typeFuncCall(f *ast.FuncCall) (exprType, error) {
 	return ret, nil
 }
 
-// resultTypeHook asks the dialect's result-type rule about a call, handing
-// it each argument's type and, for an integer literal, its value.
-func (a *analyzer) resultTypeHook(name string, args []ast.Node, argTypes []exprType) *core.TypeExpr {
-	ras := make([]core.ResultArg, len(args))
-	for i, arg := range args {
-		ras[i].Type = a.exprOf(argTypes[i])
-		if c, ok := arg.(*ast.A_Const); ok {
-			if n, ok := c.Val.(*ast.Integer); ok {
-				v := n.Ival
-				ras[i].Int = &v
+// returnTemplate fills a seed's return template — Decimal(18, $2) — from
+// the call: a $n that stands for an integer literal takes its value, and
+// one that stands for a typed argument takes its type. A template that
+// cannot be filled leaves the answer to the catalog.
+func (a *analyzer) returnTemplate(p core.ProcOverload, args []ast.Node, argTypes []exprType) *core.TypeExpr {
+	if p.ReturnTemplate == "" {
+		return nil
+	}
+	template := core.ParseTypeExpr(p.ReturnTemplate)
+	fill := func(arg core.TypeArg) (core.TypeArg, bool) {
+		n, ok := argIndex(arg.Type.Name)
+		if !ok || n >= len(args) {
+			return core.TypeArg{}, false
+		}
+		if c, ok := args[n].(*ast.A_Const); ok {
+			if lit, ok := c.Val.(*ast.Integer); ok {
+				v := lit.Ival
+				return core.TypeArg{Label: arg.Label, Int: &v}, true
+			}
+			if lit, ok := c.Val.(*ast.String); ok {
+				v := lit.Str
+				return core.TypeArg{Label: arg.Label, String: &v}, true
 			}
 		}
+		if t := a.exprOf(argTypes[n]); t != nil {
+			return core.TypeArg{Label: arg.Label, Type: t.WithNullable(false)}, true
+		}
+		return core.TypeArg{}, false
 	}
-	return a.cat.ResultTypeOf(name, ras)
+	for i, arg := range template.Args {
+		if arg.Type == nil || !strings.HasPrefix(arg.Type.Name, "$") {
+			continue
+		}
+		filled, ok := fill(arg)
+		if !ok {
+			return nil
+		}
+		template.Args[i] = filled
+	}
+	return template
 }
 
 // returnType resolves a polymorphic return type — max(anyelement), or a

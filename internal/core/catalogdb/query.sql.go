@@ -261,8 +261,8 @@ const createProc = `-- name: CreateProc :execlastid
 
 INSERT INTO sql_proc
     (namespace_oid, dialect_oid, name, kind,
-     return_type_oid, return_set, return_nullable, strict, variadic_kind)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+     return_type_oid, return_set, return_nullable, return_template, strict, variadic_kind)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 type CreateProcParams struct {
@@ -273,6 +273,7 @@ type CreateProcParams struct {
 	ReturnTypeOid  int64
 	ReturnSet      int64
 	ReturnNullable int64
+	ReturnTemplate string
 	Strict         int64
 	VariadicKind   string
 }
@@ -287,6 +288,7 @@ func (q *Queries) CreateProc(ctx context.Context, arg CreateProcParams) (int64, 
 		arg.ReturnTypeOid,
 		arg.ReturnSet,
 		arg.ReturnNullable,
+		arg.ReturnTemplate,
 		arg.Strict,
 		arg.VariadicKind,
 	)
@@ -367,6 +369,28 @@ func (q *Queries) CreateType(ctx context.Context, arg CreateTypeParams) (int64, 
 	return result.LastInsertId()
 }
 
+const createTypeAffinity = `-- name: CreateTypeAffinity :exec
+INSERT INTO sql_type_affinity (dialect_oid, ord, words, type_oid)
+VALUES (?, ?, ?, ?)
+`
+
+type CreateTypeAffinityParams struct {
+	DialectOid int64
+	Ord        int64
+	Words      string
+	TypeOid    int64
+}
+
+func (q *Queries) CreateTypeAffinity(ctx context.Context, arg CreateTypeAffinityParams) error {
+	_, err := q.db.ExecContext(ctx, createTypeAffinity,
+		arg.DialectOid,
+		arg.Ord,
+		arg.Words,
+		arg.TypeOid,
+	)
+	return err
+}
+
 const createTypeArg = `-- name: CreateTypeArg :exec
 INSERT INTO sql_type_arg
     (type_oid, ord, label, arg_type_oid, nullable, int_value, bool_value, string_value, ident)
@@ -396,6 +420,30 @@ func (q *Queries) CreateTypeArg(ctx context.Context, arg CreateTypeArgParams) er
 		arg.BoolValue,
 		arg.StringValue,
 		arg.Ident,
+	)
+	return err
+}
+
+const createTypeRewrite = `-- name: CreateTypeRewrite :exec
+INSERT INTO sql_type_rewrite (dialect_oid, ord, pattern, template, cond)
+VALUES (?, ?, ?, ?, ?)
+`
+
+type CreateTypeRewriteParams struct {
+	DialectOid int64
+	Ord        int64
+	Pattern    string
+	Template   string
+	Cond       string
+}
+
+func (q *Queries) CreateTypeRewrite(ctx context.Context, arg CreateTypeRewriteParams) error {
+	_, err := q.db.ExecContext(ctx, createTypeRewrite,
+		arg.DialectOid,
+		arg.Ord,
+		arg.Pattern,
+		arg.Template,
+		arg.Cond,
 	)
 	return err
 }
@@ -537,7 +585,7 @@ func (q *Queries) FindOperators(ctx context.Context, arg FindOperatorsParams) ([
 }
 
 const findProcsAnyNamespace = `-- name: FindProcsAnyNamespace :many
-SELECT oid, name, kind, return_type_oid, return_nullable
+SELECT oid, name, kind, return_type_oid, return_nullable, return_template
 FROM sql_proc
 WHERE name = ?
 `
@@ -548,6 +596,7 @@ type FindProcsAnyNamespaceRow struct {
 	Kind           string
 	ReturnTypeOid  int64
 	ReturnNullable int64
+	ReturnTemplate string
 }
 
 func (q *Queries) FindProcsAnyNamespace(ctx context.Context, name string) ([]FindProcsAnyNamespaceRow, error) {
@@ -565,6 +614,7 @@ func (q *Queries) FindProcsAnyNamespace(ctx context.Context, name string) ([]Fin
 			&i.Kind,
 			&i.ReturnTypeOid,
 			&i.ReturnNullable,
+			&i.ReturnTemplate,
 		); err != nil {
 			return nil, err
 		}
@@ -580,7 +630,7 @@ func (q *Queries) FindProcsAnyNamespace(ctx context.Context, name string) ([]Fin
 }
 
 const findProcsInNamespaces = `-- name: FindProcsInNamespaces :many
-SELECT oid, name, kind, return_type_oid, return_nullable
+SELECT oid, name, kind, return_type_oid, return_nullable, return_template
 FROM sql_proc
 WHERE name = ?1
   AND namespace_oid IN (/*SLICE:namespace_oids*/?)
@@ -597,6 +647,7 @@ type FindProcsInNamespacesRow struct {
 	Kind           string
 	ReturnTypeOid  int64
 	ReturnNullable int64
+	ReturnTemplate string
 }
 
 func (q *Queries) FindProcsInNamespaces(ctx context.Context, arg FindProcsInNamespacesParams) ([]FindProcsInNamespacesRow, error) {
@@ -625,6 +676,7 @@ func (q *Queries) FindProcsInNamespaces(ctx context.Context, arg FindProcsInName
 			&i.Kind,
 			&i.ReturnTypeOid,
 			&i.ReturnNullable,
+			&i.ReturnTemplate,
 		); err != nil {
 			return nil, err
 		}
@@ -724,6 +776,73 @@ func (q *Queries) ListTablesInNamespace(ctx context.Context, namespaceOid int64)
 	for rows.Next() {
 		var i ListTablesInNamespaceRow
 		if err := rows.Scan(&i.Oid, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTypeAffinities = `-- name: ListTypeAffinities :many
+SELECT words, type_oid FROM sql_type_affinity
+WHERE dialect_oid = ? ORDER BY ord
+`
+
+type ListTypeAffinitiesRow struct {
+	Words   string
+	TypeOid int64
+}
+
+func (q *Queries) ListTypeAffinities(ctx context.Context, dialectOid int64) ([]ListTypeAffinitiesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listTypeAffinities, dialectOid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListTypeAffinitiesRow
+	for rows.Next() {
+		var i ListTypeAffinitiesRow
+		if err := rows.Scan(&i.Words, &i.TypeOid); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTypeRewrites = `-- name: ListTypeRewrites :many
+SELECT pattern, template, cond FROM sql_type_rewrite
+WHERE dialect_oid = ? ORDER BY ord
+`
+
+type ListTypeRewritesRow struct {
+	Pattern  string
+	Template string
+	Cond     string
+}
+
+func (q *Queries) ListTypeRewrites(ctx context.Context, dialectOid int64) ([]ListTypeRewritesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listTypeRewrites, dialectOid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListTypeRewritesRow
+	for rows.Next() {
+		var i ListTypeRewritesRow
+		if err := rows.Scan(&i.Pattern, &i.Template, &i.Cond); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
