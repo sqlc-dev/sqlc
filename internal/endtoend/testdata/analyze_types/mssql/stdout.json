@@ -1,0 +1,570 @@
+[
+  {
+    "name": "AllTypes",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "things"
+      },
+      {
+        "name": "price",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "amount",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 18
+            },
+            {
+              "int": 4
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "plain",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 18
+            },
+            {
+              "int": 0
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "body",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "title",
+        "type": {
+          "name": "varchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 50
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "code",
+        "type": {
+          "name": "char",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "ncode",
+        "type": {
+          "name": "nchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 5
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "blob",
+        "type": {
+          "name": "varbinary",
+          "nullable": true,
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "key16",
+        "type": {
+          "name": "binary",
+          "nullable": true,
+          "args": [
+            {
+              "int": 16
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "created",
+        "type": {
+          "name": "datetime2",
+          "nullable": true,
+          "args": [
+            {
+              "int": 3
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "updated",
+        "type": {
+          "name": "datetime2",
+          "nullable": true,
+          "args": [
+            {
+              "int": 7
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "offset_at",
+        "type": {
+          "name": "datetimeoffset",
+          "nullable": true,
+          "args": [
+            {
+              "int": 7
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "tm",
+        "type": {
+          "name": "time",
+          "nullable": true,
+          "args": [
+            {
+              "int": 4
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "f",
+        "type": {
+          "name": "real",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "f53",
+        "type": {
+          "name": "float",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "r",
+        "type": {
+          "name": "real",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "m",
+        "type": {
+          "name": "money",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "b",
+        "type": {
+          "name": "bit",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "u",
+        "type": {
+          "name": "uniqueidentifier",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "x",
+        "type": {
+          "name": "xml",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "j",
+        "type": {
+          "name": "json",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "sv",
+        "type": {
+          "name": "sql_variant",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "rv",
+        "type": {
+          "name": "rowversion",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "g",
+        "type": {
+          "name": "geography",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "h",
+        "type": {
+          "name": "hierarchyid",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "vec",
+        "type": {
+          "name": "vector",
+          "nullable": true,
+          "args": [
+            {
+              "int": 3
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "sn",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 128
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "phone",
+        "type": {
+          "name": "phonenumber"
+        },
+        "table": "things"
+      },
+      {
+        "name": "bare",
+        "type": {
+          "name": "varchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 1
+            }
+          ]
+        },
+        "table": "things"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Casts",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "a",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 5
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "b",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
+        }
+      },
+      {
+        "name": "c",
+        "type": {
+          "name": "varchar",
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        }
+      },
+      {
+        "name": "d",
+        "type": {
+          "name": "datetime2",
+          "args": [
+            {
+              "int": 3
+            }
+          ]
+        }
+      },
+      {
+        "name": "e",
+        "type": {
+          "name": "phonenumber"
+        }
+      },
+      {
+        "name": "f",
+        "type": {
+          "name": "real"
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "decimal",
+            "args": [
+              {
+                "int": 5
+              },
+              {
+                "int": 2
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "nvarchar",
+            "args": [
+              {
+                "ident": "max"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "varchar",
+            "args": [
+              {
+                "int": 10
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "datetime2",
+            "args": [
+              {
+                "int": 3
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 5,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "phonenumber"
+          }
+        }
+      },
+      {
+        "number": 6,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "real"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "Params",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "things"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "price",
+          "type": {
+            "name": "decimal",
+            "args": [
+              {
+                "int": 10
+              },
+              {
+                "int": 2
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "body",
+          "type": {
+            "name": "nvarchar",
+            "nullable": true,
+            "args": [
+              {
+                "ident": "max"
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "phone",
+          "type": {
+            "name": "phonenumber"
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "vec",
+          "type": {
+            "name": "vector",
+            "nullable": true,
+            "args": [
+              {
+                "int": 3
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 5,
+        "column": {
+          "name": "offset_at",
+          "type": {
+            "name": "datetimeoffset",
+            "nullable": true,
+            "args": [
+              {
+                "int": 7
+              }
+            ]
+          },
+          "table": "things"
+        }
+      }
+    ]
+  }
+]

@@ -74,7 +74,15 @@
         "column": {
           "name": "royalties",
           "type": {
-            "name": "decimal"
+            "name": "decimal",
+            "args": [
+              {
+                "int": 10
+              },
+              {
+                "int": 2
+              }
+            ]
           },
           "table": "authors"
         }

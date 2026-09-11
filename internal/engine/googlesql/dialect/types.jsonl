@@ -18,3 +18,5 @@
 {"name": "enum", "category": "U"}
 {"name": "tokenlist", "category": "U"}
 {"name": "array", "category": "A"}
+{"name": "range", "category": "U"}
+{"name": "map", "category": "U"}

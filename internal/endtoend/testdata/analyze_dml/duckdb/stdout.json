@@ -126,7 +126,15 @@
           "name": "price",
           "type": {
             "name": "decimal",
-            "nullable": true
+            "nullable": true,
+            "args": [
+              {
+                "int": 10
+              },
+              {
+                "int": 2
+              }
+            ]
           },
           "table": "books"
         }

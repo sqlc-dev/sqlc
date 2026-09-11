@@ -1,0 +1,482 @@
+[
+  {
+    "name": "AllTypes",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "int64"
+        },
+        "table": "things"
+      },
+      {
+        "name": "s",
+        "type": {
+          "name": "string",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "smax",
+        "type": {
+          "name": "string",
+          "nullable": true,
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "n",
+        "type": {
+          "name": "numeric",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "bn",
+        "type": {
+          "name": "bignumeric",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "byt",
+        "type": {
+          "name": "bytes",
+          "nullable": true,
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "ai",
+        "type": {
+          "name": "array",
+          "nullable": true,
+          "args": [
+            {
+              "type": {
+                "name": "int64"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "as2",
+        "type": {
+          "name": "array",
+          "nullable": true,
+          "args": [
+            {
+              "type": {
+                "name": "string",
+                "args": [
+                  {
+                    "ident": "max"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "st",
+        "type": {
+          "name": "struct",
+          "nullable": true,
+          "args": [
+            {
+              "label": "a",
+              "type": {
+                "name": "int64"
+              }
+            },
+            {
+              "label": "b",
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "ast",
+        "type": {
+          "name": "array",
+          "nullable": true,
+          "args": [
+            {
+              "type": {
+                "name": "struct",
+                "args": [
+                  {
+                    "label": "x",
+                    "type": {
+                      "name": "int64"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "ts",
+        "type": {
+          "name": "timestamp",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "d",
+        "type": {
+          "name": "date",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "j",
+        "type": {
+          "name": "json",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "g",
+        "type": {
+          "name": "geography",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "iv",
+        "type": {
+          "name": "interval",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "b",
+        "type": {
+          "name": "bool",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "f",
+        "type": {
+          "name": "float64",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "f32",
+        "type": {
+          "name": "float32",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "tl",
+        "type": {
+          "name": "tokenlist",
+          "nullable": true
+        },
+        "table": "things"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Casts",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "a",
+        "type": {
+          "name": "numeric",
+          "args": [
+            {
+              "int": 5
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "b",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "int64"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "c",
+        "type": {
+          "name": "struct",
+          "args": [
+            {
+              "label": "x",
+              "type": {
+                "name": "int64"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "d",
+        "type": {
+          "name": "string",
+          "args": [
+            {
+              "int": 5
+            }
+          ]
+        }
+      },
+      {
+        "name": "e",
+        "type": {
+          "name": "bignumeric"
+        }
+      },
+      {
+        "name": "f"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "numeric",
+            "args": [
+              {
+                "int": 5
+              },
+              {
+                "int": 2
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "array",
+            "args": [
+              {
+                "type": {
+                  "name": "int64"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "struct",
+            "args": [
+              {
+                "label": "x",
+                "type": {
+                  "name": "int64"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "string",
+            "args": [
+              {
+                "int": 5
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 5,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "bignumeric"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "Params",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "int64"
+        },
+        "table": "things"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "s",
+          "type": {
+            "name": "string",
+            "nullable": true,
+            "args": [
+              {
+                "int": 10
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "ai",
+          "type": {
+            "name": "array",
+            "nullable": true,
+            "args": [
+              {
+                "type": {
+                  "name": "int64"
+                }
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "n",
+          "type": {
+            "name": "numeric",
+            "nullable": true,
+            "args": [
+              {
+                "int": 10
+              },
+              {
+                "int": 2
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "st",
+          "type": {
+            "name": "struct",
+            "nullable": true,
+            "args": [
+              {
+                "label": "a",
+                "type": {
+                  "name": "int64"
+                }
+              },
+              {
+                "label": "b",
+                "type": {
+                  "name": "string"
+                }
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 5,
+        "column": {
+          "name": "smax",
+          "type": {
+            "name": "string",
+            "nullable": true,
+            "args": [
+              {
+                "ident": "max"
+              }
+            ]
+          },
+          "table": "things"
+        }
+      }
+    ]
+  }
+]

@@ -812,15 +812,24 @@ func (c *cc) convertWindow(e *dw.WindowExpression) ast.Node {
 }
 
 // convertTypeExpression maps an unbound DuckDB type to a sqlc type name and
-// the number of list/array dimensions wrapped around it.
+// the number of list/array dimensions wrapped around it, which is what the
+// legacy catalog reads. The whole type — its arguments, a struct's fields,
+// a map's key and value, the nesting of a list of lists — goes along as
+// its spelling, which is what the analysis core reads.
 func (c *cc) convertTypeExpression(t *dw.TypeExpression) (*ast.TypeName, int) {
+	typeName, dims := c.elementTypeName(t)
+	typeName.Spelling = renderTypeExpression(t)
+	return typeName, dims
+}
+
+func (c *cc) elementTypeName(t *dw.TypeExpression) (*ast.TypeName, int) {
 	name := identifier(t.TypeName)
 	switch name {
 	case "list", "array":
 		// int[] is LIST(INTEGER); int[3] is ARRAY(INTEGER, 3).
 		if len(t.Args) > 0 {
 			if elem, ok := t.Args[0].(*dw.TypeExpression); ok {
-				typeName, dims := c.convertTypeExpression(elem)
+				typeName, dims := c.elementTypeName(elem)
 				return typeName, dims + 1
 			}
 		}
@@ -829,6 +838,45 @@ func (c *cc) convertTypeExpression(t *dw.TypeExpression) (*ast.TypeName, int) {
 		Schema: schemaName(t.Schema),
 		Name:   name,
 	}, 0
+}
+
+// renderTypeExpression spells a type as a call expression the core reads:
+// a list is array applied to its element, a fixed-size array carries its
+// size, a struct's or union's fields are labelled, and a constant argument
+// is written as it was.
+func renderTypeExpression(t *dw.TypeExpression) string {
+	name := identifier(t.TypeName)
+	if t.Schema != "" {
+		name = schemaName(t.Schema) + "." + name
+	}
+	if name == "list" {
+		name = "array"
+	}
+	if len(t.Args) == 0 {
+		return name
+	}
+	parts := make([]string, 0, len(t.Args))
+	for _, arg := range t.Args {
+		var part string
+		switch a := arg.(type) {
+		case *dw.TypeExpression:
+			part = renderTypeExpression(a)
+			if a.Alias != "" {
+				part = identifier(a.Alias) + " " + part
+			}
+		case *dw.ConstantExpression:
+			switch {
+			case a.Value.Str != "":
+				part = "'" + strings.ReplaceAll(a.Value.Str, "'", "''") + "'"
+			default:
+				part = strconv.FormatInt(a.Value.Int64, 10)
+			}
+		default:
+			continue
+		}
+		parts = append(parts, part)
+	}
+	return name + "(" + strings.Join(parts, ", ") + ")"
 }
 
 func (c *cc) convertReturning(returning []dw.Expr) *ast.List {

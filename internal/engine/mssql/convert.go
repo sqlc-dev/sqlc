@@ -63,9 +63,32 @@ func (c *cc) convert(node tsql.Node) ast.Node {
 		return c.convertAlterTableAddTableElementStatement(n)
 	case *tsql.AlterTableDropTableElementStatement:
 		return c.convertAlterTableDropTableElementStatement(n)
+	case *tsql.CreateTypeUddtStatement:
+		return c.convertCreateTypeUddtStatement(n)
 	default:
 		return todo(n)
 	}
+}
+
+// convertCreateTypeUddtStatement reports CREATE TYPE name FROM base [NOT
+// NULL] as the domain it is: a type standing on its base that may forbid
+// NULL.
+func (c *cc) convertCreateTypeUddtStatement(n *tsql.CreateTypeUddtStatement) ast.Node {
+	if n.Name == nil || n.Name.BaseIdentifier == nil || n.DataType == nil {
+		return todo(n)
+	}
+	stmt := &ast.CreateDomainStmt{
+		Domainname: &ast.List{},
+		TypeName:   dataTypeName(n.DataType),
+	}
+	if n.Name.SchemaIdentifier != nil {
+		stmt.Domainname.Items = append(stmt.Domainname.Items, NewIdentifier(identifierValue(n.Name.SchemaIdentifier)))
+	}
+	stmt.Domainname.Items = append(stmt.Domainname.Items, NewIdentifier(identifierValue(n.Name.BaseIdentifier)))
+	if n.NullableConstraint != nil && !n.NullableConstraint.Nullable {
+		stmt.Constraints = &ast.List{Items: []ast.Node{&ast.Constraint{Contype: ast.ConstrTypeNotNull}}}
+	}
+	return stmt
 }
 
 func (c *cc) convertSelectStatement(n *tsql.SelectStatement) ast.Node {
@@ -528,25 +551,25 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 	case *tsql.CastCall:
 		return &ast.TypeCast{
 			Arg:      c.convertScalarExpression(e.Parameter),
-			TypeName: &ast.TypeName{Name: dataTypeName(e.DataType)},
+			TypeName: dataTypeName(e.DataType),
 			Location: c.loc(e),
 		}
 	case *tsql.TryCastCall:
 		return &ast.TypeCast{
 			Arg:      c.convertScalarExpression(e.Parameter),
-			TypeName: &ast.TypeName{Name: dataTypeName(e.DataType)},
+			TypeName: dataTypeName(e.DataType),
 			Location: c.loc(e),
 		}
 	case *tsql.ConvertCall:
 		return &ast.TypeCast{
 			Arg:      c.convertScalarExpression(e.Parameter),
-			TypeName: &ast.TypeName{Name: dataTypeName(e.DataType)},
+			TypeName: dataTypeName(e.DataType),
 			Location: c.loc(e),
 		}
 	case *tsql.TryConvertCall:
 		return &ast.TypeCast{
 			Arg:      c.convertScalarExpression(e.Parameter),
-			TypeName: &ast.TypeName{Name: dataTypeName(e.DataType)},
+			TypeName: dataTypeName(e.DataType),
 			Location: c.loc(e),
 		}
 	case *tsql.CoalesceExpression:
@@ -1037,7 +1060,7 @@ func (c *cc) convertColumnDefinition(n *tsql.ColumnDefinition, tablePrimaryKey m
 	name := identifierValue(n.ColumnIdentifier)
 	colDef := &ast.ColumnDef{
 		Colname:  name,
-		TypeName: &ast.TypeName{Name: dataTypeName(n.DataType)},
+		TypeName: dataTypeName(n.DataType),
 		Location: c.loc(n),
 	}
 
@@ -1071,21 +1094,46 @@ func (c *cc) convertColumnDefinition(n *tsql.ColumnDefinition, tablePrimaryKey m
 // dataTypeName returns the lowercased base name of a column's declared type,
 // e.g. "nvarchar" for NVARCHAR(100). Length and precision arguments do not
 // name distinct types.
-func dataTypeName(ref tsql.DataTypeReference) string {
+// dataTypeName is a type as the core reads it: its name, qualified by its
+// schema for a user-defined type, with its parameters as type modifiers,
+// MAX among them as the word it is.
+func dataTypeName(ref tsql.DataTypeReference) *ast.TypeName {
 	switch t := ref.(type) {
 	case *tsql.SqlDataTypeReference:
+		out := &ast.TypeName{Name: identifier(t.SqlDataTypeOption)}
 		if t.Name != nil && t.Name.BaseIdentifier != nil {
-			return identifierValue(t.Name.BaseIdentifier)
+			out.Name = identifierValue(t.Name.BaseIdentifier)
 		}
-		return identifier(t.SqlDataTypeOption)
+		for _, p := range t.Parameters {
+			switch v := p.(type) {
+			case *tsql.IntegerLiteral:
+				n, _ := strconv.ParseInt(v.Value, 10, 64)
+				out.Typmods = appendTypmod(out.Typmods, &ast.A_Const{Val: &ast.Integer{Ival: n}})
+			case *tsql.MaxLiteral:
+				out.Typmods = appendTypmod(out.Typmods, &ast.String{Str: "max"})
+			}
+		}
+		return out
 	case *tsql.XmlDataTypeReference:
-		return "xml"
+		return &ast.TypeName{Name: "xml"}
 	case *tsql.UserDataTypeReference:
 		if t.Name != nil && t.Name.BaseIdentifier != nil {
-			return identifierValue(t.Name.BaseIdentifier)
+			name := identifierValue(t.Name.BaseIdentifier)
+			if t.Name.SchemaIdentifier != nil {
+				name = identifierValue(t.Name.SchemaIdentifier) + "." + name
+			}
+			return &ast.TypeName{Name: name}
 		}
 	}
-	return ""
+	return &ast.TypeName{}
+}
+
+func appendTypmod(l *ast.List, n ast.Node) *ast.List {
+	if l == nil {
+		l = &ast.List{}
+	}
+	l.Items = append(l.Items, n)
+	return l
 }
 
 func (c *cc) convertDropTableStatement(n *tsql.DropTableStatement) ast.Node {

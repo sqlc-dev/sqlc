@@ -17,7 +17,12 @@
         "column": {
           "name": "name",
           "type": {
-            "name": "nvarchar"
+            "name": "nvarchar",
+            "args": [
+              {
+                "int": 100
+              }
+            ]
           },
           "table": "authors"
         }
@@ -28,7 +33,12 @@
           "name": "bio",
           "type": {
             "name": "nvarchar",
-            "nullable": true
+            "nullable": true,
+            "args": [
+              {
+                "ident": "max"
+              }
+            ]
           },
           "table": "authors"
         }
@@ -45,7 +55,12 @@
         "column": {
           "name": "name",
           "type": {
-            "name": "nvarchar"
+            "name": "nvarchar",
+            "args": [
+              {
+                "int": 100
+              }
+            ]
           },
           "table": "authors"
         }
@@ -73,7 +88,15 @@
           "name": "price",
           "type": {
             "name": "decimal",
-            "nullable": true
+            "nullable": true,
+            "args": [
+              {
+                "int": 10
+              },
+              {
+                "int": 2
+              }
+            ]
           },
           "table": "books"
         }
@@ -83,7 +106,12 @@
         "column": {
           "name": "name",
           "type": {
-            "name": "nvarchar"
+            "name": "nvarchar",
+            "args": [
+              {
+                "int": 100
+              }
+            ]
           },
           "table": "authors"
         }
@@ -100,7 +128,12 @@
         "column": {
           "name": "name",
           "type": {
-            "name": "nvarchar"
+            "name": "nvarchar",
+            "args": [
+              {
+                "int": 100
+              }
+            ]
           },
           "table": "authors"
         }

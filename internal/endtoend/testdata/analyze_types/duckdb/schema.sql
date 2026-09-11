@@ -1,0 +1,30 @@
+CREATE TYPE mood AS ENUM ('sad', 'ok');
+
+CREATE TABLE things (
+  id INTEGER PRIMARY KEY,
+  ints INTEGER[],
+  fixed INTEGER[3],
+  point STRUCT(a INTEGER, b VARCHAR),
+  attrs MAP(VARCHAR, INTEGER),
+  either UNION(num INTEGER, str VARCHAR),
+  price DECIMAL(18,3),
+  title VARCHAR(10),
+  kind ENUM('a','b'),
+  m mood,
+  big HUGEINT,
+  ubig UHUGEINT,
+  data BLOB,
+  bits BIT,
+  uid UUID,
+  tstz TIMESTAMP WITH TIME ZONE,
+  tsns TIMESTAMP_NS,
+  iv INTERVAL,
+  doc JSON,
+  grid INTEGER[][],
+  vi VARINT,
+  f4 FLOAT4,
+  points STRUCT(a INTEGER)[],
+  lists MAP(VARCHAR, INTEGER[]),
+  body TEXT,
+  n NUMERIC
+);
