@@ -645,6 +645,48 @@ nesting, so Go codegen renders `[][]int32` as the legacy path does.
 DuckDB's `INTEGER[][]` and ClickHouse's `Array(Array(Int32))` produce the
 same rows and output, with `int32` in ClickHouse's case.
 
+## As implemented
+
+The design above is implemented, engine by engine, with these departures
+and details settled on the way:
+
+- The three per-dialect hooks are registered by an engine package at init,
+  by the name its `dialect.json` records, and looked up by that name, so a
+  catalog restored from the cache — which runs no seed — has them:
+  `core.RegisterCanonicalizer`, `core.RegisterUserTypeBase` (SQLite's
+  affinity rule, applied when the schema declares a family the seed does
+  not list) and `core.RegisterResultType` (ClickHouse's `toDecimal64(x, 4)`
+  and `toDateTime64(x, 3)`).
+- SQLite's `dialect.json` says `"alias": "base"`, which makes each alias in
+  its `types.jsonl` a type of its own standing on the type it aliases,
+  rather than another spelling of it.
+- An engine hands the core either a spelling (`TypeName.Spelling`, read by
+  `ParseTypeExpr`, which also reads words after a closing parenthesis as
+  part of the name, as in `decimal(10,2) unsigned`) or a name with
+  `Typmods` and `ArrayBounds`, where an integer constant is an integer
+  argument, a bare `ast.String` is an identifier and a quoted constant a
+  string. `ColumnDef.IsUnsigned` and `ColumnDef.Vals` add MySQL's unsigned
+  and enum members. `ParamRef.Name` carries the name a `{name:Type}`
+  placeholder gives itself.
+- A cast is NULL when its operand is, or when its type says so, as
+  `Nullable(String)` does; a cast of a placeholder types the placeholder
+  and takes its name and source from what it is compared with.
+- MySQL types `CAST(x AS CHAR(10))` as `varchar(10)` and `CAST(x AS
+  BINARY(8))` as `varbinary(8)`, which is what its metadata and a view over
+  the cast both report, rather than the `char(10)` the table above
+  proposed. `goldeneye` reads a table column's type from `COLUMN_TYPE`, in
+  the relations seed and in the analyze check, and compares an expression
+  by family alone, since the wire carries no arguments.
+- SQLite reports a cast to a spelling that is not a storage class, such as
+  `DECIMAL(5,2)`, as that spelling, while the value's storage class is what
+  a run would show; the check's cases keep to storage classes.
+- DuckDB's `JSON` is grouped under `varchar` by `duckdb_types()`'s logical
+  type, so a JSON column reports `varchar`; a named enum reports its name,
+  not its labels, since the canonicalizer cannot see the catalog. A
+  GoogleSQL array or struct constructor in a select list is still untyped.
+- PostgreSQL's `relations.jsonl` still spells array columns as `pg_type`
+  does (`_text`), which the canonicalizer reads as `array(text)`.
+
 ## Order of work
 
 1. The tables and the interning entry point: `sql_type.expr`, `family_oid`,
