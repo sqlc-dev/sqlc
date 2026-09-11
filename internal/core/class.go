@@ -65,10 +65,13 @@ type ClassInfo struct {
 	Name string
 }
 
-func (c *Catalog) TablesInNamespace(namespaceOID int64) ([]ClassInfo, error) {
-	rows, err := c.q.ListTablesInNamespace(context.Background(), namespaceOID)
+// ModelClassesInNamespace lists the relations codegen builds a model for, in
+// declaration order: the tables, and the views and tables created from a
+// query, whose rows a query selects the same way.
+func (c *Catalog) ModelClassesInNamespace(namespaceOID int64) ([]ClassInfo, error) {
+	rows, err := c.q.ListModelClassesInNamespace(context.Background(), namespaceOID)
 	if err != nil {
-		return nil, fmt.Errorf("list tables in namespace %d: %w", namespaceOID, err)
+		return nil, fmt.Errorf("list model classes in namespace %d: %w", namespaceOID, err)
 	}
 	out := make([]ClassInfo, 0, len(rows))
 	for _, r := range rows {

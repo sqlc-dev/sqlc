@@ -67,6 +67,26 @@ SELECT oid, name, category, typtype, preferred
 FROM sql_type
 WHERE oid = ?;
 
+-- name: ListEnumTypes :many
+SELECT oid, name FROM sql_type
+WHERE typtype = 'e'
+ORDER BY oid;
+
+-- name: RenameType :exec
+UPDATE sql_type SET name = sqlc.arg(name) WHERE oid = sqlc.arg(oid);
+
+-- name: DeleteType :exec
+DELETE FROM sql_type WHERE oid = ?;
+
+-- name: CreateEnumLabel :exec
+INSERT INTO sql_enum_label (type_oid, ord, label) VALUES (?, ?, ?);
+
+-- name: ListEnumLabels :many
+SELECT label FROM sql_enum_label WHERE type_oid = ? ORDER BY ord;
+
+-- name: DeleteEnumLabels :exec
+DELETE FROM sql_enum_label WHERE type_oid = ?;
+
 -- =============================== sql_class =============================
 
 -- name: CreateClass :execlastid
@@ -78,9 +98,9 @@ SELECT oid FROM sql_class WHERE namespace_oid = ? AND name = ?;
 -- name: ClassOIDByName :one
 SELECT oid FROM sql_class WHERE name = ? LIMIT 1;
 
--- name: ListTablesInNamespace :many
+-- name: ListModelClassesInNamespace :many
 SELECT oid, name FROM sql_class
-WHERE namespace_oid = ? AND kind = 'r'
+WHERE namespace_oid = ? AND kind IN ('r', 'v')
 ORDER BY oid;
 
 -- name: DeleteClass :exec
@@ -180,6 +200,11 @@ INSERT INTO sql_proc
     (namespace_oid, dialect_oid, name, kind,
      return_type_oid, return_set, return_nullable, strict, variadic_kind)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- name: ProcArgs :many
+SELECT name, type_oid, mode, has_default FROM sql_proc_arg
+WHERE proc_oid = ?
+ORDER BY ord;
 
 -- name: CreateProcArg :exec
 INSERT INTO sql_proc_arg (proc_oid, ord, name, type_oid, mode, has_default)

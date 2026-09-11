@@ -15,11 +15,14 @@ func TypeNameString(tn *ast.TypeName) string {
 		return ""
 	}
 	name := strings.TrimSpace(tn.Name)
+	if name != "" && tn.Schema != "" && tn.Schema != "pg_catalog" && tn.Schema != "public" {
+		name = tn.Schema + "." + name
+	}
 	if name == "" && tn.Names != nil {
 		parts := make([]string, 0, len(tn.Names.Items))
 		for _, item := range tn.Names.Items {
 			s, ok := item.(*ast.String)
-			if !ok || s.Str == "pg_catalog" {
+			if !ok || s.Str == "pg_catalog" || s.Str == "public" {
 				continue
 			}
 			parts = append(parts, s.Str)

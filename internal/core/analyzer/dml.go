@@ -24,7 +24,93 @@ func (a *analyzer) analyzeInsert(s *ast.InsertStmt) error {
 	if err := a.bindInsertValues(s.SelectStmt, rel, targets); err != nil {
 		return err
 	}
+	if s.OnDuplicateKeyUpdate != nil {
+		if err := a.bindAssignments(rel, s.OnDuplicateKeyUpdate.TargetList); err != nil {
+			return fmt.Errorf("on duplicate key update: %w", err)
+		}
+	}
 	return a.projectReturning(s.ReturningList)
+}
+
+// bindAssignments types the values a SET-style list assigns to the
+// relation's columns.
+func (a *analyzer) bindAssignments(rel scopeRel, targets *ast.List) error {
+	for _, item := range listItems(targets) {
+		rt, ok := item.(*ast.ResTarget)
+		if !ok || rt.Name == nil {
+			continue
+		}
+		col, ok := findColumn(rel, *rt.Name)
+		if !ok {
+			return fmt.Errorf("unknown column %q", *rt.Name)
+		}
+		if err := a.bindValue(rel, &col, rt.Val); err != nil {
+			return fmt.Errorf("set %s: %w", *rt.Name, err)
+		}
+	}
+	return nil
+}
+
+// analyzeCall types the arguments of a CALL from the procedure's declared
+// parameters: a placeholder takes the parameter's type and name, whether
+// it is passed by position or by name.
+func (a *analyzer) analyzeCall(s *ast.CallStmt) error {
+	if s.FuncCall == nil {
+		return fmt.Errorf("call: missing procedure")
+	}
+	name := funcCallName(s.FuncCall)
+	overloads, err := a.cat.FindProcs(name, nil)
+	if err != nil {
+		return err
+	}
+	args := listItems(s.FuncCall.Args)
+	var procs []core.ProcOverload
+	for _, p := range overloads {
+		if p.Kind == "p" {
+			procs = append(procs, p)
+		}
+	}
+	if len(procs) == 0 {
+		return fmt.Errorf("unknown procedure %q", name)
+	}
+	proc := procs[0]
+	for _, p := range procs {
+		if len(p.ArgTypes) == len(args) {
+			proc = p
+			break
+		}
+	}
+	params, err := a.cat.ProcArgs(proc.OID)
+	if err != nil {
+		return err
+	}
+	for i, arg := range args {
+		var param *core.ProcArg
+		value := arg
+		if named, ok := arg.(*ast.NamedArgExpr); ok {
+			value = named.Arg
+			if named.Name != nil {
+				for j := range params {
+					if params[j].Name == *named.Name {
+						param = &params[j]
+						break
+					}
+				}
+			}
+		} else if i < len(params) {
+			param = &params[i]
+		}
+		pr, ok := value.(*ast.ParamRef)
+		if !ok || param == nil {
+			if _, err := a.typeExpr(value); err != nil {
+				return err
+			}
+			continue
+		}
+		a.inferParam(pr.Number, exprType{typeOID: param.TypeOID})
+		a.nameParam(pr.Number, param.Name)
+	}
+	return nil
 }
 
 func (a *analyzer) analyzeUpdate(s *ast.UpdateStmt) error {
@@ -57,6 +143,9 @@ func (a *analyzer) analyzeUpdate(s *ast.UpdateStmt) error {
 			return fmt.Errorf("where: %w", err)
 		}
 	}
+	if err := a.typeLimit(s.LimitCount); err != nil {
+		return fmt.Errorf("limit: %w", err)
+	}
 	return a.projectReturning(s.ReturningList)
 }
 
@@ -74,6 +163,9 @@ func (a *analyzer) analyzeDelete(s *ast.DeleteStmt) error {
 		if _, err := a.typeExpr(s.WhereClause); err != nil {
 			return fmt.Errorf("where: %w", err)
 		}
+	}
+	if err := a.typeLimit(s.LimitCount); err != nil {
+		return fmt.Errorf("limit: %w", err)
 	}
 	return a.projectReturning(s.ReturningList)
 }
@@ -140,10 +232,22 @@ func (a *analyzer) bindInsertValues(n ast.Node, rel scopeRel, targets []core.Cla
 		return fmt.Errorf("insert: unsupported source %T", n)
 	}
 	// INSERT ... SELECT inserts whatever the query returns. The rows are not
-	// the statement's result, but the query still holds placeholders.
-	if sel.ValuesLists == nil {
-		_, err := a.subqueryColumns(sel)
-		return err
+	// the statement's result, but the query still holds placeholders, and a
+	// placeholder selected directly stands in for the column it lands in.
+	if len(listItems(sel.ValuesLists)) == 0 {
+		if _, err := a.subqueryColumns(sel); err != nil {
+			return err
+		}
+		for i, item := range listItems(sel.TargetList) {
+			rt, ok := item.(*ast.ResTarget)
+			if !ok || i >= len(targets) {
+				continue
+			}
+			if pr, ok := rt.Val.(*ast.ParamRef); ok {
+				a.inferParam(pr.Number, columnType(rel, targets[i]))
+			}
+		}
+		return nil
 	}
 	for _, row := range listItems(sel.ValuesLists) {
 		values, ok := row.(*ast.List)

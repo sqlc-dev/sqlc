@@ -41,6 +41,16 @@ CREATE TABLE sql_type (
 );
 CREATE INDEX idx_sql_type_name ON sql_type(name);
 
+-- sql_enum_label: the labels of an enum type, in declaration order.
+--   Modeled on pg_enum. A MySQL ENUM or SET column declares one of these
+--   for the column alone, under the name the legacy catalog gives it.
+CREATE TABLE sql_enum_label (
+    type_oid INTEGER NOT NULL REFERENCES sql_type(oid),
+    ord      INTEGER NOT NULL,
+    label    TEXT NOT NULL,
+    PRIMARY KEY (type_oid, ord)
+);
+
 -- sql_class: relations (tables, views, indexes).
 --   kind: 'r' = table, 'v' = view, 'i' = index, 'c' = composite type, 'f' = foreign
 CREATE TABLE sql_class (

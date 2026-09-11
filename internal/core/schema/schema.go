@@ -2,6 +2,7 @@ package schema
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/core"
@@ -28,6 +29,16 @@ func Apply(cat *core.Catalog, n ast.Node) error {
 		return applyDropTable(cat, v)
 	case *ast.CreateEnumStmt:
 		return applyCreateEnum(cat, v)
+	case *ast.AlterTypeAddValueStmt:
+		return applyAlterTypeAddValue(cat, v)
+	case *ast.AlterTypeRenameValueStmt:
+		return applyAlterTypeRenameValue(cat, v)
+	case *ast.AlterTypeSetSchemaStmt:
+		return applyAlterTypeSetSchema(cat, v)
+	case *ast.RenameTypeStmt:
+		return applyRenameType(cat, v)
+	case *ast.DropTypeStmt:
+		return applyDropType(cat, v)
 	case *ast.CreateExtensionStmt:
 		if v.Extname == nil {
 			return nil
@@ -158,7 +169,7 @@ func applyCreateTable(cat *core.Catalog, stmt *ast.CreateTableStmt) error {
 		if col == nil || col.TypeName == nil {
 			return fmt.Errorf("column %d on %q: missing type", i+1, stmt.Name.Name)
 		}
-		typeOID, err := columnTypeOID(cat, col)
+		typeOID, err := columnTypeOID(cat, stmt.Name, col)
 		if err != nil {
 			return fmt.Errorf("column %s.%s: %w", stmt.Name.Name, col.Colname, err)
 		}
@@ -197,6 +208,17 @@ func applyDropTable(cat *core.Catalog, stmt *ast.DropTableStmt) error {
 			}
 			return fmt.Errorf("drop table %q: %w", tn.Name, err)
 		}
+		cols, err := cat.ClassColumns(classOID)
+		if err != nil {
+			return fmt.Errorf("drop table %q: %w", tn.Name, err)
+		}
+		names := make([]string, 0, len(cols))
+		for _, col := range cols {
+			names = append(names, col.Name)
+		}
+		if err := dropLinkedEnums(cat, classOID, tn, names); err != nil {
+			return fmt.Errorf("drop table %q: %w", tn.Name, err)
+		}
 		if err := cat.DropClass(classOID); err != nil {
 			return fmt.Errorf("drop table %q: %w", tn.Name, err)
 		}
@@ -226,7 +248,7 @@ func applyAlterTable(cat *core.Catalog, stmt *ast.AlterTableStmt) error {
 			if cmd.Def == nil {
 				continue
 			}
-			typeOID, err := columnTypeOID(cat, cmd.Def)
+			typeOID, err := columnTypeOID(cat, table, cmd.Def)
 			if err != nil {
 				return err
 			}
@@ -249,6 +271,9 @@ func applyAlterTable(cat *core.Catalog, stmt *ast.AlterTableStmt) error {
 			if cmd.Name == nil {
 				continue
 			}
+			if err := dropLinkedEnums(cat, classOID, table, []string{*cmd.Name}); err != nil {
+				return err
+			}
 			if err := cat.DropAttribute(classOID, *cmd.Name); err != nil {
 				return err
 			}
@@ -260,7 +285,12 @@ func applyAlterTable(cat *core.Catalog, stmt *ast.AlterTableStmt) error {
 			if cmd.Name != nil && *cmd.Name != "" {
 				name = *cmd.Name
 			}
-			typeOID, err := columnTypeOID(cat, cmd.Def)
+			// The column's own enum, if it declares one, is named after
+			// the column, which an engine may report on the command
+			// rather than the definition.
+			def := *cmd.Def
+			def.Colname = name
+			typeOID, err := columnTypeOID(cat, table, &def)
 			if err != nil {
 				return err
 			}
@@ -305,6 +335,14 @@ func applyRenameColumn(cat *core.Catalog, stmt *ast.RenameColumnStmt) error {
 	if name == "" {
 		return nil
 	}
+	// An enum the column declared for itself is named after the column.
+	if oid, ok, err := linkedEnumOID(cat, classOID, stmt.Table, name); err != nil {
+		return err
+	} else if ok {
+		if err := cat.RenameType(oid, linkedEnumName(stmt.Table, *stmt.NewName)); err != nil {
+			return err
+		}
+	}
 	return cat.RenameAttribute(classOID, name, *stmt.NewName)
 }
 
@@ -318,6 +356,24 @@ func applyRenameTable(cat *core.Catalog, stmt *ast.RenameTableStmt) error {
 			return nil
 		}
 		return err
+	}
+	// The enums its columns declared for themselves are named after the
+	// table.
+	cols, err := cat.ClassColumns(classOID)
+	if err != nil {
+		return err
+	}
+	renamed := &ast.TableName{Schema: stmt.Table.Schema, Name: *stmt.NewName}
+	for _, col := range cols {
+		oid, ok, err := linkedEnumOID(cat, classOID, stmt.Table, col.Name)
+		if err != nil {
+			return err
+		}
+		if ok {
+			if err := cat.RenameType(oid, linkedEnumName(renamed, col.Name)); err != nil {
+				return err
+			}
+		}
 	}
 	return cat.RenameClass(classOID, *stmt.NewName)
 }
@@ -362,17 +418,171 @@ func applyCreateEnum(cat *core.Catalog, stmt *ast.CreateEnumStmt) error {
 	if _, err := cat.TypeOID(name); err == nil {
 		return nil
 	}
-	_, err := cat.CreateUserType(name, "E")
+	_, err := cat.CreateEnumType(name, stringSlice(stmt.Vals))
 	return err
 }
 
+func stringSlice(list *ast.List) []string {
+	items := []string{}
+	for _, item := range listItems(list) {
+		if n, ok := item.(*ast.String); ok {
+			items = append(items, n.Str)
+		}
+	}
+	return items
+}
+
+// enumOID finds the enum type a statement names.
+func enumOID(cat *core.Catalog, tn *ast.TypeName) (int64, string, error) {
+	name := core.TypeNameString(tn)
+	if name == "" {
+		return 0, "", fmt.Errorf("missing type name")
+	}
+	oid, err := cat.TypeOID(name)
+	if err != nil {
+		return 0, "", err
+	}
+	info, err := cat.LookupType(oid)
+	if err != nil {
+		return 0, "", err
+	}
+	if info.Typtype != "e" {
+		return 0, "", fmt.Errorf("type %q is not an enum", name)
+	}
+	return oid, name, nil
+}
+
+func applyAlterTypeAddValue(cat *core.Catalog, stmt *ast.AlterTypeAddValueStmt) error {
+	if stmt.NewValue == nil {
+		return fmt.Errorf("alter type add value: missing value")
+	}
+	oid, name, err := enumOID(cat, stmt.Type)
+	if err != nil {
+		return err
+	}
+	labels, err := cat.EnumLabels(oid)
+	if err != nil {
+		return err
+	}
+	if slices.Contains(labels, *stmt.NewValue) {
+		if stmt.SkipIfNewValExists {
+			return nil
+		}
+		return fmt.Errorf("enum %s already has value %s", name, *stmt.NewValue)
+	}
+	at := len(labels)
+	if stmt.NewValHasNeighbor {
+		if stmt.NewValNeighbor == nil {
+			return fmt.Errorf("alter type add value: missing neighbor")
+		}
+		i := slices.Index(labels, *stmt.NewValNeighbor)
+		if i < 0 {
+			return fmt.Errorf("enum %s unable to find existing neighbor value %s for new value %s", name, *stmt.NewValNeighbor, *stmt.NewValue)
+		}
+		at = i
+		if stmt.NewValIsAfter {
+			at = i + 1
+		}
+	}
+	labels = slices.Insert(labels, at, *stmt.NewValue)
+	return cat.SetEnumLabels(oid, labels)
+}
+
+func applyAlterTypeRenameValue(cat *core.Catalog, stmt *ast.AlterTypeRenameValueStmt) error {
+	if stmt.OldValue == nil || stmt.NewValue == nil {
+		return fmt.Errorf("alter type rename value: missing value")
+	}
+	oid, name, err := enumOID(cat, stmt.Type)
+	if err != nil {
+		return err
+	}
+	labels, err := cat.EnumLabels(oid)
+	if err != nil {
+		return err
+	}
+	i := slices.Index(labels, *stmt.OldValue)
+	if i < 0 {
+		return fmt.Errorf("enum %s does not have value %s", name, *stmt.OldValue)
+	}
+	if slices.Contains(labels, *stmt.NewValue) {
+		return fmt.Errorf("enum %s already has value %s", name, *stmt.NewValue)
+	}
+	labels[i] = *stmt.NewValue
+	return cat.SetEnumLabels(oid, labels)
+}
+
+// applyAlterTypeSetSchema moves a type to another schema. The catalog spells
+// the schema in the type's name, so the move is a rename.
+func applyAlterTypeSetSchema(cat *core.Catalog, stmt *ast.AlterTypeSetSchemaStmt) error {
+	if stmt.NewSchema == nil {
+		return fmt.Errorf("alter type set schema: missing schema")
+	}
+	name := core.TypeNameString(stmt.Type)
+	if name == "" {
+		return fmt.Errorf("missing type name")
+	}
+	oid, err := cat.TypeOID(name)
+	if err != nil {
+		return err
+	}
+	_, typ := core.SplitTypeName(name)
+	return cat.RenameType(oid, core.JoinTypeName(*stmt.NewSchema, typ))
+}
+
+func applyRenameType(cat *core.Catalog, stmt *ast.RenameTypeStmt) error {
+	if stmt.NewName == nil {
+		return fmt.Errorf("rename type: empty name")
+	}
+	name := core.TypeNameString(stmt.Type)
+	if name == "" {
+		return fmt.Errorf("missing type name")
+	}
+	oid, err := cat.TypeOID(name)
+	if err != nil {
+		return err
+	}
+	schema, _ := core.SplitTypeName(name)
+	return cat.RenameType(oid, core.JoinTypeName(schema, *stmt.NewName))
+}
+
+func applyDropType(cat *core.Catalog, stmt *ast.DropTypeStmt) error {
+	for _, tn := range stmt.Types {
+		name := core.TypeNameString(tn)
+		if name == "" {
+			return fmt.Errorf("missing type name")
+		}
+		oid, err := cat.TypeOID(name)
+		if err != nil {
+			if stmt.IfExists {
+				continue
+			}
+			return err
+		}
+		if err := cat.DropType(oid); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func applyCreateFunction(cat *core.Catalog, stmt *ast.CreateFunctionStmt) error {
-	// A procedure returns nothing, so there is no result for a query to
-	// select and nothing worth recording.
-	if stmt.Func == nil || stmt.Func.Name == "" || stmt.ReturnType == nil {
+	if stmt.Func == nil || stmt.Func.Name == "" {
 		return nil
 	}
-	returnOID, err := cat.ResolveType(stmt.ReturnType)
+	// A procedure returns nothing, so there is no result for a query to
+	// select; it is recorded for the arguments a CALL passes it.
+	kind := "f"
+	var returnOID int64
+	var err error
+	switch {
+	case stmt.IsProcedure:
+		kind = "p"
+		returnOID, err = cat.VoidTypeOID()
+	case stmt.ReturnType == nil:
+		return nil
+	default:
+		returnOID, err = cat.ResolveType(stmt.ReturnType)
+	}
 	if err != nil {
 		return fmt.Errorf("function %q: %w", stmt.Func.Name, err)
 	}
@@ -400,6 +610,7 @@ func applyCreateFunction(cat *core.Catalog, stmt *ast.CreateFunctionStmt) error 
 	}
 	_, err = cat.CreateProc(core.ProcSpec{
 		Name:          stmt.Func.Name,
+		Kind:          kind,
 		ReturnTypeOID: returnOID,
 		ReturnSet:     stmt.ReturnType != nil && stmt.ReturnType.Setof,
 		Args:          args,
@@ -422,9 +633,66 @@ func resolveOrCreateNamespace(cat *core.Catalog, schema string) (int64, error) {
 	return cat.CreateNamespace(name)
 }
 
+// linkedEnumName is the name of the enum type a column declares for itself.
+func linkedEnumName(table *ast.TableName, column string) string {
+	return core.JoinTypeName(table.Schema, fmt.Sprintf("%s_%s", table.Name, column))
+}
+
+// linkedEnumOID finds the enum type a column declared for itself, if the
+// column has one: an enum named after the table and the column.
+func linkedEnumOID(cat *core.Catalog, classOID int64, table *ast.TableName, column string) (int64, bool, error) {
+	cols, err := cat.ClassColumns(classOID)
+	if err != nil {
+		return 0, false, err
+	}
+	for _, col := range cols {
+		if col.Name != column {
+			continue
+		}
+		info, err := cat.LookupType(col.TypeOID)
+		if err != nil {
+			return 0, false, err
+		}
+		if info.Typtype == "e" && info.Name == linkedEnumName(table, column) {
+			return col.TypeOID, true, nil
+		}
+		return 0, false, nil
+	}
+	return 0, false, nil
+}
+
+// dropLinkedEnums drops the enum types the given columns declared for
+// themselves, which go with the columns.
+func dropLinkedEnums(cat *core.Catalog, classOID int64, table *ast.TableName, columns []string) error {
+	for _, column := range columns {
+		oid, ok, err := linkedEnumOID(cat, classOID, table, column)
+		if err != nil {
+			return err
+		}
+		if ok {
+			if err := cat.DropType(oid); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 // columnTypeOID resolves a column's type. Engines report an array column
 // either on the type name or on the column itself.
-func columnTypeOID(cat *core.Catalog, col *ast.ColumnDef) (int64, error) {
+//
+// A column that declares its own values, the way a MySQL ENUM or SET column
+// does, is an enum type of its own. The type is named after the table and
+// the column, which is the name codegen has always given it.
+func columnTypeOID(cat *core.Catalog, table *ast.TableName, col *ast.ColumnDef) (int64, error) {
+	if col.Vals != nil && len(col.Vals.Items) > 0 && table != nil {
+		name := linkedEnumName(table, col.Colname)
+		if oid, err := cat.TypeOID(name); err == nil {
+			// The column was redefined with new values.
+			return oid, cat.SetEnumLabels(oid, stringSlice(col.Vals))
+		}
+		return cat.CreateEnumType(name, stringSlice(col.Vals))
+	}
 	name := core.TypeNameString(col.TypeName)
 	if name == "" {
 		return 0, fmt.Errorf("missing type name")

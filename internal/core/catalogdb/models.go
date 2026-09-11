@@ -59,6 +59,12 @@ type SqlDialectFlag struct {
 	Value      string
 }
 
+type SqlEnumLabel struct {
+	TypeOid int64
+	Ord     int64
+	Label   string
+}
+
 type SqlNamespace struct {
 	Oid  int64
 	Name string
