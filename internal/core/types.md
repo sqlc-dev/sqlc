@@ -351,6 +351,22 @@ are dialect data or dialect code:
    `pg_type`'s (`int4`, `int8`, `varchar`), so PostgreSQL's `types.jsonl`
    flips which spelling is the name and which the alias. Codegen accepts
    both spellings already.
+
+   `format_type` is a string and the output is an expression, so the
+   spelling is read into one, and its grammar is slightly wider than
+   `name(args)`: the typmod may sit inside a multi-word name
+   (`timestamp(3) without time zone`, `time(4) with time zone`), after
+   trailing words (`interval day to second(3)`), or before an array suffix
+   (`numeric(10,2)[]`, `character varying(255)[]`), and one name is quoted
+   (`"char"`). The family is the words with the parenthesis lifted out, so
+   `timestamp(3) without time zone` is `{name: "timestamp without time
+   zone", args: [3]}`, `interval day to second(3)` is `interval` with an
+   identifier argument and an integer one, and `numeric(10,2)[]` is
+   `array(numeric(10, 2))`. Two spellings are the same family under
+   different typmods, `bpchar` and `character(5)`, and canonicalize to
+   `character`. The PostgreSQL goldens change with this: `bigserial`
+   becomes `bigint` (a serial is a default, not a type PostgreSQL reports),
+   `int4` becomes `integer`, `varchar` becomes `character varying`.
 2. **Argument defaults and drops**, which are data: SQL Server's `varchar`
    is `varchar(1)` and `decimal` is `decimal(18, 0)`; DuckDB's `numeric` is
    `decimal(18, 3)` and `varchar(10)` is `varchar`; PostgreSQL's `int[3]` is
@@ -565,11 +581,6 @@ on the way, since a family with no arguments prints as it does now.
 
 ## Open questions
 
-- Whether PostgreSQL's canonical names should be `format_type`'s. It is
-  what the engine reports and what a check would compare against, but it
-  changes what `sqlc analyze` prints for every PostgreSQL column today
-  (`bigint` for `bigserial`, `integer` for `int4`), and `bigserial` is not
-  a type PostgreSQL has at all.
 - How far a result-type hook goes. ClickHouse's arithmetic promotion and
   `toDecimal64(x, 4)` are finite rules; `arrayMap(f, arr)` returns an array
   of the lambda's result, which needs the lambda typed first.
