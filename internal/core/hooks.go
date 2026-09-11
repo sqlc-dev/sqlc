@@ -18,11 +18,49 @@ type Canonicalizer func(*TypeExpr) *TypeExpr
 // takes, or an empty name for a type that stands on nothing.
 type UserTypeBase func(name string) (base, category string)
 
+// A ResultArg is one argument of a function call as a result-type rule
+// sees it: its type, when known, and its value when it is an integer
+// literal, which is what the scale of toDecimal64(x, 4) is.
+type ResultArg struct {
+	Type *TypeExpr
+	Int  *int64
+}
+
+// A ResultType says what a function returns when that depends on its
+// arguments in a way no seed can spell: ClickHouse's toDecimal64(x, s) is
+// Decimal(18, s). It returns nil to leave the answer to the catalog.
+type ResultType func(name string, args []ResultArg) *TypeExpr
+
 var (
 	hooksMu        sync.RWMutex
 	canonicalizers = map[string]Canonicalizer{}
 	userTypeBases  = map[string]UserTypeBase{}
+	resultTypes    = map[string]ResultType{}
 )
+
+// RegisterResultType installs a dialect's result-type rule, under the
+// dialect's name.
+func RegisterResultType(dialect string, fn ResultType) {
+	hooksMu.Lock()
+	defer hooksMu.Unlock()
+	resultTypes[dialect] = fn
+}
+
+// ResultTypeOf applies the catalog's dialect's result-type rule to a call,
+// or returns nil when there is none or it has nothing to say.
+func (c *Catalog) ResultTypeOf(name string, args []ResultArg) *TypeExpr {
+	dialect := c.dialectName()
+	if dialect == "" {
+		return nil
+	}
+	hooksMu.RLock()
+	fn := resultTypes[dialect]
+	hooksMu.RUnlock()
+	if fn == nil {
+		return nil
+	}
+	return fn(name, args)
+}
 
 // RegisterUserTypeBase installs the rule a dialect resolves an unseeded
 // type family by, under the dialect's name.

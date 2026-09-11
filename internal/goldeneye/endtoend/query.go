@@ -72,10 +72,14 @@ func ParseQueries(src string) ([]Query, error) {
 
 var namedArgRe = regexp.MustCompile(`^sqlc\.(n?arg|slice)\(\s*'?([A-Za-z_][A-Za-z0-9_]*)'?\s*\)`)
 
+// typedParamRe matches ClickHouse's {name:Type} parameter, whose type is
+// the query's own business: the engine binds it as it binds any other.
+var typedParamRe = regexp.MustCompile(`^\{\s*([A-Za-z_][A-Za-z0-9_]*)\s*:\s*[^}]+\}`)
+
 // Rewrite replaces every parameter reference in a query — ?, sqlc.arg(name),
-// sqlc.narg(name) and sqlc.slice(name) — with what bind returns for it, in
-// order of appearance, skipping string literals, quoted identifiers and
-// comments. bind is handed the name, empty for a ?, and the word before the
+// sqlc.narg(name), sqlc.slice(name) and ClickHouse's {name:Type} — with
+// what bind returns for it, in order of appearance, skipping string
+// literals, quoted identifiers and comments. bind is handed the name, empty for a ?, and the word before the
 // reference, so that a LIMIT or OFFSET can be bound differently from a
 // value; the second count of a LIMIT ?, ? is handed LIMIT as well. Each
 // engine decides what a reference becomes and how the references are
@@ -118,6 +122,11 @@ func Rewrite(sql string, bind func(name, lastWord string) string) string {
 		case c == 's' && namedArgRe.MatchString(sql[i:]):
 			m := namedArgRe.FindStringSubmatch(sql[i:])
 			out.WriteString(bind(m[2], lastWord))
+			lastWord = afterReference(lastWord)
+			i += len(m[0])
+		case c == '{' && typedParamRe.MatchString(sql[i:]):
+			m := typedParamRe.FindStringSubmatch(sql[i:])
+			out.WriteString(bind(m[1], lastWord))
 			lastWord = afterReference(lastWord)
 			i += len(m[0])
 		case isWordByte(c):

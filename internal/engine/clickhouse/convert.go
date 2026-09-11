@@ -691,15 +691,23 @@ func (c *cc) convertFunctionCall(n *chast.FunctionCall) *ast.FuncCall {
 
 func (c *cc) convertParameter(n *chast.Parameter) ast.Node {
 	c.paramCount++
-	// Use the parameter name if available
-	name := n.Name
-	if name == "" {
-		name = strconv.Itoa(c.paramCount)
-	}
-	return &ast.ParamRef{
+	ref := &ast.ParamRef{
 		Number:   c.paramCount,
+		Name:     n.Name,
 		Location: pos(n),
 	}
+	// A parameter written {name:Type} declares its type, which is what a
+	// cast of a placeholder says.
+	if n.Type != nil {
+		spelling := renderDataType(n.Type)
+		base, _, _ := unwrapTypeString(spelling)
+		return &ast.TypeCast{
+			Arg:      ref,
+			TypeName: &ast.TypeName{Name: base, Spelling: spelling},
+			Location: pos(n),
+		}
+	}
+	return ref
 }
 
 func (c *cc) convertAsterisk(n *chast.Asterisk) *ast.ColumnRef {
@@ -751,9 +759,11 @@ func (c *cc) convertCastExpr(n *chast.CastExpr) *ast.TypeCast {
 	}
 
 	if n.Type != nil {
-		tc.TypeName = &ast.TypeName{
-			Name: n.Type.Name,
-		}
+		// The whole type is handed over as its spelling, arguments and
+		// nesting included, the way a column's is.
+		spelling := renderDataType(n.Type)
+		base, _, _ := unwrapTypeString(spelling)
+		tc.TypeName = &ast.TypeName{Name: base, Spelling: spelling}
 	}
 
 	return tc
@@ -965,8 +975,13 @@ func (c *cc) convertCreateQuery(n *chast.CreateQuery) ast.Node {
 			stmt.Name.Schema = identifier(n.Database)
 		}
 
-		// Convert columns
+		// Convert columns. A Nested column is what ClickHouse stores as
+		// one array column per element, named n.a, and reports as those.
 		for _, col := range n.Columns {
+			if cols, ok := c.convertNestedColumn(col); ok {
+				stmt.Cols = append(stmt.Cols, cols...)
+				continue
+			}
 			colDef := c.convertColumnDeclaration(col)
 			stmt.Cols = append(stmt.Cols, colDef)
 		}
@@ -992,6 +1007,30 @@ func (c *cc) convertCreateQuery(n *chast.CreateQuery) ast.Node {
 	}
 
 	return &ast.TODO{}
+}
+
+// convertNestedColumn expands a column declared Nested(a T, b U) into the
+// columns n.a Array(T) and n.b Array(U), which is how ClickHouse's
+// system.columns lists it and what a query selects.
+func (c *cc) convertNestedColumn(n *chast.ColumnDeclaration) ([]*ast.ColumnDef, bool) {
+	if n.Type == nil || !strings.EqualFold(n.Type.Name, "Nested") {
+		return nil, false
+	}
+	var cols []*ast.ColumnDef
+	for _, p := range n.Type.Parameters {
+		pair, ok := p.(*chast.NameTypePair)
+		if !ok {
+			continue
+		}
+		spelling := "Array(" + renderDataType(pair.Type) + ")"
+		cols = append(cols, &ast.ColumnDef{
+			Colname:   identifier(n.Name) + "." + identifier(pair.Name),
+			TypeName:  &ast.TypeName{Name: "array", Spelling: spelling},
+			IsArray:   true,
+			IsNotNull: true,
+		})
+	}
+	return cols, len(cols) > 0
 }
 
 func (c *cc) convertColumnDeclaration(n *chast.ColumnDeclaration) *ast.ColumnDef {

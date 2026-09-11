@@ -18,5 +18,11 @@ CREATE TABLE things (
     ip IPv4,
     uid UUID,
     fixed FixedString(4),
-    flag Bool
+    flag Bool,
+    small Decimal32(4),
+    plain Enum('x', 'y'),
+    either Variant(String, Int64),
+    n Nested(a UInt8, b String),
+    total SimpleAggregateFunction(sum, UInt64),
+    whole INT
 ) ENGINE = MergeTree ORDER BY id;

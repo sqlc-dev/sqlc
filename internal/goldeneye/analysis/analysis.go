@@ -40,13 +40,16 @@ type TypeExpr struct {
 	Args     []TypeArg `json:"args,omitempty"`
 }
 
-// TypeArg is one argument of a TypeExpr.
+// TypeArg is one argument of a TypeExpr: a type, an integer, a boolean, a
+// quoted string, or an identifier — a bare word that is not a type, such as
+// the function an AggregateFunction names.
 type TypeArg struct {
 	Label  string    `json:"label,omitempty"`
 	Type   *TypeExpr `json:"type,omitempty"`
 	Int    *int64    `json:"int,omitempty"`
 	Bool   *bool     `json:"bool,omitempty"`
 	String *string   `json:"string,omitempty"`
+	Ident  *string   `json:"ident,omitempty"`
 }
 
 // Encode prints the answer the way sqlc analyze does.

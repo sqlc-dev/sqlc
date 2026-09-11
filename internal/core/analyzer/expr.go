@@ -161,6 +161,14 @@ func (a *analyzer) typeColumnRef(c *ast.ColumnRef) (exprType, error) {
 	if err != nil {
 		return exprType{}, err
 	}
+	// A dotted name may be a column's own, as ClickHouse names the columns
+	// a Nested column stores as n.a.
+	if !ok && relation != "" {
+		rel, col, ok, err = a.resolveColumn("", relation+"."+column)
+		if err != nil {
+			return exprType{}, err
+		}
+	}
 	if !ok {
 		if relation != "" {
 			return exprType{}, fmt.Errorf("unknown column %q.%q", relation, column)
@@ -195,10 +203,10 @@ func flattenFields(fields *ast.List) []string {
 func (a *analyzer) typeParamRef(p *ast.ParamRef) (exprType, error) {
 	cur, ok := a.params[p.Number]
 	if !ok {
-		cur = core.Parameter{Number: p.Number}
+		cur = core.Parameter{Number: p.Number, Name: p.Name}
 		a.params[p.Number] = cur
 	}
-	return exprType{typeOID: cur.TypeOID, nullable: !cur.NotNull}, nil
+	return exprType{typeOID: cur.TypeOID, expr: cur.Type.WithNullable(false), nullable: !cur.NotNull}, nil
 }
 
 func (a *analyzer) inferParam(number int, t exprType) {
@@ -296,11 +304,17 @@ func (a *analyzer) typeAExpr(e *ast.A_Expr) (exprType, error) {
 		a.inferParam(pr.Number, rightT)
 		a.nameParamAfter(pr.Number, e.Rexpr)
 		leftT = rightT
+	} else if pr := castParamRef(e.Lexpr); pr != nil {
+		a.inferParam(pr.Number, rightT)
+		a.nameParamAfter(pr.Number, e.Rexpr)
 	}
 	if pr, ok := e.Rexpr.(*ast.ParamRef); ok && leftT.typeOID != 0 {
 		a.inferParam(pr.Number, leftT)
 		a.nameParamAfter(pr.Number, e.Lexpr)
 		rightT = leftT
+	} else if pr := castParamRef(e.Rexpr); pr != nil {
+		a.inferParam(pr.Number, leftT)
+		a.nameParamAfter(pr.Number, e.Lexpr)
 	}
 
 	overload, err := a.resolveOperator(opName, leftT, rightT)
@@ -314,6 +328,18 @@ func (a *analyzer) typeAExpr(e *ast.A_Expr) (exprType, error) {
 		typeOID:  overload.ResultTypeOID,
 		nullable: (leftT.nullable || rightT.nullable) && !isNullTest(opName),
 	}, nil
+}
+
+// castParamRef is the placeholder a cast wraps, as ClickHouse's {p:UInt64}
+// is written, or nil. The cast has typed it already; what it is compared
+// with still names it and says which column it stands in for.
+func castParamRef(n ast.Node) *ast.ParamRef {
+	tc, ok := n.(*ast.TypeCast)
+	if !ok {
+		return nil
+	}
+	pr, _ := tc.Arg.(*ast.ParamRef)
+	return pr
 }
 
 // isNullTest reports whether an operator compares with NULL as a value
@@ -633,6 +659,11 @@ func (a *analyzer) typeNullIf(e *ast.A_Expr) (exprType, error) {
 // placeholder that type.
 func (a *analyzer) typeOperands(n ast.Node, other exprType) error {
 	if pr, ok := n.(*ast.ParamRef); ok {
+		// Registering the placeholder first keeps the name its syntax gave
+		// it, as ClickHouse's {name:Type} does.
+		if _, err := a.typeParamRef(pr); err != nil {
+			return err
+		}
 		if other.typeOID != 0 || other.expr != nil {
 			a.inferParam(pr.Number, other)
 		}
@@ -798,11 +829,32 @@ func (a *analyzer) typeFuncCall(f *ast.FuncCall) (exprType, error) {
 		}
 	}
 	ret := a.returnType(p, argTypes)
+	// A dialect may know the result better than the catalog does, from the
+	// arguments' types and literal values.
+	if computed := a.resultTypeHook(name, args, argTypes); computed != nil {
+		ret = a.lookupType(computed)
+	}
 	ret.nullable = p.ReturnNullable
 	if !p.NeverNull && anyNullable && a.cat.PropagatesNullable() {
 		ret.nullable = true
 	}
 	return ret, nil
+}
+
+// resultTypeHook asks the dialect's result-type rule about a call, handing
+// it each argument's type and, for an integer literal, its value.
+func (a *analyzer) resultTypeHook(name string, args []ast.Node, argTypes []exprType) *core.TypeExpr {
+	ras := make([]core.ResultArg, len(args))
+	for i, arg := range args {
+		ras[i].Type = a.exprOf(argTypes[i])
+		if c, ok := arg.(*ast.A_Const); ok {
+			if n, ok := c.Val.(*ast.Integer); ok {
+				v := n.Ival
+				ras[i].Int = &v
+			}
+		}
+	}
+	return a.cat.ResultTypeOf(name, ras)
 }
 
 // returnType resolves a polymorphic return type — max(anyelement), or a
@@ -933,8 +985,10 @@ func (a *analyzer) typeTypeCast(c *ast.TypeCast) (exprType, error) {
 	}
 	t := a.lookupType(target)
 	// A cast is how a query says what an otherwise untyped placeholder
-	// holds, and a placeholder so typed is not null. Anything else cast
-	// is NULL exactly when it was NULL before.
+	// holds, and a placeholder so typed is not null unless the type says
+	// otherwise, as ClickHouse's Nullable(String) does. Anything else
+	// cast is NULL when it was NULL before, or when the type says so.
+	t.nullable = target.Nullable
 	if pr, ok := c.Arg.(*ast.ParamRef); ok {
 		if err := a.typeOperands(pr, t); err != nil {
 			return exprType{}, err
@@ -945,6 +999,6 @@ func (a *analyzer) typeTypeCast(c *ast.TypeCast) (exprType, error) {
 	if err != nil {
 		return exprType{}, err
 	}
-	t.nullable = arg.nullable
+	t.nullable = t.nullable || arg.nullable
 	return t, nil
 }
