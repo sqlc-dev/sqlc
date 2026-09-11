@@ -11,10 +11,41 @@ import "sync"
 // for what only code can say.
 type Canonicalizer func(*TypeExpr) *TypeExpr
 
+// A UserTypeBase says what a type family the schema declared and the
+// dialect did not seed stands on: SQLite gives every declared spelling one
+// of five affinities by a rule over its words, so FOO BAR(3) compares as a
+// numeric. It returns the base family's name and the category the new type
+// takes, or an empty name for a type that stands on nothing.
+type UserTypeBase func(name string) (base, category string)
+
 var (
 	hooksMu        sync.RWMutex
 	canonicalizers = map[string]Canonicalizer{}
+	userTypeBases  = map[string]UserTypeBase{}
 )
+
+// RegisterUserTypeBase installs the rule a dialect resolves an unseeded
+// type family by, under the dialect's name.
+func RegisterUserTypeBase(dialect string, fn UserTypeBase) {
+	hooksMu.Lock()
+	defer hooksMu.Unlock()
+	userTypeBases[dialect] = fn
+}
+
+// userTypeBase applies the catalog's dialect's rule for an unseeded family.
+func (c *Catalog) userTypeBase(name string) (base, category string) {
+	dialect := c.dialectName()
+	if dialect == "" {
+		return "", ""
+	}
+	hooksMu.RLock()
+	fn := userTypeBases[dialect]
+	hooksMu.RUnlock()
+	if fn == nil {
+		return "", ""
+	}
+	return fn(name)
+}
 
 // RegisterCanonicalizer installs the canonicalizer for a dialect, by the
 // name its dialect.json records. An engine registers its own at init, so

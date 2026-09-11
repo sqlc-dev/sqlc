@@ -1,0 +1,333 @@
+[
+  {
+    "name": "AllTypes",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "integer"
+        },
+        "table": "things"
+      },
+      {
+        "name": "title",
+        "type": {
+          "name": "varchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 255
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "code",
+        "type": {
+          "name": "varying character",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "price",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 5
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "flag",
+        "type": {
+          "name": "boolean",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "big",
+        "type": {
+          "name": "unsigned big int",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "data",
+        "type": {
+          "name": "blob",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "untyped",
+        "type": {
+          "name": "any",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "ratio",
+        "type": {
+          "name": "double precision",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "weird",
+        "type": {
+          "name": "foo bar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 3
+            }
+          ]
+        },
+        "table": "things"
+      },
+      {
+        "name": "created",
+        "type": {
+          "name": "datetime",
+          "nullable": true
+        },
+        "table": "things"
+      },
+      {
+        "name": "n",
+        "type": {
+          "name": "int"
+        },
+        "table": "things"
+      },
+      {
+        "name": "label",
+        "type": {
+          "name": "nchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 5
+            }
+          ]
+        },
+        "table": "things"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "StrictTypes",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "integer",
+          "nullable": true
+        },
+        "table": "strict_things"
+      },
+      {
+        "name": "anything",
+        "type": {
+          "name": "any",
+          "nullable": true
+        },
+        "table": "strict_things"
+      },
+      {
+        "name": "body",
+        "type": {
+          "name": "text",
+          "nullable": true
+        },
+        "table": "strict_things"
+      },
+      {
+        "name": "amount",
+        "type": {
+          "name": "real",
+          "nullable": true
+        },
+        "table": "strict_things"
+      },
+      {
+        "name": "raw",
+        "type": {
+          "name": "blob",
+          "nullable": true
+        },
+        "table": "strict_things"
+      },
+      {
+        "name": "n",
+        "type": {
+          "name": "int",
+          "nullable": true
+        },
+        "table": "strict_things"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Casts",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "a",
+        "type": {
+          "name": "integer",
+          "nullable": true
+        }
+      },
+      {
+        "name": "b",
+        "type": {
+          "name": "text"
+        }
+      },
+      {
+        "name": "d",
+        "type": {
+          "name": "real",
+          "nullable": true
+        }
+      },
+      {
+        "name": "e",
+        "type": {
+          "name": "integer",
+          "nullable": true
+        }
+      },
+      {
+        "name": "f",
+        "type": {
+          "name": "text",
+          "nullable": true
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Params",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "integer"
+        },
+        "table": "things"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "title",
+          "type": {
+            "name": "varchar",
+            "nullable": true,
+            "args": [
+              {
+                "int": 255
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "price",
+          "type": {
+            "name": "decimal",
+            "nullable": true,
+            "args": [
+              {
+                "int": 10
+              },
+              {
+                "int": 5
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "untyped",
+          "type": {
+            "name": "any",
+            "nullable": true
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "weird",
+          "type": {
+            "name": "foo bar",
+            "nullable": true,
+            "args": [
+              {
+                "int": 3
+              }
+            ]
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 5,
+        "column": {
+          "name": "big",
+          "type": {
+            "name": "unsigned big int",
+            "nullable": true
+          },
+          "table": "things"
+        }
+      },
+      {
+        "number": 6,
+        "column": {
+          "name": "n",
+          "type": {
+            "name": "int"
+          },
+          "table": "things"
+        }
+      }
+    ]
+  }
+]

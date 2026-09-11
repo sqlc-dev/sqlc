@@ -146,13 +146,26 @@ func (c *Catalog) CreateUserType(name, category string) (int64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("create type %q: %w", name, err)
 	}
-	oid, err := c.CreateTypeSpec(TypeSpec{
+	spec := TypeSpec{
 		Name:         bare,
 		NamespaceOID: nsOID,
 		Typtype:      typtype,
 		Category:     category,
 		DialectOID:   c.dialectOID,
-	})
+	}
+	// A dialect may say what an unknown spelling stands on, as SQLite's
+	// affinity rule does; the type then resolves through that base and
+	// needs no operators of its own.
+	if category == "U" {
+		if base, cat := c.userTypeBase(bare); base != "" {
+			if baseOID, err := c.TypeOID(base); err == nil {
+				spec.BaseOID = baseOID
+				spec.Category = cat
+				return c.CreateTypeSpec(spec)
+			}
+		}
+	}
+	oid, err := c.CreateTypeSpec(spec)
 	if err != nil {
 		return 0, err
 	}
