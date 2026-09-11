@@ -932,9 +932,19 @@ func (a *analyzer) typeTypeCast(c *ast.TypeCast) (exprType, error) {
 		return exprType{}, fmt.Errorf("cast: missing target type")
 	}
 	t := a.lookupType(target)
-	// A cast is how a query says what an otherwise untyped placeholder holds.
-	if err := a.typeOperands(c.Arg, t); err != nil {
+	// A cast is how a query says what an otherwise untyped placeholder
+	// holds, and a placeholder so typed is not null. Anything else cast
+	// is NULL exactly when it was NULL before.
+	if pr, ok := c.Arg.(*ast.ParamRef); ok {
+		if err := a.typeOperands(pr, t); err != nil {
+			return exprType{}, err
+		}
+		return t, nil
+	}
+	arg, err := a.typeExpr(c.Arg)
+	if err != nil {
 		return exprType{}, err
 	}
+	t.nullable = arg.nullable
 	return t, nil
 }

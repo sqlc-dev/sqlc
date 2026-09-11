@@ -187,14 +187,23 @@ func quotedEnd(s string) int {
 }
 
 // splitTypeArgs splits `Base(arg, arg)` into its base name and top-level
-// arguments, leaving nested parentheses and quoted strings intact.
+// arguments, leaving nested parentheses and quoted strings intact. Words
+// after the closing parenthesis belong to the name, since MySQL writes
+// decimal(10,2) unsigned and PostgreSQL timestamp(3) with time zone.
 func splitTypeArgs(t string) (string, []string) {
 	open := strings.IndexByte(t, '(')
-	if open < 0 || !strings.HasSuffix(t, ")") {
+	if open < 0 {
+		return t, nil
+	}
+	close := matchingParen(t, open)
+	if close < 0 {
 		return t, nil
 	}
 	base := strings.TrimSpace(t[:open])
-	inner := t[open+1 : len(t)-1]
+	if rest := strings.TrimSpace(t[close+1:]); rest != "" {
+		base += " " + rest
+	}
+	inner := t[open+1 : close]
 	var (
 		args  []string
 		depth int
@@ -225,6 +234,34 @@ func splitTypeArgs(t string) (string, []string) {
 		args = append(args, last)
 	}
 	return base, args
+}
+
+// matchingParen finds the parenthesis closing the one at open, skipping
+// nested parentheses and quoted strings, or -1 when it is not closed.
+func matchingParen(t string, open int) int {
+	depth := 0
+	var quote byte
+	for i := open; i < len(t); i++ {
+		c := t[i]
+		switch {
+		case quote != 0:
+			if c == '\\' {
+				i++
+			} else if c == quote {
+				quote = 0
+			}
+		case c == '\'' || c == '"' || c == '`':
+			quote = c
+		case c == '(':
+			depth++
+		case c == ')':
+			depth--
+			if depth == 0 {
+				return i
+			}
+		}
+	}
+	return -1
 }
 
 // HasNullable reports whether the expression marks nullability anywhere,

@@ -6,7 +6,12 @@
       {
         "name": "table_name",
         "type": {
-          "name": "varchar"
+          "name": "varchar",
+          "args": [
+            {
+              "int": 64
+            }
+          ]
         },
         "table": "columns"
       },
@@ -14,7 +19,12 @@
         "name": "column_name",
         "type": {
           "name": "varchar",
-          "nullable": true
+          "nullable": true,
+          "args": [
+            {
+              "int": 64
+            }
+          ]
         },
         "table": "columns"
       },
@@ -33,7 +43,12 @@
         "column": {
           "name": "table_schema",
           "type": {
-            "name": "varchar"
+            "name": "varchar",
+            "args": [
+              {
+                "int": 64
+              }
+            ]
           },
           "table": "columns"
         }
@@ -57,7 +72,18 @@
         "column": {
           "name": "table_type",
           "type": {
-            "name": "enum"
+            "name": "enum",
+            "args": [
+              {
+                "string": "base table"
+              },
+              {
+                "string": "view"
+              },
+              {
+                "string": "system view"
+              }
+            ]
           },
           "table": "tables"
         }

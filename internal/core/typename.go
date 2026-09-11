@@ -61,6 +61,19 @@ func ColumnTypeExpr(col *ast.ColumnDef) *TypeExpr {
 	if t == nil {
 		return nil
 	}
+	// MySQL reports an unsigned column on the definition, and the
+	// members of an enum or set apart from the type's name.
+	if col.IsUnsigned && !strings.Contains(t.Name, " unsigned") {
+		t.Name += " unsigned"
+	}
+	if vals := listItems(col.Vals); len(vals) > 0 && len(t.Args) == 0 {
+		for _, item := range vals {
+			if s, ok := item.(*ast.String); ok {
+				v := s.Str
+				t.Args = append(t.Args, TypeArg{String: &v})
+			}
+		}
+	}
 	if col.TypeName.Spelling != "" || listItems(col.TypeName.ArrayBounds) != nil {
 		return t
 	}

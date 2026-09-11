@@ -388,14 +388,21 @@ func Relations(fsys fs.FS, dir, schema string) ([]*catalog.Table, error) {
 			Columns: make([]*catalog.Column, 0, len(rel.Columns)),
 		}
 		for _, col := range rel.Columns {
+			// A column's type may carry arguments, as MySQL's varchar(64)
+			// does; the legacy catalog holds the family and the length
+			// apart.
+			t := core.ParseTypeExpr(col.Type)
 			column := &catalog.Column{
 				Name:      col.Name,
-				Type:      ast.TypeName{Name: col.Type},
+				Type:      ast.TypeName{Name: t.Name},
 				IsNotNull: col.NotNull,
 				IsArray:   col.Array,
 			}
 			if col.Length > 0 {
 				length := col.Length
+				column.Length = &length
+			} else if len(t.Args) > 0 && t.Args[0].Int != nil {
+				length := int(*t.Args[0].Int)
 				column.Length = &length
 			}
 			table.Columns = append(table.Columns, column)

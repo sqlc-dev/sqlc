@@ -1,9 +1,12 @@
 package mysql
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"github.com/sqlc-dev/sqlc/internal/goldeneye/dialect"
 	"os"
 	"regexp"
 	"strconv"
@@ -76,11 +79,69 @@ func bind(sql string) (string, []placeholder) {
 	return out, phs
 }
 
-// column is what information_schema says about a column.
+// column is what information_schema says about a column: its type as
+// COLUMN_TYPE spells it, read into an expression.
 type column struct {
 	name     string
-	typ      string
+	typ      *analysis.TypeExpr
 	nullable bool
+}
+
+// typeOfColumn is a column's type as it was declared, from COLUMN_TYPE, which
+// carries the arguments and the unsigned that DATA_TYPE does not: "decimal(10,2)
+// unsigned" is the family "decimal unsigned" applied to 10 and 2, and
+// "enum('a','b')" is enum applied to its members. A trailing word such as
+// zerofill is part of the family too.
+func typeOfColumn(columnType string) *analysis.TypeExpr {
+	s := strings.ToLower(strings.TrimSpace(columnType))
+	open := strings.IndexByte(s, '(')
+	if open < 0 {
+		return &analysis.TypeExpr{Name: s}
+	}
+	close := strings.LastIndexByte(s, ')')
+	if close < open {
+		return &analysis.TypeExpr{Name: s}
+	}
+	name := strings.TrimSpace(s[:open])
+	if rest := strings.TrimSpace(s[close+1:]); rest != "" {
+		name += " " + rest
+	}
+	t := &analysis.TypeExpr{Name: name}
+	for _, a := range splitArgs(s[open+1 : close]) {
+		a = strings.TrimSpace(a)
+		if strings.HasPrefix(a, "'") && strings.HasSuffix(a, "'") && len(a) >= 2 {
+			v := strings.ReplaceAll(a[1:len(a)-1], "''", "'")
+			t.Args = append(t.Args, analysis.TypeArg{String: &v})
+			continue
+		}
+		if n, err := strconv.ParseInt(a, 10, 64); err == nil {
+			t.Args = append(t.Args, analysis.TypeArg{Int: &n})
+		}
+	}
+	return t
+}
+
+// splitArgs splits a type's argument list on the commas outside quotes.
+func splitArgs(s string) []string {
+	var out []string
+	start, quoted := 0, false
+	for i := 0; i < len(s); i++ {
+		switch {
+		case s[i] == '\'':
+			quoted = !quoted
+		case s[i] == ',' && !quoted:
+			out = append(out, s[start:i])
+			start = i + 1
+		}
+	}
+	return append(out, s[start:])
+}
+
+// withNullable copies a type with its nullability set.
+func withNullable(t *analysis.TypeExpr, nullable bool) *analysis.TypeExpr {
+	out := *t
+	out.Nullable = nullable
+	return &out
 }
 
 // relation is a table the catalog knows, by schema and name.
@@ -185,12 +246,48 @@ func Analyze(ctx context.Context, dsn string, c endtoend.Case) ([]byte, error) {
 
 // Check compares what MySQL reports for a case with the output the case
 // committed, returning a diff when they differ.
+// Check compares a case's committed output with what MySQL reports. A
+// column read from a table is compared in full, since information_schema
+// spells its whole type; an expression's type comes from the wire, which
+// carries the family and nothing of its arguments, so an expression, and
+// a parameter typed by one, is compared by family alone.
 func Check(ctx context.Context, dsn string, c endtoend.Case) (string, error) {
 	got, err := Analyze(ctx, dsn, c)
 	if err != nil {
 		return "", err
 	}
-	return c.Compare(got)
+	want, err := os.ReadFile(c.Output)
+	if err != nil {
+		return "", err
+	}
+	var queries []analysis.Query
+	if err := json.Unmarshal(want, &queries); err != nil {
+		return "", fmt.Errorf("%s: %w", c.Output, err)
+	}
+	for i := range queries {
+		for j := range queries[i].Columns {
+			familyOnly(&queries[i].Columns[j])
+		}
+		for j := range queries[i].Params {
+			familyOnly(&queries[i].Params[j].Column)
+		}
+	}
+	want, err = analysis.Encode(queries)
+	if err != nil {
+		return "", err
+	}
+	if bytes.Equal(want, got) {
+		return "", nil
+	}
+	return dialect.Diff(string(want), string(got)), nil
+}
+
+// familyOnly drops the arguments of a column's type when the column is not
+// read from a table, which is as much as the wire says about it.
+func familyOnly(col *analysis.Column) {
+	if col.Table == "" && col.Type != nil {
+		col.Type.Args = nil
+	}
 }
 
 const catalogQuery = `
@@ -217,7 +314,7 @@ func readCatalog(ctx context.Context, conn *sql.Conn, db string) (map[relation][
 		rel := relation{schema, table}
 		catalog[rel] = append(catalog[rel], column{
 			name:     name,
-			typ:      typeName(dataType, columnType),
+			typ:      typeOfColumn(columnType),
 			nullable: nullable == "YES",
 		})
 	}
@@ -313,7 +410,7 @@ func (a *analyzer) analyzeQuery(ctx context.Context, q endtoend.Query) (analysis
 						ac.Table = rel.name
 					}
 					if col, ok := s.origin(top, tok, 0); ok {
-						ac.Type.Name = col.typ
+						ac.Type = withNullable(col.typ, ac.Type.Nullable)
 					}
 				}
 			}
@@ -582,7 +679,7 @@ func (s *statement) column(rel relation, name string) analysis.Column {
 		if col.name == name {
 			return analysis.Column{
 				Name:  name,
-				Type:  &analysis.TypeExpr{Name: col.typ, Nullable: col.nullable},
+				Type:  withNullable(col.typ, col.nullable),
 				Table: rel.name,
 			}
 		}
