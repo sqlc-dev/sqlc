@@ -15,6 +15,7 @@ type CommentSyntax source.CommentSyntax
 type Metadata struct {
 	Name     string
 	Cmd      string
+	Stream   bool
 	Comments []string
 	Params   map[string]string
 	Flags    map[string]bool
@@ -32,11 +33,16 @@ const (
 	CmdExecRows   = ":execrows"
 	CmdExecLastId = ":execlastid"
 	CmdMany       = ":many"
+	CmdStream     = ":stream"
+	CmdManyStream = ":many:stream"
 	CmdOne        = ":one"
 	CmdCopyFrom   = ":copyfrom"
 	CmdBatchExec  = ":batchexec"
 	CmdBatchMany  = ":batchmany"
 	CmdBatchOne   = ":batchone"
+
+	// StreamAnnotationComment marks queries annotated with :stream or :many:stream.
+	StreamAnnotationComment = " sqlc:iterator-stream"
 )
 
 // A query name must be a valid Go identifier
@@ -58,7 +64,7 @@ func validateQueryName(name string) error {
 	return nil
 }
 
-func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string, error) {
+func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string, bool, error) {
 	for line := range strings.SplitSeq(t, "\n") {
 		var prefix string
 		if strings.HasPrefix(line, "--") {
@@ -90,7 +96,7 @@ func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string
 			continue
 		}
 		if !strings.HasPrefix(rest, " name: ") {
-			return "", "", fmt.Errorf("invalid metadata: %s", line)
+			return "", "", false, fmt.Errorf("invalid metadata: %s", line)
 		}
 
 		part := strings.Split(strings.TrimSpace(line), " ")
@@ -98,24 +104,28 @@ func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string
 			part = part[:len(part)-1] // removes the trailing "*/" element
 		}
 		if len(part) == 3 {
-			return "", "", fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows', ':execlastid', ':execresult', ':copyfrom', 'batchexec', 'batchmany', 'batchone']: %s", line)
+			return "", "", false, fmt.Errorf("missing query type [':one', ':many', ':stream', ':exec', ':execrows', ':execlastid', ':execresult', ':copyfrom', 'batchexec', 'batchmany', 'batchone']: %s", line)
 		}
 		if len(part) != 4 {
-			return "", "", fmt.Errorf("invalid query comment: %s", line)
+			return "", "", false, fmt.Errorf("invalid query comment: %s", line)
 		}
 		queryName := part[2]
 		queryType := strings.TrimSpace(part[3])
+		stream := false
 		switch queryType {
+		case CmdStream, CmdManyStream:
+			queryType = CmdMany
+			stream = true
 		case CmdOne, CmdMany, CmdExec, CmdExecResult, CmdExecRows, CmdExecLastId, CmdCopyFrom, CmdBatchExec, CmdBatchMany, CmdBatchOne:
 		default:
-			return "", "", fmt.Errorf("invalid query type: %s", queryType)
+			return "", "", false, fmt.Errorf("invalid query type: %s", queryType)
 		}
 		if err := validateQueryName(queryName); err != nil {
-			return "", "", err
+			return "", "", false, err
 		}
-		return queryName, queryType, nil
+		return queryName, queryType, stream, nil
 	}
-	return "", "", nil
+	return "", "", false, nil
 }
 
 // ParseCommentFlags processes the comments provided with queries to determine the metadata params, flags and rules to skip.

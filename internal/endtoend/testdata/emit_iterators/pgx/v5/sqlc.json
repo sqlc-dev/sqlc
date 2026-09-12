@@ -1,0 +1,15 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "go",
+      "name": "querytest",
+      "engine": "postgresql",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "sql_package": "pgx/v5",
+      "emit_iterators": true,
+      "iterator_scope": "global"
+    }
+  ]
+}
