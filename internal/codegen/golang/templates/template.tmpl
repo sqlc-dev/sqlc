@@ -92,7 +92,7 @@ type {{.Name}} string
 
 const (
 	{{- range .Constants}}
-	{{.Name}} {{.Type}} = "{{.Value}}"
+	{{.Name}} {{.Type}} = {{printf "%q" .Value}}
 	{{- end}}
 )
 
