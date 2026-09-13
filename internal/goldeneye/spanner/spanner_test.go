@@ -1,4 +1,4 @@
-package duckdb
+package spanner
 
 import (
 	"context"
@@ -8,23 +8,23 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/endtoend"
 )
 
-// TestDialect verifies the committed DuckDB dialect against what the DuckDB
-// CLI reports. It skips unless a CLI is found.
+// TestDialect verifies the committed GoogleSQL dialect against what a
+// Spanner server reports. It skips unless SPANNER_SERVER_URI names one.
 func TestDialect(t *testing.T) {
-	binary, err := Locate()
+	endpoint, err := Locate()
 	if err != nil {
 		t.Skip(err)
 	}
 	ctx := context.Background()
-	version, err := Version(ctx, binary)
+	version, err := Version(ctx, endpoint)
 	if err != nil {
 		t.Fatal(err)
 	}
-	files, err := Generate(ctx, binary)
+	files, err := Generate(ctx, endpoint)
 	if err != nil {
 		t.Fatal(err)
 	}
-	dir, err := dialect.Dir(Engine)
+	dir, err := dialect.Dir(Dir)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,29 +37,29 @@ func TestDialect(t *testing.T) {
 	}
 }
 
-// TestAnalyzeCases verifies every DuckDB analyze case under
-// internal/endtoend/testdata against what the CLI reports. It skips
-// unless a CLI is found.
+// TestAnalyzeCases verifies every GoogleSQL analyze case under
+// internal/endtoend/testdata against what a Spanner server reports. It
+// skips unless SPANNER_SERVER_URI names one.
 func TestAnalyzeCases(t *testing.T) {
-	binary, err := Locate()
+	endpoint, err := Locate()
 	if err != nil {
 		t.Skip(err)
 	}
-	cases, err := endtoend.Cases(Engine)
+	cases, err := endtoend.Cases(Cases)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(cases) == 0 {
-		t.Fatal("no duckdb analyze cases found")
+		t.Fatal("no googlesql analyze cases found")
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
-			diff, err := Check(context.Background(), binary, c)
+			diff, err := Check(context.Background(), endpoint, c)
 			if err != nil {
 				t.Fatal(err)
 			}
 			if diff != "" {
-				t.Errorf("%s does not match what DuckDB reports (-committed +duckdb):\n%s", c.Output, diff)
+				t.Errorf("%s does not match what Spanner reports (-committed +spanner):\n%s", c.Output, diff)
 			}
 		})
 	}

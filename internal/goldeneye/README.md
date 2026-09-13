@@ -10,15 +10,18 @@ the tests compare it with what is committed, byte for byte. A difference
 means the committed dialect has drifted from the database.
 
 It is a nested Go module, so its only dependencies beyond the standard
-library are the PostgreSQL and MySQL drivers, and it never shares code with
-the analysis that reads the files: the files are the contract. Run it from
-this directory:
+library are the database clients — PostgreSQL's, MySQL's and SQL Server's
+drivers, and Spanner's gRPC client with what it stands on — and it never
+shares code with the analysis that reads the files: the files are the
+contract. Run it from this directory:
 
 ```bash
 go run ./cmd/goldeneye install clickhouse   # download the pinned clickhouse binary once
+go run ./cmd/goldeneye install duckdb       # download the current DuckDB 2.0 preview build once
 go run ./cmd/goldeneye install sqlite       # build the pinned sqlite3 shells once; needs a C compiler
 go run ./cmd/goldeneye check                # check every engine whose database is available
 go run ./cmd/goldeneye check postgresql     # check one engine
+go run ./cmd/goldeneye check spanner        # SPANNER_SERVER_URI=localhost:15000, a Spanner Omni container
 go run ./cmd/goldeneye generate [engine]    # rewrite the generated files from the database
 go test ./...                               # the same checks as tests; engines without a database skip
 ```
@@ -60,10 +63,20 @@ the hand-written files alone, and the checks do not look at them.
   knows a system schema when it sees one. The server has to be the major
   release pinned in `mysql.Major`, since every release adds to
   `information_schema`.
-- **`duckdb`** reads the DuckDB CLI named by `DUCKDB`, or `duckdb` on `PATH`:
-  `types.jsonl`, `functions.jsonl` and `operators.jsonl` come from
-  `duckdb_types()` and `duckdb_functions()`. The CLI has to be the DuckDB 2.0
-  build darkwing is pinned against, which has no release to download yet.
+- **`duckdb`** reads the DuckDB CLI named by `DUCKDB`, or the one `install`
+  put in the user cache directory, or `duckdb` on `PATH`: `types.jsonl`,
+  `functions.jsonl` and `operators.jsonl` come from `duckdb_types()` and
+  `duckdb_functions()`. The CLI has to be a DuckDB 2.0 build, the release
+  darkwing is pinned against, which has no release to download yet: until
+  2.0 is out, `install` downloads the current build of DuckDB's v2.0
+  preview channel, `duckdb.DefaultVersion`, a rolling tarball per platform
+  under `artifacts.duckdb.org` with no per-build download and no checksum
+  to pin, so what a run logs is the version the CLI reports, and
+  `duckdb.GeneratedFrom` records the build the committed dialect came
+  from. A check against a later build reports what the later build added;
+  regenerate, and update `GeneratedFrom`, to move the dialect along. Once
+  2.0 is released, the installer should pin the release and its checksums
+  the way the clickhouse one does.
 - **`clickhouse`** needs no server: `types.jsonl` comes from
   `system.data_type_families` of an ephemeral `clickhouse local` process,
   every family that is not an alias becoming a type carrying the spellings
@@ -74,6 +87,43 @@ the hand-written files alone, and the checks do not look at them.
   `clickhouse/install.go`, and a download that does not match is discarded.
   ClickHouse describes its functions no further than their names, so
   `functions.jsonl` is hand-written.
+- **`mssql`** reads a live server named by `MSSQL_SERVER_URI`, in any form
+  the go-mssqldb driver accepts, such as
+  `sqlserver://sa:password@127.0.0.1:1433?encrypt=disable`. SQL Server keeps
+  no catalog of its intrinsic functions or its operators — GETDATE and LEN
+  are not objects — so `types.jsonl` and `functions.jsonl` are hand-written.
+  What it does describe is its catalog: `relations.jsonl` is every view of
+  the `sys` and `INFORMATION_SCHEMA` schemas, listed from a database of its
+  own, since the views a query sees are the ones a user database has and
+  `master` lists internal views no query can name; each view's columns are
+  what `sys.dm_exec_describe_first_result_set` says a `SELECT *` from it
+  returns, the type spelled the way a declaration spells it —
+  `nvarchar(128)`, `decimal(10,2)`, `varbinary(max)` — and the nullability
+  the server computes. Names are written in lower case, since SQL Server
+  matches them in any case under its default collations and sqlc's parser
+  lowercases every identifier. Both schemas hold nothing but views, so no
+  table is seeded that codegen would take for a model. The server has to
+  be the major release pinned in `mssql.Major`, since every release adds
+  to the catalog views.
+- **`spanner`** reads a live Spanner Omni server — the downloadable
+  Spanner, run from its container image — named by `SPANNER_SERVER_URI`,
+  the gRPC endpoint such as `localhost:15000`, reached without TLS or
+  credentials as Omni is, and writes into `internal/engine/googlesql/dialect`,
+  since sqlc's engine is named after the language Spanner speaks. Spanner
+  keeps no catalog of its types, functions or operators, so `types.jsonl`,
+  `functions.jsonl` and `operators.jsonl` are hand-written. What it does
+  describe is its information schema: `relations.jsonl` is every view of
+  `INFORMATION_SCHEMA` and `SPANNER_SYS`, read from `INFORMATION_SCHEMA`
+  itself in a database created for the purpose in the instance Omni's
+  single server provides, `projects/default/instances/default`. Names are
+  kept as the catalog spells them, in upper case: Spanner matches a name
+  in any case, but sqlc's GoogleSQL engine matches one as it is spelled,
+  so a query reaches these views by their upper-case names until the
+  engine folds case; a column's type is spelled in lower case the way the seed
+  spells one, an `ARRAY<T>` as `T` with the array flag, a `STRUCT<a T>` as
+  `struct(a: t)` and a `PROTO<p.M>` as `proto('p.M')`, since a seed writes
+  a type's arguments in parentheses. The container image is pinned in the
+  gen workflow and `docker-compose.yml`.
 - **`sqlite`** needs no server either: `functions.jsonl` comes from
   `pragma_function_list` of a `sqlite3` shell run against an in-memory
   database. Which functions a SQLite has is decided when it is compiled, so
@@ -117,9 +167,10 @@ the hand-written files alone, and the checks do not look at them.
 - `endtoend/` — finds the analyze cases, splits their query files, and
   compares an engine's answer with a case's committed output.
 - `analysis/` — the shape of that answer: the JSON `sqlc analyze` prints.
-- `postgresql/`, `mysql/`, `duckdb/`, `clickhouse/`, `sqlite/` — one package
-  per engine, each exposing `Locate`, `Version` and `Generate`, `Analyze`
-  where the engine has an analysis check, and tests that run the checks.
+- `postgresql/`, `mysql/`, `mssql/`, `spanner/`, `duckdb/`, `clickhouse/`,
+  `sqlite/` — one package per engine, each exposing `Locate`, `Version` and
+  `Generate`, `Analyze` where the engine has an analysis check, and tests
+  that run the checks.
 - `cmd/goldeneye/` — the command.
 
 ## Analysis checks
@@ -194,5 +245,98 @@ asks for `--ast` is skipped, since only sqlc can print that.
   beside the one wire type every size of `TEXT` and `BLOB` is sent as, which
   is why a column read from a table, directly or through a derived table,
   is spelled the way the table declares it.
+
+- **`duckdb`** runs each case through the CLI, which loads the schema and
+  fixture into an in-memory database of their own, one process per
+  question, and is asked four things about each query. What its
+  parameters are: the query is prepared and explained as JSON with a
+  string sentinel bound to each parameter, `EXECUTE q('goldeneye_1',
+  ...)`, and the unoptimized logical plan the CLI prints under
+  `explain_output = 'all'` shows each as `CAST('goldeneye_k' AS T)`, `T`
+  being the type the binder gave the parameter, or bare when that type is
+  `VARCHAR`; a sentinel the binder converts on the spot, as an `INSERT`'s
+  `VALUES` are, is bound to NULL instead. What its result columns are: `DESCRIBE`, with each parameter
+  replaced by a NULL of its type, names and types them; DuckDB describes
+  no DML, so a `RETURNING` column is the target table's column it names.
+  Which table a result column is read from and which column a parameter
+  stands in for: DuckDB prints a plan with every column by its bare name
+  and every aliased expression by its alias, so these are read from the
+  query text, the select list's items, a star expanded to its table's
+  columns, and the operand beside each parameter, resolved against the
+  `FROM` clause and the catalog, `duckdb_columns()`, from which a column
+  read from a table takes its declared type and nullability; a parameter
+  the query casts takes the cast's type as DuckDB spells it, and one
+  inside a subquery, whose tables the statement's scope does not name,
+  takes the binder's. And whether
+  an expression can be NULL, which DuckDB does not track: the query is
+  run, with each parameter bound to a value of its type, over the fixture
+  and over no rows, and a column is nullable when either run returns a
+  NULL for it. DuckDB spells an enum column by its labels whether the
+  schema named the type or not, so labels that are those of an enum the
+  schema created name that type, and a spelling `types.jsonl` lists as an
+  alias — `json`, which DuckDB's own catalog lists as a spelling of
+  `varchar` — is reported by the dialect's name for it.
+- **`mssql`** describes each case in a database of its own on the server
+  named by `MSSQL_SERVER_URI`, without running anything: the schema is
+  loaded one statement at a time, since a `CREATE TYPE` has to be its own
+  batch before a table can use the type, and the server is asked three
+  things about each query. What a driver would see:
+  `sys.dm_exec_describe_first_result_set` describes each result column —
+  its name, its type spelled the way a declaration spells it, whether it
+  can be NULL, and which table column it is read from. What each parameter
+  would be: `sp_describe_undeclared_parameters` says what type the server
+  would give each parameter the query leaves undeclared, which is the type
+  of a `CAST(@p AS T)`; it describes a parameter only when it is used
+  once, so each appearance of a repeated one becomes a variable of its
+  own. And what each parameter stands in for: the estimated showplan,
+  compiled with `SET SHOWPLAN_XML ON` and the parameters declared as those
+  types, prints every column as a reference naming its table and every
+  variable as `@variable`, and a parameter's partner is the column on the
+  other side of the `Compare` it is an operand of, the column an `Assign`
+  sets to it, or the column of a seek whose range expression it is, with a
+  named expression such as `Expr1002` followed to its definition; a
+  parameter under a `CONVERT` the query wrote has no partner, since the
+  cast says what it is. A parameter with a partner is described as that
+  column, from the catalog of the case's database. Three things the
+  describing function keeps to itself: a `json` or `vector` column is
+  described by the `nvarchar(max)` it is sent to a driver as, so a column
+  read from a table is typed from `sys.columns` instead; a type the
+  schema created is reported beside the system type it stands on, and the
+  dialect reports it by its own name; and a spelling `types.jsonl` lists
+  as an alias — `numeric`, `timestamp` — is reported by the dialect's name
+  for it, `decimal`, `rowversion`. One thing it says that sqlc does not: a
+  computed column — a cast, an arithmetic — is nullable whatever its
+  arguments, since a conversion that fails under `ANSI_WARNINGS OFF`
+  yields NULL, where sqlc follows the arguments, and a computed column
+  names the column it is computed from, as the one an update through the
+  result set would write, where sqlc gives an expression no table. The
+  cases compute over nullable columns, and a computed column is reported
+  without a table.
+- **`spanner`** creates a database of each case's own from its schema in
+  the instance named by `SPANNER_SERVER_URI`, writes its fixture there in a
+  read-write transaction, and compiles each query in `PLAN` mode, which
+  runs nothing: a DML statement is compiled in a read-write transaction
+  that is rolled back. The server reports the name and type of each
+  result column and the type of each parameter the query leaves
+  undeclared, the way the wire spells them — `STRING`, `ARRAY<INT64>` —
+  without the length a declaration gives a `STRING(10)` or whether a
+  column can be NULL, and the query plan, which says where each comes
+  from: the children of `Serialize Result` after the relation it
+  serializes are the result columns, a `Scan` of a table defines a
+  variable per column it reads, and a comparison is a `Function` whose
+  description reads `($col = @param)`. A result column the plan reads
+  from a table column, directly or through the variables a join or a
+  batch passes it through, is described from the case's
+  `INFORMATION_SCHEMA`, with its declared length and nullability; one the
+  plan reads as a parameter is the column the parameter is compared with,
+  which is why the optimizer substituted it. A parameter compared with a
+  table column is described as that column. A DML plan lists the values
+  it writes before the columns it returns — the table's key columns, then
+  the columns an `UPDATE` sets or an `INSERT` inserts, read from the
+  statement — and a parameter written to a column is described as it,
+  while a `THEN RETURN` column is the table's column of that name. Two
+  things Spanner does not say: whether an expression can be NULL, which
+  is reported as it is not, and anything about a `STRUCT` returned as a
+  column, which Spanner rejects.
 
 The other engines have no analysis check yet.

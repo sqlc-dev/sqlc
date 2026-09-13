@@ -16,6 +16,7 @@
 {"name": "geography", "category": "U"}
 {"name": "struct", "category": "U"}
 {"name": "enum", "category": "U"}
+{"name": "proto", "category": "U"}
 {"name": "tokenlist", "category": "U"}
 {"name": "array", "category": "A"}
 {"name": "range", "category": "U"}

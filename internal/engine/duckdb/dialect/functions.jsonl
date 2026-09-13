@@ -1,5 +1,6 @@
 {"name":"__between","args":[{"type":"any"},{"type":"any"},{"type":"any"}],"returns":"boolean"}
 {"name":"__cast","args":[{"type":"any"}],"returns":"any"}
+{"name":"__internal_barrier","args":[{"type":"any"}],"returns":"any"}
 {"name":"__internal_compress_geometry_point","args":[{"type":"geometry"}],"returns":"uhugeint"}
 {"name":"__internal_compress_integral_ubigint","args":[{"type":"hugeint"},{"type":"hugeint"}],"returns":"ubigint"}
 {"name":"__internal_compress_integral_ubigint","args":[{"type":"uhugeint"},{"type":"uhugeint"}],"returns":"ubigint"}
@@ -2198,6 +2199,7 @@
 {"name":"regexp_extract","args":[{"type":"varchar"},{"type":"varchar"},{"type":"varchar[]"}],"returns":"varchar"}
 {"name":"regexp_extract","args":[{"type":"varchar"},{"type":"varchar"},{"type":"integer"},{"type":"varchar"}],"returns":"varchar"}
 {"name":"regexp_extract","args":[{"type":"varchar"},{"type":"varchar"},{"type":"integer"}],"returns":"varchar"}
+{"name":"regexp_extract","args":[{"type":"varchar"},{"type":"varchar"},{"type":"varchar"}],"returns":"varchar"}
 {"name":"regexp_extract","args":[{"type":"varchar"},{"type":"varchar"}],"returns":"varchar"}
 {"name":"regexp_extract_all","args":[{"type":"varchar"},{"type":"varchar"},{"type":"varchar[]"},{"type":"varchar"}],"returns":"varchar[]"}
 {"name":"regexp_extract_all","args":[{"type":"varchar"},{"type":"varchar"},{"type":"varchar[]"}],"returns":"varchar[]"}
@@ -2278,6 +2280,22 @@
 {"name":"round","args":[{"type":"smallint"}],"returns":"smallint"}
 {"name":"round","args":[{"type":"tinyint"},{"type":"integer"}],"returns":"tinyint"}
 {"name":"round","args":[{"type":"tinyint"}],"returns":"tinyint"}
+{"name":"round_even","args":[{"type":"bigint"},{"type":"integer"}],"returns":"bigint"}
+{"name":"round_even","args":[{"type":"decimal"},{"type":"integer"}],"returns":"decimal"}
+{"name":"round_even","args":[{"type":"double"},{"type":"integer"}],"returns":"double"}
+{"name":"round_even","args":[{"type":"float"},{"type":"integer"}],"returns":"float"}
+{"name":"round_even","args":[{"type":"hugeint"},{"type":"integer"}],"returns":"hugeint"}
+{"name":"round_even","args":[{"type":"integer"},{"type":"integer"}],"returns":"integer"}
+{"name":"round_even","args":[{"type":"smallint"},{"type":"integer"}],"returns":"smallint"}
+{"name":"round_even","args":[{"type":"tinyint"},{"type":"integer"}],"returns":"tinyint"}
+{"name":"roundbankers","args":[{"type":"bigint"},{"type":"integer"}],"returns":"bigint"}
+{"name":"roundbankers","args":[{"type":"decimal"},{"type":"integer"}],"returns":"decimal"}
+{"name":"roundbankers","args":[{"type":"double"},{"type":"integer"}],"returns":"double"}
+{"name":"roundbankers","args":[{"type":"float"},{"type":"integer"}],"returns":"float"}
+{"name":"roundbankers","args":[{"type":"hugeint"},{"type":"integer"}],"returns":"hugeint"}
+{"name":"roundbankers","args":[{"type":"integer"},{"type":"integer"}],"returns":"integer"}
+{"name":"roundbankers","args":[{"type":"smallint"},{"type":"integer"}],"returns":"smallint"}
+{"name":"roundbankers","args":[{"type":"tinyint"},{"type":"integer"}],"returns":"tinyint"}
 {"name":"row","args":[{"type":"any","mode":"v"}],"returns":"tuple"}
 {"name":"row_number","kind":"w","returns":"bigint"}
 {"name":"row_to_json","args":[{"type":"any","mode":"v"}],"returns":"json"}
@@ -2457,7 +2475,9 @@
 {"name":"timezone","args":[{"type":"time_ns"}],"returns":"bigint"}
 {"name":"timezone","args":[{"type":"varchar"},{"type":"time with time zone"}],"returns":"time with time zone"}
 {"name":"timezone","args":[{"type":"varchar"},{"type":"timestamp with time zone"}],"returns":"timestamp"}
+{"name":"timezone","args":[{"type":"varchar"},{"type":"timestamptz_ns"}],"returns":"timestamp_ns"}
 {"name":"timezone","args":[{"type":"varchar"},{"type":"timestamp"}],"returns":"timestamp with time zone"}
+{"name":"timezone","args":[{"type":"varchar"},{"type":"timestamp_ns"}],"returns":"timestamptz_ns"}
 {"name":"timezone_hour","args":[{"type":"date"}],"returns":"bigint"}
 {"name":"timezone_hour","args":[{"type":"interval"}],"returns":"bigint"}
 {"name":"timezone_hour","args":[{"type":"time with time zone"}],"returns":"bigint"}
@@ -2580,6 +2600,7 @@
 {"name":"variant_extract","args":[{"type":"variant"},{"type":"varchar"}],"returns":"variant"}
 {"name":"variant_extract_string","args":[{"type":"variant"},{"type":"varchar[]"}],"returns":"varchar[]"}
 {"name":"variant_extract_string","args":[{"type":"variant"},{"type":"varchar"}],"returns":"varchar"}
+{"name":"variant_group_object","kind":"a","args":[{"type":"varchar"},{"type":"variant"}],"returns":"variant","nullable":true}
 {"name":"variant_keys","args":[{"type":"variant"},{"type":"varchar[]"}],"returns":"varchar[][]"}
 {"name":"variant_keys","args":[{"type":"variant"},{"type":"varchar"}],"returns":"varchar[]"}
 {"name":"variant_keys","args":[{"type":"variant"}],"returns":"varchar[]"}

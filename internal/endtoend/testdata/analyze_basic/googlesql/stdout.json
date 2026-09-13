@@ -13,7 +13,12 @@
       {
         "name": "name",
         "type": {
-          "name": "string"
+          "name": "string",
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
         },
         "table": "users"
       }

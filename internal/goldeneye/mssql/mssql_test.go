@@ -1,4 +1,4 @@
-package duckdb
+package mssql
 
 import (
 	"context"
@@ -8,19 +8,19 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/endtoend"
 )
 
-// TestDialect verifies the committed DuckDB dialect against what the DuckDB
-// CLI reports. It skips unless a CLI is found.
+// TestDialect verifies the committed SQL Server dialect against what the
+// server reports. It skips unless MSSQL_SERVER_URI names a server.
 func TestDialect(t *testing.T) {
-	binary, err := Locate()
+	dsn, err := Locate()
 	if err != nil {
 		t.Skip(err)
 	}
 	ctx := context.Background()
-	version, err := Version(ctx, binary)
+	version, err := Version(ctx, dsn)
 	if err != nil {
 		t.Fatal(err)
 	}
-	files, err := Generate(ctx, binary)
+	files, err := Generate(ctx, dsn)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,11 +37,11 @@ func TestDialect(t *testing.T) {
 	}
 }
 
-// TestAnalyzeCases verifies every DuckDB analyze case under
-// internal/endtoend/testdata against what the CLI reports. It skips
-// unless a CLI is found.
+// TestAnalyzeCases verifies every SQL Server analyze case under
+// internal/endtoend/testdata against what the server reports. It skips
+// unless MSSQL_SERVER_URI names a server.
 func TestAnalyzeCases(t *testing.T) {
-	binary, err := Locate()
+	dsn, err := Locate()
 	if err != nil {
 		t.Skip(err)
 	}
@@ -50,16 +50,16 @@ func TestAnalyzeCases(t *testing.T) {
 		t.Fatal(err)
 	}
 	if len(cases) == 0 {
-		t.Fatal("no duckdb analyze cases found")
+		t.Fatal("no mssql analyze cases found")
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
-			diff, err := Check(context.Background(), binary, c)
+			diff, err := Check(context.Background(), dsn, c)
 			if err != nil {
 				t.Fatal(err)
 			}
 			if diff != "" {
-				t.Errorf("%s does not match what DuckDB reports (-committed +duckdb):\n%s", c.Output, diff)
+				t.Errorf("%s does not match what SQL Server reports (-committed +mssql):\n%s", c.Output, diff)
 			}
 		})
 	}

@@ -13,7 +13,12 @@
       {
         "name": "name",
         "type": {
-          "name": "string"
+          "name": "string",
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
         },
         "table": "users"
       },
@@ -21,7 +26,12 @@
         "name": "bio",
         "type": {
           "name": "string",
-          "nullable": true
+          "nullable": true,
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
         },
         "table": "users"
       }
@@ -48,7 +58,12 @@
       {
         "name": "name",
         "type": {
-          "name": "string"
+          "name": "string",
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
         },
         "table": "users"
       },
@@ -93,7 +108,12 @@
         "column": {
           "name": "name",
           "type": {
-            "name": "string"
+            "name": "string",
+            "args": [
+              {
+                "ident": "max"
+              }
+            ]
           },
           "table": "users"
         }

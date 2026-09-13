@@ -1,9 +1,15 @@
 // Package duckdb generates the DuckDB dialect seed under
 // internal/engine/duckdb/dialect — types.jsonl, functions.jsonl and
 // operators.jsonl — from a live DuckDB CLI, the same way the postgresql
-// package generates PostgreSQL's from a live server. The CLI must be the
-// DuckDB 2.0 build darkwing is pinned against; it is located through the
-// DUCKDB environment variable, falling back to "duckdb" on PATH.
+// package generates PostgreSQL's from a live server, and verifies the
+// DuckDB analyze cases under internal/endtoend/testdata against the same
+// CLI.
+//
+// The CLI is a DuckDB 2.0 build, the release darkwing is pinned against,
+// which has no release to download yet: Install fetches the current build
+// of DuckDB's v2.0 preview channel into the user cache directory. The CLI
+// is located through the DUCKDB environment variable, then the cached
+// build, then "duckdb" on PATH.
 package duckdb
 
 import (
@@ -23,14 +29,19 @@ import (
 const Engine = "duckdb"
 
 // Locate finds the DuckDB CLI: the DUCKDB environment variable wins, then
-// "duckdb" on PATH.
+// the cached build of DefaultVersion, then "duckdb" on PATH.
 func Locate() (string, error) {
 	if path := os.Getenv("DUCKDB"); path != "" {
 		return path, nil
 	}
+	if path, err := cachedBinary(DefaultVersion); err == nil {
+		if _, err := os.Stat(path); err == nil {
+			return path, nil
+		}
+	}
 	path, err := exec.LookPath("duckdb")
 	if err != nil {
-		return "", errors.New("no duckdb CLI found: set DUCKDB to the DuckDB 2.0 binary darkwing is pinned against, or put duckdb on PATH")
+		return "", errors.New("no duckdb CLI found: run `go run ./cmd/goldeneye install duckdb` in internal/goldeneye, set DUCKDB to a DuckDB 2.0 binary, or put duckdb on PATH")
 	}
 	return path, nil
 }
@@ -124,9 +135,11 @@ ORDER BY type_name`, &rows)
 
 	// Group the dump's one-row-per-spelling by logical type: the spelling
 	// matching the logical type id is the canonical name, the rest are
-	// aliases.
+	// aliases. A spelling is listed once per schema it is visible in, so
+	// an alias is kept once.
 	grouped := map[string]*dialect.Type{}
 	var order []string
+	seen := map[string]bool{}
 	for _, row := range rows {
 		logical := strings.ToLower(row.LogicalType)
 		if metaTypes[logical] {
@@ -141,7 +154,8 @@ ORDER BY type_name`, &rows)
 		if t.Category == "U" {
 			t.Category = categoryLetter(row.Category)
 		}
-		if name := strings.ToLower(row.TypeName); name != logical {
+		if name := strings.ToLower(row.TypeName); name != logical && !seen[logical+"\x00"+name] {
+			seen[logical+"\x00"+name] = true
 			t.Aliases = append(t.Aliases, name)
 		}
 	}

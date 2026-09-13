@@ -6,6 +6,7 @@
 // Usage, from internal/goldeneye:
 //
 //	go run ./cmd/goldeneye install clickhouse   # download the pinned clickhouse binary
+//	go run ./cmd/goldeneye install duckdb       # download the current DuckDB 2.0 preview build
 //	go run ./cmd/goldeneye install sqlite       # build the pinned sqlite3 shells from source
 //	go run ./cmd/goldeneye generate [engine]    # rewrite the generated files from the database
 //	go run ./cmd/goldeneye check [engine]       # compare the committed files and analyze cases with the database
@@ -29,8 +30,10 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/dialect"
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/duckdb"
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/endtoend"
+	"github.com/sqlc-dev/sqlc/internal/goldeneye/mssql"
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/mysql"
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/postgresql"
+	"github.com/sqlc-dev/sqlc/internal/goldeneye/spanner"
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/sqlite"
 )
 
@@ -42,23 +45,30 @@ func main() {
 }
 
 const usage = `usage:
-  goldeneye install clickhouse|sqlite [-version V]
+  goldeneye install clickhouse|duckdb|sqlite [-version V]
       put the pinned release of an engine into the user cache directory: clickhouse is
-      downloaded, sqlite is built from the downloaded amalgamation with cc or $CC
+      downloaded, duckdb is downloaded from its v2.0 preview channel, sqlite is built from
+      the downloaded amalgamation with cc or $CC
   goldeneye generate [engine]
       rewrite the generated dialect files from the database, for every available engine or one
   goldeneye check [engine]
       compare the committed dialect files and analyze cases with the database, for every available engine or one
-      postgresql and mysql read the server POSTGRESQL_SERVER_URI and MYSQL_SERVER_URI name
+      postgresql, mysql, mssql and spanner read the server POSTGRESQL_SERVER_URI, MYSQL_SERVER_URI,
+      MSSQL_SERVER_URI and SPANNER_SERVER_URI name
 
-engines: clickhouse, duckdb, mysql, postgresql, sqlite`
+engines: clickhouse, duckdb, mssql, mysql, postgresql, spanner, sqlite`
 
 // engine is one database goldeneye knows how to read a dialect from.
 type engine struct {
 	name string
 	// dir is the engine directory the dialect lives under, when it is not
-	// named after the engine: MySQL's is dolphin, after its parser.
+	// named after the engine: MySQL's is dolphin, after its parser, and
+	// Spanner's is googlesql, after the language.
 	dir string
+	// cases is the name of the analyze case directories under
+	// internal/endtoend/testdata, when it is not the engine's name:
+	// Spanner's are googlesql's.
+	cases string
 	// locate finds the database — a binary or a connection URL — or says
 	// why it is not available.
 	locate func() (string, error)
@@ -72,11 +82,13 @@ type engine struct {
 }
 
 var engines = []engine{
-	{clickhouse.Engine, "", clickhouse.Locate, clickhouse.Version, clickhouse.Generate, clickhouse.Analyze},
-	{duckdb.Engine, "", duckdb.Locate, duckdb.Version, duckdb.Generate, nil},
-	{mysql.Engine, mysql.Dir, mysql.Locate, mysql.Version, mysql.Generate, mysql.Analyze},
-	{postgresql.Engine, "", postgresql.Locate, postgresql.Version, postgresql.Generate, nil},
-	{sqlite.Engine, "", sqlite.Locate, sqlite.Version, sqlite.Generate, sqlite.Analyze},
+	{clickhouse.Engine, "", "", clickhouse.Locate, clickhouse.Version, clickhouse.Generate, clickhouse.Analyze},
+	{duckdb.Engine, "", "", duckdb.Locate, duckdb.Version, duckdb.Generate, duckdb.Analyze},
+	{mssql.Engine, "", "", mssql.Locate, mssql.Version, mssql.Generate, mssql.Analyze},
+	{mysql.Engine, mysql.Dir, "", mysql.Locate, mysql.Version, mysql.Generate, mysql.Analyze},
+	{postgresql.Engine, "", "", postgresql.Locate, postgresql.Version, postgresql.Generate, nil},
+	{spanner.Engine, spanner.Dir, spanner.Cases, spanner.Locate, spanner.Version, spanner.Generate, spanner.Analyze},
+	{sqlite.Engine, "", "", sqlite.Locate, sqlite.Version, sqlite.Generate, sqlite.Analyze},
 }
 
 // dialectDir returns the engine's dialect directory.
@@ -96,6 +108,7 @@ type installer struct {
 
 var installers = map[string]installer{
 	clickhouse.Engine: {clickhouse.DefaultVersion, clickhouse.Install},
+	duckdb.Engine:     {duckdb.DefaultVersion, duckdb.Install},
 	sqlite.Engine:     {sqlite.DefaultVersion, sqlite.Install},
 }
 
@@ -121,11 +134,11 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 
 func install(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	if len(args) == 0 {
-		return errors.New("install takes the engine to install: clickhouse or sqlite")
+		return errors.New("install takes the engine to install: clickhouse, duckdb or sqlite")
 	}
 	inst, ok := installers[args[0]]
 	if !ok {
-		return fmt.Errorf("install takes the engine to install, clickhouse or sqlite, not %q", args[0])
+		return fmt.Errorf("install takes the engine to install, clickhouse, duckdb or sqlite, not %q", args[0])
 	}
 	fs := flag.NewFlagSet("install "+args[0], flag.ContinueOnError)
 	fs.SetOutput(stderr)
@@ -233,7 +246,11 @@ func checkAnalyzeCases(ctx context.Context, e engine, handle string, stderr io.W
 	if e.analyze == nil {
 		return nil
 	}
-	cases, err := endtoend.Cases(e.name)
+	name := e.cases
+	if name == "" {
+		name = e.name
+	}
+	cases, err := endtoend.Cases(name)
 	if err != nil {
 		return err
 	}
