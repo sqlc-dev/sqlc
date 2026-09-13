@@ -59,8 +59,9 @@ func readRelations(ctx context.Context, s *server, session string) ([]dialect.Re
 
 // typeName spells a SPANNER_TYPE the way a seed spells a column's type:
 // in lower case, with an ARRAY<T> as its element and the array flag, a
-// STRUCT<a T, b U> as struct(a: t, b: u) and a PROTO<p.M> as proto('p.M'),
-// since a seed spells a type's arguments in parentheses.
+// STRUCT<a T, b U> as struct(a: t, b: u) and a PROTO<p.M> or ENUM<p.E> as
+// proto('p.M') or enum('p.E'), since a seed spells a type's arguments in
+// parentheses.
 func typeName(spannerType string) (string, bool) {
 	t := strings.TrimSpace(spannerType)
 	if element, ok := strings.CutPrefix(t, "ARRAY<"); ok && strings.HasSuffix(element, ">") {
@@ -86,8 +87,10 @@ func typeName(spannerType string) (string, bool) {
 		}
 		return "struct(" + strings.Join(args, ", ") + ")", false
 	}
-	if message, ok := strings.CutPrefix(t, "PROTO<"); ok && strings.HasSuffix(message, ">") {
-		return "proto('" + strings.TrimSuffix(message, ">") + "')", false
+	for _, kind := range []string{"PROTO<", "ENUM<"} {
+		if message, ok := strings.CutPrefix(t, kind); ok && strings.HasSuffix(message, ">") {
+			return strings.ToLower(strings.TrimSuffix(kind, "<")) + "('" + strings.TrimSuffix(message, ">") + "')", false
+		}
 	}
 	return strings.ToLower(t), false
 }

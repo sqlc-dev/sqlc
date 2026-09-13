@@ -205,7 +205,9 @@ func (p *plan) variables(n *node, seen map[string]bool) []string {
 					seen = map[string]bool{}
 				}
 				seen[col] = true
-				return p.variables(def, seen)
+				vars := p.variables(def, seen)
+				delete(seen, col)
+				return vars
 			}
 		}
 	}
@@ -229,7 +231,9 @@ func (p *plan) columns(n *node, seen map[string]bool) []columnRef {
 				seen = map[string]bool{}
 			}
 			seen[col] = true
-			return p.columns(def, seen)
+			cols := p.columns(def, seen)
+			delete(seen, col)
+			return cols
 		}
 	}
 	for i := range n.Children {

@@ -3,6 +3,7 @@ package spanner
 import (
 	"context"
 	"fmt"
+	"hash/crc32"
 	"os"
 	"regexp"
 	"strconv"
@@ -37,11 +38,14 @@ var identRe = regexp.MustCompile(`^@([A-Za-z_][A-Za-z0-9_]*)`)
 // bind rewrites the query so that every parameter is a Spanner @name, and
 // lists the parameters in sqlc's order. The query's own @name references
 // are kept, since that is how sqlc's GoogleSQL queries name their
-// parameters; a ? or a sqlc.arg becomes one.
+// parameters; a sqlc.arg becomes one, and each ? in turn becomes one
+// named after its position. A @@system_variable is not a parameter.
 func bind(query string) (string, []placeholder) {
+	positional := 0
 	sql := endtoend.Rewrite(query, func(name, _ string) string {
 		if name == "" {
-			name = "p"
+			positional++
+			name = "p" + strconv.Itoa(positional)
 		}
 		return "@" + name
 	})
@@ -67,6 +71,11 @@ func bind(query string) (string, []placeholder) {
 			} else {
 				i += end + 2
 			}
+		case c == '@' && i+1 < len(sql) && sql[i+1] == '@':
+			i += 2
+			for i < len(sql) && (isWordByte(sql[i])) {
+				i++
+			}
 		case c == '@' && identRe.MatchString(sql[i:]):
 			m := identRe.FindStringSubmatch(sql[i:])
 			if _, ok := numbers[m[1]]; !ok {
@@ -79,6 +88,10 @@ func bind(query string) (string, []placeholder) {
 		}
 	}
 	return sql, phs
+}
+
+func isWordByte(c byte) bool {
+	return c == '_' || c >= '0' && c <= '9' || c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z'
 }
 
 // skipQuoted returns the index just past the quoted token starting at i,
@@ -187,12 +200,14 @@ func Analyze(ctx context.Context, endpoint string, c endtoend.Case) ([]byte, err
 	}
 
 	// A database id is lower-case letters, digits and underscores, at
-	// most 30 characters.
+	// most 30 characters: the case's name, cut to fit, and a hash of the
+	// whole of it, so that two cases with the same head stay apart.
+	hash := fmt.Sprintf("%08x", crc32.ChecksumIEEE([]byte(c.Name)))
 	name := "goldeneye_" + dbNameRe.ReplaceAllString(strings.ToLower(c.Name), "_")
-	if len(name) > 30 {
-		name = name[:30]
+	if max := 30 - 1 - len(hash); len(name) > max {
+		name = name[:max]
 	}
-	name = strings.TrimRight(name, "_")
+	name = strings.TrimRight(name, "_") + "_" + hash
 	db := Instance + "/databases/" + name
 	if err := s.dropDatabase(ctx, db); err != nil {
 		return nil, err
@@ -254,11 +269,12 @@ func (s *server) write(ctx context.Context, session string, stmts []string) erro
 		req.Statements = append(req.Statements, &spannerpb.ExecuteBatchDmlRequest_Statement{Sql: stmt})
 	}
 	resp, err := s.data.ExecuteBatchDml(ctx, req)
-	if err != nil {
-		return err
+	if err == nil && resp.Status != nil && resp.Status.Code != 0 {
+		err = fmt.Errorf("%s", resp.Status.Message)
 	}
-	if resp.Status != nil && resp.Status.Code != 0 {
-		return fmt.Errorf("%s", resp.Status.Message)
+	if err != nil {
+		s.data.Rollback(context.WithoutCancel(ctx), &spannerpb.RollbackRequest{Session: session, TransactionId: tx.Id})
+		return err
 	}
 	_, err = s.data.Commit(ctx, &spannerpb.CommitRequest{
 		Session:     session,
@@ -342,6 +358,12 @@ func parseType(s string) *analysis.TypeExpr {
 	if element, ok := strings.CutPrefix(lower, "array<"); ok && strings.HasSuffix(element, ">") {
 		return &analysis.TypeExpr{Name: "array", Args: []analysis.TypeArg{{Type: parseType(s[6 : len(s)-1])}}}
 	}
+	for _, kind := range []string{"proto", "enum"} {
+		if message, ok := strings.CutPrefix(lower, kind+"<"); ok && strings.HasSuffix(message, ">") {
+			m := s[len(kind)+1 : len(s)-1]
+			return &analysis.TypeExpr{Name: kind, Args: []analysis.TypeArg{{String: &m}}}
+		}
+	}
 	if fields, ok := strings.CutPrefix(lower, "struct<"); ok && strings.HasSuffix(fields, ">") {
 		t := &analysis.TypeExpr{Name: "struct"}
 		for _, f := range splitTop(s[7:len(s)-1], ',') {
@@ -412,7 +434,10 @@ func typeOf(t *spannerpb.Type) *analysis.TypeExpr {
 		}
 		return out
 	case spannerpb.TypeCode_PROTO, spannerpb.TypeCode_ENUM:
-		return &analysis.TypeExpr{Name: strings.ToLower(t.ProtoTypeFqn)}
+		// A proto or enum is named by its message, the way a declaration
+		// spells PROTO<p.M>.
+		fqn := t.ProtoTypeFqn
+		return &analysis.TypeExpr{Name: strings.ToLower(t.Code.String()), Args: []analysis.TypeArg{{String: &fqn}}}
 	}
 	return &analysis.TypeExpr{Name: strings.ToLower(t.Code.String())}
 }
@@ -428,12 +453,34 @@ func withNullable(t *analysis.TypeExpr, nullable bool) *analysis.TypeExpr {
 }
 
 // isDML reports whether a statement writes, and so has to be compiled in a
-// read-write transaction, which is begun for it and never committed.
+// read-write transaction, which is begun for it and never committed. The
+// statement's first word decides, past any comment it opens with.
 func isDML(sql string) bool {
-	head := strings.ToLower(strings.TrimSpace(sql))
-	for _, kw := range []string{"insert", "update", "delete"} {
-		if strings.HasPrefix(head, kw) {
-			return true
+	i := 0
+	for i < len(sql) {
+		switch {
+		case sql[i] == ' ' || sql[i] == '\t' || sql[i] == '\n' || sql[i] == '\r':
+			i++
+		case strings.HasPrefix(sql[i:], "--") || strings.HasPrefix(sql[i:], "#"):
+			end := strings.IndexByte(sql[i:], '\n')
+			if end < 0 {
+				return false
+			}
+			i += end
+		case strings.HasPrefix(sql[i:], "/*"):
+			end := strings.Index(sql[i:], "*/")
+			if end < 0 {
+				return false
+			}
+			i += end + 2
+		default:
+			head := strings.ToLower(sql[i:])
+			for _, kw := range []string{"insert", "update", "delete"} {
+				if strings.HasPrefix(head, kw) {
+					return true
+				}
+			}
+			return false
 		}
 	}
 	return false
@@ -499,34 +546,38 @@ func (a *analyzer) analyzeQuery(ctx context.Context, q endtoend.Query) (analysis
 	outputs := p.outputs()
 	table, operation := p.mutation()
 	if table != "" {
-		// The values a DML plan writes come before the columns it
-		// returns: each is a parameter standing for the column it is
-		// written to.
+		// A DML plan lists the columns it returns, then the values it
+		// writes: each of those is a parameter standing for the column
+		// it is written to.
 		written := a.written(sql, table, operation)
+		writes := outputs[min(len(fields), len(outputs)):]
 		for i, w := range written {
-			if i >= len(outputs)-len(fields) {
+			if i >= len(writes) {
 				break
 			}
-			if o := p.resolve(outputs[i], map[int32]bool{}); o.param != "" {
+			if o := p.resolve(writes[i], map[int32]bool{}); o.param != "" {
 				if _, ok := partners[o.param]; !ok {
 					partners[o.param] = origin{table: table, column: w}
 				}
 			}
 		}
-		outputs = outputs[max(0, len(outputs)-len(fields)):]
+		outputs = outputs[:min(len(fields), len(outputs))]
 	}
 	for i, f := range fields {
 		ac := analysis.Column{Name: f.Name, Type: typeOf(f.Type)}
-		switch {
-		case table != "":
-			// A THEN RETURN column is the table's column of that name.
+		var out *spannerpb.PlanNode
+		if i < len(outputs) {
+			out = outputs[i]
+		}
+		if col, ok := describe(p.resolve(out, map[int32]bool{})); ok {
+			ac.Type, ac.Table = col.Type, col.Table
+		} else if table != "" && (out == nil || out.DisplayName != "Function") {
+			// A THEN RETURN column the plan reads as a constant, such
+			// as the default a column not inserted takes, is the table's
+			// column of that name.
 			if col, ok := a.lookup(table, f.Name); ok {
 				ac.Type = withNullable(col.typ, col.nullable)
 				ac.Table = a.tableName(table)
-			}
-		case i < len(outputs):
-			if col, ok := describe(p.resolve(outputs[i], map[int32]bool{})); ok {
-				ac.Type, ac.Table = col.Type, col.Table
 			}
 		}
 		aq.Columns = append(aq.Columns, ac)
@@ -550,13 +601,14 @@ func (a *analyzer) analyzeQuery(ctx context.Context, q endtoend.Query) (analysis
 
 var (
 	insertRe = regexp.MustCompile("(?is)^insert\\s+(?:or\\s+\\w+\\s+)?into\\s+[\\w.`]+\\s*(?:\\(([^)]*)\\))?")
-	updateRe = regexp.MustCompile("(?is)^update\\s+[\\w.`]+(?:\\s+(?:as\\s+)?\\w+)?\\s+set\\s+(.*?)\\s+where\\b")
+	setRe    = regexp.MustCompile("(?is)^update\\s+[\\w.`]+(?:\\s+(?:as\\s+)?\\w+)?\\s+set\\s+")
 )
 
 // written lists the columns a DML statement writes, in the order the plan
-// lists their values: the table's key columns, then for an UPDATE the
-// columns it sets and for an INSERT the columns it inserts, which are the
-// statement's column list or every column of the table.
+// lists their values: for an INSERT the columns it inserts, which are the
+// statement's column list or every column of the table, and for an
+// UPDATE or DELETE the table's key columns, then the columns an UPDATE
+// sets.
 func (a *analyzer) written(sql, table, operation string) []string {
 	switch operation {
 	case "INSERT":
@@ -578,8 +630,8 @@ func (a *analyzer) written(sql, table, operation string) []string {
 		return cols
 	case "UPDATE":
 		cols := append([]string(nil), a.keys[a.tableName(table)]...)
-		if m := updateRe.FindStringSubmatch(sql); m != nil {
-			for _, assignment := range splitTop(m[1], ',') {
+		if m := setRe.FindStringIndex(sql); m != nil {
+			for _, assignment := range setList(sql[m[1]:]) {
 				target, _, _ := strings.Cut(assignment, "=")
 				target = strings.TrimSpace(target)
 				if i := strings.LastIndexByte(target, '.'); i >= 0 {
@@ -593,4 +645,29 @@ func (a *analyzer) written(sql, table, operation string) []string {
 		return a.keys[a.tableName(table)]
 	}
 	return nil
+}
+
+// setList splits an UPDATE's SET list into its assignments: the text up
+// to the WHERE outside strings and parentheses, split on the commas
+// outside them.
+func setList(s string) []string {
+	var out []string
+	depth, start := 0, 0
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		switch {
+		case c == '\'' || c == '"' || c == '`':
+			i = skipQuoted(s, i) - 1
+		case c == '(':
+			depth++
+		case c == ')':
+			depth--
+		case c == ',' && depth == 0:
+			out = append(out, s[start:i])
+			start = i + 1
+		case depth == 0 && (i == 0 || !isWordByte(s[i-1])) && len(s)-i >= 5 && strings.EqualFold(s[i:i+5], "where") && (len(s) == i+5 || !isWordByte(s[i+5])):
+			return append(out, s[start:i])
+		}
+	}
+	return append(out, s[start:])
 }

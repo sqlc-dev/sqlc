@@ -1071,7 +1071,7 @@ func (c *cc) convertColumnDefinition(n *tsql.ColumnDefinition, tablePrimaryKey m
 		colDef.IsNotNull = true
 	}
 	if n.Nullable == nil {
-		switch colDef.TypeName.Name {
+		switch strings.TrimPrefix(colDef.TypeName.Name, "sys.") {
 		case "rowversion", "timestamp", "sysname":
 			colDef.IsNotNull = true
 		}

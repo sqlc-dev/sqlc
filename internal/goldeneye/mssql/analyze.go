@@ -47,11 +47,14 @@ var identRe = regexp.MustCompile(`^@([A-Za-z_][A-Za-z0-9_]*)`)
 // bind rewrites the query so that every parameter is a variable used once,
 // and lists the parameters in sqlc's order. The query's own @name
 // references are kept, since that is how sqlc's SQL Server queries name
-// their parameters; a ? or a sqlc.arg becomes one.
+// their parameters; a sqlc.arg becomes one, and each ? in turn becomes
+// one named after its position.
 func bind(query string) (string, []placeholder) {
+	positional := 0
 	sql := endtoend.Rewrite(query, func(name, _ string) string {
 		if name == "" {
-			name = "p"
+			positional++
+			name = "p" + strconv.Itoa(positional)
 		}
 		return "@" + name
 	})
@@ -139,10 +142,12 @@ func skipQuoted(s string, i int) int {
 }
 
 // splitStatements splits a script into the statements it is made of, on
-// the semicolons outside strings, brackets and comments and on the GO
-// lines a T-SQL script separates batches with. A CREATE TYPE has to be
-// its own batch before a table can use the type, so a schema is loaded
-// one statement at a time.
+// the semicolons outside strings, brackets, comments and BEGIN ... END
+// blocks, and on the GO lines a T-SQL script separates batches with. A
+// CREATE TYPE has to be its own batch before a table can use the type, so
+// a schema is loaded one statement at a time; a trigger or procedure
+// body keeps its semicolons, since a BEGIN, or a CASE, opens a block that
+// its END closes.
 func splitStatements(src string) []string {
 	var stmts []string
 	flush := func(s string) {
@@ -152,6 +157,13 @@ func splitStatements(src string) []string {
 	}
 	start := 0
 	i := 0
+	depth := 0
+	if isGoLine(src, 0) {
+		for i < len(src) && src[i] != '\n' {
+			i++
+		}
+		start = i
+	}
 	for i < len(src) {
 		c := src[i]
 		switch {
@@ -171,7 +183,27 @@ func splitStatements(src string) []string {
 			} else {
 				i += end + 2
 			}
-		case c == ';':
+		case isWordByte(c):
+			end := i
+			for end < len(src) && isWordByte(src[end]) {
+				end++
+			}
+			switch word := strings.ToLower(src[i:end]); word {
+			case "begin":
+				// BEGIN TRAN[SACTION] and BEGIN DISTRIBUTED are statements,
+				// not blocks.
+				if !nextWordIn(src, end, "tran", "transaction", "distributed") {
+					depth++
+				}
+			case "case":
+				depth++
+			case "end":
+				if depth > 0 {
+					depth--
+				}
+			}
+			i = end
+		case c == ';' && depth == 0:
 			flush(src[start:i])
 			start = i + 1
 			i++
@@ -182,12 +214,48 @@ func splitStatements(src string) []string {
 				i++
 			}
 			start = i
+			depth = 0
 		default:
 			i++
 		}
 	}
 	flush(src[start:])
 	return stmts
+}
+
+// nextWordIn reports whether the word after position i, past spaces and
+// comments, is one of the words.
+func nextWordIn(src string, i int, words ...string) bool {
+	for i < len(src) {
+		switch {
+		case src[i] == ' ' || src[i] == '\t' || src[i] == '\n' || src[i] == '\r':
+			i++
+		case strings.HasPrefix(src[i:], "--"):
+			end := strings.IndexByte(src[i:], '\n')
+			if end < 0 {
+				return false
+			}
+			i += end
+		case strings.HasPrefix(src[i:], "/*"):
+			end := strings.Index(src[i:], "*/")
+			if end < 0 {
+				return false
+			}
+			i += end + 2
+		default:
+			end := i
+			for end < len(src) && isWordByte(src[end]) {
+				end++
+			}
+			for _, w := range words {
+				if strings.EqualFold(src[i:end], w) {
+					return true
+				}
+			}
+			return false
+		}
+	}
+	return false
 }
 
 // isGoLine reports whether the line starting at i is a GO batch separator.
@@ -240,6 +308,9 @@ func Analyze(ctx context.Context, dsn string, c endtoend.Case) ([]byte, error) {
 		return nil, err
 	}
 	defer conn.Close()
+	if err := checkVersion(ctx, conn); err != nil {
+		return nil, err
+	}
 
 	schema, err := os.ReadFile(c.Schema)
 	if err != nil {
@@ -351,6 +422,7 @@ func (a *analyzer) readCatalog(ctx context.Context) error {
 		return err
 	}
 	type declared struct {
+		name        string
 		typeName    string
 		userDefined bool
 		dimensions  sql.NullInt64
@@ -366,6 +438,7 @@ func (a *analyzer) readCatalog(ctx context.Context) error {
 			rows.Close()
 			return err
 		}
+		d.name = col
 		rel := relation{strings.ToLower(schema), strings.ToLower(table)}
 		if _, ok := decls[rel]; !ok {
 			order = append(order, rel)
@@ -384,12 +457,16 @@ func (a *analyzer) readCatalog(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("%s.%s: %w", rel.schema, rel.name, err)
 		}
-		if len(described) != len(decls[rel]) {
-			return fmt.Errorf("%s.%s: the catalog lists %d columns and the server describes %d", rel.schema, rel.name, len(decls[rel]), len(described))
+		byName := map[string]declared{}
+		for _, d := range decls[rel] {
+			byName[strings.ToLower(d.name)] = d
 		}
 		var cols []column
-		for i, dc := range described {
-			d := decls[rel][i]
+		for _, dc := range described {
+			d, ok := byName[strings.ToLower(dc.name)]
+			if !ok {
+				return fmt.Errorf("%s.%s: the server describes a column %q the catalog does not list", rel.schema, rel.name, dc.name)
+			}
 			t := dc.typ
 			switch {
 			case d.userDefined:

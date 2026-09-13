@@ -191,7 +191,12 @@ var clauseKeywords = map[string]bool{
 	"left": true, "right": true, "full": true, "inner": true, "cross": true, "outer": true,
 	"natural": true, "asof": true, "semi": true, "anti": true, "positional": true, "lateral": true,
 	"using": true, "with": true, "into": true, "default": true, "fetch": true, "for": true,
+	"tablesample": true, "sample": true, "by": true, "repeatable": true,
 }
+
+// typeWords are the words a multi-word type name continues with:
+// TIMESTAMP WITH TIME ZONE, DOUBLE PRECISION, CHARACTER VARYING.
+var typeWords = map[string]bool{"with": true, "without": true, "time": true, "zone": true, "precision": true, "varying": true}
 
 // tableRef is one table of a statement's scope, by name and alias.
 type tableRef struct {
@@ -270,6 +275,14 @@ func (t text) readScope() scope {
 			i = t.readTables(i+1, &sc.tables) - 1
 		}
 	}
+	// A CTE is not a table, whatever table shares its name.
+	tables := sc.tables[:0]
+	for _, ref := range sc.tables {
+		if !sc.ctes[ref.name] {
+			tables = append(tables, ref)
+		}
+	}
+	sc.tables = tables
 	return sc
 }
 
@@ -434,6 +447,28 @@ func (t text) returningItems() []item {
 	return nil
 }
 
+// inSubquery reports whether parameter k sits inside a subquery: a
+// parenthesis that a SELECT, WITH, FROM or VALUES opens.
+func (t text) inSubquery(k string) bool {
+	i := t.find(k)
+	depth := 0
+	for j := i - 1; j >= 0; j-- {
+		switch {
+		case t.isOp(j, ")"):
+			depth++
+		case t.isOp(j, "("):
+			if depth > 0 {
+				depth--
+				continue
+			}
+			if t.isWord(j+1, "select") || t.isWord(j+1, "with") || t.isWord(j+1, "from") || t.isWord(j+1, "values") {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // find returns the index of parameter k.
 func (t text) find(k string) int {
 	for i, tok := range t {
@@ -529,7 +564,7 @@ func (t text) castOf(k string) (string, bool) {
 func (t text) typeText(i int) string {
 	start := i
 	_, i = t.readRef(i)
-	for t.isName(i) && !clauseKeywords[strings.ToLower(t.at(i).text)] && !t.isWord(i, "as") {
+	for t.at(i).kind == 'w' && typeWords[strings.ToLower(t.at(i).text)] {
 		// Multi-word names: TIMESTAMP WITH TIME ZONE.
 		i++
 	}

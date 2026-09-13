@@ -22,10 +22,11 @@ import (
 // The analyze cases are checked against the DuckDB CLI, which runs each
 // case's schema and fixture into an in-memory database of their own, one
 // process per question, and is asked four things about each query. What
-// its parameters are: the query is prepared and explained with a string
-// sentinel bound to each parameter, and the unoptimized logical plan the
-// CLI prints first shows each as CAST('goldeneye_k' AS T), T being the
-// type the binder gave the parameter. What its result columns are:
+// its parameters are: the query is prepared and explained, as JSON, with
+// a string sentinel bound to each parameter, and the unoptimized logical
+// plan the CLI prints first shows each as CAST('goldeneye_k' AS T), T
+// being the type the binder gave the parameter, or bare when that type
+// is VARCHAR. What its result columns are:
 // DESCRIBE, with each parameter replaced by a NULL of that type, names and
 // types them. Which column each is read from and which column a parameter
 // stands in for: DuckDB prints a plan with every column by its bare name,
@@ -409,13 +410,16 @@ type binding struct {
 
 var (
 	sentinelCastRe = regexp.MustCompile(`CAST\('goldeneye_([0-9]+)' AS `)
-	conversionRe   = regexp.MustCompile(`Could not convert string 'goldeneye_([0-9]+)'`)
+	sentinelRe     = regexp.MustCompile(`'goldeneye_([0-9]+)'`)
+	sentinelErrRe  = regexp.MustCompile(`goldeneye_([0-9]+)`)
 )
 
 // explain prepares the query, explains it with a sentinel bound to each
 // parameter and returns the type the binder gave each, keyed by number.
 // A parameter whose sentinel the binder converts on the spot, as an
-// INSERT's VALUES are, is bound to NULL instead and reported by nothing.
+// INSERT's VALUES are, is bound to NULL instead and reported by nothing:
+// the error names the sentinel for most types, and for the rest the
+// parameters not yet bound to NULL are tried in turn.
 func (a *analyzer) explain(ctx context.Context, sql string, phs []placeholder) (map[int]string, error) {
 	null := map[int]bool{}
 	for attempt := 0; attempt <= len(phs); attempt++ {
@@ -427,58 +431,117 @@ func (a *analyzer) explain(ctx context.Context, sql string, phs []placeholder) (
 				args[i] = fmt.Sprintf("'goldeneye_%d'", ph.Number)
 			}
 		}
-		script := "PREPARE goldeneye AS " + sql + ";\nSET explain_output = 'all';\nEXPLAIN EXECUTE goldeneye(" + strings.Join(args, ", ") + ");\n"
+		script := "PREPARE goldeneye AS " + sql + ";\nSET explain_output = 'all';\nEXPLAIN (FORMAT json) EXECUTE goldeneye(" + strings.Join(args, ", ") + ");\n"
 		out, err := a.run(ctx, script, "", true)
 		if err != nil {
-			if m := conversionRe.FindStringSubmatch(err.Error()); m != nil {
+			if !strings.Contains(err.Error(), "Conversion Error") && !strings.Contains(err.Error(), "can't be cast") {
+				return nil, err
+			}
+			retry := false
+			if m := sentinelErrRe.FindStringSubmatch(err.Error()); m != nil {
 				n, _ := strconv.Atoi(m[1])
 				if !null[n] {
 					null[n] = true
-					continue
+					retry = true
 				}
 			}
-			return nil, err
+			if !retry {
+				for _, ph := range phs {
+					if !null[ph.Number] {
+						null[ph.Number] = true
+						retry = true
+						break
+					}
+				}
+			}
+			if !retry {
+				return nil, err
+			}
+			continue
 		}
-		return sentinelTypes(out), nil
+		return sentinelTypes(out)
 	}
 	return nil, errors.New("could not bind the parameters")
 }
 
-// sentinelTypes reads the type each sentinel is cast to out of the plan
-// the CLI drew, which wraps long expressions across lines inside its
-// boxes.
-func sentinelTypes(plan string) map[int]string {
-	var b strings.Builder
-	for _, line := range strings.Split(plan, "\n") {
-		if strings.ContainsAny(line, "╭╮╰╯─┬┴├") {
-			continue
-		}
-		b.WriteString(strings.Trim(line, "│ "))
-		b.WriteByte(' ')
-	}
-	flat := b.String()
-	types := map[int]string{}
-	for _, m := range sentinelCastRe.FindAllStringSubmatchIndex(flat, -1) {
-		n, _ := strconv.Atoi(flat[m[2]:m[3]])
-		if _, ok := types[n]; ok {
-			continue
-		}
-		// The type runs to the parenthesis closing the CAST.
-		depth := 1
-		i := m[1]
-		for ; i < len(flat); i++ {
-			if flat[i] == '(' {
-				depth++
-			} else if flat[i] == ')' {
-				depth--
-				if depth == 0 {
-					break
-				}
+// planNode is one operator of a plan the CLI prints as JSON. Its
+// extra_info holds the operator's expressions, each a string or a list
+// of strings.
+type planNode struct {
+	Name      string                     `json:"name"`
+	Children  []planNode                 `json:"children"`
+	ExtraInfo map[string]json.RawMessage `json:"extra_info"`
+}
+
+// sentinelTypes reads the type each sentinel is cast to out of the plans
+// the CLI printed, one JSON array per plan: the unoptimized logical plan
+// comes first, and the first cast of a sentinel wins. A sentinel the
+// plan prints bare is a VARCHAR, which the binder needs no cast for.
+func sentinelTypes(out string) (map[int]string, error) {
+	var texts []string
+	var walk func(n planNode)
+	walk = func(n planNode) {
+		for _, raw := range n.ExtraInfo {
+			var one string
+			if json.Unmarshal(raw, &one) == nil {
+				texts = append(texts, one)
+				continue
+			}
+			var many []string
+			if json.Unmarshal(raw, &many) == nil {
+				texts = append(texts, many...)
 			}
 		}
-		types[n] = strings.Join(strings.Fields(flat[m[1]:i]), " ")
+		for _, c := range n.Children {
+			walk(c)
+		}
 	}
-	return types
+	dec := json.NewDecoder(strings.NewReader(out))
+	for {
+		var plan []planNode
+		err := dec.Decode(&plan)
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("decoding the plan: %w", err)
+		}
+		for _, n := range plan {
+			walk(n)
+		}
+	}
+	types := map[int]string{}
+	for _, text := range texts {
+		for _, m := range sentinelCastRe.FindAllStringSubmatchIndex(text, -1) {
+			n, _ := strconv.Atoi(text[m[2]:m[3]])
+			if _, ok := types[n]; ok {
+				continue
+			}
+			// The type runs to the parenthesis closing the CAST.
+			depth := 1
+			i := m[1]
+			for ; i < len(text); i++ {
+				if text[i] == '(' {
+					depth++
+				} else if text[i] == ')' {
+					depth--
+					if depth == 0 {
+						break
+					}
+				}
+			}
+			types[n] = strings.Join(strings.Fields(text[m[1]:i]), " ")
+		}
+	}
+	for _, text := range texts {
+		for _, m := range sentinelRe.FindAllStringSubmatchIndex(text, -1) {
+			n, _ := strconv.Atoi(text[m[2]:m[3]])
+			if _, ok := types[n]; !ok && !strings.HasSuffix(text[:m[0]], "CAST(") {
+				types[n] = "VARCHAR"
+			}
+		}
+	}
+	return types, nil
 }
 
 // analyzeQuery describes one query.
@@ -502,6 +565,16 @@ func (a *analyzer) analyzeQuery(ctx context.Context, q endtoend.Query) (analysis
 		k := strconv.Itoa(ph.Number)
 		b := &binding{}
 		bindings[ph.Number] = b
+		if t.inSubquery(k) {
+			// A parameter inside a subquery is compared with a column of
+			// the subquery's own tables, which the statement's scope does
+			// not name.
+			if typ, ok := t.castOf(k); ok {
+				casts = append(casts, typ)
+				castNumbers = append(castNumbers, ph.Number)
+			}
+			continue
+		}
 		if sc.kind == "insert" {
 			if pos, ok := t.valuesPosition(k); ok {
 				cols := t.insertColumns()
@@ -678,24 +751,67 @@ func (a *analyzer) aliased(sc scope, qualifier string) (string, bool) {
 
 // substitute replaces each parameter with a NULL of its type, or with a
 // value of its type when values is set, for DuckDB to describe or run the
-// query. A parameter of unknown type becomes a bare NULL.
+// query. A parameter of unknown type becomes a bare NULL. Strings,
+// quoted identifiers and comments are left alone.
 func (a *analyzer) substitute(sql string, phs []placeholder, bindings map[int]*binding, values bool) string {
-	out := sql
-	for i := len(phs) - 1; i >= 0; i-- {
-		ph := phs[i]
-		b := bindings[ph.Number]
-		repl := "NULL"
-		if b != nil && b.spelling != "" {
-			repl = "CAST(NULL AS " + b.spelling + ")"
+	repl := map[int]string{}
+	for _, ph := range phs {
+		r := "NULL"
+		if b := bindings[ph.Number]; b != nil && b.spelling != "" {
+			r = "CAST(NULL AS " + b.spelling + ")"
 			if values {
-				if v, ok := a.zero(b.typ); ok {
-					repl = "CAST('" + strings.ReplaceAll(v, "'", "''") + "' AS " + b.spelling + ")"
+				// The value is chosen by the type as spelled, since an
+				// alias such as JSON takes values its canonical type
+				// does not.
+				if v, ok := a.zero(a.parseTypeWith(b.spelling, false)); ok {
+					r = "CAST('" + strings.ReplaceAll(v, "'", "''") + "' AS " + b.spelling + ")"
 				}
 			}
 		}
-		out = strings.ReplaceAll(out, "$"+strconv.Itoa(ph.Number), repl)
+		repl[ph.Number] = r
 	}
-	return out
+	var out strings.Builder
+	i := 0
+	for i < len(sql) {
+		c := sql[i]
+		switch {
+		case c == '\'' || c == '"':
+			end := quotedEnd(sql, i)
+			out.WriteString(sql[i:end])
+			i = end
+		case strings.HasPrefix(sql[i:], "--"):
+			end := strings.IndexByte(sql[i:], '\n')
+			if end < 0 {
+				end = len(sql)
+			} else {
+				end += i
+			}
+			out.WriteString(sql[i:end])
+			i = end
+		case strings.HasPrefix(sql[i:], "/*"):
+			end := strings.Index(sql[i:], "*/")
+			if end < 0 {
+				end = len(sql)
+			} else {
+				end += i + 2
+			}
+			out.WriteString(sql[i:end])
+			i = end
+		case c == '$' && numberedRe.MatchString(sql[i:]):
+			m := numberedRe.FindStringSubmatch(sql[i:])
+			n, _ := strconv.Atoi(m[1])
+			if r, ok := repl[n]; ok {
+				out.WriteString(r)
+			} else {
+				out.WriteString(m[0])
+			}
+			i += len(m[0])
+		default:
+			out.WriteByte(c)
+			i++
+		}
+	}
+	return out.String()
 }
 
 // observe runs the query with a value bound to each parameter, over the

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/dialect"
@@ -18,14 +19,14 @@ var systemSchemas = []string{
 	"INFORMATION_SCHEMA",
 }
 
-// viewQuery lists a schema's views in name order, so that the output is
-// stable.
+// viewQuery lists a schema's views. They are sorted in Go, by the bytes
+// of their lower-cased names, so that the output does not depend on the
+// server's collation.
 const viewQuery = `
 SELECT o.name
 FROM sys.all_objects o
 JOIN sys.schemas s ON s.schema_id = o.schema_id
-WHERE o.type = 'V' AND s.name = @p1
-ORDER BY o.name`
+WHERE o.type = 'V' AND s.name = @p1`
 
 // describeQuery asks the server to describe a SELECT * from a view: each
 // column's name, its type spelled the way a declaration spells it —
@@ -43,8 +44,8 @@ ORDER BY column_ordinal`
 // sqlc's SQL Server parser lowercases every identifier, so lower case is
 // how a query reaches them. The type of each column is spelled the way the
 // server describes it to a driver, which is the way a declaration spells
-// it, and a column of the type SQL Server calls timestamp is written as
-// the rowversion the dialect names it.
+// it, numeric and timestamp included, since the seed reads the aliases
+// types.jsonl lists.
 func readRelations(ctx context.Context, conn *sql.Conn) ([]dialect.Relation, error) {
 	var relations []dialect.Relation
 	for _, schema := range systemSchemas {
@@ -82,6 +83,7 @@ func views(ctx context.Context, conn *sql.Conn, schema string) ([]string, error)
 		}
 		names = append(names, name)
 	}
+	sort.Slice(names, func(i, j int) bool { return strings.ToLower(names[i]) < strings.ToLower(names[j]) })
 	return names, rows.Err()
 }
 

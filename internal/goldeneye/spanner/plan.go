@@ -16,10 +16,11 @@ import (
 // after the column, and any node may define one as another scalar, which
 // a Reference names with a $. The children of Serialize Result after the
 // relation it serializes are the result columns, in order; a DML plan
-// lists the values it writes first — the key columns of the table, then
-// for an UPDATE the columns it sets, or for an INSERT the columns it
-// inserts — and the THEN RETURN columns after them. A comparison is a
-// Function whose description reads ($col = @param).
+// lists its THEN RETURN columns first and the values it writes after
+// them: for an INSERT the columns it inserts, in the statement's order,
+// and for an UPDATE or DELETE the key columns of the table, then the
+// columns an UPDATE sets. A comparison is a Function whose description
+// reads ($col = @param).
 
 // origin is what a scalar of the plan resolves to: a table column, a
 // parameter, or nothing.
@@ -168,6 +169,9 @@ func (p *plan) resolve(n *spannerpb.PlanNode, seen map[int32]bool) origin {
 			}
 		}
 		for _, m := range p.nodes {
+			if m.DisplayName != "Union Input" {
+				continue
+			}
 			for _, l := range m.ChildLinks {
 				if l.Type == desc {
 					return p.resolve(p.node(l.ChildIndex), seen)

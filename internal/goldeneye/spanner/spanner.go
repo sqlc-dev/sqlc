@@ -42,7 +42,9 @@ import (
 	"cloud.google.com/go/spanner/apiv1/spannerpb"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/sqlc-dev/sqlc/internal/goldeneye/dialect"
@@ -109,10 +111,14 @@ func open(ctx context.Context, endpoint string) (*server, error) {
 }
 
 func (s *server) Close() {
-	for _, c := range []interface{ Close() error }{s.instances, s.databases, s.data} {
-		if c != nil {
-			c.Close()
-		}
+	if s.instances != nil {
+		s.instances.Close()
+	}
+	if s.databases != nil {
+		s.databases.Close()
+	}
+	if s.data != nil {
+		s.data.Close()
 	}
 }
 
@@ -154,7 +160,7 @@ func (s *server) createDatabase(ctx context.Context, name string, ddl []string) 
 // not exist is not an error, so that a run can clear the way for itself.
 func (s *server) dropDatabase(ctx context.Context, db string) error {
 	err := s.databases.DropDatabase(ctx, &databasepb.DropDatabaseRequest{Database: db})
-	if err != nil && strings.Contains(err.Error(), "NotFound") {
+	if status.Code(err) == codes.NotFound && strings.Contains(err.Error(), "Database") {
 		return nil
 	}
 	return err

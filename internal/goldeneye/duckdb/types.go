@@ -1,6 +1,7 @@
 package duckdb
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 
@@ -16,11 +17,17 @@ import (
 // named the type or not, so labels that are those of an enum the schema
 // created name that type.
 func (a *analyzer) parseType(s string) *analysis.TypeExpr {
+	return a.parseTypeWith(s, true)
+}
+
+// parseTypeWith reads a type, naming an alias as the dialect does when
+// canonical is set and as DuckDB spells it otherwise.
+func (a *analyzer) parseTypeWith(s string, canonical bool) *analysis.TypeExpr {
 	s = strings.TrimSpace(s)
 	if strings.HasSuffix(s, "]") {
 		open := strings.LastIndexByte(s, '[')
 		if open > 0 {
-			t := &analysis.TypeExpr{Name: "array", Args: []analysis.TypeArg{{Type: a.parseType(s[:open])}}}
+			t := &analysis.TypeExpr{Name: "array", Args: []analysis.TypeArg{{Type: a.parseTypeWith(s[:open], canonical)}}}
 			if n, err := strconv.ParseInt(strings.TrimSpace(s[open+1:len(s)-1]), 10, 64); err == nil {
 				t.Args = append(t.Args, analysis.TypeArg{Int: &n})
 			}
@@ -32,7 +39,7 @@ func (a *analyzer) parseType(s string) *analysis.TypeExpr {
 		name, args = strings.TrimSpace(s[:open]), s[open+1:len(s)-1]
 	}
 	name = strings.ToLower(name)
-	if c, ok := a.canonical[name]; ok {
+	if c, ok := a.canonical[name]; ok && canonical {
 		name = c
 	}
 	t := &analysis.TypeExpr{Name: name}
@@ -50,7 +57,7 @@ func (a *analyzer) parseType(s string) *analysis.TypeExpr {
 			} else if i := strings.IndexByte(f, ' '); i > 0 {
 				label, typ = f[:i], f[i+1:]
 			}
-			t.Args = append(t.Args, analysis.TypeArg{Label: label, Type: a.parseType(typ)})
+			t.Args = append(t.Args, analysis.TypeArg{Label: label, Type: a.parseTypeWith(typ, canonical)})
 		}
 	case "enum":
 		var labels []string
@@ -74,16 +81,23 @@ func (a *analyzer) parseType(s string) *analysis.TypeExpr {
 			if n, err := strconv.ParseInt(arg, 10, 64); err == nil {
 				t.Args = append(t.Args, analysis.TypeArg{Int: &n})
 			} else {
-				t.Args = append(t.Args, analysis.TypeArg{Type: a.parseType(arg)})
+				t.Args = append(t.Args, analysis.TypeArg{Type: a.parseTypeWith(arg, canonical)})
 			}
 		}
 	}
 	return t
 }
 
-// enumNamed finds the enum type the schema created with these labels.
+// enumNamed finds the enum type the schema created with these labels,
+// the first by name when two share them.
 func (a *analyzer) enumNamed(labels []string) (string, bool) {
-	for name, have := range a.enums {
+	names := make([]string, 0, len(a.enums))
+	for name := range a.enums {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	for _, name := range names {
+		have := a.enums[name]
 		if len(have) != len(labels) {
 			continue
 		}

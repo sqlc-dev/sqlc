@@ -10,9 +10,10 @@ the tests compare it with what is committed, byte for byte. A difference
 means the committed dialect has drifted from the database.
 
 It is a nested Go module, so its only dependencies beyond the standard
-library are the database drivers — PostgreSQL's, MySQL's, SQL Server's and
-the Spanner client — and it never shares code with the analysis that reads
-the files: the files are the contract. Run it from this directory:
+library are the database clients — PostgreSQL's, MySQL's and SQL Server's
+drivers, and Spanner's gRPC client with what it stands on — and it never
+shares code with the analysis that reads the files: the files are the
+contract. Run it from this directory:
 
 ```bash
 go run ./cmd/goldeneye install clickhouse   # download the pinned clickhouse binary once
@@ -115,8 +116,10 @@ the hand-written files alone, and the checks do not look at them.
   `INFORMATION_SCHEMA` and `SPANNER_SYS`, read from `INFORMATION_SCHEMA`
   itself in a database created for the purpose in the instance Omni's
   single server provides, `projects/default/instances/default`. Names are
-  kept as the catalog spells them, in upper case, which is how a query
-  names them; a column's type is spelled in lower case the way the seed
+  kept as the catalog spells them, in upper case: Spanner matches a name
+  in any case, but sqlc's GoogleSQL engine matches one as it is spelled,
+  so a query reaches these views by their upper-case names until the
+  engine folds case; a column's type is spelled in lower case the way the seed
   spells one, an `ARRAY<T>` as `T` with the array flag, a `STRUCT<a T>` as
   `struct(a: t)` and a `PROTO<p.M>` as `proto('p.M')`, since a seed writes
   a type's arguments in parentheses. The container image is pinned in the
@@ -246,13 +249,13 @@ asks for `--ast` is skipped, since only sqlc can print that.
 - **`duckdb`** runs each case through the CLI, which loads the schema and
   fixture into an in-memory database of their own, one process per
   question, and is asked four things about each query. What its
-  parameters are: the query is prepared and explained with a string
-  sentinel bound to each parameter, `EXECUTE q('goldeneye_1', ...)`, and
-  the unoptimized logical plan the CLI prints under
+  parameters are: the query is prepared and explained as JSON with a
+  string sentinel bound to each parameter, `EXECUTE q('goldeneye_1',
+  ...)`, and the unoptimized logical plan the CLI prints under
   `explain_output = 'all'` shows each as `CAST('goldeneye_k' AS T)`, `T`
-  being the type the binder gave the parameter; a sentinel the binder
-  converts on the spot, as an `INSERT`'s `VALUES` are, is bound to NULL
-  instead. What its result columns are: `DESCRIBE`, with each parameter
+  being the type the binder gave the parameter, or bare when that type is
+  `VARCHAR`; a sentinel the binder converts on the spot, as an `INSERT`'s
+  `VALUES` are, is bound to NULL instead. What its result columns are: `DESCRIBE`, with each parameter
   replaced by a NULL of its type, names and types them; DuckDB describes
   no DML, so a `RETURNING` column is the target table's column it names.
   Which table a result column is read from and which column a parameter
@@ -262,7 +265,9 @@ asks for `--ast` is skipped, since only sqlc can print that.
   columns, and the operand beside each parameter, resolved against the
   `FROM` clause and the catalog, `duckdb_columns()`, from which a column
   read from a table takes its declared type and nullability; a parameter
-  the query casts takes the cast's type as DuckDB spells it. And whether
+  the query casts takes the cast's type as DuckDB spells it, and one
+  inside a subquery, whose tables the statement's scope does not name,
+  takes the binder's. And whether
   an expression can be NULL, which DuckDB does not track: the query is
   run, with each parameter bound to a value of its type, over the fixture
   and over no rows, and a column is nullable when either run returns a
