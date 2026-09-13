@@ -212,6 +212,14 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		return nil, errors.New(":batch* commands are only supported by pgx")
 	}
 
+	var mysqlEnumTypes map[string]bool
+	if tctx.SQLDriver == opts.SQLDriverGoSQLDriverMySQL {
+		mysqlEnumTypes = make(map[string]bool, len(enums))
+		for _, enum := range enums {
+			mysqlEnumTypes[options.ModelsTypeQualifier()+enum.Name] = true
+		}
+	}
+
 	funcMap := template.FuncMap{
 		"lowerTitle": sdk.LowerTitle,
 		"comment":    sdk.DoubleSlashComment,
@@ -222,6 +230,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 
 		// These methods are Go specific, they do not belong in the codegen package
 		// (as that is language independent)
+		"isMySQLEnum":         func(t string) bool { return mysqlEnumTypes[t] },
 		"dbarg":               tctx.codegenDbarg,
 		"emitPreparedQueries": tctx.codegenEmitPreparedQueries,
 		"queryMethod":         tctx.codegenQueryMethod,

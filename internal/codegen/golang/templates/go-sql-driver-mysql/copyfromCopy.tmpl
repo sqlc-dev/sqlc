@@ -10,6 +10,8 @@ func convertRowsFor{{.MethodName}}(w *io.PipeWriter, {{.Arg.SlicePair}}) {
 {{- range $arg.CopyFromMySQLFields}}
 {{- if eq .Type "string"}}
 	e.AppendString({{if $arg.Struct}}row.{{.Name}}{{else}}row{{end}})
+{{- else if isMySQLEnum .Type}}
+	e.AppendString(string({{if $arg.Struct}}row.{{.Name}}{{else}}row{{end}}))
 {{- else if or (eq .Type "[]byte") (eq .Type "json.RawMessage")}}
 	e.AppendBytes({{if $arg.Struct}}row.{{.Name}}{{else}}row{{end}})
 {{- else}}
