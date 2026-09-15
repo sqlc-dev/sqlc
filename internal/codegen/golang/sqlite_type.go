@@ -12,7 +12,7 @@ import (
 
 func sqliteType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Column) string {
 	dt := strings.ToLower(sdk.DataType(col.Type))
-	notNull := col.NotNull || col.IsArray
+	notNull := col.NotNull || (col.IsArray && !options.EmitNullableForNullArrays)
 	emitPointersForNull := options.EmitPointersForNullTypes
 
 	switch dt {

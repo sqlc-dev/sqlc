@@ -40,6 +40,7 @@ type v1PackageSettings struct {
 	EmitMethodsWithDBArgument    bool              `json:"emit_methods_with_db_argument" yaml:"emit_methods_with_db_argument"`
 	EmitPointersForNullTypes     bool              `json:"emit_pointers_for_null_types" yaml:"emit_pointers_for_null_types"`
 	EmitPointersForNullEnumTypes *bool             `json:"emit_pointers_for_null_enum_types,omitempty" yaml:"emit_pointers_for_null_enum_types"`
+	EmitNullableForNullArrays    bool              `json:"emit_nullable_for_null_arrays" yaml:"emit_nullable_for_null_arrays"`
 	EmitEnumValidMethod          bool              `json:"emit_enum_valid_method,omitempty" yaml:"emit_enum_valid_method"`
 	EmitAllEnumValues            bool              `json:"emit_all_enum_values,omitempty" yaml:"emit_all_enum_values"`
 	EmitSqlAsComment             bool              `json:"emit_sql_as_comment,omitempty" yaml:"emit_sql_as_comment"`
@@ -155,6 +156,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					EmitMethodsWithDbArgument:    pkg.EmitMethodsWithDBArgument,
 					EmitPointersForNullTypes:     pkg.EmitPointersForNullTypes,
 					EmitPointersForNullEnumTypes: pkg.EmitPointersForNullEnumTypes,
+					EmitNullableForNullArrays:    pkg.EmitNullableForNullArrays,
 					EmitEnumValidMethod:          pkg.EmitEnumValidMethod,
 					EmitAllEnumValues:            pkg.EmitAllEnumValues,
 					EmitSqlAsComment:             pkg.EmitSqlAsComment,
