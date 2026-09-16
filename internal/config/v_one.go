@@ -34,6 +34,11 @@ type v1PackageSettings struct {
 	EmitPreparedQueries          bool              `json:"emit_prepared_queries" yaml:"emit_prepared_queries"`
 	EmitExactTableNames          bool              `json:"emit_exact_table_names,omitempty" yaml:"emit_exact_table_names"`
 	EmitEmptySlices              bool              `json:"emit_empty_slices,omitempty" yaml:"emit_empty_slices"`
+	EmitIterators                bool              `json:"emit_iterators,omitempty" yaml:"emit_iterators"`
+	IteratorScope                string            `json:"iterator_scope,omitempty" yaml:"iterator_scope"`
+	IteratorMethodPrefix         string            `json:"iterator_method_prefix,omitempty" yaml:"iterator_method_prefix"`
+	IteratorStyle                string            `json:"iterator_style,omitempty" yaml:"iterator_style"`
+	IteratorStart                string            `json:"iterator_start,omitempty" yaml:"iterator_start"`
 	EmitExportedQueries          bool              `json:"emit_exported_queries,omitempty" yaml:"emit_exported_queries"`
 	EmitResultStructPointers     bool              `json:"emit_result_struct_pointers" yaml:"emit_result_struct_pointers"`
 	EmitParamsStructPointers     bool              `json:"emit_params_struct_pointers" yaml:"emit_params_struct_pointers"`
@@ -149,6 +154,11 @@ func (c *V1GenerateSettings) Translate() Config {
 					EmitPreparedQueries:          pkg.EmitPreparedQueries,
 					EmitExactTableNames:          pkg.EmitExactTableNames,
 					EmitEmptySlices:              pkg.EmitEmptySlices,
+					EmitIterators:                pkg.EmitIterators,
+					IteratorScope:                pkg.IteratorScope,
+					IteratorMethodPrefix:         pkg.IteratorMethodPrefix,
+					IteratorStyle:                pkg.IteratorStyle,
+					IteratorStart:                pkg.IteratorStart,
 					EmitExportedQueries:          pkg.EmitExportedQueries,
 					EmitResultStructPointers:     pkg.EmitResultStructPointers,
 					EmitParamsStructPointers:     pkg.EmitParamsStructPointers,

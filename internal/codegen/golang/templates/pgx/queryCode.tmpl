@@ -77,6 +77,37 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
 	}
 	return items, nil
 }
+{{if and $.EmitIterators .EmitIterator}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.IterMethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) iter.Seq2[{{.Ret.DefineType}}, error] {
+	return func(yield func({{.Ret.DefineType}}, error) bool) {
+		{{- if $.EmitMethodsWithDBArgument -}}
+		rows, err := db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
+		{{- else -}}
+		rows, err := q.db.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
+		{{- end}}
+		if err != nil {
+			yield({{zeroValue .Ret}}, err)
+			return
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var {{.Ret.Name}} {{.Ret.Type}}
+			if err := rows.Scan({{.Ret.Scan}}); err != nil {
+				yield({{zeroValue .Ret}}, err)
+				return
+			}
+			if !yield({{.Ret.ReturnName}}, nil) {
+				return
+			}
+		}
+		if err := rows.Err(); err != nil {
+			yield({{zeroValue .Ret}}, err)
+		}
+	}
+}
+{{end}}
 {{end}}
 
 {{if eq .Cmd ":exec"}}
