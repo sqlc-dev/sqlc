@@ -10,5 +10,5 @@ import (
 
 type Foo struct {
 	A json.RawMessage
-	B json.RawMessage
+	B *json.RawMessage
 }
