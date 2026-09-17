@@ -27,8 +27,7 @@ services:
       - "9000:9000"
     restart: always
     environment:
-      CLICKHOUSE_USER: default
-      CLICKHOUSE_PASSWORD: ""
+      CLICKHOUSE_PASSWORD: mysecretpassword
 
   mssql:
     image: "mcr.microsoft.com/mssql/server:2025-latest"

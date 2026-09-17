@@ -19,7 +19,8 @@ var clickhouseSync sync.Once
 var clickhousePool *sql.DB
 
 // ClickHouse creates a database on the server CLICKHOUSE_SERVER_URI names,
-// such as clickhouse://default:@127.0.0.1:9000, runs the migrations in it
+// such as clickhouse://default:mysecretpassword@127.0.0.1:9000, runs the
+// migrations in it
 // and returns a URI that connects to it. The test is skipped when no
 // server is named.
 func ClickHouse(t *testing.T, migrations []string) string {
