@@ -1,0 +1,693 @@
+{
+  "settings": {
+    "version": "2",
+    "engine": "duckdb",
+    "schema": [
+      "duckdb/schema.sql"
+    ],
+    "queries": [
+      "duckdb/query.sql"
+    ],
+    "codegen": {
+      "out": "",
+      "plugin": "",
+      "options": "",
+      "env": [],
+      "process": null,
+      "wasm": null
+    }
+  },
+  "catalog": {
+    "comment": "",
+    "default_schema": "public",
+    "name": "",
+    "schemas": [
+      {
+        "comment": "",
+        "name": "public",
+        "tables": [],
+        "enums": [],
+        "composite_types": []
+      },
+      {
+        "comment": "",
+        "name": "public",
+        "tables": [
+          {
+            "rel": {
+              "catalog": "",
+              "schema": "public",
+              "name": "things"
+            },
+            "columns": [
+              {
+                "name": "id",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "",
+                  "schema": "public",
+                  "name": "things"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "integer"
+                },
+                "is_sqlc_slice": false,
+                "embed_table": null,
+                "original_name": "",
+                "unsigned": false,
+                "array_dims": 0,
+                "type_expr": null
+              },
+              {
+                "name": "title",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "",
+                  "schema": "public",
+                  "name": "things"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "varchar"
+                },
+                "is_sqlc_slice": false,
+                "embed_table": null,
+                "original_name": "",
+                "unsigned": false,
+                "array_dims": 0,
+                "type_expr": null
+              },
+              {
+                "name": "price",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": 10,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "",
+                  "schema": "public",
+                  "name": "things"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "decimal"
+                },
+                "is_sqlc_slice": false,
+                "embed_table": null,
+                "original_name": "",
+                "unsigned": false,
+                "array_dims": 0,
+                "type_expr": null
+              },
+              {
+                "name": "tags",
+                "not_null": false,
+                "is_array": true,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "",
+                  "schema": "public",
+                  "name": "things"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "varchar"
+                },
+                "is_sqlc_slice": false,
+                "embed_table": null,
+                "original_name": "",
+                "unsigned": false,
+                "array_dims": 1,
+                "type_expr": null
+              },
+              {
+                "name": "grid",
+                "not_null": true,
+                "is_array": true,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "",
+                  "schema": "public",
+                  "name": "things"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "integer"
+                },
+                "is_sqlc_slice": false,
+                "embed_table": null,
+                "original_name": "",
+                "unsigned": false,
+                "array_dims": 2,
+                "type_expr": null
+              },
+              {
+                "name": "point",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "",
+                  "schema": "public",
+                  "name": "things"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "struct"
+                },
+                "is_sqlc_slice": false,
+                "embed_table": null,
+                "original_name": "",
+                "unsigned": false,
+                "array_dims": 0,
+                "type_expr": null
+              },
+              {
+                "name": "attrs",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "",
+                  "schema": "public",
+                  "name": "things"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "map"
+                },
+                "is_sqlc_slice": false,
+                "embed_table": null,
+                "original_name": "",
+                "unsigned": false,
+                "array_dims": 0,
+                "type_expr": null
+              },
+              {
+                "name": "fixed",
+                "not_null": false,
+                "is_array": true,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "",
+                  "schema": "public",
+                  "name": "things"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "integer"
+                },
+                "is_sqlc_slice": false,
+                "embed_table": null,
+                "original_name": "",
+                "unsigned": false,
+                "array_dims": 1,
+                "type_expr": null
+              }
+            ],
+            "comment": ""
+          }
+        ],
+        "enums": [],
+        "composite_types": []
+      }
+    ]
+  },
+  "queries": [
+    {
+      "text": "SELECT id, title, price, tags, grid, point, attrs, fixed FROM things WHERE id = $1 AND price \u003e $2;",
+      "name": "GetThing",
+      "cmd": ":one",
+      "columns": [
+        {
+          "name": "id",
+          "not_null": true,
+          "is_array": false,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "public",
+            "name": "things"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "integer"
+          },
+          "is_sqlc_slice": false,
+          "embed_table": null,
+          "original_name": "id",
+          "unsigned": false,
+          "array_dims": 0,
+          "type_expr": {
+            "name": "integer",
+            "nullable": false,
+            "args": []
+          }
+        },
+        {
+          "name": "title",
+          "not_null": false,
+          "is_array": false,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "public",
+            "name": "things"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "varchar"
+          },
+          "is_sqlc_slice": false,
+          "embed_table": null,
+          "original_name": "title",
+          "unsigned": false,
+          "array_dims": 0,
+          "type_expr": {
+            "name": "varchar",
+            "nullable": true,
+            "args": []
+          }
+        },
+        {
+          "name": "price",
+          "not_null": true,
+          "is_array": false,
+          "comment": "",
+          "length": 10,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "public",
+            "name": "things"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "decimal"
+          },
+          "is_sqlc_slice": false,
+          "embed_table": null,
+          "original_name": "price",
+          "unsigned": false,
+          "array_dims": 0,
+          "type_expr": {
+            "name": "decimal",
+            "nullable": false,
+            "args": [
+              {
+                "label": "",
+                "int_value": "10"
+              },
+              {
+                "label": "",
+                "int_value": "2"
+              }
+            ]
+          }
+        },
+        {
+          "name": "tags",
+          "not_null": false,
+          "is_array": true,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "public",
+            "name": "things"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "varchar"
+          },
+          "is_sqlc_slice": false,
+          "embed_table": null,
+          "original_name": "tags",
+          "unsigned": false,
+          "array_dims": 1,
+          "type_expr": {
+            "name": "array",
+            "nullable": true,
+            "args": [
+              {
+                "label": "",
+                "type": {
+                  "name": "varchar",
+                  "nullable": false,
+                  "args": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "grid",
+          "not_null": true,
+          "is_array": true,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "public",
+            "name": "things"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "integer"
+          },
+          "is_sqlc_slice": false,
+          "embed_table": null,
+          "original_name": "grid",
+          "unsigned": false,
+          "array_dims": 2,
+          "type_expr": {
+            "name": "array",
+            "nullable": false,
+            "args": [
+              {
+                "label": "",
+                "type": {
+                  "name": "array",
+                  "nullable": false,
+                  "args": [
+                    {
+                      "label": "",
+                      "type": {
+                        "name": "integer",
+                        "nullable": false,
+                        "args": []
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "point",
+          "not_null": false,
+          "is_array": false,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "public",
+            "name": "things"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "struct"
+          },
+          "is_sqlc_slice": false,
+          "embed_table": null,
+          "original_name": "point",
+          "unsigned": false,
+          "array_dims": 0,
+          "type_expr": {
+            "name": "struct",
+            "nullable": true,
+            "args": [
+              {
+                "label": "x",
+                "type": {
+                  "name": "integer",
+                  "nullable": false,
+                  "args": []
+                }
+              },
+              {
+                "label": "y",
+                "type": {
+                  "name": "integer",
+                  "nullable": false,
+                  "args": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "attrs",
+          "not_null": false,
+          "is_array": false,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "public",
+            "name": "things"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "map"
+          },
+          "is_sqlc_slice": false,
+          "embed_table": null,
+          "original_name": "attrs",
+          "unsigned": false,
+          "array_dims": 0,
+          "type_expr": {
+            "name": "map",
+            "nullable": true,
+            "args": [
+              {
+                "label": "",
+                "type": {
+                  "name": "varchar",
+                  "nullable": false,
+                  "args": []
+                }
+              },
+              {
+                "label": "",
+                "type": {
+                  "name": "integer",
+                  "nullable": false,
+                  "args": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "fixed",
+          "not_null": false,
+          "is_array": true,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "public",
+            "name": "things"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "integer"
+          },
+          "is_sqlc_slice": false,
+          "embed_table": null,
+          "original_name": "fixed",
+          "unsigned": false,
+          "array_dims": 1,
+          "type_expr": {
+            "name": "array",
+            "nullable": true,
+            "args": [
+              {
+                "label": "",
+                "type": {
+                  "name": "integer",
+                  "nullable": false,
+                  "args": []
+                }
+              },
+              {
+                "label": "",
+                "int_value": "3"
+              }
+            ]
+          }
+        }
+      ],
+      "params": [
+        {
+          "number": 1,
+          "column": {
+            "name": "id",
+            "not_null": true,
+            "is_array": false,
+            "comment": "",
+            "length": -1,
+            "is_named_param": false,
+            "is_func_call": false,
+            "scope": "",
+            "table": {
+              "catalog": "",
+              "schema": "public",
+              "name": "things"
+            },
+            "table_alias": "",
+            "type": {
+              "catalog": "",
+              "schema": "",
+              "name": "integer"
+            },
+            "is_sqlc_slice": false,
+            "embed_table": null,
+            "original_name": "id",
+            "unsigned": false,
+            "array_dims": 0,
+            "type_expr": {
+              "name": "integer",
+              "nullable": false,
+              "args": []
+            }
+          }
+        },
+        {
+          "number": 2,
+          "column": {
+            "name": "price",
+            "not_null": true,
+            "is_array": false,
+            "comment": "",
+            "length": 10,
+            "is_named_param": false,
+            "is_func_call": false,
+            "scope": "",
+            "table": {
+              "catalog": "",
+              "schema": "public",
+              "name": "things"
+            },
+            "table_alias": "",
+            "type": {
+              "catalog": "",
+              "schema": "",
+              "name": "decimal"
+            },
+            "is_sqlc_slice": false,
+            "embed_table": null,
+            "original_name": "price",
+            "unsigned": false,
+            "array_dims": 0,
+            "type_expr": {
+              "name": "decimal",
+              "nullable": false,
+              "args": [
+                {
+                  "label": "",
+                  "int_value": "10"
+                },
+                {
+                  "label": "",
+                  "int_value": "2"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "comments": [],
+      "filename": "query.sql",
+      "insert_into_table": null
+    }
+  ],
+  "sqlc_version": "v1.31.1",
+  "plugin_options": "eyJvdXQiOiJnZW4iLCJpbmRlbnQiOiIgICIsImZpbGVuYW1lIjoiY29kZWdlbi5qc29uIn0=",
+  "global_options": ""
+}
