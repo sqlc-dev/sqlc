@@ -65,7 +65,11 @@
                 "original_name": "",
                 "unsigned": false,
                 "array_dims": 0,
-                "type_expr": null
+                "type_expr": {
+                  "name": "integer",
+                  "nullable": false,
+                  "args": []
+                }
               },
               {
                 "name": "title",
@@ -92,7 +96,11 @@
                 "original_name": "",
                 "unsigned": false,
                 "array_dims": 0,
-                "type_expr": null
+                "type_expr": {
+                  "name": "varchar",
+                  "nullable": false,
+                  "args": []
+                }
               },
               {
                 "name": "price",
@@ -119,7 +127,20 @@
                 "original_name": "",
                 "unsigned": false,
                 "array_dims": 0,
-                "type_expr": null
+                "type_expr": {
+                  "name": "decimal",
+                  "nullable": false,
+                  "args": [
+                    {
+                      "label": "",
+                      "int_value": "10"
+                    },
+                    {
+                      "label": "",
+                      "int_value": "2"
+                    }
+                  ]
+                }
               },
               {
                 "name": "tags",
@@ -146,7 +167,20 @@
                 "original_name": "",
                 "unsigned": false,
                 "array_dims": 1,
-                "type_expr": null
+                "type_expr": {
+                  "name": "array",
+                  "nullable": false,
+                  "args": [
+                    {
+                      "label": "",
+                      "type": {
+                        "name": "varchar",
+                        "nullable": false,
+                        "args": []
+                      }
+                    }
+                  ]
+                }
               },
               {
                 "name": "grid",
@@ -173,7 +207,29 @@
                 "original_name": "",
                 "unsigned": false,
                 "array_dims": 2,
-                "type_expr": null
+                "type_expr": {
+                  "name": "array",
+                  "nullable": false,
+                  "args": [
+                    {
+                      "label": "",
+                      "type": {
+                        "name": "array",
+                        "nullable": false,
+                        "args": [
+                          {
+                            "label": "",
+                            "type": {
+                              "name": "integer",
+                              "nullable": false,
+                              "args": []
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
               },
               {
                 "name": "point",
@@ -200,7 +256,28 @@
                 "original_name": "",
                 "unsigned": false,
                 "array_dims": 0,
-                "type_expr": null
+                "type_expr": {
+                  "name": "struct",
+                  "nullable": false,
+                  "args": [
+                    {
+                      "label": "x",
+                      "type": {
+                        "name": "integer",
+                        "nullable": false,
+                        "args": []
+                      }
+                    },
+                    {
+                      "label": "y",
+                      "type": {
+                        "name": "integer",
+                        "nullable": false,
+                        "args": []
+                      }
+                    }
+                  ]
+                }
               },
               {
                 "name": "attrs",
@@ -227,7 +304,28 @@
                 "original_name": "",
                 "unsigned": false,
                 "array_dims": 0,
-                "type_expr": null
+                "type_expr": {
+                  "name": "map",
+                  "nullable": false,
+                  "args": [
+                    {
+                      "label": "",
+                      "type": {
+                        "name": "varchar",
+                        "nullable": false,
+                        "args": []
+                      }
+                    },
+                    {
+                      "label": "",
+                      "type": {
+                        "name": "integer",
+                        "nullable": false,
+                        "args": []
+                      }
+                    }
+                  ]
+                }
               },
               {
                 "name": "fixed",
@@ -254,7 +352,24 @@
                 "original_name": "",
                 "unsigned": false,
                 "array_dims": 1,
-                "type_expr": null
+                "type_expr": {
+                  "name": "array",
+                  "nullable": false,
+                  "args": [
+                    {
+                      "label": "",
+                      "type": {
+                        "name": "integer",
+                        "nullable": false,
+                        "args": []
+                      }
+                    },
+                    {
+                      "label": "",
+                      "int_value": "3"
+                    }
+                  ]
+                }
               }
             ],
             "comment": ""

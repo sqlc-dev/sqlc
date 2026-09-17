@@ -101,6 +101,7 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 					IsArray:   c.IsArray,
 					ArrayDims: int32(c.ArrayDims),
 					Length:    int32(l),
+					TypeExpr:  pluginTypeExpr(c.TypeExpr),
 					Table: &plugin.Identifier{
 						Catalog: t.Rel.Catalog,
 						Schema:  t.Rel.Schema,

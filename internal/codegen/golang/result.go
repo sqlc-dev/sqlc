@@ -236,8 +236,9 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 			gq.Arg = QueryValue{
 				Name:           escape(paramName(p)),
 				DBName:         p.Column.GetName(),
-				Typ:            qualifyType(goType(req, options, p.Column), models, qualifier),
+				Typ:            qualifyType(goParamType(req, options, p.Column), models, qualifier),
 				SQLDriver:      sqlpkg,
+				Engine:         req.Settings.Engine,
 				ModelQualifier: qualifier,
 				Column:         p.Column,
 			}
@@ -258,6 +259,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 				Name:           "arg",
 				Struct:         s,
 				SQLDriver:      sqlpkg,
+				Engine:         req.Settings.Engine,
 				EmitPointer:    options.EmitParamsStructPointers,
 				ModelQualifier: qualifier,
 			}
@@ -296,6 +298,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 				DBName:         name,
 				Typ:            qualifyType(goType(req, options, c), models, qualifier),
 				SQLDriver:      sqlpkg,
+				Engine:         req.Settings.Engine,
 				ModelQualifier: qualifier,
 			}
 		} else if putOutColumns(query) {
@@ -343,6 +346,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 				Name:           "i",
 				Struct:         gs,
 				SQLDriver:      sqlpkg,
+				Engine:         req.Settings.Engine,
 				EmitPointer:    options.EmitResultStructPointers,
 				ModelQualifier: qualifier,
 			}
@@ -420,7 +424,7 @@ func columnsToStruct(req *plugin.GenerateRequest, options *opts.Options, name st
 			Column: c.Column,
 		}
 		if c.embed == nil {
-			f.Type = qualifyType(goType(req, options, c.Column), models, qualifier)
+			f.Type = qualifyType(goParamType(req, options, c.Column), models, qualifier)
 		} else {
 			f.Type = qualifyType(c.embed.modelType, models, qualifier)
 			f.EmbedFields = c.embed.fields

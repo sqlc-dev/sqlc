@@ -59,6 +59,7 @@ func mergeImports(imps ...fileImports) [][]ImportSpec {
 
 type importer struct {
 	Options *opts.Options
+	Engine  string
 	Queries []Query
 	Enums   []Enum
 	Structs []Struct
@@ -147,10 +148,24 @@ func (i *importer) dbImports() fileImports {
 var stdlibTypes = map[string]string{
 	"json.RawMessage":  "encoding/json",
 	"time.Time":        "time",
+	"time.Duration":    "time",
 	"net.IP":           "net",
 	"net.HardwareAddr": "net",
 	"netip.Addr":       "net/netip",
 	"netip.Prefix":     "net/netip",
+	"big.Int":          "math/big",
+	"big.Rat":          "math/big",
+}
+
+// driverTypes are the packages the ClickHouse, DuckDB, Spanner and SQL
+// Server mappers draw types from, by the qualifier those types carry.
+var driverTypes = map[string]string{
+	"civil.":   "cloud.google.com/go/civil",
+	"decimal.": "github.com/shopspring/decimal",
+	"duckdb.":  "github.com/duckdb/duckdb-go/v2",
+	"mssql.":   "github.com/microsoft/go-mssqldb",
+	"orb.":     "github.com/paulmach/orb",
+	"spanner.": "cloud.google.com/go/spanner",
 }
 
 var pqtypeTypes = map[string]struct{}{
@@ -200,6 +215,12 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 		if uses(typeName) {
 			pkg[ImportSpec{Path: "github.com/sqlc-dev/pqtype"}] = struct{}{}
 			break
+		}
+	}
+
+	for qualifier, path := range driverTypes {
+		if uses(qualifier) {
+			pkg[ImportSpec{Path: path}] = struct{}{}
 		}
 	}
 
@@ -409,7 +430,7 @@ func (i *importer) queryImports(filename string) fileImports {
 	if sqlcSliceScan() && !sqlpkg.IsPGX() {
 		std["strings"] = struct{}{}
 	}
-	if sliceScan() && !sqlpkg.IsPGX() {
+	if sliceScan() && usesPqArrays(i.Engine, sqlpkg) {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 	}
 
@@ -506,15 +527,48 @@ func (i *importer) batchImports() fileImports {
 }
 
 func trimSliceAndPointerPrefix(v string) string {
-	v = strings.TrimPrefix(v, "[]")
-	v = strings.TrimPrefix(v, "*")
-	return v
+	for {
+		trimmed := strings.TrimPrefix(strings.TrimPrefix(v, "[]"), "*")
+		if trimmed == v {
+			return v
+		}
+		v = trimmed
+	}
 }
 
+// hasPrefixIgnoringSliceAndPointerPrefix reports whether the type s names
+// prefix once its slice and pointer prefixes are stripped. A map type names
+// it when its key or its value does, so map[string]decimal.Decimal uses the
+// decimal package.
 func hasPrefixIgnoringSliceAndPointerPrefix(s, prefix string) bool {
 	trimmedS := trimSliceAndPointerPrefix(s)
 	trimmedPrefix := trimSliceAndPointerPrefix(prefix)
+	if key, value, ok := splitMapType(trimmedS); ok {
+		return hasPrefixIgnoringSliceAndPointerPrefix(key, trimmedPrefix) ||
+			hasPrefixIgnoringSliceAndPointerPrefix(value, trimmedPrefix)
+	}
 	return strings.HasPrefix(trimmedS, trimmedPrefix)
+}
+
+// splitMapType splits map[K]V into K and V, matching the brackets so a key
+// that is itself a map or an array is kept whole.
+func splitMapType(s string) (string, string, bool) {
+	if !strings.HasPrefix(s, "map[") {
+		return "", "", false
+	}
+	depth := 0
+	for i := 3; i < len(s); i++ {
+		switch s[i] {
+		case '[':
+			depth++
+		case ']':
+			depth--
+			if depth == 0 {
+				return s[4:i], s[i+1:], true
+			}
+		}
+	}
+	return "", "", false
 }
 
 func replaceConflictedArg(imports [][]ImportSpec, queries []Query) []Query {
