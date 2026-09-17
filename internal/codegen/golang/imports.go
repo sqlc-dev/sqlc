@@ -182,6 +182,11 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 	if uses("sql.Null") {
 		std["database/sql"] = struct{}{}
 	}
+	for _, q := range queries {
+		if q.Arg.NamedArgs && !q.Arg.isEmpty() {
+			std["database/sql"] = struct{}{}
+		}
+	}
 
 	sqlpkg := parseDriver(options.SqlPackage)
 	for _, q := range queries {

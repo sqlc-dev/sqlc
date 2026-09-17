@@ -2,6 +2,7 @@ package golang
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/codegen/golang/opts"
@@ -18,6 +19,11 @@ type QueryValue struct {
 	Typ         string
 	SQLDriver   opts.SQLDriver
 	Engine      string
+
+	// NamedArgs is set when the query's placeholders name their parameters,
+	// as SQL Server's and Spanner's @name and ClickHouse's {name:Type} do,
+	// so each argument is passed as sql.Named with that name.
+	NamedArgs bool
 
 	// ModelQualifier prefixes references to model types when the models file
 	// lives in a different Go package (e.g. "model."). Empty otherwise.
@@ -141,6 +147,15 @@ func (v QueryValue) pqArrays() bool {
 	return usesPqArrays(v.Engine, v.SQLDriver)
 }
 
+// namedArg is the argument expr passed for the parameter the query names
+// name, wrapped in sql.Named when the query's placeholders are named.
+func (v QueryValue) namedArg(name, expr string) string {
+	if !v.NamedArgs {
+		return expr
+	}
+	return "sql.Named(" + strconv.Quote(name) + ", " + expr + ")"
+}
+
 func (v QueryValue) Params() string {
 	if v.isEmpty() {
 		return ""
@@ -150,14 +165,14 @@ func (v QueryValue) Params() string {
 		if !v.Column.IsSqlcSlice && strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && v.pqArrays() {
 			out = append(out, "pq.Array("+escape(v.Name)+")")
 		} else {
-			out = append(out, escape(v.Name))
+			out = append(out, v.namedArg(v.DBName, escape(v.Name)))
 		}
 	} else {
 		for _, f := range v.Struct.Fields {
 			if !f.HasSqlcSlice() && strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && v.pqArrays() {
 				out = append(out, "pq.Array("+escape(v.VariableForField(f))+")")
 			} else {
-				out = append(out, escape(v.VariableForField(f)))
+				out = append(out, v.namedArg(f.DBName, escape(v.VariableForField(f))))
 			}
 		}
 	}

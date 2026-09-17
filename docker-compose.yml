@@ -20,6 +20,16 @@ services:
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_USER: postgres
 
+  clickhouse:
+    image: "clickhouse/clickhouse-server:25.8"
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    restart: always
+    environment:
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ""
+
   mssql:
     image: "mcr.microsoft.com/mssql/server:2025-latest"
     ports:

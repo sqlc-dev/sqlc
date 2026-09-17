@@ -109,10 +109,10 @@ type ParamsParams struct {
 
 func (q *Queries) Params(ctx context.Context, arg ParamsParams) (int64, error) {
 	row := q.db.QueryRowContext(ctx, params,
-		arg.S,
-		arg.N,
-		arg.Smax,
-		arg.F32,
+		sql.Named("s", arg.S),
+		sql.Named("n", arg.N),
+		sql.Named("smax", arg.Smax),
+		sql.Named("f32", arg.F32),
 	)
 	var id int64
 	err := row.Scan(&id)

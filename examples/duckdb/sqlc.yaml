@@ -1,0 +1,10 @@
+version: '2'
+sql:
+- name: authors
+  schema: authors/schema.sql
+  queries: authors/query.sql
+  engine: duckdb
+  gen:
+    go:
+      package: authors
+      out: authors

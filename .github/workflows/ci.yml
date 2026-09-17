@@ -24,6 +24,19 @@ jobs:
         GOARCH: ${{ matrix.goarch }}
   test:
     runs-on: ubuntu-24.04
+    services:
+      clickhouse:
+        image: clickhouse/clickhouse-server:25.8
+        ports:
+          - 9000:9000
+          - 8123:8123
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2025-latest
+        ports:
+          - 1433:1433
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: "Mysecretpassword1!"
     steps:
     - uses: actions/checkout@v7
     - uses: actions/setup-go@v7
@@ -44,11 +57,11 @@ jobs:
       env:
         CGO_ENABLED: "0"
 
+    # The DuckDB driver the generated code imports is cgo, so this build
+    # keeps cgo on.
     - name: build internal/endtoend
       run: go build ./...
       working-directory: internal/endtoend/testdata
-      env:
-        CGO_ENABLED: "0"
 
     - name: install databases
       run: go run ./cmd/sqlc-test-setup install
@@ -64,7 +77,15 @@ jobs:
         SQLC_AUTH_TOKEN: ${{ secrets.CI_SQLC_AUTH_TOKEN }}
         POSTGRESQL_SERVER_URI: "postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable"
         MYSQL_SERVER_URI: "root:mysecretpassword@tcp(127.0.0.1:3306)/mysql?multiStatements=true&parseTime=true"
+        CLICKHOUSE_SERVER_URI: "clickhouse://default:@127.0.0.1:9000"
+        MSSQL_SERVER_URI: "sqlserver://sa:Mysecretpassword1!@127.0.0.1:1433?encrypt=disable"
         CGO_ENABLED: "0"
+
+    # The DuckDB example is its own module: its driver is cgo, which the
+    # main module's builds keep off.
+    - name: test examples/duckdb
+      run: go test --tags=examples ./...
+      working-directory: examples/duckdb
 
   vuln_check:
     runs-on: ubuntu-24.04

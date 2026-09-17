@@ -231,6 +231,8 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 
 		qpl := int(*options.QueryParameterLimit)
 
+		namedArgs := placeholdersAreNamed(req.Settings.Engine, query.Text, query.Params)
+
 		if len(query.Params) == 1 && qpl != 0 {
 			p := query.Params[0]
 			gq.Arg = QueryValue{
@@ -239,6 +241,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 				Typ:            qualifyType(goParamType(req, options, p.Column), models, qualifier),
 				SQLDriver:      sqlpkg,
 				Engine:         req.Settings.Engine,
+				NamedArgs:      namedArgs,
 				ModelQualifier: qualifier,
 				Column:         p.Column,
 			}
@@ -260,6 +263,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 				Struct:         s,
 				SQLDriver:      sqlpkg,
 				Engine:         req.Settings.Engine,
+				NamedArgs:      namedArgs,
 				EmitPointer:    options.EmitParamsStructPointers,
 				ModelQualifier: qualifier,
 			}
@@ -474,4 +478,32 @@ func checkIncompatibleFieldTypes(fields []Field) error {
 		}
 	}
 	return nil
+}
+
+// placeholdersAreNamed reports whether every parameter of a query is bound
+// by name: SQL Server and Spanner name a parameter @name in the query
+// text, ClickHouse's server-side {name:Type} does the same, and their
+// drivers take such an argument as sql.Named. A query written with ? is
+// bound by position, so nothing is named unless every parameter is.
+func placeholdersAreNamed(engine, text string, params []*plugin.Parameter) bool {
+	if len(params) == 0 {
+		return false
+	}
+	for _, p := range params {
+		name := p.Column.GetName()
+		if name == "" {
+			return false
+		}
+		var named bool
+		switch engine {
+		case "mssql", "googlesql":
+			named = strings.Contains(text, "@"+name)
+		case "clickhouse":
+			named = strings.Contains(text, "{"+name+":")
+		}
+		if !named {
+			return false
+		}
+	}
+	return true
 }

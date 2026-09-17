@@ -117,11 +117,11 @@ type PlaceholdersParams struct {
 
 func (q *Queries) Placeholders(ctx context.Context, arg PlaceholdersParams) ([]uint64, error) {
 	rows, err := q.db.QueryContext(ctx, placeholders,
-		arg.P1,
-		arg.P2,
-		arg.P3,
-		arg.P4,
-		arg.P5,
+		sql.Named("p1", arg.P1),
+		sql.Named("p2", arg.P2),
+		sql.Named("p3", arg.P3),
+		sql.Named("p4", arg.P4),
+		sql.Named("p5", arg.P5),
 	)
 	if err != nil {
 		return nil, err
