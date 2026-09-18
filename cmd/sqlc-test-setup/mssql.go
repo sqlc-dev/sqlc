@@ -157,10 +157,27 @@ func startMSSQL() error {
 			return fmt.Errorf("systemctl start mssql-server: %w", err)
 		}
 	} else {
+		// The server's own log is mssqlLog; what it prints goes to a file
+		// of its own rather than this process's output, which a detached
+		// process would otherwise hold open.
+		cache, err := os.UserCacheDir()
+		if err != nil {
+			return err
+		}
+		dir := filepath.Join(cache, "sqlc-mssql")
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return err
+		}
+		logFile, err := os.Create(filepath.Join(dir, "sqlservr.log"))
+		if err != nil {
+			return err
+		}
+		defer logFile.Close()
+
 		log.Printf("starting %s in the background", mssqlServer)
 		cmd := exec.Command("sudo", "-u", "mssql", "env", "ACCEPT_EULA=Y", "MSSQL_SA_PASSWORD="+mssqlSAPassword, mssqlServer)
-		cmd.Stdout = os.Stderr
-		cmd.Stderr = os.Stderr
+		cmd.Stdout = logFile
+		cmd.Stderr = logFile
 		cmd.SysProcAttr = detachedProcess()
 		if err := cmd.Start(); err != nil {
 			return fmt.Errorf("starting sqlservr: %w", err)
@@ -206,12 +223,7 @@ func mssqlListening() bool {
 
 // mssqlReadyForClients reports whether the server's log says it is ready
 // for client connections, which comes a moment after it starts listening.
-// The log is readable by the mssql user only, so it is read through sudo;
-// where that is not possible the port is taken as the signal.
+// The log is readable by the mssql user only, so it is read through sudo.
 func mssqlReadyForClients() bool {
-	out, err := exec.Command("sudo", "grep", "-c", "ready for client connections", mssqlLog).Output()
-	if err != nil {
-		return strings.TrimSpace(string(out)) == "" && !strings.Contains(err.Error(), "exit status 1")
-	}
-	return strings.TrimSpace(string(out)) != "0"
+	return exec.Command("sudo", "grep", "-q", "ready for client connections", mssqlLog).Run() == nil
 }
