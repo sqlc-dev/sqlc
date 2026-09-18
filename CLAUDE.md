@@ -12,7 +12,7 @@ This document provides essential information for working with the sqlc codebase,
 
 ## Database Setup with sqlc-test-setup
 
-The `sqlc-test-setup` tool (`cmd/sqlc-test-setup/`) automates installing and starting PostgreSQL, MySQL and Spanner Omni for tests. Both commands are idempotent and safe to re-run, and take the databases to act on as arguments (`postgresql`, `mysql`, `spanner`); with none named they act on all three.
+The `sqlc-test-setup` tool (`cmd/sqlc-test-setup/`) automates installing and starting PostgreSQL, MySQL, ClickHouse, SQL Server and Spanner Omni for tests. Both commands are idempotent and safe to re-run, and take the databases to act on as arguments (`postgresql`, `mysql`, `clickhouse`, `mssql`, `spanner`); with none named they act on all five.
 
 ### Install databases
 
@@ -24,6 +24,8 @@ This will:
 - Configure the apt proxy (if `http_proxy` is set, e.g. in Claude Code remote environments)
 - Install PostgreSQL via apt
 - Download and install MySQL 26.7 from Oracle's deb bundle
+- Download the ClickHouse 25.8 release into the user cache, where goldeneye caches it too
+- Install SQL Server 2025 from Microsoft's apt repository and run its setup, accepting the EULA on your behalf (Ubuntu 22.04 and 24.04 only)
 - Download the Spanner Omni standalone server release into the user cache (linux/amd64 only)
 - Resolve all dependencies automatically
 - Skip anything already installed
@@ -37,6 +39,8 @@ go run ./cmd/sqlc-test-setup start
 This will:
 - Start PostgreSQL and configure password auth (`postgres`/`postgres`)
 - Start MySQL via `mysqld_safe` and set root password (`mysecretpassword`)
+- Start a ClickHouse server in the background on localhost, with the default user's password `mysecretpassword`
+- Start SQL Server through systemd, or in the background where there is no systemd, with the sa password `Mysecretpassword1!`
 - Start a Spanner Omni single server in the background, serving plaintext gRPC on port 15000
 - Verify the connections
 - Skip steps that are already done (running services, existing config)
@@ -44,9 +48,11 @@ This will:
 Connection URIs after start:
 - PostgreSQL: `postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable`
 - MySQL: `root:mysecretpassword@tcp(127.0.0.1:3306)/mysql`
+- ClickHouse: `clickhouse://default:mysecretpassword@127.0.0.1:9000` (`CLICKHOUSE_SERVER_URI`)
+- SQL Server: `sqlserver://sa:Mysecretpassword1!@127.0.0.1:1433?encrypt=disable` (`MSSQL_SERVER_URI`)
 - Spanner Omni: `localhost:15000` (`SPANNER_SERVER_URI`)
 
-ClickHouse and SQL Server are not installed by the tool; `docker-compose.yml` runs them locally and CI runs them as services. Their tests read `CLICKHOUSE_SERVER_URI` and `MSSQL_SERVER_URI` and skip when unset.
+The examples' tests for ClickHouse, SQL Server and Spanner read those variables and skip when unset. `docker-compose.yml` runs the same databases for anyone who prefers containers.
 
 ### Run tests
 
@@ -217,7 +223,7 @@ make start             # Start database containers
 - **File:** `.github/workflows/ci.yml`
 - **Go Version:** 1.26.4
 - **Jobs:** `build` cross-compiles sqlc with cgo off; `test` runs sqlc's own tests; `examples` runs the examples module against every database; `vuln_check` runs `govulncheck`
-- **Database Setup:** `test` uses `sqlc-test-setup` (not Docker) to install and start PostgreSQL and MySQL directly on the runner; `examples` also installs Spanner Omni that way and runs ClickHouse and SQL Server as job services
+- **Database Setup:** `sqlc-test-setup` (not Docker) installs and starts the databases directly on the runner: PostgreSQL and MySQL for `test`, and all five for `examples`
 - **Test Command:** `gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m ./...` in `test`, and `go test --tags=examples ./...` under `examples/` in `examples`
 - **Additional Checks:** `govulncheck` for vulnerability scanning
 

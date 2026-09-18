@@ -73,28 +73,10 @@ jobs:
 
   # The examples run generated code against every database sqlc supports.
   # They are a module of their own, so their drivers are not dependencies
-  # of sqlc, and cgo stays on for the DuckDB driver. ClickHouse and SQL
-  # Server run as services; sqlc-test-setup installs PostgreSQL, MySQL and
-  # Spanner Omni on the runner.
+  # of sqlc, and cgo stays on for the DuckDB driver. sqlc-test-setup
+  # installs and starts every database on the runner.
   examples:
     runs-on: ubuntu-24.04
-    services:
-      clickhouse:
-        image: clickhouse/clickhouse-server:25.8
-        ports:
-          - 9000:9000
-          - 8123:8123
-        env:
-          # A password opens the default user to connections from beyond
-          # the container; without one the image restricts it to localhost.
-          CLICKHOUSE_PASSWORD: "mysecretpassword"
-      mssql:
-        image: mcr.microsoft.com/mssql/server:2025-latest
-        ports:
-          - 1433:1433
-        env:
-          ACCEPT_EULA: "Y"
-          MSSQL_SA_PASSWORD: "Mysecretpassword1!"
     steps:
     - uses: actions/checkout@v7
     - uses: actions/setup-go@v7

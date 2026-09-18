@@ -5,6 +5,7 @@ import (
 	"context"
 	ejson "encoding/json"
 	"fmt"
+	"regexp"
 
 	"google.golang.org/protobuf/encoding/protojson"
 
@@ -52,6 +53,7 @@ func Generate(ctx context.Context, req *plugin.GenerateRequest) (*plugin.Generat
 	if err != nil {
 		return nil, err
 	}
+	data = dropUnsetTypeExpr(data)
 	var rm ejson.RawMessage = data
 	blob, err := ejson.MarshalIndent(rm, "", indent)
 	if err != nil {
@@ -65,4 +67,19 @@ func Generate(ctx context.Context, req *plugin.GenerateRequest) (*plugin.Generat
 			},
 		},
 	}, nil
+}
+
+// unsetTypeExpr matches a column's type_expr member when it is unset, with
+// the comma that joins it to the member before it. It is the last member
+// of a column, so protojson writes it after a comma, with whatever
+// whitespace it chose around the separators.
+var unsetTypeExpr = regexp.MustCompile(`,\s*"type_expr"\s*:\s*null`)
+
+// dropUnsetTypeExpr removes the type_expr member from columns that have
+// none. The member is only set when the analysis core typed the column,
+// and a column the legacy path typed is written the way it was before the
+// member existed rather than with an explicit null. A JSON string cannot
+// hold an unescaped quote, so the match never lands inside one.
+func dropUnsetTypeExpr(data []byte) []byte {
+	return unsetTypeExpr.ReplaceAll(data, nil)
 }

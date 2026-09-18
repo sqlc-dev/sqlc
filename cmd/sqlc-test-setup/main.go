@@ -94,11 +94,11 @@ func main() {
 	}
 }
 
-const usage = "usage: sqlc-test-setup <install|start> [postgresql|mysql|spanner ...]"
+const usage = "usage: sqlc-test-setup <install|start> [postgresql|mysql|clickhouse|mssql|spanner ...]"
 
 // allServices is every database the tool knows, in the order they are
 // installed and started.
-var allServices = []string{"postgresql", "mysql", "spanner"}
+var allServices = []string{"postgresql", "mysql", "clickhouse", "mssql", "spanner"}
 
 // selectServices reads the databases named on the command line, or every
 // database when none is named.
@@ -208,7 +208,7 @@ func pgBin(name string) string {
 func runInstall(services map[string]bool) error {
 	log.Println("=== Installing databases for test setup ===")
 
-	if services["postgresql"] || services["mysql"] {
+	if services["postgresql"] || services["mysql"] || services["mssql"] {
 		if err := installAptProxy(); err != nil {
 			return fmt.Errorf("configuring apt proxy: %w", err)
 		}
@@ -223,6 +223,18 @@ func runInstall(services map[string]bool) error {
 	if services["mysql"] {
 		if err := installMySQL(); err != nil {
 			return fmt.Errorf("installing mysql: %w", err)
+		}
+	}
+
+	if services["clickhouse"] {
+		if err := installClickHouse(); err != nil {
+			return fmt.Errorf("installing clickhouse: %w", err)
+		}
+	}
+
+	if services["mssql"] {
+		if err := installMSSQL(); err != nil {
+			return fmt.Errorf("installing sql server: %w", err)
 		}
 	}
 
@@ -485,6 +497,18 @@ func runStart(services map[string]bool) error {
 		}
 	}
 
+	if services["clickhouse"] {
+		if err := startClickHouse(); err != nil {
+			return fmt.Errorf("starting clickhouse: %w", err)
+		}
+	}
+
+	if services["mssql"] {
+		if err := startMSSQL(); err != nil {
+			return fmt.Errorf("starting sql server: %w", err)
+		}
+	}
+
 	if services["spanner"] {
 		if err := startSpannerOmni(); err != nil {
 			return fmt.Errorf("starting spanner omni: %w", err)
@@ -497,6 +521,12 @@ func runStart(services map[string]bool) error {
 	}
 	if services["mysql"] {
 		log.Println("MySQL:        root:mysecretpassword@tcp(127.0.0.1:3306)/mysql")
+	}
+	if services["clickhouse"] {
+		log.Println("ClickHouse:   clickhouse://default:" + clickhousePassword + "@127.0.0.1:" + clickhouseTCPPort)
+	}
+	if services["mssql"] {
+		log.Println("SQL Server:   sqlserver://sa:" + mssqlSAPassword + "@127.0.0.1:" + mssqlPort + "?encrypt=disable")
 	}
 	if services["spanner"] {
 		log.Println("Spanner Omni: localhost:" + omniPort)
