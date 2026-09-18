@@ -47,11 +47,13 @@ jobs:
       env:
         CGO_ENABLED: "0"
 
-    # The DuckDB driver the generated code imports is cgo, so this build
-    # keeps cgo on.
+    # The DuckDB golden imports the DuckDB driver, which is cgo, so it is
+    # left out of this build and checked by the replay suite alone.
     - name: build internal/endtoend
-      run: go build ./...
+      run: go build $(go list ./... | grep -v '/core_types/duckdb/')
       working-directory: internal/endtoend/testdata
+      env:
+        CGO_ENABLED: "0"
 
     - name: install databases
       run: go run ./cmd/sqlc-test-setup install postgresql mysql
