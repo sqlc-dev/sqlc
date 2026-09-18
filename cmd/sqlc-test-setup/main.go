@@ -69,23 +69,60 @@ func main() {
 	log.SetPrefix("[sqlc-test-setup] ")
 
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "usage: sqlc-test-setup <install|start>")
+		fmt.Fprintln(os.Stderr, usage)
+		os.Exit(1)
+	}
+
+	services, err := selectServices(os.Args[2:])
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n%s\n", err, usage)
 		os.Exit(1)
 	}
 
 	switch os.Args[1] {
 	case "install":
-		if err := runInstall(); err != nil {
+		if err := runInstall(services); err != nil {
 			log.Fatalf("install failed: %s", err)
 		}
 	case "start":
-		if err := runStart(); err != nil {
+		if err := runStart(services); err != nil {
 			log.Fatalf("start failed: %s", err)
 		}
 	default:
-		fmt.Fprintf(os.Stderr, "unknown command: %s\nusage: sqlc-test-setup <install|start>\n", os.Args[1])
+		fmt.Fprintf(os.Stderr, "unknown command: %s\n%s\n", os.Args[1], usage)
 		os.Exit(1)
 	}
+}
+
+const usage = "usage: sqlc-test-setup <install|start> [postgresql|mysql|spanner ...]"
+
+// allServices is every database the tool knows, in the order they are
+// installed and started.
+var allServices = []string{"postgresql", "mysql", "spanner"}
+
+// selectServices reads the databases named on the command line, or every
+// database when none is named.
+func selectServices(args []string) (map[string]bool, error) {
+	selected := map[string]bool{}
+	if len(args) == 0 {
+		for _, name := range allServices {
+			selected[name] = true
+		}
+		return selected, nil
+	}
+	for _, arg := range args {
+		known := false
+		for _, name := range allServices {
+			if arg == name {
+				known = true
+			}
+		}
+		if !known {
+			return nil, fmt.Errorf("unknown database: %s", arg)
+		}
+		selected[arg] = true
+	}
+	return selected, nil
 }
 
 // run executes a command with verbose logging, streaming output to stderr.
@@ -168,23 +205,31 @@ func pgBin(name string) string {
 
 // ---- install ----
 
-func runInstall() error {
-	log.Println("=== Installing PostgreSQL and MySQL for test setup ===")
+func runInstall(services map[string]bool) error {
+	log.Println("=== Installing databases for test setup ===")
 
-	if err := installAptProxy(); err != nil {
-		return fmt.Errorf("configuring apt proxy: %w", err)
+	if services["postgresql"] || services["mysql"] {
+		if err := installAptProxy(); err != nil {
+			return fmt.Errorf("configuring apt proxy: %w", err)
+		}
 	}
 
-	if err := installPostgreSQL(); err != nil {
-		return fmt.Errorf("installing postgresql: %w", err)
+	if services["postgresql"] {
+		if err := installPostgreSQL(); err != nil {
+			return fmt.Errorf("installing postgresql: %w", err)
+		}
 	}
 
-	if err := installMySQL(); err != nil {
-		return fmt.Errorf("installing mysql: %w", err)
+	if services["mysql"] {
+		if err := installMySQL(); err != nil {
+			return fmt.Errorf("installing mysql: %w", err)
+		}
 	}
 
-	if err := installSpannerOmni(); err != nil {
-		return fmt.Errorf("installing spanner omni: %w", err)
+	if services["spanner"] {
+		if err := installSpannerOmni(); err != nil {
+			return fmt.Errorf("installing spanner omni: %w", err)
+		}
 	}
 
 	log.Println("=== Install complete ===")
@@ -425,25 +470,37 @@ func installMySQL() error {
 
 // ---- start ----
 
-func runStart() error {
-	log.Println("=== Starting PostgreSQL and MySQL ===")
+func runStart(services map[string]bool) error {
+	log.Println("=== Starting databases ===")
 
-	if err := startPostgreSQL(); err != nil {
-		return fmt.Errorf("starting postgresql: %w", err)
+	if services["postgresql"] {
+		if err := startPostgreSQL(); err != nil {
+			return fmt.Errorf("starting postgresql: %w", err)
+		}
 	}
 
-	if err := startMySQL(); err != nil {
-		return fmt.Errorf("starting mysql: %w", err)
+	if services["mysql"] {
+		if err := startMySQL(); err != nil {
+			return fmt.Errorf("starting mysql: %w", err)
+		}
 	}
 
-	if err := startSpannerOmni(); err != nil {
-		return fmt.Errorf("starting spanner omni: %w", err)
+	if services["spanner"] {
+		if err := startSpannerOmni(); err != nil {
+			return fmt.Errorf("starting spanner omni: %w", err)
+		}
 	}
 
 	log.Println("=== Databases are running and configured ===")
-	log.Println("PostgreSQL:   postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable")
-	log.Println("MySQL:        root:mysecretpassword@tcp(127.0.0.1:3306)/mysql")
-	log.Println("Spanner Omni: localhost:" + omniPort)
+	if services["postgresql"] {
+		log.Println("PostgreSQL:   postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable")
+	}
+	if services["mysql"] {
+		log.Println("MySQL:        root:mysecretpassword@tcp(127.0.0.1:3306)/mysql")
+	}
+	if services["spanner"] {
+		log.Println("Spanner Omni: localhost:" + omniPort)
+	}
 	return nil
 }
 

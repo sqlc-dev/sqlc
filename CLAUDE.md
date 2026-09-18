@@ -12,7 +12,7 @@ This document provides essential information for working with the sqlc codebase,
 
 ## Database Setup with sqlc-test-setup
 
-The `sqlc-test-setup` tool (`cmd/sqlc-test-setup/`) automates installing and starting PostgreSQL, MySQL and Spanner Omni for tests. Both commands are idempotent and safe to re-run.
+The `sqlc-test-setup` tool (`cmd/sqlc-test-setup/`) automates installing and starting PostgreSQL, MySQL and Spanner Omni for tests. Both commands are idempotent and safe to re-run, and take the databases to act on as arguments (`postgresql`, `mysql`, `spanner`); with none named they act on all three.
 
 ### Install databases
 
@@ -216,8 +216,9 @@ make start             # Start database containers
 
 - **File:** `.github/workflows/ci.yml`
 - **Go Version:** 1.26.4
-- **Database Setup:** Uses `sqlc-test-setup` (not Docker) to install and start PostgreSQL and MySQL directly on the runner
-- **Test Command:** `gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m ./...`
+- **Jobs:** `build` cross-compiles sqlc with cgo off; `test` runs sqlc's own tests; `examples` runs the examples module against every database; `vuln_check` runs `govulncheck`
+- **Database Setup:** `test` uses `sqlc-test-setup` (not Docker) to install and start PostgreSQL and MySQL directly on the runner; `examples` also installs Spanner Omni that way and runs ClickHouse and SQL Server as job services
+- **Test Command:** `gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m ./...` in `test`, and `go test --tags=examples ./...` under `examples/` in `examples`
 - **Additional Checks:** `govulncheck` for vulnerability scanning
 
 ## Development Workflow
