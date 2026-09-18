@@ -94,15 +94,15 @@ func installMSSQL() error {
 	log.Println("running mssql-conf setup")
 	err = run("sudo", "env", "ACCEPT_EULA=Y", "MSSQL_PID=Developer", "MSSQL_SA_PASSWORD="+mssqlSAPassword,
 		mssqlConf, "-n", "setup", "accept-eula")
-	if _, statErr := os.Stat("/var/opt/mssql/mssql.conf"); statErr != nil {
-		if err != nil {
-			return fmt.Errorf("mssql-conf setup: %w", err)
-		}
-		return fmt.Errorf("mssql-conf setup wrote no /var/opt/mssql/mssql.conf")
+	if err == nil {
+		return nil
 	}
-	if err != nil {
-		log.Printf("mssql-conf setup wrote the configuration but could not start the service (%s); start will", err)
+	// /var/opt/mssql is readable by the mssql user only, so the check goes
+	// through sudo rather than a stat as this user.
+	if exec.Command("sudo", "test", "-f", "/var/opt/mssql/mssql.conf").Run() != nil {
+		return fmt.Errorf("mssql-conf setup: %w", err)
 	}
+	log.Printf("mssql-conf setup wrote the configuration but could not start the service (%s); start will", err)
 	return nil
 }
 
