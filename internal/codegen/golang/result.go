@@ -496,9 +496,9 @@ func placeholdersAreNamed(engine, text string, params []*plugin.Parameter) bool 
 		}
 		var named bool
 		switch engine {
-		case "mssql", "googlesql":
+		case engineMSSQL, engineGoogleSQL:
 			named = strings.Contains(text, "@"+name)
-		case "clickhouse":
+		case engineClickHouse:
 			named = strings.Contains(text, "{"+name+":")
 		}
 		if !named {

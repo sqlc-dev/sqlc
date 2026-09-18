@@ -21,7 +21,7 @@ test-examples:
 	cd ./examples && go test --tags=examples ./...
 
 build-endtoend:
-	cd ./internal/endtoend/testdata && CGO_ENABLED=0 go build $$(go list ./... | grep -v '/core_types/duckdb/')
+	cd ./internal/endtoend/testdata && go build ./...
 
 test-ci: test-examples build-endtoend vet
 

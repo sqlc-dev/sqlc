@@ -97,19 +97,19 @@ func goInnerType(req *plugin.GenerateRequest, options *opts.Options, col *plugin
 
 	// TODO: Extend the engine interface to handle types
 	switch req.Settings.Engine {
-	case "mysql":
+	case engineMySQL:
 		return mysqlType(req, options, col), false
-	case "postgresql":
+	case enginePostgreSQL:
 		return postgresType(req, options, col), false
-	case "sqlite":
+	case engineSQLite:
 		return sqliteType(req, options, col), false
-	case "clickhouse":
+	case engineClickHouse:
 		return clickhouseType(req, options, col), true
-	case "duckdb":
+	case engineDuckDB:
 		return duckdbType(req, options, col, param), true
-	case "googlesql":
+	case engineGoogleSQL:
 		return googlesqlType(req, options, col), true
-	case "mssql":
+	case engineMSSQL:
 		return mssqlType(req, options, col), true
 	default:
 		return "any", false
