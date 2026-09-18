@@ -9,7 +9,7 @@ import (
 
 	_ "github.com/ClickHouse/clickhouse-go/v2"
 
-	"github.com/sqlc-dev/sqlc/internal/sqltest/local"
+	"github.com/sqlc-dev/sqlc/examples/internal/local"
 )
 
 func TestAuthors(t *testing.T) {

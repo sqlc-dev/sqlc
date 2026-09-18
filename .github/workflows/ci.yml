@@ -67,6 +67,8 @@ jobs:
       run: go build ./...
       working-directory: internal/endtoend/testdata
 
+    # Installs and starts PostgreSQL, MySQL and Spanner Omni; ClickHouse and
+    # SQL Server run as services above.
     - name: install databases
       run: go run ./cmd/sqlc-test-setup install
 
@@ -83,13 +85,20 @@ jobs:
         MYSQL_SERVER_URI: "root:mysecretpassword@tcp(127.0.0.1:3306)/mysql?multiStatements=true&parseTime=true"
         CLICKHOUSE_SERVER_URI: "clickhouse://default:mysecretpassword@127.0.0.1:9000"
         MSSQL_SERVER_URI: "sqlserver://sa:Mysecretpassword1!@127.0.0.1:1433?encrypt=disable"
+        SPANNER_SERVER_URI: "localhost:15000"
         CGO_ENABLED: "0"
 
-    # The DuckDB example is its own module: its driver is cgo, which the
-    # main module's builds keep off.
-    - name: test examples/duckdb
+    # The examples are a module of their own, so their drivers are not
+    # dependencies of sqlc, and cgo stays on for the DuckDB driver.
+    - name: test examples
       run: go test --tags=examples ./...
-      working-directory: examples/duckdb
+      working-directory: examples
+      env:
+        POSTGRESQL_SERVER_URI: "postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable"
+        MYSQL_SERVER_URI: "root:mysecretpassword@tcp(127.0.0.1:3306)/mysql?multiStatements=true&parseTime=true"
+        CLICKHOUSE_SERVER_URI: "clickhouse://default:mysecretpassword@127.0.0.1:9000"
+        MSSQL_SERVER_URI: "sqlserver://sa:Mysecretpassword1!@127.0.0.1:1433?encrypt=disable"
+        SPANNER_SERVER_URI: "localhost:15000"
 
   vuln_check:
     runs-on: ubuntu-24.04

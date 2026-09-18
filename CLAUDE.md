@@ -12,7 +12,7 @@ This document provides essential information for working with the sqlc codebase,
 
 ## Database Setup with sqlc-test-setup
 
-The `sqlc-test-setup` tool (`cmd/sqlc-test-setup/`) automates installing and starting PostgreSQL and MySQL for tests. Both commands are idempotent and safe to re-run.
+The `sqlc-test-setup` tool (`cmd/sqlc-test-setup/`) automates installing and starting PostgreSQL, MySQL and Spanner Omni for tests. Both commands are idempotent and safe to re-run.
 
 ### Install databases
 
@@ -24,6 +24,7 @@ This will:
 - Configure the apt proxy (if `http_proxy` is set, e.g. in Claude Code remote environments)
 - Install PostgreSQL via apt
 - Download and install MySQL 26.7 from Oracle's deb bundle
+- Download the Spanner Omni standalone server release into the user cache (linux/amd64 only)
 - Resolve all dependencies automatically
 - Skip anything already installed
 
@@ -36,12 +37,16 @@ go run ./cmd/sqlc-test-setup start
 This will:
 - Start PostgreSQL and configure password auth (`postgres`/`postgres`)
 - Start MySQL via `mysqld_safe` and set root password (`mysecretpassword`)
-- Verify both connections
+- Start a Spanner Omni single server in the background, serving plaintext gRPC on port 15000
+- Verify the connections
 - Skip steps that are already done (running services, existing config)
 
 Connection URIs after start:
 - PostgreSQL: `postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable`
 - MySQL: `root:mysecretpassword@tcp(127.0.0.1:3306)/mysql`
+- Spanner Omni: `localhost:15000` (`SPANNER_SERVER_URI`)
+
+ClickHouse and SQL Server are not installed by the tool; `docker-compose.yml` runs them locally and CI runs them as services. Their tests read `CLICKHOUSE_SERVER_URI` and `MSSQL_SERVER_URI` and skip when unset.
 
 ### Run tests
 
@@ -172,9 +177,13 @@ them as an artifact.
 
 ### Example Tests
 
-- **Location:** `/examples/` directory
-- **Requirements:** Tagged with "examples", requires live databases
-- **Databases:** PostgreSQL, MySQL, SQLite examples
+- **Location:** `/examples/` directory, a Go module of its own so the
+  drivers the examples run against are not dependencies of sqlc, and so
+  cgo stays on for the DuckDB driver
+- **Requirements:** Tagged with "examples", requires live databases; run
+  with `cd examples && go test --tags=examples ./...`
+- **Databases:** PostgreSQL, MySQL, SQLite, ClickHouse, DuckDB, Spanner and
+  SQL Server examples; each skips when its server is not named
 
 ## Database Services
 

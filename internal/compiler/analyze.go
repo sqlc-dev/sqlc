@@ -85,9 +85,6 @@ func combineAnalysis(prev *analysis, a *analyzer.Analysis) *analysis {
 				prev.Columns[i].DataType = cols[i].DataType
 				prev.Columns[i].IsArray = cols[i].IsArray
 				prev.Columns[i].ArrayDims = cols[i].ArrayDims
-				// The database described the type flat, so the expression
-				// the core wrote no longer matches it.
-				prev.Columns[i].TypeExpr = nil
 			}
 		}
 	} else {
@@ -109,7 +106,6 @@ func combineAnalysis(prev *analysis, a *analyzer.Analysis) *analysis {
 				prev.Parameters[i].Column.DataType = params[i].Column.DataType
 				prev.Parameters[i].Column.IsArray = params[i].Column.IsArray
 				prev.Parameters[i].Column.ArrayDims = params[i].Column.ArrayDims
-				prev.Parameters[i].Column.TypeExpr = nil
 			}
 		}
 	} else {

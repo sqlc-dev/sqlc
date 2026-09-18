@@ -43,6 +43,14 @@ sql:
     go:
       package: authors
       out: sqlite
+- name: duckdb
+  schema: duckdb/schema.sql
+  queries: duckdb/query.sql
+  engine: duckdb
+  gen:
+    go:
+      package: authors
+      out: duckdb
 - name: clickhouse
   schema: clickhouse/schema.sql
   queries: clickhouse/query.sql
