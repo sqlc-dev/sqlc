@@ -65,10 +65,10 @@ FROM things
 `
 
 type CastsParams struct {
-	Column1 big.Rat
-	Column2 []spanner.NullInt64
-	Column3 string
-	Column4 float64
+	A big.Rat
+	B []spanner.NullInt64
+	D string
+	E float64
 }
 
 type CastsRow struct {
@@ -80,10 +80,10 @@ type CastsRow struct {
 
 func (q *Queries) Casts(ctx context.Context, arg CastsParams) (CastsRow, error) {
 	row := q.db.QueryRowContext(ctx, casts,
-		arg.Column1,
-		arg.Column2,
-		arg.Column3,
-		arg.Column4,
+		sql.Named("a", arg.A),
+		sql.Named("b", arg.B),
+		sql.Named("d", arg.D),
+		sql.Named("e", arg.E),
 	)
 	var i CastsRow
 	err := row.Scan(

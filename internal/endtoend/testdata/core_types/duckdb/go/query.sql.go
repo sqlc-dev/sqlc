@@ -92,12 +92,12 @@ type CastsParams struct {
 
 type CastsRow struct {
 	A duckdb.Decimal
-	B []int32
+	B duckdb.Composite[[]int32]
 	C map[string]any
 	D any
 	E string
 	F duckdb.Map
-	G []int32
+	G duckdb.Composite[[]int32]
 	H any
 }
 

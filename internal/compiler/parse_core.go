@@ -63,7 +63,7 @@ func (c *Compiler) parseQueryCore(raw *ast.RawStmt, src string, pre *preprocess.
 			cols = append(cols, coreColumn(col))
 		}
 		for _, p := range res.Parameters {
-			params = append(params, Parameter{Number: p.Number, Column: coreParamColumn(p, namedParams)})
+			params = append(params, Parameter{Number: p.Number, Column: coreParamColumn(p, namedParams), Named: p.Name != ""})
 		}
 		expanded, err = source.Mutate(rawSQL, c.expandCore(raw, res.Stars))
 		if err != nil {

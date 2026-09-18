@@ -104,7 +104,7 @@
       {
         "number": 2,
         "column": {
-          "name": "name",
+          "name": "author",
           "type": {
             "name": "nvarchar",
             "args": [

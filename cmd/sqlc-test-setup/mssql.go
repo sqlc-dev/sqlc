@@ -45,13 +45,9 @@ func installMSSQL() error {
 		return nil
 	}
 
-	ubuntu, err := ubuntuRelease()
+	ubuntu, err := mssqlSupported()
 	if err != nil {
-		log.Printf("sql server packages are published for Ubuntu only, skipping: %s", err)
-		return nil
-	}
-	if runtime.GOOS != "linux" || (runtime.GOARCH != "amd64" && runtime.GOARCH != "arm64") || !mssqlUbuntuReleases[ubuntu] {
-		log.Printf("sql server packages are not published for Ubuntu %s on %s/%s, skipping", ubuntu, runtime.GOOS, runtime.GOARCH)
+		log.Printf("skipping: %s", err)
 		return nil
 	}
 
@@ -106,6 +102,19 @@ func installMSSQL() error {
 	return nil
 }
 
+// mssqlSupported reports whether Microsoft publishes SQL Server packages
+// for this machine, returning its Ubuntu release, and otherwise why not.
+func mssqlSupported() (string, error) {
+	ubuntu, err := ubuntuRelease()
+	if err != nil {
+		return "", fmt.Errorf("sql server packages are published for Ubuntu only: %w", err)
+	}
+	if runtime.GOOS != "linux" || (runtime.GOARCH != "amd64" && runtime.GOARCH != "arm64") || !mssqlUbuntuReleases[ubuntu] {
+		return "", fmt.Errorf("sql server packages are not published for Ubuntu %s on %s/%s", ubuntu, runtime.GOOS, runtime.GOARCH)
+	}
+	return ubuntu, nil
+}
+
 // ubuntuRelease reads the Ubuntu release from /etc/os-release.
 func ubuntuRelease() (string, error) {
 	data, err := os.ReadFile("/etc/os-release")
@@ -144,8 +153,8 @@ func startMSSQL() error {
 		return nil
 	}
 	if _, err := os.Stat(mssqlServer); err != nil {
-		if _, err := ubuntuRelease(); err != nil || runtime.GOOS != "linux" {
-			log.Println("sql server is not installed on this platform, skipping")
+		if _, err := mssqlSupported(); err != nil {
+			log.Printf("sql server is not installed here, skipping: %s", err)
 			return nil
 		}
 		return fmt.Errorf("sql server is not installed: run `sqlc-test-setup install mssql` first")

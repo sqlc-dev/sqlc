@@ -8,3 +8,4 @@ sql:
         package: "querytest"
         out: "go"
         sql_package: "database/sql"
+        emit_interface: true

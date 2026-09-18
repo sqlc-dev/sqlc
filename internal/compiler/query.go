@@ -64,4 +64,7 @@ type Query struct {
 type Parameter struct {
 	Number int
 	Column *Column
+	// Named is set when the query binds the parameter by name rather than
+	// by position: its placeholder is @name or {name:Type}.
+	Named bool
 }

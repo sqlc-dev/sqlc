@@ -191,7 +191,7 @@
       {
         "number": 1,
         "column": {
-          "name": "",
+          "name": "a",
           "type": {
             "name": "numeric"
           }
@@ -200,7 +200,7 @@
       {
         "number": 2,
         "column": {
-          "name": "",
+          "name": "b",
           "type": {
             "name": "array",
             "args": [
@@ -216,7 +216,7 @@
       {
         "number": 3,
         "column": {
-          "name": "",
+          "name": "d",
           "type": {
             "name": "string"
           }
@@ -225,7 +225,7 @@
       {
         "number": 4,
         "column": {
-          "name": "",
+          "name": "e",
           "type": {
             "name": "float64"
           }

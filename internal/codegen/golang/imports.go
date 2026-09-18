@@ -182,11 +182,6 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 	if uses("sql.Null") {
 		std["database/sql"] = struct{}{}
 	}
-	for _, q := range queries {
-		if q.Arg.NamedArgs && !q.Arg.isEmpty() {
-			std["database/sql"] = struct{}{}
-		}
-	}
 
 	sqlpkg := parseDriver(options.SqlPackage)
 	for _, q := range queries {
@@ -427,6 +422,13 @@ func (i *importer) queryImports(filename string) fileImports {
 		return false
 	}
 
+	// A query bound by name passes sql.Named arguments.
+	for _, q := range gq {
+		if q.Arg.NamedArgs && !q.Arg.isEmpty() {
+			std["database/sql"] = struct{}{}
+		}
+	}
+
 	if anyNonCopyFrom {
 		std["context"] = struct{}{}
 	}
@@ -544,7 +546,9 @@ func trimSliceAndPointerPrefix(v string) string {
 // hasPrefixIgnoringSliceAndPointerPrefix reports whether the type s names
 // prefix once its slice and pointer prefixes are stripped. A map type names
 // it when its key or its value does, so map[string]decimal.Decimal uses the
-// decimal package.
+// decimal package, and an instantiated generic type names it when the type
+// or one of its arguments does, so duckdb.Composite[[]time.Time] uses both
+// the duckdb and the time packages.
 func hasPrefixIgnoringSliceAndPointerPrefix(s, prefix string) bool {
 	trimmedS := trimSliceAndPointerPrefix(s)
 	trimmedPrefix := trimSliceAndPointerPrefix(prefix)
@@ -552,7 +556,50 @@ func hasPrefixIgnoringSliceAndPointerPrefix(s, prefix string) bool {
 		return hasPrefixIgnoringSliceAndPointerPrefix(key, trimmedPrefix) ||
 			hasPrefixIgnoringSliceAndPointerPrefix(value, trimmedPrefix)
 	}
+	if typ, args, ok := splitGenericType(trimmedS); ok {
+		if strings.HasPrefix(typ, trimmedPrefix) {
+			return true
+		}
+		for _, arg := range args {
+			if hasPrefixIgnoringSliceAndPointerPrefix(arg, trimmedPrefix) {
+				return true
+			}
+		}
+		return false
+	}
 	return strings.HasPrefix(trimmedS, trimmedPrefix)
+}
+
+// splitGenericType splits an instantiated generic type pkg.Name[A, B] into
+// pkg.Name and its type arguments, matching the brackets so an argument
+// that is itself a slice, a map or a generic type is kept whole.
+func splitGenericType(s string) (string, []string, bool) {
+	open := strings.IndexByte(s, '[')
+	if open <= 0 || !strings.HasSuffix(s, "]") {
+		return "", nil, false
+	}
+	var args []string
+	depth, start := 0, open+1
+	for i := open; i < len(s); i++ {
+		switch s[i] {
+		case '[':
+			depth++
+		case ']':
+			depth--
+			if depth == 0 {
+				if i != len(s)-1 {
+					return "", nil, false
+				}
+				args = append(args, strings.TrimSpace(s[start:i]))
+			}
+		case ',':
+			if depth == 1 {
+				args = append(args, strings.TrimSpace(s[start:i]))
+				start = i + 1
+			}
+		}
+	}
+	return s[:open], args, true
 }
 
 // splitMapType splits map[K]V into K and V, matching the brackets so a key

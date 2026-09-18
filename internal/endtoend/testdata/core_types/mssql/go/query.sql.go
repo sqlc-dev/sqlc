@@ -91,13 +91,13 @@ WHERE CAST(@a AS DECIMAL(5,2)) > 0
 `
 
 type CastsParams struct {
-	Column1 string
-	Column2 string
-	Column3 string
-	Column4 time.Time
-	Column5 string
-	Column6 float32
-	Column7 string
+	A string
+	B string
+	C string
+	D time.Time
+	E string
+	F float32
+	G string
 }
 
 type CastsRow struct {
@@ -112,13 +112,13 @@ type CastsRow struct {
 
 func (q *Queries) Casts(ctx context.Context, arg CastsParams) (CastsRow, error) {
 	row := q.db.QueryRowContext(ctx, casts,
-		arg.Column1,
-		arg.Column2,
-		arg.Column3,
-		arg.Column4,
-		arg.Column5,
-		arg.Column6,
-		arg.Column7,
+		sql.Named("a", arg.A),
+		sql.Named("b", arg.B),
+		sql.Named("c", arg.C),
+		sql.Named("d", arg.D),
+		sql.Named("e", arg.E),
+		sql.Named("f", arg.F),
+		sql.Named("g", arg.G),
 	)
 	var i CastsRow
 	err := row.Scan(

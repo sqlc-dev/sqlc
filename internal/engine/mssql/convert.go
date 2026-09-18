@@ -710,6 +710,7 @@ func (c *cc) convertVariableReference(n *tsql.VariableReference) ast.Node {
 	}
 	return &ast.ParamRef{
 		Number:   number,
+		Name:     name,
 		Location: c.loc(n),
 	}
 }

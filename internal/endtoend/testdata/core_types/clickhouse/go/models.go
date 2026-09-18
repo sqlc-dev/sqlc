@@ -21,7 +21,7 @@ type Thing struct {
 	Tags    []string
 	Labels  []*string
 	Matrix  [][]uint8
-	Kind    sql.NullString
+	Kind    *string
 	Created time.Time
 	Updated time.Time
 	Price   decimal.Decimal

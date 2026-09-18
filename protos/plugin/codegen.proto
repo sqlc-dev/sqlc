@@ -145,6 +145,10 @@ message Query {
 message Parameter {
   int32 number = 1 [json_name = "number"];
   Column column = 2 [json_name = "column"];
+  // named is set when the query binds the parameter by the name in column
+  // rather than by position: SQL Server's and Spanner's @name and
+  // ClickHouse's {name:Type}, which their drivers take as sql.Named.
+  bool named = 3 [json_name = "named"];
 }
 
 message GenerateRequest {

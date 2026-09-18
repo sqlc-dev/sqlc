@@ -38,15 +38,22 @@ func clickhouseGoType(options *opts.Options, t *plugin.TypeExpr, nullable, neste
 		}
 		return "any"
 
+	// The driver hands database/sql a Nullable value as a pointer, and
+	// dereferences it only when Nullable is the column's outermost type.
+	// Wrapped in LowCardinality or SimpleAggregateFunction the pointer
+	// comes through as is, which a sql.Null wrapper cannot scan, so a
+	// nullable one takes the pointer form the nested types do.
 	case "lowcardinality":
 		if inner := typeExprArg(t, 0); inner != nil {
-			return clickhouseGoType(options, inner, nullable || inner.Nullable, nested)
+			wrapped := nullable || t.Nullable || inner.Nullable
+			return clickhouseGoType(options, inner, wrapped, nested || wrapped)
 		}
 		return "any"
 
 	case "simpleaggregatefunction":
 		if inner := typeExprLastArg(t); inner != nil {
-			return clickhouseGoType(options, inner, nullable || inner.Nullable, nested)
+			wrapped := nullable || t.Nullable || inner.Nullable
+			return clickhouseGoType(options, inner, wrapped, nested || wrapped)
 		}
 		return "any"
 

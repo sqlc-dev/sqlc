@@ -231,7 +231,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 
 		qpl := int(*options.QueryParameterLimit)
 
-		namedArgs := placeholdersAreNamed(req.Settings.Engine, query.Text, query.Params)
+		namedArgs := placeholdersAreNamed(query.Params)
 
 		if len(query.Params) == 1 && qpl != 0 {
 			p := query.Params[0]
@@ -428,7 +428,13 @@ func columnsToStruct(req *plugin.GenerateRequest, options *opts.Options, name st
 			Column: c.Column,
 		}
 		if c.embed == nil {
-			f.Type = qualifyType(goParamType(req, options, c.Column), models, qualifier)
+			// A row struct is scanned into, a params struct is passed as
+			// arguments, and a driver can want different types for the two.
+			if useID {
+				f.Type = qualifyType(goType(req, options, c.Column), models, qualifier)
+			} else {
+				f.Type = qualifyType(goParamType(req, options, c.Column), models, qualifier)
+			}
 		} else {
 			f.Type = qualifyType(c.embed.modelType, models, qualifier)
 			f.EmbedFields = c.embed.fields
@@ -481,27 +487,16 @@ func checkIncompatibleFieldTypes(fields []Field) error {
 }
 
 // placeholdersAreNamed reports whether every parameter of a query is bound
-// by name: SQL Server and Spanner name a parameter @name in the query
-// text, ClickHouse's server-side {name:Type} does the same, and their
-// drivers take such an argument as sql.Named. A query written with ? is
-// bound by position, so nothing is named unless every parameter is.
-func placeholdersAreNamed(engine, text string, params []*plugin.Parameter) bool {
+// by name, which the compiler marks on a parameter whose placeholder names
+// it: SQL Server's and Spanner's @name and ClickHouse's {name:Type}, which
+// their drivers take as sql.Named. A query written with ? is bound by
+// position, so nothing is named unless every parameter is.
+func placeholdersAreNamed(params []*plugin.Parameter) bool {
 	if len(params) == 0 {
 		return false
 	}
 	for _, p := range params {
-		name := p.Column.GetName()
-		if name == "" {
-			return false
-		}
-		var named bool
-		switch engine {
-		case engineMSSQL, engineGoogleSQL:
-			named = strings.Contains(text, "@"+name)
-		case engineClickHouse:
-			named = strings.Contains(text, "{"+name+":")
-		}
-		if !named {
+		if !p.Named || p.Column.GetName() == "" {
 			return false
 		}
 	}

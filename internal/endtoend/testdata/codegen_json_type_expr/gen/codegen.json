@@ -751,7 +751,8 @@
               "nullable": false,
               "args": []
             }
-          }
+          },
+          "named": false
         },
         {
           "number": 2,
@@ -794,7 +795,8 @@
                 }
               ]
             }
-          }
+          },
+          "named": false
         }
       ],
       "comments": [],
