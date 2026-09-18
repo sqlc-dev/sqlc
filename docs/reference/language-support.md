@@ -1,12 +1,12 @@
 # Database and language support
 
-| Language   | Plugin                                                                 | MySQL  | PostgreSQL | SQLite          | ClickHouse      | DuckDB          | Spanner         | SQL Server      |
-| ---------- | ---------------------------------------------------------------------- | ------ | ---------- | --------------- | --------------- | --------------- | --------------- | --------------- |
-| Go         | (built-in)                                                             | Stable | Stable     | Beta            | Beta            | Beta            | Beta            | Beta            |
-| Go         | [sqlc-gen-go](https://github.com/sqlc-dev/sqlc-gen-go)                 | Stable | Stable     | Beta            | Not implemented | Not implemented | Not implemented | Not implemented |
-| Kotlin     | [sqlc-gen-kotlin](https://github.com/sqlc-dev/sqlc-gen-kotlin)         | Beta   | Beta       | Not implemented | Not implemented | Not implemented | Not implemented | Not implemented |
-| Python     | [sqlc-gen-python](https://github.com/sqlc-dev/sqlc-gen-python)         | Beta   | Beta       | Not implemented | Not implemented | Not implemented | Not implemented | Not implemented |
-| TypeScript | [sqlc-gen-typescript](https://github.com/sqlc-dev/sqlc-gen-typescript) | Beta   | Beta       | Not implemented | Not implemented | Not implemented | Not implemented | Not implemented |
+| Language   | Plugin                                                                 | MySQL  | PostgreSQL | SQLite | ClickHouse | DuckDB | Spanner | SQL Server |
+| ---------- | ---------------------------------------------------------------------- | ------ | ---------- | ------ | ---------- | ------ | ------- | ---------- |
+| Go         | (built-in)                                                             | Stable | Stable     | Beta   | Beta       | Beta   | Beta    | Beta       |
+| Go         | [sqlc-gen-go](https://github.com/sqlc-dev/sqlc-gen-go)                 | Stable | Stable     | Beta   | N/A        | N/A    | N/A     | N/A        |
+| Kotlin     | [sqlc-gen-kotlin](https://github.com/sqlc-dev/sqlc-gen-kotlin)         | Beta   | Beta       | N/A    | N/A        | N/A    | N/A     | N/A        |
+| Python     | [sqlc-gen-python](https://github.com/sqlc-dev/sqlc-gen-python)         | Beta   | Beta       | N/A    | N/A        | N/A    | N/A     | N/A        |
+| TypeScript | [sqlc-gen-typescript](https://github.com/sqlc-dev/sqlc-gen-typescript) | Beta   | Beta       | N/A    | N/A        | N/A    | N/A     | N/A        |
 
 The built-in Go generator targets `database/sql` for ClickHouse, DuckDB,
 Spanner and SQL Server, with the types their drivers hand back:
