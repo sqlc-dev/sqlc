@@ -7,8 +7,6 @@ package querytest
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const listCaseIntentHistory = `-- name: ListCaseIntentHistory :many
@@ -36,7 +34,7 @@ type ListCaseIntentHistoryRow struct {
 	Group string
 }
 
-func (q *Queries) ListCaseIntentHistory(ctx context.Context, caseIntentID pgtype.Int8) ([]ListCaseIntentHistoryRow, error) {
+func (q *Queries) ListCaseIntentHistory(ctx context.Context, caseIntentID int64) ([]ListCaseIntentHistoryRow, error) {
 	rows, err := q.db.Query(ctx, listCaseIntentHistory, caseIntentID)
 	if err != nil {
 		return nil, err
