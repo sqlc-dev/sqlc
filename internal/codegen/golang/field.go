@@ -11,12 +11,15 @@ import (
 )
 
 type Field struct {
-	Name    string // CamelCased name for Go
-	DBName  string // Name as used in the DB
-	Type    string
-	Tags    map[string]string
-	Comment string
-	Column  *plugin.Column
+	Name   string // CamelCased name for Go
+	DBName string // Name as used in the DB
+	// ParamName is the name of the placeholder a parameter is bound by,
+	// when the query names it; empty otherwise and for row fields.
+	ParamName string
+	Type      string
+	Tags      map[string]string
+	Comment   string
+	Column    *plugin.Column
 	// EmbedFields contains the embedded fields that require scanning.
 	EmbedFields []Field
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/metadata"
 	"github.com/sqlc-dev/sqlc/internal/source"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
 	"github.com/sqlc-dev/sqlc/internal/sql/preprocess"
 	"github.com/sqlc-dev/sqlc/internal/sql/validate"
@@ -62,8 +63,9 @@ func (c *Compiler) parseQueryCore(raw *ast.RawStmt, src string, pre *preprocess.
 		for _, col := range res.Columns {
 			cols = append(cols, coreColumn(col))
 		}
+		placeholders := placeholderNames(raw)
 		for _, p := range res.Parameters {
-			params = append(params, Parameter{Number: p.Number, Column: coreParamColumn(p, namedParams), Named: p.Name != ""})
+			params = append(params, Parameter{Number: p.Number, Column: coreParamColumn(p, namedParams), Name: placeholders[p.Number]})
 		}
 		expanded, err = source.Mutate(rawSQL, c.expandCore(raw, res.Stars))
 		if err != nil {
@@ -134,6 +136,19 @@ func describeType(col *Column, t *core.TypeExpr) {
 		col.Length = &l
 	}
 	col.Unsigned = strings.HasSuffix(inner.Name, " unsigned")
+}
+
+// placeholderNames maps each parameter number to the name its placeholder
+// carries, for the placeholders that have one: @name and {name:Type}.
+func placeholderNames(root ast.Node) map[int]string {
+	names := map[int]string{}
+	astutils.Apply(root, func(c *astutils.Cursor) bool {
+		if pr, ok := c.Node().(*ast.ParamRef); ok && pr.Name != "" {
+			names[pr.Number] = pr.Name
+		}
+		return true
+	}, nil)
+	return names
 }
 
 func coreParamColumn(p core.Parameter, params *named.ParamSet) *Column {

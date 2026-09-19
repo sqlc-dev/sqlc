@@ -115,6 +115,9 @@ type goColumn struct {
 	id int
 	*plugin.Column
 	embed *goEmbed
+	// paramName is the name of the placeholder a parameter is bound by,
+	// when the query names it.
+	paramName string
 }
 
 type goEmbed struct {
@@ -238,6 +241,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 			gq.Arg = QueryValue{
 				Name:           escape(paramName(p)),
 				DBName:         p.Column.GetName(),
+				ParamName:      p.Name,
 				Typ:            qualifyType(goParamType(req, options, p.Column), models, qualifier),
 				SQLDriver:      sqlpkg,
 				Engine:         req.Settings.Engine,
@@ -249,8 +253,9 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 			var cols []goColumn
 			for _, p := range query.Params {
 				cols = append(cols, goColumn{
-					id:     int(p.Number),
-					Column: p.Column,
+					id:        int(p.Number),
+					Column:    p.Column,
+					paramName: p.Name,
 				})
 			}
 			s, err := columnsToStruct(req, options, gq.MethodName+"Params", cols, false, models, qualifier)
@@ -422,10 +427,11 @@ func columnsToStruct(req *plugin.GenerateRequest, options *opts.Options, name st
 		}
 		addExtraGoStructTags(tags, req, options, c.Column)
 		f := Field{
-			Name:   fieldName,
-			DBName: colName,
-			Tags:   tags,
-			Column: c.Column,
+			Name:      fieldName,
+			DBName:    colName,
+			ParamName: c.paramName,
+			Tags:      tags,
+			Column:    c.Column,
 		}
 		if c.embed == nil {
 			// A row struct is scanned into, a params struct is passed as
@@ -487,16 +493,16 @@ func checkIncompatibleFieldTypes(fields []Field) error {
 }
 
 // placeholdersAreNamed reports whether every parameter of a query is bound
-// by name, which the compiler marks on a parameter whose placeholder names
-// it: SQL Server's and Spanner's @name and ClickHouse's {name:Type}, which
-// their drivers take as sql.Named. A query written with ? is bound by
-// position, so nothing is named unless every parameter is.
+// by name: the compiler passes the name a placeholder carries, SQL
+// Server's and Spanner's @name and ClickHouse's {name:Type}, which their
+// drivers take as sql.Named. A query written with ? is bound by position,
+// so nothing is named unless every parameter is.
 func placeholdersAreNamed(params []*plugin.Parameter) bool {
 	if len(params) == 0 {
 		return false
 	}
 	for _, p := range params {
-		if !p.Named || p.Column.GetName() == "" {
+		if p.Name == "" {
 			return false
 		}
 	}

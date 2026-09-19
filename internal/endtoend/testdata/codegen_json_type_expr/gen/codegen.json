@@ -752,7 +752,7 @@
               "args": []
             }
           },
-          "named": false
+          "name": ""
         },
         {
           "number": 2,
@@ -796,7 +796,7 @@
               ]
             }
           },
-          "named": false
+          "name": ""
         }
       ],
       "comments": [],

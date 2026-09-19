@@ -15,6 +15,7 @@ type QueryValue struct {
 	EmitPointer bool
 	Name        string
 	DBName      string // The name of the field in the database. Only set if Struct==nil.
+	ParamName   string // The name of the placeholder a parameter is bound by, when the query names it. Only set if Struct==nil.
 	Struct      *Struct
 	Typ         string
 	SQLDriver   opts.SQLDriver
@@ -165,14 +166,14 @@ func (v QueryValue) Params() string {
 		if !v.Column.IsSqlcSlice && strings.HasPrefix(v.Typ, "[]") && v.Typ != "[]byte" && v.pqArrays() {
 			out = append(out, "pq.Array("+escape(v.Name)+")")
 		} else {
-			out = append(out, v.namedArg(v.DBName, escape(v.Name)))
+			out = append(out, v.namedArg(v.ParamName, escape(v.Name)))
 		}
 	} else {
 		for _, f := range v.Struct.Fields {
 			if !f.HasSqlcSlice() && strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && v.pqArrays() {
 				out = append(out, "pq.Array("+escape(v.VariableForField(f))+")")
 			} else {
-				out = append(out, v.namedArg(f.DBName, escape(v.VariableForField(f))))
+				out = append(out, v.namedArg(f.ParamName, escape(v.VariableForField(f))))
 			}
 		}
 	}

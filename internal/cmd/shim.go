@@ -258,7 +258,7 @@ func pluginQueryParam(p compiler.Parameter) *plugin.Parameter {
 	return &plugin.Parameter{
 		Number: int32(p.Number),
 		Column: pluginQueryColumn(p.Column),
-		Named:  p.Named,
+		Name:   p.Name,
 	}
 }
 
