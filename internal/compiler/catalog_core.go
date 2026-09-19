@@ -47,6 +47,7 @@ func coreResultCatalog(c *core.Catalog) (*catalog.Catalog, error) {
 					IsArray:    expr.IsArray(),
 					ArrayDims:  expr.ArrayDims(),
 					IsUnsigned: strings.HasSuffix(inner.Name, " unsigned"),
+					TypeExpr:   expr,
 				}
 				if len(inner.Args) > 0 && inner.Args[0].Int != nil {
 					l := int(*inner.Args[0].Int)

@@ -81,6 +81,34 @@ message Identifier {
   string name = 3;
 }
 
+// TypeExpr is a column's type as an expression: its name, whether a value
+// of it may be null, and its arguments — the (10, 2) of decimal(10, 2), the
+// element of array(integer), the fields of struct(a: integer). It is set
+// only when the analysis core typed the column; the flat description in
+// Column (type, not_null, is_array, array_dims, length, unsigned) is set
+// either way.
+message TypeExpr {
+  string name = 1;
+  bool nullable = 2;
+  repeated TypeArg args = 3;
+}
+
+// TypeArg is one argument of a TypeExpr. Exactly one of the values is set:
+// a type for array(integer), an integer for varchar(20), a boolean or a
+// string for a dialect that takes them, or an identifier for a bare word
+// that is not a type, such as the max of nvarchar(max). A label names the
+// argument, as the fields of struct(a: integer, b: varchar) are named.
+message TypeArg {
+  string label = 1;
+  oneof value {
+    TypeExpr type = 2;
+    int64 int_value = 3;
+    bool bool_value = 4;
+    string string_value = 5;
+    string ident = 6;
+  }
+}
+
 message Column {
   string name = 1;
   bool not_null = 3;
@@ -100,6 +128,7 @@ message Column {
   string original_name = 15;
   bool unsigned = 16;
   int32 array_dims = 17;
+  TypeExpr type_expr = 18;
 }
 
 message Query {
@@ -116,6 +145,7 @@ message Query {
 message Parameter {
   int32 number = 1 [json_name = "number"];
   Column column = 2 [json_name = "column"];
+  string name = 3 [json_name = "name"];
 }
 
 message GenerateRequest {

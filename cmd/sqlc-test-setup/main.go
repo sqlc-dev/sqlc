@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -19,7 +20,31 @@ import (
 const (
 	// pgVersion is the PostgreSQL version to install.
 	pgVersion = "18.2.0"
+
+	// omniVersion is the Spanner Omni release to install, from its
+	// standalone server binaries.
+	omniVersion = "2026.r2.1-beta"
+
+	// omniPort is the gRPC port a Spanner Omni single server listens on.
+	omniPort = "15000"
 )
+
+// omniBinary contains the download information for a Spanner Omni server
+// release, published at https://storage.googleapis.com/spanner-omni/ and
+// documented at https://docs.cloud.google.com/spanner-omni/download.
+type omniBinary struct {
+	URL    string
+	SHA256 string
+}
+
+// omniBinaries maps "<GOOS>/<GOARCH>" to the server download. Only linux
+// x86_64 is published; the other platforms skip Spanner Omni.
+var omniBinaries = map[string]omniBinary{
+	"linux/amd64": {
+		URL:    "https://storage.googleapis.com/spanner-omni/" + omniVersion + "/spanner-omni-server-" + omniVersion + "-linux-x86_64.tar.gz",
+		SHA256: "792ffc772d5fff8ade56a8f336993d671d22794fe9f7e88e38a6609c65e16d90",
+	},
+}
 
 // pgBinary contains the download information for a PostgreSQL binary release.
 type pgBinary struct {
@@ -44,23 +69,60 @@ func main() {
 	log.SetPrefix("[sqlc-test-setup] ")
 
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "usage: sqlc-test-setup <install|start>")
+		fmt.Fprintln(os.Stderr, usage)
+		os.Exit(1)
+	}
+
+	services, err := selectServices(os.Args[2:])
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n%s\n", err, usage)
 		os.Exit(1)
 	}
 
 	switch os.Args[1] {
 	case "install":
-		if err := runInstall(); err != nil {
+		if err := runInstall(services); err != nil {
 			log.Fatalf("install failed: %s", err)
 		}
 	case "start":
-		if err := runStart(); err != nil {
+		if err := runStart(services); err != nil {
 			log.Fatalf("start failed: %s", err)
 		}
 	default:
-		fmt.Fprintf(os.Stderr, "unknown command: %s\nusage: sqlc-test-setup <install|start>\n", os.Args[1])
+		fmt.Fprintf(os.Stderr, "unknown command: %s\n%s\n", os.Args[1], usage)
 		os.Exit(1)
 	}
+}
+
+const usage = "usage: sqlc-test-setup <install|start> [postgresql|mysql|clickhouse|mssql|spanner ...]"
+
+// allServices is every database the tool knows, in the order they are
+// installed and started.
+var allServices = []string{"postgresql", "mysql", "clickhouse", "mssql", "spanner"}
+
+// selectServices reads the databases named on the command line, or every
+// database when none is named.
+func selectServices(args []string) (map[string]bool, error) {
+	selected := map[string]bool{}
+	if len(args) == 0 {
+		for _, name := range allServices {
+			selected[name] = true
+		}
+		return selected, nil
+	}
+	for _, arg := range args {
+		known := false
+		for _, name := range allServices {
+			if arg == name {
+				known = true
+			}
+		}
+		if !known {
+			return nil, fmt.Errorf("unknown database: %s", arg)
+		}
+		selected[arg] = true
+	}
+	return selected, nil
 }
 
 // run executes a command with verbose logging, streaming output to stderr.
@@ -143,19 +205,43 @@ func pgBin(name string) string {
 
 // ---- install ----
 
-func runInstall() error {
-	log.Println("=== Installing PostgreSQL and MySQL for test setup ===")
+func runInstall(services map[string]bool) error {
+	log.Println("=== Installing databases for test setup ===")
 
-	if err := installAptProxy(); err != nil {
-		return fmt.Errorf("configuring apt proxy: %w", err)
+	if services["postgresql"] || services["mysql"] || services["mssql"] {
+		if err := installAptProxy(); err != nil {
+			return fmt.Errorf("configuring apt proxy: %w", err)
+		}
 	}
 
-	if err := installPostgreSQL(); err != nil {
-		return fmt.Errorf("installing postgresql: %w", err)
+	if services["postgresql"] {
+		if err := installPostgreSQL(); err != nil {
+			return fmt.Errorf("installing postgresql: %w", err)
+		}
 	}
 
-	if err := installMySQL(); err != nil {
-		return fmt.Errorf("installing mysql: %w", err)
+	if services["mysql"] {
+		if err := installMySQL(); err != nil {
+			return fmt.Errorf("installing mysql: %w", err)
+		}
+	}
+
+	if services["clickhouse"] {
+		if err := installClickHouse(); err != nil {
+			return fmt.Errorf("installing clickhouse: %w", err)
+		}
+	}
+
+	if services["mssql"] {
+		if err := installMSSQL(); err != nil {
+			return fmt.Errorf("installing sql server: %w", err)
+		}
+	}
+
+	if services["spanner"] {
+		if err := installSpannerOmni(); err != nil {
+			return fmt.Errorf("installing spanner omni: %w", err)
+		}
 	}
 
 	log.Println("=== Install complete ===")
@@ -396,21 +482,203 @@ func installMySQL() error {
 
 // ---- start ----
 
-func runStart() error {
-	log.Println("=== Starting PostgreSQL and MySQL ===")
+func runStart(services map[string]bool) error {
+	log.Println("=== Starting databases ===")
 
-	if err := startPostgreSQL(); err != nil {
-		return fmt.Errorf("starting postgresql: %w", err)
+	if services["postgresql"] {
+		if err := startPostgreSQL(); err != nil {
+			return fmt.Errorf("starting postgresql: %w", err)
+		}
 	}
 
-	if err := startMySQL(); err != nil {
-		return fmt.Errorf("starting mysql: %w", err)
+	if services["mysql"] {
+		if err := startMySQL(); err != nil {
+			return fmt.Errorf("starting mysql: %w", err)
+		}
 	}
 
-	log.Println("=== Both databases are running and configured ===")
-	log.Println("PostgreSQL: postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable")
-	log.Println("MySQL:      root:mysecretpassword@tcp(127.0.0.1:3306)/mysql")
+	if services["clickhouse"] {
+		if err := startClickHouse(); err != nil {
+			return fmt.Errorf("starting clickhouse: %w", err)
+		}
+	}
+
+	if services["mssql"] {
+		if err := startMSSQL(); err != nil {
+			return fmt.Errorf("starting sql server: %w", err)
+		}
+	}
+
+	if services["spanner"] {
+		if err := startSpannerOmni(); err != nil {
+			return fmt.Errorf("starting spanner omni: %w", err)
+		}
+	}
+
+	log.Println("=== Databases are running and configured ===")
+	if services["postgresql"] {
+		log.Println("PostgreSQL:   postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable")
+	}
+	if services["mysql"] {
+		log.Println("MySQL:        root:mysecretpassword@tcp(127.0.0.1:3306)/mysql")
+	}
+	if services["clickhouse"] {
+		log.Println("ClickHouse:   clickhouse://default:" + clickhousePassword + "@127.0.0.1:" + clickhouseTCPPort)
+	}
+	if services["mssql"] {
+		log.Println("SQL Server:   sqlserver://sa:" + mssqlSAPassword + "@127.0.0.1:" + mssqlPort + "?encrypt=disable")
+	}
+	if services["spanner"] {
+		log.Println("Spanner Omni: localhost:" + omniPort)
+	}
 	return nil
+}
+
+// omniDir is where the Spanner Omni release is unpacked: the bin directory
+// holds the spanner launcher and spanner_server, and data holds what a
+// started server writes.
+func omniDir() (string, error) {
+	cache, err := os.UserCacheDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(cache, "sqlc-spanner-omni", omniVersion), nil
+}
+
+func omniLauncher(dir string) string {
+	return filepath.Join(dir, "google", "spanner", "bin", "spanner")
+}
+
+// installSpannerOmni downloads the Spanner Omni server release into the
+// cache and unpacks it, checking the download against the pinned SHA-256.
+// It is a no-op when the release is already unpacked, and skips platforms
+// the server is not published for.
+func installSpannerOmni() error {
+	log.Printf("--- Installing Spanner Omni %s ---", omniVersion)
+
+	platform := runtime.GOOS + "/" + runtime.GOARCH
+	bin, ok := omniBinaries[platform]
+	if !ok {
+		log.Printf("spanner omni is not published for %s, skipping", platform)
+		return nil
+	}
+
+	dir, err := omniDir()
+	if err != nil {
+		return err
+	}
+	if _, err := os.Stat(omniLauncher(dir)); err == nil {
+		log.Printf("spanner omni %s is already installed in %s", omniVersion, dir)
+		return nil
+	}
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+
+	archive := filepath.Join(dir, "server.tar.gz")
+	log.Printf("downloading %s", bin.URL)
+	if err := downloadFile(archive, bin.URL); err != nil {
+		return fmt.Errorf("downloading spanner omni: %w", err)
+	}
+	defer os.Remove(archive)
+
+	sum, err := sha256File(archive)
+	if err != nil {
+		return err
+	}
+	if sum != bin.SHA256 {
+		return fmt.Errorf("spanner omni download has SHA-256 %s, want %s", sum, bin.SHA256)
+	}
+
+	log.Printf("unpacking into %s", dir)
+	if err := run("tar", "-xzf", archive, "-C", dir); err != nil {
+		return fmt.Errorf("unpacking spanner omni: %w", err)
+	}
+	if _, err := os.Stat(omniLauncher(dir)); err != nil {
+		return fmt.Errorf("spanner omni release does not hold %s", omniLauncher(dir))
+	}
+	return nil
+}
+
+// startSpannerOmni starts a Spanner Omni single server in the background,
+// serving plaintext gRPC on omniPort, and waits until it accepts
+// connections. It is a no-op when a server is already listening, and skips
+// platforms the server is not installed on.
+func startSpannerOmni() error {
+	log.Println("--- Starting Spanner Omni ---")
+
+	if omniReady() {
+		log.Println("spanner omni is already running and accepting connections")
+		return nil
+	}
+
+	dir, err := omniDir()
+	if err != nil {
+		return err
+	}
+	launcher := omniLauncher(dir)
+	if _, err := os.Stat(launcher); err != nil {
+		if _, ok := omniBinaries[runtime.GOOS+"/"+runtime.GOARCH]; !ok {
+			log.Printf("spanner omni is not published for %s/%s, skipping", runtime.GOOS, runtime.GOARCH)
+			return nil
+		}
+		return fmt.Errorf("spanner omni is not installed: run `sqlc-test-setup install` first")
+	}
+
+	data := filepath.Join(dir, "data")
+	if err := os.MkdirAll(data, 0o755); err != nil {
+		return err
+	}
+	logFile, err := os.Create(filepath.Join(dir, "server.log"))
+	if err != nil {
+		return err
+	}
+	defer logFile.Close()
+
+	// The launcher supervises the server processes for as long as it runs,
+	// so it is detached from this process and left running.
+	cmd := exec.Command(launcher, "start-single-server", "--base-dir", data)
+	cmd.Stdout = logFile
+	cmd.Stderr = logFile
+	cmd.SysProcAttr = detachedProcess()
+	log.Printf("starting %s start-single-server --base-dir %s", launcher, data)
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("starting spanner omni: %w", err)
+	}
+	if err := cmd.Process.Release(); err != nil {
+		return err
+	}
+
+	log.Println("waiting for spanner omni to accept connections")
+	if err := waitForSpannerOmni(3 * time.Minute); err != nil {
+		return fmt.Errorf("spanner omni did not start in time (see %s): %w", logFile.Name(), err)
+	}
+	log.Println("spanner omni is accepting connections")
+	return nil
+}
+
+// omniReady reports whether something accepts connections on the Spanner
+// Omni gRPC port.
+func omniReady() bool {
+	conn, err := net.DialTimeout("tcp", "127.0.0.1:"+omniPort, time.Second)
+	if err != nil {
+		return false
+	}
+	conn.Close()
+	return true
+}
+
+// waitForSpannerOmni polls until the server accepts connections or the
+// timeout expires.
+func waitForSpannerOmni(timeout time.Duration) error {
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		if omniReady() {
+			return nil
+		}
+		time.Sleep(time.Second)
+	}
+	return fmt.Errorf("timed out after %s waiting for spanner omni", timeout)
 }
 
 func startPostgreSQL() error {

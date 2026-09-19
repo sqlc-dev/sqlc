@@ -22,6 +22,9 @@ jobs:
         CGO_ENABLED: "0"
         GOOS: ${{ matrix.goos }}
         GOARCH: ${{ matrix.goarch }}
+
+  # sqlc's own tests: the end-to-end suite needs PostgreSQL and MySQL, which
+  # sqlc-test-setup installs on the runner.
   test:
     runs-on: ubuntu-24.04
     steps:
@@ -44,17 +47,17 @@ jobs:
       env:
         CGO_ENABLED: "0"
 
+    # A module of its own, so cgo stays on for the DuckDB driver the
+    # DuckDB golden imports.
     - name: build internal/endtoend
       run: go build ./...
       working-directory: internal/endtoend/testdata
-      env:
-        CGO_ENABLED: "0"
 
     - name: install databases
-      run: go run ./cmd/sqlc-test-setup install
+      run: go run ./cmd/sqlc-test-setup install postgresql mysql
 
     - name: start databases
-      run: go run ./cmd/sqlc-test-setup start
+      run: go run ./cmd/sqlc-test-setup start postgresql mysql
 
     - name: test ./...
       run: gotestsum --junitfile junit.xml -- --tags=examples -timeout 20m -failfast ./...
@@ -65,6 +68,34 @@ jobs:
         POSTGRESQL_SERVER_URI: "postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable"
         MYSQL_SERVER_URI: "root:mysecretpassword@tcp(127.0.0.1:3306)/mysql?multiStatements=true&parseTime=true"
         CGO_ENABLED: "0"
+
+  # The examples run generated code against every database sqlc supports.
+  # They are a module of their own, so their drivers are not dependencies
+  # of sqlc, and cgo stays on for the DuckDB driver. sqlc-test-setup
+  # installs and starts every database on the runner.
+  examples:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-go@v7
+      with:
+        go-version: '1.26.5'
+
+    - name: install databases
+      run: go run ./cmd/sqlc-test-setup install
+
+    - name: start databases
+      run: go run ./cmd/sqlc-test-setup start
+
+    - name: test examples
+      run: go test --tags=examples -timeout 20m ./...
+      working-directory: examples
+      env:
+        POSTGRESQL_SERVER_URI: "postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable"
+        MYSQL_SERVER_URI: "root:mysecretpassword@tcp(127.0.0.1:3306)/mysql?multiStatements=true&parseTime=true"
+        CLICKHOUSE_SERVER_URI: "clickhouse://default:mysecretpassword@127.0.0.1:9000"
+        MSSQL_SERVER_URI: "sqlserver://sa:Mysecretpassword1!@127.0.0.1:1433?encrypt=disable"
+        SPANNER_SERVER_URI: "localhost:15000"
 
   vuln_check:
     runs-on: ubuntu-24.04

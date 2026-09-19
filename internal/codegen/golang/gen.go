@@ -168,6 +168,7 @@ func validate(options *opts.Options, enums []Enum, structs []Struct, queries []Q
 func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, structs []Struct, queries []Query) (*plugin.GenerateResponse, error) {
 	i := &importer{
 		Options: options,
+		Engine:  req.Settings.Engine,
 		Queries: queries,
 		Enums:   enums,
 		Structs: structs,

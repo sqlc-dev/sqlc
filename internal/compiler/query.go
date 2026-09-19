@@ -64,4 +64,8 @@ type Query struct {
 type Parameter struct {
 	Number int
 	Column *Column
+	// Name is the name the placeholder itself carries, @name or
+	// {name:Type}, by which the query binds the parameter. It is empty for
+	// a positional placeholder.
+	Name string
 }

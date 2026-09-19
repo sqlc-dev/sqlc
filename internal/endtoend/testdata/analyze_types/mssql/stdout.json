@@ -432,7 +432,7 @@
       {
         "number": 1,
         "column": {
-          "name": "",
+          "name": "a",
           "type": {
             "name": "decimal",
             "args": [
@@ -449,7 +449,7 @@
       {
         "number": 2,
         "column": {
-          "name": "",
+          "name": "b",
           "type": {
             "name": "nvarchar",
             "args": [
@@ -463,7 +463,7 @@
       {
         "number": 3,
         "column": {
-          "name": "",
+          "name": "c",
           "type": {
             "name": "varchar",
             "args": [
@@ -477,7 +477,7 @@
       {
         "number": 4,
         "column": {
-          "name": "",
+          "name": "d",
           "type": {
             "name": "datetime2",
             "args": [
@@ -491,7 +491,7 @@
       {
         "number": 5,
         "column": {
-          "name": "",
+          "name": "e",
           "type": {
             "name": "money"
           }
@@ -500,7 +500,7 @@
       {
         "number": 6,
         "column": {
-          "name": "",
+          "name": "f",
           "type": {
             "name": "real"
           }
@@ -509,7 +509,7 @@
       {
         "number": 7,
         "column": {
-          "name": "",
+          "name": "g",
           "type": {
             "name": "char",
             "args": [

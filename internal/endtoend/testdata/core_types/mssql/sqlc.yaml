@@ -1,0 +1,11 @@
+version: "2"
+sql:
+  - engine: "mssql"
+    schema: "schema.sql"
+    queries: "query.sql"
+    gen:
+      go:
+        package: "querytest"
+        out: "go"
+        sql_package: "database/sql"
+        emit_interface: true

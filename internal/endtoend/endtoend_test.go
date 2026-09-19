@@ -71,6 +71,9 @@ func TestExamples(t *testing.T) {
 			continue
 		}
 		tc := replay.Name()
+		if !isExample(filepath.Join(examples, tc)) {
+			continue
+		}
 		t.Run(tc, func(t *testing.T) {
 			t.Parallel()
 			path := filepath.Join(examples, tc)
@@ -453,4 +456,16 @@ func BenchmarkReplay(b *testing.B) {
 			}
 		})
 	}
+}
+
+// isExample reports whether a directory under examples is an example: one
+// with a sqlc configuration file. The examples module also holds packages
+// the examples' tests share, which have none.
+func isExample(dir string) bool {
+	for _, name := range []string{"sqlc.yaml", "sqlc.yml", "sqlc.json"} {
+		if _, err := os.Stat(filepath.Join(dir, name)); err == nil {
+			return true
+		}
+	}
+	return false
 }

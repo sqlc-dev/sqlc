@@ -115,6 +115,9 @@ type goColumn struct {
 	id int
 	*plugin.Column
 	embed *goEmbed
+	// paramName is the name of the placeholder a parameter is bound by,
+	// when the query names it.
+	paramName string
 }
 
 type goEmbed struct {
@@ -231,13 +234,18 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 
 		qpl := int(*options.QueryParameterLimit)
 
+		namedArgs := placeholdersAreNamed(query.Params)
+
 		if len(query.Params) == 1 && qpl != 0 {
 			p := query.Params[0]
 			gq.Arg = QueryValue{
 				Name:           escape(paramName(p)),
 				DBName:         p.Column.GetName(),
-				Typ:            qualifyType(goType(req, options, p.Column), models, qualifier),
+				ParamName:      p.Name,
+				Typ:            qualifyType(goParamType(req, options, p.Column), models, qualifier),
 				SQLDriver:      sqlpkg,
+				Engine:         req.Settings.Engine,
+				NamedArgs:      namedArgs,
 				ModelQualifier: qualifier,
 				Column:         p.Column,
 			}
@@ -245,8 +253,9 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 			var cols []goColumn
 			for _, p := range query.Params {
 				cols = append(cols, goColumn{
-					id:     int(p.Number),
-					Column: p.Column,
+					id:        int(p.Number),
+					Column:    p.Column,
+					paramName: p.Name,
 				})
 			}
 			s, err := columnsToStruct(req, options, gq.MethodName+"Params", cols, false, models, qualifier)
@@ -258,6 +267,8 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 				Name:           "arg",
 				Struct:         s,
 				SQLDriver:      sqlpkg,
+				Engine:         req.Settings.Engine,
+				NamedArgs:      namedArgs,
 				EmitPointer:    options.EmitParamsStructPointers,
 				ModelQualifier: qualifier,
 			}
@@ -296,6 +307,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 				DBName:         name,
 				Typ:            qualifyType(goType(req, options, c), models, qualifier),
 				SQLDriver:      sqlpkg,
+				Engine:         req.Settings.Engine,
 				ModelQualifier: qualifier,
 			}
 		} else if putOutColumns(query) {
@@ -343,6 +355,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 				Name:           "i",
 				Struct:         gs,
 				SQLDriver:      sqlpkg,
+				Engine:         req.Settings.Engine,
 				EmitPointer:    options.EmitResultStructPointers,
 				ModelQualifier: qualifier,
 			}
@@ -414,13 +427,20 @@ func columnsToStruct(req *plugin.GenerateRequest, options *opts.Options, name st
 		}
 		addExtraGoStructTags(tags, req, options, c.Column)
 		f := Field{
-			Name:   fieldName,
-			DBName: colName,
-			Tags:   tags,
-			Column: c.Column,
+			Name:      fieldName,
+			DBName:    colName,
+			ParamName: c.paramName,
+			Tags:      tags,
+			Column:    c.Column,
 		}
 		if c.embed == nil {
-			f.Type = qualifyType(goType(req, options, c.Column), models, qualifier)
+			// A row struct is scanned into, a params struct is passed as
+			// arguments, and a driver can want different types for the two.
+			if useID {
+				f.Type = qualifyType(goType(req, options, c.Column), models, qualifier)
+			} else {
+				f.Type = qualifyType(goParamType(req, options, c.Column), models, qualifier)
+			}
 		} else {
 			f.Type = qualifyType(c.embed.modelType, models, qualifier)
 			f.EmbedFields = c.embed.fields
@@ -470,4 +490,21 @@ func checkIncompatibleFieldTypes(fields []Field) error {
 		}
 	}
 	return nil
+}
+
+// placeholdersAreNamed reports whether every parameter of a query is bound
+// by name: the compiler passes the name a placeholder carries, SQL
+// Server's and Spanner's @name and ClickHouse's {name:Type}, which their
+// drivers take as sql.Named. A query written with ? is bound by position,
+// so nothing is named unless every parameter is.
+func placeholdersAreNamed(params []*plugin.Parameter) bool {
+	if len(params) == 0 {
+		return false
+	}
+	for _, p := range params {
+		if p.Name == "" {
+			return false
+		}
+	}
+	return true
 }

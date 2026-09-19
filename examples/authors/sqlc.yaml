@@ -43,6 +43,38 @@ sql:
     go:
       package: authors
       out: sqlite
+- name: duckdb
+  schema: duckdb/schema.sql
+  queries: duckdb/query.sql
+  engine: duckdb
+  gen:
+    go:
+      package: authors
+      out: duckdb
+- name: clickhouse
+  schema: clickhouse/schema.sql
+  queries: clickhouse/query.sql
+  engine: clickhouse
+  gen:
+    go:
+      package: authors
+      out: clickhouse
+- name: mssql
+  schema: mssql/schema.sql
+  queries: mssql/query.sql
+  engine: mssql
+  gen:
+    go:
+      package: authors
+      out: mssql
+- name: googlesql
+  schema: googlesql/schema.sql
+  queries: googlesql/query.sql
+  engine: googlesql
+  gen:
+    go:
+      package: authors
+      out: googlesql
 rules:
 - name: postgresql-query-too-costly
   message: "Too costly"

@@ -1,0 +1,37 @@
+CREATE TYPE dbo.PhoneNumber FROM varchar(20) NOT NULL;
+CREATE TYPE Code FROM char(3);
+
+CREATE TABLE things (
+  id BIGINT IDENTITY(1,1) PRIMARY KEY,
+  price DECIMAL(10,2) NOT NULL,
+  amount NUMERIC(18,4),
+  plain DECIMAL,
+  body NVARCHAR(MAX),
+  title VARCHAR(50),
+  code CHAR(10),
+  ncode NCHAR(5),
+  blob VARBINARY(MAX),
+  key16 BINARY(16),
+  created DATETIME2(3),
+  updated DATETIME2,
+  offset_at DATETIMEOFFSET(7),
+  tm TIME(4),
+  f FLOAT(24),
+  f53 FLOAT,
+  r REAL,
+  m MONEY,
+  b BIT,
+  u UNIQUEIDENTIFIER,
+  x XML,
+  j JSON,
+  sv SQL_VARIANT,
+  rv ROWVERSION,
+  g GEOGRAPHY,
+  h HIERARCHYID,
+  vec VECTOR(3),
+  sn sysname,
+  phone dbo.PhoneNumber,
+  code2 dbo.Code,
+  code3 Code,
+  bare VARCHAR
+);
