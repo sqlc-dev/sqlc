@@ -72,7 +72,7 @@ func (c *Catalog) ResolveFuncCall(call *ast.FuncCall) (*Function, error) {
 			if arg.HasDefault {
 				defaults += 1
 			}
-			if arg.Mode == ast.FuncParamVariadic {
+			if arg.Mode == ast.FuncParamVariadic || arg.Type.Name == "anymultirange" {
 				variadic = true
 				defaults += 1
 			}
