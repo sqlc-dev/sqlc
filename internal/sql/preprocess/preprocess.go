@@ -215,8 +215,8 @@ func Dialected(d Dialect, src string) *Result {
 			continue
 		}
 
-		stmt.Dollar, stmt.ParamErr = validatePlaceholders(occs)
 		stmt.Params = number(d, occs)
+		stmt.Dollar, stmt.ParamErr = validatePlaceholders(occs)
 		stmt.Numbers = map[int]int{}
 
 		prev := start
@@ -301,6 +301,17 @@ func validatePlaceholders(occs []occurrence) (dollar bool, err error) {
 			unnumbered = true
 		}
 	}
+
+	// sqlc.arg/narg/slice fill gaps in numbered dialects; include them so
+	// the gap check does not fire for positions they occupy.
+	if numbered && !unnumbered {
+		for _, occ := range occs {
+			if occ.kind == kindArg || occ.kind == kindNarg || occ.kind == kindSlice {
+				seen[occ.number] = true
+			}
+		}
+	}
+
 	if numbered && unnumbered {
 		return false, errors.New("can not mix $1 format with ? format")
 	}
