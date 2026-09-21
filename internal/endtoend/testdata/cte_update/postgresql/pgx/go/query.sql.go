@@ -23,9 +23,9 @@ from updated_attribute
 `
 
 type UpdateAttributeParams struct {
-	FilterValue pgtype.Bool
-	Value       pgtype.Text
-	ID          pgtype.Int8
+	FilterValue bool
+	Value       string
+	ID          int64
 }
 
 type UpdateAttributeRow struct {
