@@ -277,6 +277,9 @@
                                 },
                                 "omit_unused_structs": {
                                     "type": "boolean"
+                                },
+                                "omit_catalog_schema": {
+                                    "type": "boolean"
                                 }
                             },
                             "json": {
