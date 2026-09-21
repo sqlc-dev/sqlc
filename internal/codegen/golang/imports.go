@@ -376,7 +376,24 @@ func (i *importer) queryImports(filename string) fileImports {
 			}
 			if !q.Arg.isEmpty() {
 				if q.Arg.IsStruct() {
+					// A single named parameter referenced as both a regular
+					// argument (e.g. `sqlc.narg(x) IS NULL`) and as a
+					// `sqlc.slice('x')` produces two struct fields sharing
+					// the same name and type, but only the slice variant
+					// carries the IsSqlcSlice flag. The non-slice duplicate
+					// must not be counted as a `[]T` arg requiring lib/pq,
+					// because the generated code expands the slice in-place
+					// via `/*SLICE:...*/?` and never calls pq.Array on it.
+					sqlcSliceNames := map[string]struct{}{}
 					for _, f := range q.Arg.Struct.Fields {
+						if f.HasSqlcSlice() {
+							sqlcSliceNames[f.Name] = struct{}{}
+						}
+					}
+					for _, f := range q.Arg.Struct.Fields {
+						if _, ok := sqlcSliceNames[f.Name]; ok {
+							continue
+						}
 						if strings.HasPrefix(f.Type, "[]") && f.Type != "[]byte" && !f.HasSqlcSlice() {
 							return true
 						}
