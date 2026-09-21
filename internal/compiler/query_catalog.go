@@ -20,7 +20,11 @@ func (comp *Compiler) buildQueryCatalog(c *catalog.Catalog, node ast.Node, embed
 	case *ast.DeleteStmt:
 		with = n.WithClause
 	case *ast.InsertStmt:
-		with = n.WithClause
+		if selectStmt, ok := n.SelectStmt.(*ast.SelectStmt); ok && selectStmt.WithClause != nil {
+			with = selectStmt.WithClause
+		} else {
+			with = n.WithClause
+		}
 	case *ast.UpdateStmt:
 		with = n.WithClause
 	case *ast.SelectStmt:

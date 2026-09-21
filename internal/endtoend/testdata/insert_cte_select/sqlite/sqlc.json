@@ -1,0 +1,12 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "engine": "sqlite",
+      "path": "go",
+      "name": "querytest",
+      "schema": "schema.sql",
+      "queries": "query.sql"
+    }
+  ]
+}
