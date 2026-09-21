@@ -20,6 +20,13 @@ type Struct struct {
 	IsModel bool
 }
 
+func CheckRename(name string, options *opts.Options) string {
+	if rename := options.Rename[name]; rename != "" {
+		return rename
+	}
+	return name
+}
+
 func StructName(name string, options *opts.Options) string {
 	if rename := options.Rename[name]; rename != "" {
 		return rename
