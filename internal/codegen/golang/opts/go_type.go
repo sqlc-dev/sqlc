@@ -149,14 +149,18 @@ func (gt GoType) parse() (*ParsedGoType, error) {
 		if lastDot == -1 {
 			return nil, fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", input)
 		}
-		typename = input[lastSlash+1:]
+		o.ImportPath = input[:lastDot]
+		pkg, pkgNeedsAlias := generatePackageID(o.ImportPath)
+		if pkgNeedsAlias {
+			o.Package = pkg
+		}
 		// a package name beginning with "go-" will give syntax errors in
 		// generated code. We should do the right thing and get the actual
 		// import name, but in lieu of that, stripping the leading "go-" may get
 		// us what we want.
-		typename = strings.TrimPrefix(typename, "go-")
-		typename = strings.TrimSuffix(typename, "-go")
-		o.ImportPath = input[:lastDot]
+		pkg = strings.TrimPrefix(pkg, "go-")
+		pkg = strings.TrimSuffix(pkg, "-go")
+		typename = pkg + "." + input[lastDot+1:]
 	}
 	o.TypeName = typename
 	isPointer := input[0] == '*'
