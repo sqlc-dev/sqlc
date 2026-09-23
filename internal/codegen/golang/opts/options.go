@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"maps"
 	"path/filepath"
+	"slices"
 
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
@@ -153,6 +154,9 @@ func parseGlobalOpts(req *plugin.GenerateRequest) (*GlobalOptions, error) {
 	if err := json.Unmarshal(req.GlobalOptions, &options); err != nil {
 		return nil, fmt.Errorf("unmarshalling global options: %w", err)
 	}
+	options.Overrides = slices.DeleteFunc(options.Overrides, func(o Override) bool {
+		return o.Engine != "" && o.Engine != req.GetSettings().GetEngine()
+	})
 	for i := range options.Overrides {
 		if err := options.Overrides[i].parse(req); err != nil {
 			return nil, err
