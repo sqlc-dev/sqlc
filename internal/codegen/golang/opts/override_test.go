@@ -86,6 +86,19 @@ func TestTypeOverrides(t *testing.T) {
 			},
 			"Package override `go_type` specifier \"untyped rune\" is not a Go basic type e.g. 'string'",
 		},
+		{
+			// Regression for sqlc-dev/sqlc#4192: when the user writes the
+			// type name with a slash separator instead of a dot (i.e.
+			// "path/to/pkg/Type" rather than "path/to/pkg.Type"), the
+			// previous parser silently used the dot inside "github.com" and
+			// emitted a broken import like `"github"`. Reject these specs
+			// with a clear error instead.
+			Override{
+				DBType: "text",
+				GoType: GoType{Spec: "github.com/example/pkg/SomeType"},
+			},
+			"Package override `go_type` specifier \"github.com/example/pkg/SomeType\" is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'",
+		},
 	} {
 		tt := test
 		t.Run(tt.override.GoType.Spec, func(t *testing.T) {
