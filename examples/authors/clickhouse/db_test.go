@@ -31,10 +31,11 @@ func TestAuthors(t *testing.T) {
 	t.Log(authors)
 
 	// create an author
+	bio := "Co-author of The C Programming Language and The Go Programming Language"
 	err = db.CreateAuthor(ctx, CreateAuthorParams{
 		ID:   1,
 		Name: "Brian Kernighan",
-		Bio:  sql.NullString{String: "Co-author of The C Programming Language and The Go Programming Language", Valid: true},
+		Bio:  &bio,
 	})
 	if err != nil {
 		t.Fatal(err)

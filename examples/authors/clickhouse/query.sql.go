@@ -7,7 +7,6 @@ package authors
 
 import (
 	"context"
-	"database/sql"
 )
 
 const createAuthor = `-- name: CreateAuthor :exec
@@ -21,7 +20,7 @@ INSERT INTO authors (
 type CreateAuthorParams struct {
 	ID   uint64
 	Name string
-	Bio  sql.NullString
+	Bio  *string
 }
 
 func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) error {
