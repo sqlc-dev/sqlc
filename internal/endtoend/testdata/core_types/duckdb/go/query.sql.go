@@ -7,6 +7,7 @@ package querytest
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/duckdb/duckdb-go/v2"
 )
@@ -80,7 +81,7 @@ FROM things;
 `
 
 type CastsParams struct {
-	Column1 duckdb.Decimal
+	Column1 string
 	Column2 []int32
 	Column3 map[string]any
 	Column4 any
@@ -133,8 +134,8 @@ WHERE ints = $1 AND point = $2 AND price = $3 AND m = $4 AND either = $5 AND gri
 
 type ParamsParams struct {
 	Ints   []int32
-	Point  *map[string]any
-	Price  *duckdb.Decimal
+	Point  any
+	Price  sql.NullString
 	M      any
 	Either any
 	Grid   [][]int32

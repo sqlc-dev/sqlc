@@ -104,7 +104,7 @@ func goInnerType(req *plugin.GenerateRequest, options *opts.Options, col *plugin
 	case engineSQLite:
 		return sqliteType(req, options, col), false
 	case engineClickHouse:
-		return clickhouseType(req, options, col), true
+		return clickhouseType(req, options, col, param), true
 	case engineDuckDB:
 		return duckdbType(req, options, col, param), true
 	case engineGoogleSQL:

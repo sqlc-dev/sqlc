@@ -1,0 +1,5 @@
+CREATE TABLE authors (
+  id BIGINT PRIMARY KEY,
+  name NVARCHAR(50) NOT NULL,
+  bio NVARCHAR(MAX)
+);

@@ -13,6 +13,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 	"github.com/sqlc-dev/sqlc/internal/sql/named"
 	"github.com/sqlc-dev/sqlc/internal/sql/preprocess"
+	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 	"github.com/sqlc-dev/sqlc/internal/sql/validate"
 )
 
@@ -63,7 +64,10 @@ func (c *Compiler) parseQueryCore(raw *ast.RawStmt, src string, pre *preprocess.
 		for _, col := range res.Columns {
 			cols = append(cols, coreColumn(col))
 		}
-		placeholders := placeholderNames(raw)
+		placeholders, err := placeholderNames(raw)
+		if err != nil {
+			return nil, err
+		}
 		for _, p := range res.Parameters {
 			params = append(params, Parameter{Number: p.Number, Column: coreParamColumn(p, namedParams), Name: placeholders[p.Number]})
 		}
@@ -139,16 +143,37 @@ func describeType(col *Column, t *core.TypeExpr) {
 }
 
 // placeholderNames maps each parameter number to the name its placeholder
-// carries, for the placeholders that have one: @name and {name:Type}.
-func placeholderNames(root ast.Node) map[int]string {
+// carries, for the placeholders that have one: @name and {name:Type}. A
+// query bound by name passes every argument by name, so one that mixes
+// named placeholders with positional ones, such as the ? sqlc.arg becomes,
+// cannot be bound and is an error.
+func placeholderNames(root ast.Node) (map[int]string, error) {
 	names := map[int]string{}
+	var named, positional *ast.ParamRef
 	astutils.Apply(root, func(c *astutils.Cursor) bool {
-		if pr, ok := c.Node().(*ast.ParamRef); ok && pr.Name != "" {
-			names[pr.Number] = pr.Name
+		pr, ok := c.Node().(*ast.ParamRef)
+		if !ok {
+			return true
 		}
+		if pr.Name == "" {
+			if positional == nil {
+				positional = pr
+			}
+			return true
+		}
+		if named == nil {
+			named = pr
+		}
+		names[pr.Number] = pr.Name
 		return true
 	}, nil)
-	return names
+	if named != nil && positional != nil {
+		return nil, &sqlerr.Error{
+			Message:  fmt.Sprintf("query mixes the named placeholder %q with a positional one; bind every parameter by name or every one by position", named.Name),
+			Location: positional.Location,
+		}
+	}
+	return names, nil
 }
 
 func coreParamColumn(p core.Parameter, params *named.ParamSet) *Column {

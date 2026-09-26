@@ -11,9 +11,9 @@ import (
 
 type cc struct {
 	paramCount int
-	// namedParams tracks the number assigned to each "@name" so repeated
-	// uses share a single parameter.
-	namedParams map[string]int
+	// namedParams tracks the parameter each "@name" was given, by its
+	// lowercased name, so repeated uses share a single parameter.
+	namedParams map[string]namedParam
 	// toByte maps a teesql UTF-16 code-unit offset to a byte offset in the
 	// source, so Location fields agree with StmtLocation/StmtLen.
 	toByte func(int) int
@@ -696,23 +696,33 @@ func (c *cc) convertColumnReference(n *tsql.ColumnReferenceExpression) *ast.Colu
 }
 
 // convertVariableReference converts an "@name" query parameter. Repeated uses
-// of a name share a single parameter number.
+// of a name share a single parameter number. SQL Server compares variable
+// names without regard to case, so @Name and @name are one parameter, bound
+// by the spelling of its first use.
 func (c *cc) convertVariableReference(n *tsql.VariableReference) ast.Node {
 	name := strings.TrimPrefix(n.Name, "@")
-	number, ok := c.namedParams[name]
+	key := strings.ToLower(name)
+	param, ok := c.namedParams[key]
 	if !ok {
 		c.paramCount++
-		number = c.paramCount
+		param = namedParam{number: c.paramCount, name: name}
 		if c.namedParams == nil {
-			c.namedParams = map[string]int{}
+			c.namedParams = map[string]namedParam{}
 		}
-		c.namedParams[name] = number
+		c.namedParams[key] = param
 	}
 	return &ast.ParamRef{
-		Number:   number,
-		Name:     name,
+		Number:   param.number,
+		Name:     param.name,
 		Location: c.loc(n),
 	}
+}
+
+// namedParam is the number an @name parameter was given and the spelling
+// of the name at its first use.
+type namedParam struct {
+	number int
+	name   string
 }
 
 func (c *cc) convertFunctionCall(n *tsql.FunctionCall) *ast.FuncCall {

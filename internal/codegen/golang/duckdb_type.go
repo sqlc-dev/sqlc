@@ -12,11 +12,16 @@ import (
 // a list column is a Composite of the slice its elements make. A Composite
 // is not accepted as a query argument, while the driver binds a slice as a
 // list and its own types as themselves, so a list parameter is the slice
-// itself. DECIMAL and INTERVAL come
-// back as the driver's structs and map to those; a UUID comes back as its
-// bytes, which uuid.UUID scans. An ENUM is reported by the name it was
-// created with, which the catalog does not yet carry, so it maps to any
-// until it does.
+// itself. DECIMAL, INTERVAL and BIT come back as the driver's structs and
+// map to those; a UUID comes back as its bytes, which uuid.UUID scans. The
+// driver binds neither a Decimal nor a pointer to a map, so a DECIMAL
+// parameter is passed as its text, which DuckDB casts, and a STRUCT
+// parameter as a map. An ENUM is reported by the name it was created with,
+// which the catalog does not yet carry, so it maps to any until it does.
+// JSON comes back decoded, as whatever value the document holds, which
+// only any holds; the catalog reports it as the VARCHAR it aliases, so it
+// maps to string, and a query reads a JSON object or array as text by
+// casting it to VARCHAR.
 func duckdbType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Column, param bool) string {
 	t, nullable := columnType(col)
 	if param {
@@ -65,6 +70,14 @@ func duckdbGoType(options *opts.Options, t *plugin.TypeExpr, nullable bool, plac
 		return typ
 
 	case "struct":
+		// The driver binds a nil map as a struct of nulls rather than as
+		// NULL, so a nullable STRUCT parameter takes a map or a bare nil.
+		if place == duckdbParam {
+			if nullable {
+				return "any"
+			}
+			return "map[string]any"
+		}
 		return null("map[string]any", "")
 
 	case "map":
@@ -107,10 +120,16 @@ func duckdbGoType(options *opts.Options, t *plugin.TypeExpr, nullable bool, plac
 		return null("float64", "sql.NullFloat64")
 
 	case "decimal", "numeric":
+		if place == duckdbParam {
+			return null("string", "sql.NullString")
+		}
 		return driver("duckdb.Decimal", "")
 
-	case "varchar", "char", "bpchar", "text", "string", "json", "bit", "bitstring":
+	case "varchar", "char", "bpchar", "text", "string":
 		return null("string", "sql.NullString")
+
+	case "bit", "bitstring":
+		return driver("duckdb.Bit", "")
 
 	case "blob", "bytea", "binary", "varbinary":
 		return "[]byte"

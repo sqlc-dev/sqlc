@@ -98,7 +98,7 @@
                 "array_dims": 0,
                 "type_expr": {
                   "name": "varchar",
-                  "nullable": false,
+                  "nullable": true,
                   "args": []
                 }
               },
@@ -169,7 +169,7 @@
                 "array_dims": 1,
                 "type_expr": {
                   "name": "array",
-                  "nullable": false,
+                  "nullable": true,
                   "args": [
                     {
                       "label": "",
@@ -258,7 +258,7 @@
                 "array_dims": 0,
                 "type_expr": {
                   "name": "struct",
-                  "nullable": false,
+                  "nullable": true,
                   "args": [
                     {
                       "label": "x",
@@ -306,7 +306,7 @@
                 "array_dims": 0,
                 "type_expr": {
                   "name": "map",
-                  "nullable": false,
+                  "nullable": true,
                   "args": [
                     {
                       "label": "",
@@ -354,7 +354,7 @@
                 "array_dims": 1,
                 "type_expr": {
                   "name": "array",
-                  "nullable": false,
+                  "nullable": true,
                   "args": [
                     {
                       "label": "",

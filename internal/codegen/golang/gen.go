@@ -119,6 +119,9 @@ func Generate(ctx context.Context, req *plugin.GenerateRequest) (*plugin.Generat
 	if err := opts.ValidateOpts(options); err != nil {
 		return nil, err
 	}
+	if err := validateSQLPackage(req.Settings.Engine, options); err != nil {
+		return nil, err
+	}
 
 	enums := buildEnums(req, options)
 	structs := buildStructs(req, options)

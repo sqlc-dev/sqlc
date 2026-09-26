@@ -111,8 +111,8 @@ type PlaceholdersParams struct {
 	P1 uint64
 	P2 string
 	P3 float64
-	P4 sql.NullString
-	P5 decimal.Decimal
+	P4 *string
+	P5 string
 }
 
 func (q *Queries) Placeholders(ctx context.Context, arg PlaceholdersParams) ([]uint64, error) {

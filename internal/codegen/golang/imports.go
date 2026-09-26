@@ -168,6 +168,17 @@ var driverTypes = map[string]string{
 	"spanner.": "cloud.google.com/go/spanner",
 }
 
+// overrideHasQualifier reports whether an override's type is qualified
+// by qualifier, so its import already names that package.
+func overrideHasQualifier(overrideTypes map[string]string, qualifier string) bool {
+	for typeName := range overrideTypes {
+		if strings.HasPrefix(typeName, qualifier) {
+			return true
+		}
+	}
+	return false
+}
+
 var pqtypeTypes = map[string]struct{}{
 	"pqtype.CIDR":           {},
 	"pqtype.Inet":           {},
@@ -175,7 +186,7 @@ var pqtypeTypes = map[string]struct{}{
 	"pqtype.NullRawMessage": {},
 }
 
-func buildImports(options *opts.Options, queries []Query, uses func(string) bool) (map[string]struct{}, map[ImportSpec]struct{}) {
+func buildImports(options *opts.Options, engine string, queries []Query, uses func(string) bool) (map[string]struct{}, map[ImportSpec]struct{}) {
 	pkg := make(map[ImportSpec]struct{})
 	std := make(map[string]struct{})
 
@@ -218,12 +229,6 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 		}
 	}
 
-	for qualifier, path := range driverTypes {
-		if uses(qualifier) {
-			pkg[ImportSpec{Path: path}] = struct{}{}
-		}
-	}
-
 	overrideTypes := map[string]string{}
 	for _, override := range options.Overrides {
 		o := override.ShimOverride
@@ -231,6 +236,18 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 			continue
 		}
 		overrideTypes[o.GoType.TypeName] = o.GoType.ImportPath
+	}
+
+	// Only the engines whose mappers draw on the driver packages import
+	// them, and an override whose type carries the same qualifier brings
+	// its own import: a PostgreSQL numeric overridden to another package's
+	// decimal.Decimal must not pull in shopspring's as well.
+	if usesDriverTypes(engine) {
+		for qualifier, path := range driverTypes {
+			if uses(qualifier) && !overrideHasQualifier(overrideTypes, qualifier) {
+				pkg[ImportSpec{Path: path}] = struct{}{}
+			}
+		}
 	}
 
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
@@ -279,7 +296,7 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 }
 
 func (i *importer) interfaceImports() fileImports {
-	std, pkg := buildImports(i.Options, i.Queries, func(name string) bool {
+	std, pkg := buildImports(i.Options, i.Engine, i.Queries, func(name string) bool {
 		for _, q := range i.Queries {
 			if q.hasRetType() {
 				if usesBatch([]Query{q}) {
@@ -304,7 +321,7 @@ func (i *importer) interfaceImports() fileImports {
 }
 
 func (i *importer) modelImports() fileImports {
-	std, pkg := buildImports(i.Options, nil, i.usesType)
+	std, pkg := buildImports(i.Options, i.Engine, nil, i.usesType)
 
 	if len(i.Enums) > 0 {
 		std["fmt"] = struct{}{}
@@ -343,7 +360,7 @@ func (i *importer) queryImports(filename string) fileImports {
 		}
 	}
 
-	std, pkg := buildImports(i.Options, gq, func(name string) bool {
+	std, pkg := buildImports(i.Options, i.Engine, gq, func(name string) bool {
 		for _, q := range gq {
 			if q.hasRetType() {
 				if q.Ret.EmitStruct() {
@@ -455,7 +472,7 @@ func (i *importer) copyfromImports() fileImports {
 			copyFromQueries = append(copyFromQueries, q)
 		}
 	}
-	std, pkg := buildImports(i.Options, copyFromQueries, func(name string) bool {
+	std, pkg := buildImports(i.Options, i.Engine, copyFromQueries, func(name string) bool {
 		for _, q := range copyFromQueries {
 			if q.hasRetType() {
 				if strings.HasPrefix(q.Ret.Type(), name) {
@@ -490,7 +507,7 @@ func (i *importer) batchImports() fileImports {
 			batchQueries = append(batchQueries, q)
 		}
 	}
-	std, pkg := buildImports(i.Options, batchQueries, func(name string) bool {
+	std, pkg := buildImports(i.Options, i.Engine, batchQueries, func(name string) bool {
 		for _, q := range batchQueries {
 			if q.hasRetType() {
 				if q.Ret.EmitStruct() {

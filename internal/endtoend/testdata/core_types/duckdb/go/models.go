@@ -27,7 +27,7 @@ type Thing struct {
 	Big    *big.Int
 	Ubig   *big.Int
 	Data   []byte
-	Bits   sql.NullString
+	Bits   *duckdb.Bit
 	Uid    uuid.NullUUID
 	Tstz   sql.NullTime
 	Tsns   sql.NullTime

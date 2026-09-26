@@ -1,0 +1,2 @@
+# package querytest
+query.sql:2:59: query mixes the named placeholder "name" with a positional one; bind every parameter by name or every one by position
