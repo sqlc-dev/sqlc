@@ -1,12 +1,14 @@
 package main
 
 import (
+	"archive/tar"
+	"compress/gzip"
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"io"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -15,6 +17,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/encoding/protowire"
 )
 
 const (
@@ -27,6 +33,9 @@ const (
 
 	// omniPort is the gRPC port a Spanner Omni single server listens on.
 	omniPort = "15000"
+
+	// omniInstance is the instance a Spanner Omni single server provides.
+	omniInstance = "projects/default/instances/default"
 )
 
 // omniBinary contains the download information for a Spanner Omni server
@@ -360,9 +369,13 @@ func supportedPlatforms() string {
 	return strings.Join(platforms, ", ")
 }
 
+// downloadClient fetches the releases. Its timeout covers the whole
+// download, so a stalled one fails rather than hanging the run.
+var downloadClient = &http.Client{Timeout: 15 * time.Minute}
+
 // downloadFile downloads a URL to a local file path.
 func downloadFile(filepath string, url string) error {
-	resp, err := http.Get(url)
+	resp, err := downloadClient.Get(url)
 	if err != nil {
 		return err
 	}
@@ -545,8 +558,15 @@ func omniDir() (string, error) {
 	return filepath.Join(cache, "sqlc-spanner-omni", omniVersion), nil
 }
 
+// omniRelease is the directory the release is unpacked into. It is moved
+// into place whole once unpacked, so it holds the whole release or is
+// missing.
+func omniRelease(dir string) string {
+	return filepath.Join(dir, "release")
+}
+
 func omniLauncher(dir string) string {
-	return filepath.Join(dir, "google", "spanner", "bin", "spanner")
+	return filepath.Join(omniRelease(dir), "google", "spanner", "bin", "spanner")
 }
 
 // installSpannerOmni downloads the Spanner Omni server release into the
@@ -590,25 +610,110 @@ func installSpannerOmni() error {
 		return fmt.Errorf("spanner omni download has SHA-256 %s, want %s", sum, bin.SHA256)
 	}
 
-	log.Printf("unpacking into %s", dir)
-	if err := run("tar", "-xzf", archive, "-C", dir); err != nil {
+	// The release is unpacked beside where it goes and moved into place
+	// once whole, so an interrupted unpack leaves nothing that looks
+	// installed.
+	tmp, err := os.MkdirTemp(dir, "release-")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tmp)
+	if err := os.Chmod(tmp, 0o755); err != nil {
+		return err
+	}
+	log.Printf("unpacking into %s", omniRelease(dir))
+	if err := extractTarGz(archive, tmp); err != nil {
 		return fmt.Errorf("unpacking spanner omni: %w", err)
 	}
-	if _, err := os.Stat(omniLauncher(dir)); err != nil {
-		return fmt.Errorf("spanner omni release does not hold %s", omniLauncher(dir))
+	if _, err := os.Stat(filepath.Join(tmp, "google", "spanner", "bin", "spanner")); err != nil {
+		return fmt.Errorf("spanner omni release does not hold google/spanner/bin/spanner")
 	}
-	return nil
+	if err := os.RemoveAll(omniRelease(dir)); err != nil {
+		return err
+	}
+	return os.Rename(tmp, omniRelease(dir))
+}
+
+// extractTarGz unpacks a gzipped tar archive into dir, refusing entries
+// that would land outside it.
+func extractTarGz(archive, dir string) error {
+	f, err := os.Open(archive)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	gz, err := gzip.NewReader(f)
+	if err != nil {
+		return err
+	}
+	defer gz.Close()
+
+	root, err := os.OpenRoot(dir)
+	if err != nil {
+		return err
+	}
+	defer root.Close()
+
+	tr := tar.NewReader(gz)
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		name := filepath.Clean(hdr.Name)
+		if !filepath.IsLocal(name) {
+			return fmt.Errorf("archive entry %q is outside the release", hdr.Name)
+		}
+		mode := hdr.FileInfo().Mode().Perm()
+		switch hdr.Typeflag {
+		case tar.TypeDir:
+			if err := root.MkdirAll(name, 0o755); err != nil {
+				return err
+			}
+		case tar.TypeReg:
+			if err := root.MkdirAll(filepath.Dir(name), 0o755); err != nil {
+				return err
+			}
+			out, err := root.OpenFile(name, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, mode)
+			if err != nil {
+				return err
+			}
+			_, err = io.Copy(out, tr)
+			if cerr := out.Close(); err == nil {
+				err = cerr
+			}
+			if err != nil {
+				return err
+			}
+		case tar.TypeSymlink:
+			target := filepath.Join(filepath.Dir(name), hdr.Linkname)
+			if filepath.IsAbs(hdr.Linkname) || !filepath.IsLocal(target) {
+				return fmt.Errorf("archive link %q points outside the release", hdr.Name)
+			}
+			if err := root.MkdirAll(filepath.Dir(name), 0o755); err != nil {
+				return err
+			}
+			if err := root.Symlink(hdr.Linkname, name); err != nil {
+				return err
+			}
+		default:
+			return fmt.Errorf("archive entry %q has unsupported type %q", hdr.Name, hdr.Typeflag)
+		}
+	}
 }
 
 // startSpannerOmni starts a Spanner Omni single server in the background,
-// serving plaintext gRPC on omniPort, and waits until it accepts
-// connections. It is a no-op when a server is already listening, and skips
+// serving plaintext gRPC on omniPort, and waits until it serves its
+// default instance. It is a no-op when a server already does, and skips
 // platforms the server is not installed on.
 func startSpannerOmni() error {
 	log.Println("--- Starting Spanner Omni ---")
 
 	if omniReady() {
-		log.Println("spanner omni is already running and accepting connections")
+		log.Println("spanner omni is already running and serving its default instance")
 		return nil
 	}
 
@@ -649,36 +754,75 @@ func startSpannerOmni() error {
 		return err
 	}
 
-	log.Println("waiting for spanner omni to accept connections")
+	log.Println("waiting for spanner omni to serve its default instance")
 	if err := waitForSpannerOmni(3 * time.Minute); err != nil {
 		return fmt.Errorf("spanner omni did not start in time (see %s): %w", logFile.Name(), err)
 	}
-	log.Println("spanner omni is accepting connections")
+	log.Println("spanner omni is serving its default instance")
 	return nil
 }
 
-// omniReady reports whether something accepts connections on the Spanner
-// Omni gRPC port.
+// omniReady reports whether a Spanner Omni server on omniPort serves its
+// default instance, the one the examples create their databases in. A
+// port that accepts connections is not enough: the server opens it before
+// the instance exists, and something else could hold it.
 func omniReady() bool {
-	conn, err := net.DialTimeout("tcp", "127.0.0.1:"+omniPort, time.Second)
-	if err != nil {
-		return false
-	}
-	conn.Close()
-	return true
+	return omniListDatabases() == nil
 }
 
-// waitForSpannerOmni polls until the server accepts connections or the
-// timeout expires.
+// omniListDatabases calls the database admin service's ListDatabases on
+// the default instance. The request is a single string field, so it is
+// encoded by hand and the response is not decoded, which keeps the Spanner
+// client libraries out of this module.
+func omniListDatabases() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	conn, err := grpc.NewClient("127.0.0.1:"+omniPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	// ListDatabasesRequest{parent: omniInstance}: field 1, a string.
+	req := protowire.AppendString(protowire.AppendTag(nil, 1, protowire.BytesType), omniInstance)
+	var resp []byte
+	return conn.Invoke(ctx, "/google.spanner.admin.database.v1.DatabaseAdmin/ListDatabases", &req, &resp, grpc.ForceCodec(rawCodec{}))
+}
+
+// rawCodec passes messages to and from gRPC as the bytes they encode to.
+type rawCodec struct{}
+
+func (rawCodec) Marshal(v any) ([]byte, error) {
+	b, ok := v.(*[]byte)
+	if !ok {
+		return nil, fmt.Errorf("rawCodec: cannot marshal %T", v)
+	}
+	return *b, nil
+}
+
+func (rawCodec) Unmarshal(data []byte, v any) error {
+	b, ok := v.(*[]byte)
+	if !ok {
+		return fmt.Errorf("rawCodec: cannot unmarshal into %T", v)
+	}
+	*b = append((*b)[:0], data...)
+	return nil
+}
+
+func (rawCodec) Name() string { return "raw" }
+
+// waitForSpannerOmni polls until the server serves its default instance or
+// the timeout expires.
 func waitForSpannerOmni(timeout time.Duration) error {
 	deadline := time.Now().Add(timeout)
-	for time.Now().Before(deadline) {
-		if omniReady() {
-			return nil
-		}
+	err := omniListDatabases()
+	for err != nil && time.Now().Before(deadline) {
 		time.Sleep(time.Second)
+		err = omniListDatabases()
 	}
-	return fmt.Errorf("timed out after %s waiting for spanner omni", timeout)
+	if err != nil {
+		return fmt.Errorf("timed out after %s waiting for spanner omni: %w", timeout, err)
+	}
+	return nil
 }
 
 func startPostgreSQL() error {

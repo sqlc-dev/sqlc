@@ -75,11 +75,15 @@ jobs:
   # installs and starts every database on the runner.
   examples:
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
     - uses: actions/checkout@v7
     - uses: actions/setup-go@v7
       with:
         go-version: '1.26.5'
+        cache-dependency-path: |
+          go.sum
+          examples/go.sum
 
     - name: install databases
       run: go run ./cmd/sqlc-test-setup install

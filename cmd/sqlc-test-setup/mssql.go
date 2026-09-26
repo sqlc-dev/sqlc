@@ -34,15 +34,20 @@ var mssqlUbuntuReleases = map[string]bool{"22.04": true, "24.04": true}
 
 // installMSSQL installs SQL Server from Microsoft's apt repository and
 // runs its setup non-interactively, accepting the EULA on the user's
-// behalf. It is a no-op when the server is already installed, and skips
-// platforms the packages are not published for: Ubuntu 22.04 and 24.04 on
-// amd64 and arm64.
+// behalf. It is a no-op when the server is already installed and set up,
+// reruns only the setup when an earlier install stopped before it
+// finished, and skips platforms the packages are not published for:
+// Ubuntu 22.04 and 24.04 on amd64 and arm64.
 func installMSSQL() error {
 	log.Printf("--- Installing SQL Server %s ---", mssqlRelease)
 
 	if _, err := os.Stat(mssqlServer); err == nil {
-		log.Printf("sql server is already installed at %s", mssqlServer)
-		return nil
+		if mssqlConfigured() {
+			log.Printf("sql server is already installed at %s", mssqlServer)
+			return nil
+		}
+		log.Printf("sql server is installed at %s but not set up", mssqlServer)
+		return setupMSSQL()
 	}
 
 	ubuntu, err := mssqlSupported()
@@ -84,22 +89,40 @@ func installMSSQL() error {
 		return fmt.Errorf("apt-get install mssql-server: %w", err)
 	}
 
-	// Setup writes the server's configuration and accepts the EULA, then
-	// starts the service through systemd, which fails where there is none.
-	// The configuration is what install needs; start brings the server up.
+	return setupMSSQL()
+}
+
+// setupMSSQL runs mssql-conf setup, which accepts the EULA, sets the sa
+// password and writes the server's configuration, then starts the service
+// through systemd. Where there is no systemd that last step fails, and the
+// configuration it wrote is what install needs, since start brings the
+// server up. Anywhere else a failure is setup's own.
+func setupMSSQL() error {
 	log.Println("running mssql-conf setup")
-	err = run("sudo", "env", "ACCEPT_EULA=Y", "MSSQL_PID=Developer", "MSSQL_SA_PASSWORD="+mssqlSAPassword,
+	cmd := exec.Command("sudo", "env", "ACCEPT_EULA=Y", "MSSQL_PID=Developer", "MSSQL_SA_PASSWORD="+mssqlSAPassword,
 		mssqlConf, "-n", "setup", "accept-eula")
+	cmd.Stdout = os.Stderr
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	// The command line carries the sa password, so it is not logged the
+	// way run logs one.
+	log.Printf("exec: sudo env ACCEPT_EULA=Y MSSQL_PID=Developer MSSQL_SA_PASSWORD=... %s -n setup accept-eula", mssqlConf)
+	err := cmd.Run()
 	if err == nil {
 		return nil
 	}
-	// /var/opt/mssql is readable by the mssql user only, so the check goes
-	// through sudo rather than a stat as this user.
-	if exec.Command("sudo", "test", "-f", "/var/opt/mssql/mssql.conf").Run() != nil {
+	if systemdRunning() || !mssqlConfigured() {
 		return fmt.Errorf("mssql-conf setup: %w", err)
 	}
-	log.Printf("mssql-conf setup wrote the configuration but could not start the service (%s); start will", err)
+	log.Printf("mssql-conf setup wrote the configuration but could not start the service without systemd (%s); start will", err)
 	return nil
+}
+
+// mssqlConfigured reports whether mssql-conf setup has written the
+// server's configuration. /var/opt/mssql is readable by the mssql user
+// only, so the check goes through sudo rather than a stat as this user.
+func mssqlConfigured() bool {
+	return exec.Command("sudo", "test", "-f", "/var/opt/mssql/mssql.conf").Run() == nil
 }
 
 // mssqlSupported reports whether Microsoft publishes SQL Server packages
@@ -143,14 +166,23 @@ func ubuntuRelease() (string, error) {
 
 // startMSSQL starts SQL Server and waits until it is ready for client
 // connections: through systemd where it runs, otherwise by running the
-// server in the background as its own user. It is a no-op when the server
-// is already listening, and skips machines it is not installed on.
+// server in the background as its own user. When the server is already
+// listening it only waits for it to be ready, and it skips machines the
+// server is not installed on.
 func startMSSQL() error {
 	log.Println("--- Starting SQL Server ---")
 
 	if mssqlListening() {
-		log.Println("sql server is already running and accepting connections")
-		return nil
+		// A server this machine does not run, such as the one
+		// docker-compose.yml starts, has no log here to wait on.
+		if _, err := os.Stat(mssqlServer); err != nil {
+			log.Println("sql server is already running and accepting connections")
+			return nil
+		}
+		// mssql-conf setup starts the service through systemd, so the
+		// server can be listening while it still recovers its databases.
+		log.Println("sql server is already running")
+		return waitForMSSQL()
 	}
 	if _, err := os.Stat(mssqlServer); err != nil {
 		if _, err := mssqlSupported(); err != nil {
@@ -196,6 +228,12 @@ func startMSSQL() error {
 		}
 	}
 
+	return waitForMSSQL()
+}
+
+// waitForMSSQL polls until the server listens and its log says it is ready
+// for client connections, or three minutes pass.
+func waitForMSSQL() error {
 	log.Println("waiting for sql server to accept connections")
 	deadline := time.Now().Add(3 * time.Minute)
 	for time.Now().Before(deadline) {
