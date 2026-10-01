@@ -36,5 +36,6 @@
 {"name":"usmallint","category":"N","aliases":["uint16"]}
 {"name":"utinyint","category":"N","aliases":["uint8"]}
 {"name":"uuid","category":"U","aliases":["guid"]}
-{"name":"varchar","category":"S","aliases":["json","bpchar","char","nvarchar","string","text"]}
+{"name":"varchar","category":"S","aliases":["bpchar","char","nvarchar","string","text"]}
 {"name":"variant","category":"U"}
+{"name":"json","category":"S","base":"varchar"}

@@ -15,9 +15,9 @@ Spanner and SQL Server, with the types their drivers hand back:
 [go-sql-spanner](https://github.com/googleapis/go-sql-spanner) and
 [go-mssqldb](https://github.com/microsoft/go-mssqldb). DuckDB enums and SQL
 Server alias types are not yet resolved and come out as `any`; ClickHouse
-enums are strings. DuckDB reports a JSON column as the VARCHAR it aliases, so
-it comes out as `string`, and a query reads a JSON object or array by casting
-it to VARCHAR.
+enums are strings. A DuckDB JSON column comes out as `any`, holding the value
+the driver decodes the document into, and a JSON parameter is passed as its
+text.
 
 ## Community language support
 

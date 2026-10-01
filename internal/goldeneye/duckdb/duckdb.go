@@ -160,8 +160,18 @@ ORDER BY type_name`, &rows)
 		}
 	}
 
+	// Most spellings are the logical type under another name, but an
+	// extension can register one that DuckDB keeps apart: JSON is a
+	// VARCHAR whose values are reported, bound and decoded as JSON. Such a
+	// spelling is the one typeof() names a value cast to it by, and it
+	// becomes a type of its own standing on the logical type.
+	own, err := ownTypes(ctx, binary, grouped)
+	if err != nil {
+		return nil, err
+	}
+
 	sort.Strings(order)
-	types := make([]dialect.Type, 0, len(order)+1)
+	types := make([]dialect.Type, 0, len(order)+len(own)+1)
 	// "any" stands in for the generic parameters of DuckDB's polymorphic
 	// functions (ANY, T, K, V); the analyzer resolves a call returning it
 	// to the type of the call's first argument.
@@ -169,6 +179,52 @@ ORDER BY type_name`, &rows)
 	for _, name := range order {
 		types = append(types, *grouped[name])
 	}
+	// Listed after every type they could stand on.
+	return append(types, own...), nil
+}
+
+// ownTypes takes out of the grouped types' aliases the spellings DuckDB
+// keeps as types of their own, and returns them as types standing on the
+// type they were grouped under.
+func ownTypes(ctx context.Context, binary string, grouped map[string]*dialect.Type) ([]dialect.Type, error) {
+	var spellings []string
+	var exprs []string
+	for _, t := range grouped {
+		for _, alias := range t.Aliases {
+			exprs = append(exprs, fmt.Sprintf("typeof(CAST(NULL AS %s)) AS c%d", alias, len(spellings)))
+			spellings = append(spellings, alias)
+		}
+	}
+	if len(spellings) == 0 {
+		return nil, nil
+	}
+	var rows []map[string]string
+	if err := query(ctx, binary, "SELECT "+strings.Join(exprs, ", "), &rows); err != nil {
+		return nil, err
+	}
+	if len(rows) != 1 {
+		return nil, fmt.Errorf("typeof of the type aliases: got %d rows, want 1", len(rows))
+	}
+	own := map[string]bool{}
+	for i, alias := range spellings {
+		if strings.EqualFold(rows[0][fmt.Sprintf("c%d", i)], alias) {
+			own[alias] = true
+		}
+	}
+
+	var types []dialect.Type
+	for _, t := range grouped {
+		kept := t.Aliases[:0]
+		for _, alias := range t.Aliases {
+			if own[alias] {
+				types = append(types, dialect.Type{Name: alias, Category: t.Category, Base: t.Name})
+				continue
+			}
+			kept = append(kept, alias)
+		}
+		t.Aliases = kept
+	}
+	sort.Slice(types, func(i, j int) bool { return types[i].Name < types[j].Name })
 	return types, nil
 }
 

@@ -19,9 +19,8 @@ import (
 // parameter as a map. An ENUM is reported by the name it was created with,
 // which the catalog does not yet carry, so it maps to any until it does.
 // JSON comes back decoded, as whatever value the document holds, which
-// only any holds; the catalog reports it as the VARCHAR it aliases, so it
-// maps to string, and a query reads a JSON object or array as text by
-// casting it to VARCHAR.
+// only any holds, and is bound from its text, so a JSON parameter is a
+// string.
 func duckdbType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Column, param bool) string {
 	t, nullable := columnType(col)
 	if param {
@@ -127,6 +126,12 @@ func duckdbGoType(options *opts.Options, t *plugin.TypeExpr, nullable bool, plac
 
 	case "varchar", "char", "bpchar", "text", "string":
 		return null("string", "sql.NullString")
+
+	case "json":
+		if place == duckdbParam {
+			return null("string", "sql.NullString")
+		}
+		return "any"
 
 	case "bit", "bitstring":
 		return driver("duckdb.Bit", "")
