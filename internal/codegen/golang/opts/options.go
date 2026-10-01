@@ -158,6 +158,23 @@ func parseGlobalOpts(req *plugin.GenerateRequest) (*GlobalOptions, error) {
 			return nil, err
 		}
 	}
+
+	// A global override that names an engine only applies to that engine. The
+	// config requires `engine` on global overrides whenever more than one
+	// engine is in use, so without this filter every generated package would
+	// pick up whichever rule happened to be listed first and the last struct
+	// tag, regardless of the engine being generated.
+	engine := req.Settings.GetEngine()
+	if engine != "" {
+		filtered := make([]Override, 0, len(options.Overrides))
+		for _, override := range options.Overrides {
+			if override.Engine != "" && override.Engine != engine {
+				continue
+			}
+			filtered = append(filtered, override)
+		}
+		options.Overrides = filtered
+	}
 	return &options, nil
 }
 
