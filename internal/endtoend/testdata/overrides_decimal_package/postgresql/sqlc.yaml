@@ -1,0 +1,12 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "schema.sql"
+    queries: "query.sql"
+    gen:
+      go:
+        package: "querytest"
+        out: "go"
+        overrides:
+          - db_type: "pg_catalog.numeric"
+            go_type: "github.com/sqlc-dev/sqlc/endtoend/overrides_decimal_package/decimal.Decimal"

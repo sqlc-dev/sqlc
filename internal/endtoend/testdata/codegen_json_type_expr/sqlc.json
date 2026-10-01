@@ -1,0 +1,17 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "duckdb/schema.sql",
+      "queries": "duckdb/query.sql",
+      "engine": "duckdb",
+      "gen": {
+        "json": {
+          "out": "gen",
+          "indent": "  ",
+          "filename": "codegen.json"
+        }
+      }
+    }
+  ]
+}

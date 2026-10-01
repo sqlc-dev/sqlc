@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
@@ -128,6 +129,11 @@ type Column struct {
 	ArrayDims  int
 	Comment    string
 	Length     *int
+
+	// TypeExpr is the type as the analysis core wrote it, with the
+	// arguments and nesting Type and IsArray flatten away. It is unset
+	// on the legacy path.
+	TypeExpr *core.TypeExpr
 
 	linkedType bool
 }

@@ -47,6 +47,9 @@ func TestExamplesVet(t *testing.T) {
 			continue
 		}
 		tc := replay.Name()
+		if !isExample(filepath.Join(examples, tc)) {
+			continue
+		}
 		t.Run(tc, func(t *testing.T) {
 			t.Parallel()
 			path := filepath.Join(examples, tc)

@@ -230,7 +230,7 @@
       {
         "name": "doc",
         "type": {
-          "name": "varchar",
+          "name": "json",
           "nullable": true
         },
         "table": "things"

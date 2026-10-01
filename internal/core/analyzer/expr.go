@@ -200,20 +200,27 @@ func flattenFields(fields *ast.List) []string {
 	return out
 }
 
-func (a *analyzer) typeParamRef(p *ast.ParamRef) (exprType, error) {
+// param is the parameter p refers to, recorded with the name the
+// placeholder carries, whichever of its uses is seen first.
+func (a *analyzer) param(p *ast.ParamRef) core.Parameter {
 	cur, ok := a.params[p.Number]
 	if !ok {
-		cur = core.Parameter{Number: p.Number, Name: p.Name}
-		a.params[p.Number] = cur
+		cur = core.Parameter{Number: p.Number}
 	}
+	if cur.Name == "" {
+		cur.Name = p.Name
+	}
+	a.params[p.Number] = cur
+	return cur
+}
+
+func (a *analyzer) typeParamRef(p *ast.ParamRef) (exprType, error) {
+	cur := a.param(p)
 	return exprType{typeOID: cur.TypeOID, expr: cur.Type.WithNullable(false), nullable: !cur.NotNull}, nil
 }
 
-func (a *analyzer) inferParam(number int, t exprType) {
-	cur, ok := a.params[number]
-	if !ok {
-		cur = core.Parameter{Number: number}
-	}
+func (a *analyzer) inferParam(p *ast.ParamRef, t exprType) {
+	cur := a.param(p)
 	typed := cur.TypeOID == 0 && cur.Type == nil && (t.typeOID != 0 || t.expr != nil)
 	if typed {
 		cur.TypeOID = t.typeOID
@@ -232,7 +239,7 @@ func (a *analyzer) inferParam(number int, t exprType) {
 			}
 		}
 	}
-	a.params[number] = cur
+	a.params[p.Number] = cur
 }
 
 // nameParamAfter names a placeholder compared with a function call after
@@ -301,19 +308,19 @@ func (a *analyzer) typeAExpr(e *ast.A_Expr) (exprType, error) {
 	}
 
 	if pr, ok := e.Lexpr.(*ast.ParamRef); ok && rightT.typeOID != 0 {
-		a.inferParam(pr.Number, rightT)
+		a.inferParam(pr, rightT)
 		a.nameParamAfter(pr.Number, e.Rexpr)
 		leftT = rightT
 	} else if pr := castParamRef(e.Lexpr); pr != nil {
-		a.inferParam(pr.Number, rightT)
+		a.inferParam(pr, rightT)
 		a.nameParamAfter(pr.Number, e.Rexpr)
 	}
 	if pr, ok := e.Rexpr.(*ast.ParamRef); ok && leftT.typeOID != 0 {
-		a.inferParam(pr.Number, leftT)
+		a.inferParam(pr, leftT)
 		a.nameParamAfter(pr.Number, e.Lexpr)
 		rightT = leftT
 	} else if pr := castParamRef(e.Rexpr); pr != nil {
-		a.inferParam(pr.Number, leftT)
+		a.inferParam(pr, leftT)
 		a.nameParamAfter(pr.Number, e.Lexpr)
 	}
 
@@ -668,7 +675,7 @@ func (a *analyzer) typeOperands(n ast.Node, other exprType) error {
 			return err
 		}
 		if other.typeOID != 0 || other.expr != nil {
-			a.inferParam(pr.Number, other)
+			a.inferParam(pr, other)
 		}
 		return nil
 	}

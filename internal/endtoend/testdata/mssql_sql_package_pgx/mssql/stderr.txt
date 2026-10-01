@@ -1,0 +1,2 @@
+# package querytest
+error generating code: invalid options: engine "mssql" supports sql_package "database/sql" only, not "pgx/v5"

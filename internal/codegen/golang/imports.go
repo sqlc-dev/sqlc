@@ -59,6 +59,7 @@ func mergeImports(imps ...fileImports) [][]ImportSpec {
 
 type importer struct {
 	Options *opts.Options
+	Engine  string
 	Queries []Query
 	Enums   []Enum
 	Structs []Struct
@@ -147,10 +148,35 @@ func (i *importer) dbImports() fileImports {
 var stdlibTypes = map[string]string{
 	"json.RawMessage":  "encoding/json",
 	"time.Time":        "time",
+	"time.Duration":    "time",
 	"net.IP":           "net",
 	"net.HardwareAddr": "net",
 	"netip.Addr":       "net/netip",
 	"netip.Prefix":     "net/netip",
+	"big.Int":          "math/big",
+	"big.Rat":          "math/big",
+}
+
+// driverTypes are the packages the ClickHouse, DuckDB, Spanner and SQL
+// Server mappers draw types from, by the qualifier those types carry.
+var driverTypes = map[string]string{
+	"civil.":   "cloud.google.com/go/civil",
+	"decimal.": "github.com/shopspring/decimal",
+	"duckdb.":  "github.com/duckdb/duckdb-go/v2",
+	"mssql.":   "github.com/microsoft/go-mssqldb",
+	"orb.":     "github.com/paulmach/orb",
+	"spanner.": "cloud.google.com/go/spanner",
+}
+
+// overrideHasQualifier reports whether an override's type is qualified
+// by qualifier, so its import already names that package.
+func overrideHasQualifier(overrideTypes map[string]string, qualifier string) bool {
+	for typeName := range overrideTypes {
+		if strings.HasPrefix(typeName, qualifier) {
+			return true
+		}
+	}
+	return false
 }
 
 var pqtypeTypes = map[string]struct{}{
@@ -160,7 +186,7 @@ var pqtypeTypes = map[string]struct{}{
 	"pqtype.NullRawMessage": {},
 }
 
-func buildImports(options *opts.Options, queries []Query, uses func(string) bool) (map[string]struct{}, map[ImportSpec]struct{}) {
+func buildImports(options *opts.Options, engine string, queries []Query, uses func(string) bool) (map[string]struct{}, map[ImportSpec]struct{}) {
 	pkg := make(map[ImportSpec]struct{})
 	std := make(map[string]struct{})
 
@@ -212,6 +238,18 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 		overrideTypes[o.GoType.TypeName] = o.GoType.ImportPath
 	}
 
+	// Only the engines whose mappers draw on the driver packages import
+	// them, and an override whose type carries the same qualifier brings
+	// its own import: a PostgreSQL numeric overridden to another package's
+	// decimal.Decimal must not pull in shopspring's as well.
+	if usesDriverTypes(engine) {
+		for qualifier, path := range driverTypes {
+			if uses(qualifier) && !overrideHasQualifier(overrideTypes, qualifier) {
+				pkg[ImportSpec{Path: path}] = struct{}{}
+			}
+		}
+	}
+
 	_, overrideNullTime := overrideTypes["pq.NullTime"]
 	if uses("pq.NullTime") && !overrideNullTime {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
@@ -258,7 +296,7 @@ func buildImports(options *opts.Options, queries []Query, uses func(string) bool
 }
 
 func (i *importer) interfaceImports() fileImports {
-	std, pkg := buildImports(i.Options, i.Queries, func(name string) bool {
+	std, pkg := buildImports(i.Options, i.Engine, i.Queries, func(name string) bool {
 		for _, q := range i.Queries {
 			if q.hasRetType() {
 				if usesBatch([]Query{q}) {
@@ -283,7 +321,7 @@ func (i *importer) interfaceImports() fileImports {
 }
 
 func (i *importer) modelImports() fileImports {
-	std, pkg := buildImports(i.Options, nil, i.usesType)
+	std, pkg := buildImports(i.Options, i.Engine, nil, i.usesType)
 
 	if len(i.Enums) > 0 {
 		std["fmt"] = struct{}{}
@@ -322,7 +360,7 @@ func (i *importer) queryImports(filename string) fileImports {
 		}
 	}
 
-	std, pkg := buildImports(i.Options, gq, func(name string) bool {
+	std, pkg := buildImports(i.Options, i.Engine, gq, func(name string) bool {
 		for _, q := range gq {
 			if q.hasRetType() {
 				if q.Ret.EmitStruct() {
@@ -401,6 +439,13 @@ func (i *importer) queryImports(filename string) fileImports {
 		return false
 	}
 
+	// A query bound by name passes sql.Named arguments.
+	for _, q := range gq {
+		if q.Arg.NamedArgs && !q.Arg.isEmpty() {
+			std["database/sql"] = struct{}{}
+		}
+	}
+
 	if anyNonCopyFrom {
 		std["context"] = struct{}{}
 	}
@@ -409,7 +454,7 @@ func (i *importer) queryImports(filename string) fileImports {
 	if sqlcSliceScan() && !sqlpkg.IsPGX() {
 		std["strings"] = struct{}{}
 	}
-	if sliceScan() && !sqlpkg.IsPGX() {
+	if sliceScan() && usesPqArrays(i.Engine, sqlpkg) {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 	}
 
@@ -427,7 +472,7 @@ func (i *importer) copyfromImports() fileImports {
 			copyFromQueries = append(copyFromQueries, q)
 		}
 	}
-	std, pkg := buildImports(i.Options, copyFromQueries, func(name string) bool {
+	std, pkg := buildImports(i.Options, i.Engine, copyFromQueries, func(name string) bool {
 		for _, q := range copyFromQueries {
 			if q.hasRetType() {
 				if strings.HasPrefix(q.Ret.Type(), name) {
@@ -462,7 +507,7 @@ func (i *importer) batchImports() fileImports {
 			batchQueries = append(batchQueries, q)
 		}
 	}
-	std, pkg := buildImports(i.Options, batchQueries, func(name string) bool {
+	std, pkg := buildImports(i.Options, i.Engine, batchQueries, func(name string) bool {
 		for _, q := range batchQueries {
 			if q.hasRetType() {
 				if q.Ret.EmitStruct() {
@@ -506,15 +551,93 @@ func (i *importer) batchImports() fileImports {
 }
 
 func trimSliceAndPointerPrefix(v string) string {
-	v = strings.TrimPrefix(v, "[]")
-	v = strings.TrimPrefix(v, "*")
-	return v
+	for {
+		trimmed := strings.TrimPrefix(strings.TrimPrefix(v, "[]"), "*")
+		if trimmed == v {
+			return v
+		}
+		v = trimmed
+	}
 }
 
+// hasPrefixIgnoringSliceAndPointerPrefix reports whether the type s names
+// prefix once its slice and pointer prefixes are stripped. A map type names
+// it when its key or its value does, so map[string]decimal.Decimal uses the
+// decimal package, and an instantiated generic type names it when the type
+// or one of its arguments does, so duckdb.Composite[[]time.Time] uses both
+// the duckdb and the time packages.
 func hasPrefixIgnoringSliceAndPointerPrefix(s, prefix string) bool {
 	trimmedS := trimSliceAndPointerPrefix(s)
 	trimmedPrefix := trimSliceAndPointerPrefix(prefix)
+	if key, value, ok := splitMapType(trimmedS); ok {
+		return hasPrefixIgnoringSliceAndPointerPrefix(key, trimmedPrefix) ||
+			hasPrefixIgnoringSliceAndPointerPrefix(value, trimmedPrefix)
+	}
+	if typ, args, ok := splitGenericType(trimmedS); ok {
+		if strings.HasPrefix(typ, trimmedPrefix) {
+			return true
+		}
+		for _, arg := range args {
+			if hasPrefixIgnoringSliceAndPointerPrefix(arg, trimmedPrefix) {
+				return true
+			}
+		}
+		return false
+	}
 	return strings.HasPrefix(trimmedS, trimmedPrefix)
+}
+
+// splitGenericType splits an instantiated generic type pkg.Name[A, B] into
+// pkg.Name and its type arguments, matching the brackets so an argument
+// that is itself a slice, a map or a generic type is kept whole.
+func splitGenericType(s string) (string, []string, bool) {
+	open := strings.IndexByte(s, '[')
+	if open <= 0 || !strings.HasSuffix(s, "]") {
+		return "", nil, false
+	}
+	var args []string
+	depth, start := 0, open+1
+	for i := open; i < len(s); i++ {
+		switch s[i] {
+		case '[':
+			depth++
+		case ']':
+			depth--
+			if depth == 0 {
+				if i != len(s)-1 {
+					return "", nil, false
+				}
+				args = append(args, strings.TrimSpace(s[start:i]))
+			}
+		case ',':
+			if depth == 1 {
+				args = append(args, strings.TrimSpace(s[start:i]))
+				start = i + 1
+			}
+		}
+	}
+	return s[:open], args, true
+}
+
+// splitMapType splits map[K]V into K and V, matching the brackets so a key
+// that is itself a map or an array is kept whole.
+func splitMapType(s string) (string, string, bool) {
+	if !strings.HasPrefix(s, "map[") {
+		return "", "", false
+	}
+	depth := 0
+	for i := 3; i < len(s); i++ {
+		switch s[i] {
+		case '[':
+			depth++
+		case ']':
+			depth--
+			if depth == 0 {
+				return s[4:i], s[i+1:], true
+			}
+		}
+	}
+	return "", "", false
 }
 
 func replaceConflictedArg(imports [][]ImportSpec, queries []Query) []Query {

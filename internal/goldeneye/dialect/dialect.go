@@ -36,11 +36,13 @@ const (
 const ExtensionsDir = "extensions"
 
 // Type is a type the dialect defines. Aliases are spellings of the same type
-// that a schema may use in a column definition.
+// that a schema may use in a column definition. Base names the type this
+// one stands on, which is listed before it.
 type Type struct {
 	Name     string   `json:"name"`
 	Category string   `json:"category"`
 	Aliases  []string `json:"aliases,omitempty"`
+	Base     string   `json:"base,omitempty"`
 }
 
 // Operator is a single operator overload.

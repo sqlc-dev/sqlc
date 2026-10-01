@@ -1,0 +1,16 @@
+CREATE TABLE things (
+  id INT64 NOT NULL,
+  s STRING(10),
+  smax STRING(MAX),
+  n NUMERIC,
+  byt BYTES(MAX),
+  ai ARRAY<INT64>,
+  as2 ARRAY<STRING(MAX)>,
+  ts TIMESTAMP,
+  d DATE,
+  j JSON,
+  b BOOL,
+  f FLOAT64,
+  f32 FLOAT32,
+  u UUID
+) PRIMARY KEY (id);
