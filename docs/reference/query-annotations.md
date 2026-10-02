@@ -7,6 +7,14 @@ command. The format of this comment is as follows:
 -- name: <name> <command>
 ```
 
+A query that returns rows may also name the type they are returned as with
+`:type <TypeName>`, so that several queries can return the same type. See
+[sharing a row type between queries](../howto/row_types.md).
+
+```sql
+-- name: <name> <command> :type <TypeName>
+```
+
 ## `:exec`
 
 The generated method will return the error from

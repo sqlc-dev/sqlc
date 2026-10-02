@@ -1,0 +1,2 @@
+# package querytest
+error generating code: query ListBooks: :type BookWithAuthor does not match query GetBook: column 3 is AuthorID int64, want AuthorName string

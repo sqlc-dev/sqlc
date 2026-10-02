@@ -19,7 +19,7 @@ func TestParseQueryNameAndType(t *testing.T) {
 		"-- name:CreateFoo",
 		`--name:CreateFoo :two`,
 	} {
-		if _, _, err := ParseQueryNameAndType(query, CommentSyntax{Dash: true}); err == nil {
+		if _, err := ParseQueryNameAndType(query, CommentSyntax{Dash: true}); err == nil {
 			t.Errorf("expected invalid metadata: %q", query)
 		}
 	}
@@ -29,7 +29,7 @@ func TestParseQueryNameAndType(t *testing.T) {
 		`-- name comment`,
 		`--name comment`,
 	} {
-		if _, _, err := ParseQueryNameAndType(query, CommentSyntax{Dash: true}); err != nil {
+		if _, err := ParseQueryNameAndType(query, CommentSyntax{Dash: true}); err != nil {
 			t.Errorf("expected valid comment: %q", query)
 		}
 	}
@@ -39,15 +39,15 @@ func TestParseQueryNameAndType(t *testing.T) {
 		`# name: CreateFoo :one`:     {Hash: true},
 		`/* name: CreateFoo :one */`: {SlashStar: true},
 	} {
-		queryName, queryCmd, err := ParseQueryNameAndType(query, cs)
+		md, err := ParseQueryNameAndType(query, cs)
 		if err != nil {
 			t.Errorf("expected valid metadata: %q", query)
 		}
-		if queryName != "CreateFoo" {
-			t.Errorf("incorrect queryName parsed: (%q) %q", queryName, query)
+		if md.Name != "CreateFoo" {
+			t.Errorf("incorrect queryName parsed: (%q) %q", md.Name, query)
 		}
-		if queryCmd != CmdOne {
-			t.Errorf("incorrect queryCmd parsed: (%q) %q", queryCmd, query)
+		if md.Cmd != CmdOne {
+			t.Errorf("incorrect queryCmd parsed: (%q) %q", md.Cmd, query)
 		}
 	}
 

@@ -1,0 +1,2 @@
+# package querytest
+error generating code: query ListBookTitles: :type Book is already the name of a model

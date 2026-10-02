@@ -54,22 +54,17 @@ func (c *Compiler) parseQuery(stmt ast.Node, pp *preprocess.Result, o opts.Parse
 		return nil, errors.New("missing semicolon at end of file")
 	}
 
-	name, cmd, err := metadata.ParseQueryNameAndType(rawSQL, metadata.CommentSyntax(c.parser.CommentSyntax()))
+	md, err := metadata.ParseQueryNameAndType(rawSQL, metadata.CommentSyntax(c.parser.CommentSyntax()))
 	if err != nil {
 		return nil, err
 	}
 
-	if name == "" {
+	if md.Name == "" {
 		return nil, nil
 	}
 
-	if err := validate.Cmd(raw.Stmt, name, cmd); err != nil {
+	if err := validate.Cmd(raw.Stmt, md.Name, md.Cmd); err != nil {
 		return nil, err
-	}
-
-	md := metadata.Metadata{
-		Name: name,
-		Cmd:  cmd,
 	}
 
 	// TODO eventually can use this for name and type/cmd parsing too

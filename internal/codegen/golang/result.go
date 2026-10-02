@@ -185,6 +185,7 @@ func argName(name string) string {
 func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, structs []Struct) ([]Query, error) {
 	models := buildModelTypeSet(enums, structs)
 	qualifier := options.ModelsTypeQualifier()
+	rowTypes := newRowTypes(structs)
 	qs := make([]Query, 0, len(req.Queries))
 	for _, query := range req.Queries {
 		if query.Name == "" {
@@ -269,6 +270,10 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 			}
 		}
 
+		if query.TypeName != "" && !returnsStruct(query) {
+			return nil, fmt.Errorf("query %s: :type %s needs a query that returns more than one column", query.Name, query.TypeName)
+		}
+
 		if len(query.Columns) == 1 && query.Columns[0].EmbedTable == nil {
 			c := query.Columns[0]
 			name := columnName(c, 0)
@@ -303,7 +308,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 			var emit bool
 
 			for _, s := range structs {
-				if len(s.Fields) != len(query.Columns) {
+				if query.TypeName != "" || len(s.Fields) != len(query.Columns) {
 					continue
 				}
 				same := true
@@ -331,12 +336,22 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 						embed:  newGoEmbed(c.EmbedTable, structs, req.Catalog.DefaultSchema),
 					})
 				}
+				name := gq.MethodName + "Row"
+				if query.TypeName != "" {
+					name = query.TypeName
+				}
 				var err error
-				gs, err = columnsToStruct(req, options, gq.MethodName+"Row", columns, true, models, qualifier)
+				gs, err = columnsToStruct(req, options, name, columns, true, models, qualifier)
 				if err != nil {
 					return nil, err
 				}
 				emit = true
+				if query.TypeName != "" {
+					gs, emit, err = rowTypes.add(query.Name, gs)
+					if err != nil {
+						return nil, err
+					}
+				}
 			}
 			gq.Ret = QueryValue{
 				Emit:           emit,
@@ -359,6 +374,76 @@ var cmdReturnsData = map[string]struct{}{
 	metadata.CmdBatchOne:  {},
 	metadata.CmdMany:      {},
 	metadata.CmdOne:       {},
+}
+
+// returnsStruct reports whether the Go code for query returns its rows as a
+// struct, which is what a ":type" annotation names.
+func returnsStruct(query *plugin.Query) bool {
+	if len(query.Columns) == 1 && query.Columns[0].EmbedTable == nil {
+		return false
+	}
+	return putOutColumns(query)
+}
+
+// rowTypes tracks the structs named by ":type" annotations, so that the
+// queries sharing a name return one struct.
+type rowTypes struct {
+	models map[string]bool
+	named  map[string]rowType
+}
+
+type rowType struct {
+	query string // the first query to use the name, which emits the struct
+	s     *Struct
+}
+
+func newRowTypes(models []Struct) *rowTypes {
+	r := &rowTypes{models: map[string]bool{}, named: map[string]rowType{}}
+	for _, m := range models {
+		r.models[m.Name] = true
+	}
+	return r
+}
+
+// add takes the struct built for the rows of a query annotated with ":type"
+// and returns the struct the query returns and whether to emit it. The first
+// query to use a name emits its struct; the others return that struct, as long
+// as their columns give the same fields.
+func (r *rowTypes) add(query string, s *Struct) (*Struct, bool, error) {
+	if r.models[s.Name] {
+		return nil, false, fmt.Errorf("query %s: :type %s is already the name of a model", query, s.Name)
+	}
+	first, ok := r.named[s.Name]
+	if !ok {
+		r.named[s.Name] = rowType{query: query, s: s}
+		return s, true, nil
+	}
+	if diff := fieldsDiff(first.s.Fields, s.Fields); diff != "" {
+		return nil, false, fmt.Errorf("query %s: :type %s does not match query %s: %s", query, s.Name, first.query, diff)
+	}
+	return first.s, false, nil
+}
+
+// fieldsDiff describes the first difference of got from want, or returns ""
+// if they are the same.
+func fieldsDiff(want, got []Field) string {
+	if len(got) != len(want) {
+		return fmt.Sprintf("%d columns, want %d", len(got), len(want))
+	}
+	for i, w := range want {
+		g := got[i]
+		if g.Name != w.Name || g.Type != w.Type || g.Tag() != w.Tag() || fieldsDiff(w.EmbedFields, g.EmbedFields) != "" {
+			return fmt.Sprintf("column %d is %s, want %s", i+1, describeField(g), describeField(w))
+		}
+	}
+	return ""
+}
+
+func describeField(f Field) string {
+	if tag := f.Tag(); tag != "" {
+		return fmt.Sprintf("%s %s `%s`", f.Name, f.Type, tag)
+	}
+	return f.Name + " " + f.Type
 }
 
 func putOutColumns(query *plugin.Query) bool {

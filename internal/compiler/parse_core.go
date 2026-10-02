@@ -24,18 +24,17 @@ func (c *Compiler) parseQueryCore(raw *ast.RawStmt, src string, pre *preprocess.
 		return nil, errors.New("missing semicolon at end of file")
 	}
 
-	name, cmd, err := metadata.ParseQueryNameAndType(rawSQL, metadata.CommentSyntax(c.parser.CommentSyntax()))
+	md, err := metadata.ParseQueryNameAndType(rawSQL, metadata.CommentSyntax(c.parser.CommentSyntax()))
 	if err != nil {
 		return nil, err
 	}
-	if name == "" {
+	if md.Name == "" {
 		return nil, nil
 	}
-	if err := validate.Cmd(raw.Stmt, name, cmd); err != nil {
+	if err := validate.Cmd(raw.Stmt, md.Name, md.Cmd); err != nil {
 		return nil, err
 	}
 
-	md := metadata.Metadata{Name: name, Cmd: cmd}
 	cleanedComments, err := source.CleanedComments(rawSQL, c.parser.CommentSyntax())
 	if err != nil {
 		return nil, err
