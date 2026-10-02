@@ -40,6 +40,7 @@ sections:
       - howto/ddl.md
       - howto/structs.md
       - howto/embedding.md
+      - howto/row_types.md
       - howto/overrides.md
       - howto/rename.md
 

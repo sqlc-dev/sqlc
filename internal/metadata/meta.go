@@ -15,6 +15,7 @@ type CommentSyntax source.CommentSyntax
 type Metadata struct {
 	Name     string
 	Cmd      string
+	TypeName string // from ":type <TypeName>"; queries that share it return the same type
 	Comments []string
 	Params   map[string]string
 	Flags    map[string]bool
@@ -58,7 +59,11 @@ func validateQueryName(name string) error {
 	return nil
 }
 
-func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string, error) {
+// ParseQueryNameAndType parses the "name:" annotation of a query, which holds
+// its name, its command and an optional ":type <TypeName>". Only Name, Cmd and
+// TypeName are set on the returned Metadata; it is empty if the query has no
+// such annotation.
+func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (Metadata, error) {
 	for line := range strings.SplitSeq(t, "\n") {
 		var prefix string
 		if strings.HasPrefix(line, "--") {
@@ -90,7 +95,7 @@ func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string
 			continue
 		}
 		if !strings.HasPrefix(rest, " name: ") {
-			return "", "", fmt.Errorf("invalid metadata: %s", line)
+			return Metadata{}, fmt.Errorf("invalid metadata: %s", line)
 		}
 
 		part := strings.Split(strings.TrimSpace(line), " ")
@@ -98,24 +103,34 @@ func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string
 			part = part[:len(part)-1] // removes the trailing "*/" element
 		}
 		if len(part) == 3 {
-			return "", "", fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows', ':execlastid', ':execresult', ':copyfrom', 'batchexec', 'batchmany', 'batchone']: %s", line)
+			return Metadata{}, fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows', ':execlastid', ':execresult', ':copyfrom', 'batchexec', 'batchmany', 'batchone']: %s", line)
 		}
-		if len(part) != 4 {
-			return "", "", fmt.Errorf("invalid query comment: %s", line)
+		var typeName string
+		switch {
+		case len(part) == 4:
+		case len(part) == 5 && part[4] == ":type":
+			return Metadata{}, fmt.Errorf("missing type name after :type: %s", line)
+		case len(part) == 6 && part[4] == ":type":
+			typeName = part[5]
+		default:
+			return Metadata{}, fmt.Errorf("invalid query comment: %s", line)
 		}
 		queryName := part[2]
 		queryType := strings.TrimSpace(part[3])
 		switch queryType {
 		case CmdOne, CmdMany, CmdExec, CmdExecResult, CmdExecRows, CmdExecLastId, CmdCopyFrom, CmdBatchExec, CmdBatchMany, CmdBatchOne:
 		default:
-			return "", "", fmt.Errorf("invalid query type: %s", queryType)
+			return Metadata{}, fmt.Errorf("invalid query type: %s", queryType)
 		}
 		if err := validateQueryName(queryName); err != nil {
-			return "", "", err
+			return Metadata{}, err
 		}
-		return queryName, queryType, nil
+		if typeName != "" && validateQueryName(typeName) != nil {
+			return Metadata{}, fmt.Errorf("invalid type name %q", typeName)
+		}
+		return Metadata{Name: queryName, Cmd: queryType, TypeName: typeName}, nil
 	}
-	return "", "", nil
+	return Metadata{}, nil
 }
 
 // ParseCommentFlags processes the comments provided with queries to determine the metadata params, flags and rules to skip.

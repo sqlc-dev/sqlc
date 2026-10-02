@@ -142,12 +142,12 @@ Examples:
 				if err != nil {
 					return fmt.Errorf("failed to read statement source: %w", err)
 				}
-				name, cmd, err := metadata.ParseQueryNameAndType(rawSQL, commentSyntax)
+				md, err := metadata.ParseQueryNameAndType(rawSQL, commentSyntax)
 				if err != nil {
 					return fmt.Errorf("failed to parse query annotation: %w", err)
 				}
-				ps.Name = name
-				ps.Cmd = cmd
+				ps.Name = md.Name
+				ps.Cmd = md.Cmd
 				out = append(out, ps)
 			}
 

@@ -111,6 +111,9 @@ message Query {
   repeated string comments = 6 [json_name = "comments"];
   string filename = 7 [json_name = "filename"];
   Identifier insert_into_table = 8 [json_name = "insert_into_table"];
+  // Set by a ":type <TypeName>" annotation. Queries with the same type_name
+  // return rows of the same type.
+  string type_name = 9 [json_name = "type_name"];
 }
 
 message Parameter {
