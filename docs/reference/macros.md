@@ -20,6 +20,16 @@ FROM authors
 WHERE lower(name) = ?;
 ```
 
+The `@name` syntax is a shorthand for `sqlc.arg(name)` and is not supported in
+MySQL.
+
+```sql
+-- name: GetAuthorByName :one
+SELECT *
+FROM authors
+WHERE lower(name) = @name;
+```
+
 See more examples in [Naming parameters](../howto/named_parameters.md).
 
 ## `sqlc.embed`
