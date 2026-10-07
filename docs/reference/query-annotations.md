@@ -122,6 +122,9 @@ the following methods:
 - `Exec`, that takes a `func(int, error)` parameter,
 - `Close`, to close the batch operation early.
 
+See [using the batch object](#using-the-batch-object) below for what these
+methods do and a complete example.
+
 ```sql
 -- name: DeleteBook :batchexec
 DELETE FROM books
@@ -153,6 +156,9 @@ The generated method will return a batch object. The batch object will have
 the following methods:
 - `Query`, that takes a `func(int, []T, error)` parameter, where `T` is your query's return type
 - `Close`, to close the batch operation early.
+
+See [using the batch object](#using-the-batch-object) below for what these
+methods do and a complete example.
 
 ```sql
 -- name: BooksByTitleYear :batchmany
@@ -190,6 +196,9 @@ the following methods:
 - `QueryRow`, that takes a `func(int, T, error)` parameter, where `T` is your query's return type
 - `Close`, to close the batch operation early.
 
+See [using the batch object](#using-the-batch-object) below for what these
+methods do and a complete example.
+
 ```sql
 -- name: CreateBook :batchone
 INSERT INTO books (
@@ -222,6 +231,79 @@ func (b *CreateBookBatchResults) Close() error {
 	//...
 }
 ```
+
+## Using the batch object
+
+The batch object returned by a `:batch*` method wraps a single
+`pgx.Batch`: one statement is queued per element of the slice argument, and
+all of them are sent to PostgreSQL together when the method is called. You
+then iterate the results with one of `Exec`, `Query` or `QueryRow` (depending
+on the annotation), and finish with `Close`.
+
+The iteration method takes a callback and calls it **once per queued
+statement, in order**:
+
+- The `int` argument is the 0-based position of the statement within the
+  batch, matching the index of the element you passed in.
+- A failing statement does not stop the loop. If the third statement of ten
+  fails, the callback still receives results for the fourth through tenth.
+  Handle errors inside the callback; returning an error from it has no effect
+  on iteration.
+- `Exec` delivers `func(index int, err error)`.
+- `Query` delivers `func(index int, rows []T, err error)` with all rows that
+  the statement returned.
+- `QueryRow` delivers `func(index int, value T, err error)` with the single
+  row the statement returned. A statement that matched no rows reports an
+  error, just like a standalone `QueryRow`.
+
+Calling `Close` before or during iteration marks the batch as closed: the
+remaining queued statements are not executed, and their callbacks instead
+receive `ErrBatchAlreadyClosed` — once per remaining statement, so your
+callback always sees the full batch. `Close` is also called automatically
+when the iteration method returns, so a batch that you iterate fully does
+not require an explicit `Close`.
+
+To stop early on purpose, return early from the callback for the remaining
+statements after recording what you need, or `panic` through the iteration
+loop and recover around the call site.
+
+Putting that together, a `:batchone` insert looks like this:
+
+```go
+res := q.CreateBook(ctx, books)
+
+inserted := make([]Book, len(books))
+res.QueryRow(func(i int, b Book, err error) {
+    if err != nil {
+        // log and continue: the batch keeps going regardless
+        return
+    }
+    inserted[i] = b
+})
+// the batch is closed automatically when QueryRow returns
+```
+
+And stopping early once something irrecoverable happens:
+
+```go
+res := q.DeleteBook(ctx, ids)
+
+res.Exec(func(i int, err error) {
+    if err != nil {
+        if errors.Is(err, ErrBatchAlreadyClosed) {
+            return // we closed the batch ourselves
+        }
+        // fatal: abandon the rest of the batch
+        res.Close()
+    }
+})
+```
+
+> [!NOTE]
+> `pgx` executes the queued statements in order, but they are sent as one
+> network round trip. The batch either way is a single unit from the
+> connection's point of view: an error partway through does not roll back
+> statements that already ran.
 
 ## `:copyfrom`
 
