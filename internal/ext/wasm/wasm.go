@@ -96,6 +96,14 @@ func (r *Runner) fetch(ctx context.Context, uri string) ([]byte, string, error) 
 		}
 		body = resp.Body
 
+	case strings.HasPrefix(uri, "oci://"):
+		wmod, err := fetchOCI(ctx, uri, false)
+		if err != nil {
+			return nil, "", err
+		}
+		sum := sha256.Sum256(wmod)
+		return wmod, fmt.Sprintf("%x", sum), nil
+
 	default:
 		return nil, "", fmt.Errorf("unknown scheme: %s", r.URL)
 	}

@@ -14,7 +14,7 @@ sql:
   queries: "postgresql/query.sql"
   engine: "postgresql"
   gen:
-    go: 
+    go:
       package: "authors"
       out: "postgresql"
   database:
@@ -122,7 +122,7 @@ The `analyzer` mapping supports the following keys:
 
 - `database`:
   -  If false, do not use the configured database for query analysis. Defaults to `true`.
-  
+
 ### gen
 
 The `gen` mapping supports the following keys:
@@ -254,21 +254,21 @@ Each mapping in the `plugins` collection has the following keys:
     - The format expected. Supports `json` and `protobuf` formats. Defaults to `protobuf`.
 - `wasm`: A mapping with a two keys `url` and `sha256`
   - `url`:
-    - The URL to fetch the WASM file. Supports the `https://` or `file://` schemes.
+    - The URL to fetch the WASM file. Supports the `https://`, `file://`, or `oci://` schemes. OCI artifacts may be referenced by tag or digest and must use the [CNCF Wasm OCI artifact layout](https://tag-runtime.cncf.io/wgs/wasm/deliverables/wasm-oci-artifact/): exactly one `application/wasm` layer and a config with media type `application/vnd.wasm.config.v0+json`, `architecture: "wasm"`, `os: "wasip1"`, and `layerDigests` matching the layer digest. WASI Preview 2 components are not supported. Registry authentication uses the Docker config, including configured credential helpers.
   - `sha256`
     - The SHA256 checksum for the downloaded file.
-   
+
 ```yaml
 version: "2"
 plugins:
 - name: "py"
-  wasm: 
+  wasm:
     url: "https://github.com/sqlc-dev/sqlc-gen-python/releases/download/v0.16.0-alpha/sqlc-gen-python.wasm"
     sha256: "428476c7408fd4c032da4ec74e8a7344f4fa75e0f98a5a3302f238283b9b95f2"
 - name: "js"
   env:
   - PATH
-  process: 
+  process:
     cmd: "sqlc-gen-json"
 ```
 
@@ -285,7 +285,7 @@ Each mapping in the `rules` collection has the following keys:
 
 See the [vet](../howto/vet.md) documentation for a list of built-in rules and
 help writing custom rules.
-   
+
 ```yaml
 version: "2"
 sql:
@@ -319,7 +319,7 @@ rules:
     rule: |
       query.cmd == "exec"
 ```
-  
+
 ### Global overrides
 
 Sometimes, the same configuration must be done across various specifications of
