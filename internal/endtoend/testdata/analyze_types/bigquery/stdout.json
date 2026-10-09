@@ -298,7 +298,7 @@
       {
         "number": 1,
         "column": {
-          "name": "",
+          "name": "a",
           "type": {
             "name": "numeric",
             "args": [
@@ -315,7 +315,7 @@
       {
         "number": 2,
         "column": {
-          "name": "",
+          "name": "b",
           "type": {
             "name": "array",
             "args": [
@@ -331,7 +331,7 @@
       {
         "number": 3,
         "column": {
-          "name": "",
+          "name": "c",
           "type": {
             "name": "struct",
             "args": [
@@ -348,7 +348,7 @@
       {
         "number": 4,
         "column": {
-          "name": "",
+          "name": "d",
           "type": {
             "name": "string",
             "args": [
@@ -362,7 +362,7 @@
       {
         "number": 5,
         "column": {
-          "name": "",
+          "name": "e",
           "type": {
             "name": "bignumeric"
           }

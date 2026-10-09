@@ -14,6 +14,9 @@ import (
 
 type cc struct {
 	paramCount int
+	// named maps the name of each {name:Type} placeholder to its number:
+	// the query binds a name once, however many times it uses it.
+	named map[string]int
 }
 
 // pos is a node's byte offset in the query. doubleclick counts positions
@@ -691,9 +694,19 @@ func (c *cc) convertFunctionCall(n *chast.FunctionCall) *ast.FuncCall {
 }
 
 func (c *cc) convertParameter(n *chast.Parameter) ast.Node {
-	c.paramCount++
+	number, ok := c.named[n.Name]
+	if !ok || n.Name == "" {
+		c.paramCount++
+		number = c.paramCount
+		if n.Name != "" {
+			if c.named == nil {
+				c.named = map[string]int{}
+			}
+			c.named[n.Name] = number
+		}
+	}
 	ref := &ast.ParamRef{
-		Number:   c.paramCount,
+		Number:   number,
 		Name:     n.Name,
 		Location: pos(n),
 	}

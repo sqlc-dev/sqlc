@@ -4,6 +4,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/compiler"
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/config/convert"
+	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/info"
 	"github.com/sqlc-dev/sqlc/internal/plugin"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
@@ -100,6 +101,7 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 					IsArray:   c.IsArray,
 					ArrayDims: int32(c.ArrayDims),
 					Length:    int32(l),
+					TypeExpr:  pluginTypeExpr(c.TypeExpr),
 					Table: &plugin.Identifier{
 						Catalog: t.Rel.Catalog,
 						Schema:  t.Rel.Schema,
@@ -213,6 +215,42 @@ func pluginQueryColumn(c *compiler.Column) *plugin.Column {
 		}
 	}
 
+	// The type as an expression is only known when the analysis core typed
+	// the column, so the legacy path leaves it unset and codegen falls back
+	// to the flat fields above.
+	out.TypeExpr = pluginTypeExpr(c.TypeExpr)
+
+	return out
+}
+
+func pluginTypeExpr(t *core.TypeExpr) *plugin.TypeExpr {
+	if t == nil {
+		return nil
+	}
+	out := &plugin.TypeExpr{
+		Name:     t.Name,
+		Nullable: t.Nullable,
+	}
+	for _, arg := range t.Args {
+		out.Args = append(out.Args, pluginTypeArg(arg))
+	}
+	return out
+}
+
+func pluginTypeArg(a core.TypeArg) *plugin.TypeArg {
+	out := &plugin.TypeArg{Label: a.Label}
+	switch {
+	case a.Type != nil:
+		out.Value = &plugin.TypeArg_Type{Type: pluginTypeExpr(a.Type)}
+	case a.Int != nil:
+		out.Value = &plugin.TypeArg_IntValue{IntValue: *a.Int}
+	case a.Bool != nil:
+		out.Value = &plugin.TypeArg_BoolValue{BoolValue: *a.Bool}
+	case a.String != nil:
+		out.Value = &plugin.TypeArg_StringValue{StringValue: *a.String}
+	case a.Ident != nil:
+		out.Value = &plugin.TypeArg_Ident{Ident: *a.Ident}
+	}
 	return out
 }
 
@@ -220,6 +258,7 @@ func pluginQueryParam(p compiler.Parameter) *plugin.Parameter {
 	return &plugin.Parameter{
 		Number: int32(p.Number),
 		Column: pluginQueryColumn(p.Column),
+		Name:   p.Name,
 	}
 }
 

@@ -254,7 +254,7 @@ func (a *analyzer) typeLimit(n ast.Node) error {
 		if err != nil {
 			return err
 		}
-		a.inferParam(pr.Number, exprType{typeOID: oid})
+		a.inferParam(pr, exprType{typeOID: oid})
 		return nil
 	}
 	_, err := a.typeExpr(n)

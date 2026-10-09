@@ -167,7 +167,7 @@ func (a *analyzer) bindValue(rel scopeRel, target *core.ClassColumn, v ast.Node)
 	if target != nil {
 		switch value := v.(type) {
 		case *ast.ParamRef:
-			a.inferParam(value.Number, columnType(rel, *target))
+			a.inferParam(value, columnType(rel, *target))
 			return nil
 		case *ast.A_Const:
 			return nil

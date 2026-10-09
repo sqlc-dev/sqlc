@@ -532,6 +532,7 @@ func (c *cc) convertParameterExpr(n *zjast.ParameterExpr) ast.Node {
 		}
 		return &ast.ParamRef{
 			Number:   number,
+			Name:     n.Name.Name,
 			Location: n.Pos(),
 		}
 	}

@@ -20,10 +20,10 @@ go build -o ~/go/bin/sqlc-gen-json ./cmd/sqlc-gen-json
 go test ./...
 ```
 
-To run the tests in the examples folder, use the `examples` tag.
+To run the tests in the examples folder, which is a module of its own, use the `examples` tag from inside it.
 
 ```
-go test --tags=examples ./...
+cd examples && go test --tags=examples ./...
 ```
 
 These tests require locally-running database instances. Run these databases

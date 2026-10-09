@@ -47,6 +47,10 @@ func coreResultCatalog(c *core.Catalog) (*catalog.Catalog, error) {
 					IsArray:    expr.IsArray(),
 					ArrayDims:  expr.ArrayDims(),
 					IsUnsigned: strings.HasSuffix(inner.Name, " unsigned"),
+					// The expression says whether a value may be null the
+					// way a query's result column does, from the column's
+					// constraint.
+					TypeExpr: expr.WithNullable(!col.NotNull),
 				}
 				if len(inner.Args) > 0 && inner.Args[0].Int != nil {
 					l := int(*inner.Args[0].Int)

@@ -1,0 +1,5 @@
+CREATE TABLE authors (
+  id   INT64 NOT NULL,
+  name STRING(MAX) NOT NULL,
+  bio  STRING(MAX),
+) PRIMARY KEY (id);

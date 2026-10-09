@@ -119,6 +119,9 @@ func Generate(ctx context.Context, req *plugin.GenerateRequest) (*plugin.Generat
 	if err := opts.ValidateOpts(options); err != nil {
 		return nil, err
 	}
+	if err := validateSQLPackage(req.Settings.Engine, options); err != nil {
+		return nil, err
+	}
 
 	enums := buildEnums(req, options)
 	structs := buildStructs(req, options)
@@ -168,6 +171,7 @@ func validate(options *opts.Options, enums []Enum, structs []Struct, queries []Q
 func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, structs []Struct, queries []Query) (*plugin.GenerateResponse, error) {
 	i := &importer{
 		Options: options,
+		Engine:  req.Settings.Engine,
 		Queries: queries,
 		Enums:   enums,
 		Structs: structs,
