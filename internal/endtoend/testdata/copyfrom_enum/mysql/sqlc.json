@@ -1,0 +1,78 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "engine": "mysql",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "gen": {
+        "go": {
+          "package": "querytest",
+          "sql_package": "database/sql",
+          "sql_driver": "github.com/go-sql-driver/mysql",
+          "omit_unused_structs": true,
+          "overrides": [
+            {
+              "column": "overridden_values.kind",
+              "go_type": {
+                "import": "database/sql",
+                "type": "NullString"
+              }
+            }
+          ],
+          "out": "go"
+        }
+      }
+    },
+    {
+      "engine": "mysql",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "gen": {
+        "go": {
+          "package": "querytest",
+          "sql_package": "database/sql",
+          "sql_driver": "github.com/go-sql-driver/mysql",
+          "omit_unused_structs": true,
+          "overrides": [
+            {
+              "column": "overridden_values.kind",
+              "go_type": {
+                "import": "database/sql",
+                "type": "NullString"
+              }
+            }
+          ],
+          "out": "params",
+          "query_parameter_limit": 0,
+          "emit_params_struct_pointers": true
+        }
+      }
+    },
+    {
+      "engine": "mysql",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "gen": {
+        "go": {
+          "package": "db",
+          "sql_package": "database/sql",
+          "sql_driver": "github.com/go-sql-driver/mysql",
+          "omit_unused_structs": true,
+          "overrides": [
+            {
+              "column": "overridden_values.kind",
+              "go_type": {
+                "import": "database/sql",
+                "type": "NullString"
+              }
+            }
+          ],
+          "out": "db",
+          "output_models_path": "model",
+          "output_models_import": "github.com/sqlc-dev/sqlc/endtoend/copyfrom_enum/mysql/model"
+        }
+      }
+    }
+  ]
+}
