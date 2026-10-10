@@ -41,15 +41,24 @@ func buildEnums(req *plugin.GenerateRequest, options *opts.Options) []Enum {
 			seen := make(map[string]struct{}, len(enum.Vals))
 			for i, v := range enum.Vals {
 				value := EnumReplace(v)
-				if _, found := seen[value]; found || value == "" {
+				if value == "" {
 					value = fmt.Sprintf("value_%d", i)
 				}
+				// Dedup on the final constant name, not on EnumReplace(v):
+				// StructName further collapses characters (e.g. a trailing "_"),
+				// so distinct EnumReplace outputs like "A" and "A_" (from "A+"
+				// and "A-") can still map to the same constant name.
+				name := StructName(enumName+"_"+value, options)
+				if _, found := seen[name]; found {
+					value = fmt.Sprintf("value_%d", i)
+					name = StructName(enumName+"_"+value, options)
+				}
 				e.Constants = append(e.Constants, Constant{
-					Name:  StructName(enumName+"_"+value, options),
+					Name:  name,
 					Value: v,
 					Type:  e.Name,
 				})
-				seen[value] = struct{}{}
+				seen[name] = struct{}{}
 			}
 			enums = append(enums, e)
 		}
