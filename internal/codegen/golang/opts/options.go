@@ -153,11 +153,19 @@ func parseGlobalOpts(req *plugin.GenerateRequest) (*GlobalOptions, error) {
 	if err := json.Unmarshal(req.GlobalOptions, &options); err != nil {
 		return nil, fmt.Errorf("unmarshalling global options: %w", err)
 	}
-	for i := range options.Overrides {
-		if err := options.Overrides[i].parse(req); err != nil {
+	// Global overrides are shared by every SQL package, so drop the ones
+	// scoped to a different engine
+	overrides := options.Overrides[:0]
+	for _, o := range options.Overrides {
+		if o.Engine != "" && o.Engine != req.Settings.GetEngine() {
+			continue
+		}
+		if err := o.parse(req); err != nil {
 			return nil, err
 		}
+		overrides = append(overrides, o)
 	}
+	options.Overrides = overrides
 	return &options, nil
 }
 

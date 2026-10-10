@@ -1,0 +1,53 @@
+version: "2"
+overrides:
+  go:
+    overrides:
+      - db_type: text
+        engine: postgresql
+        go_type: string
+        go_struct_tag: 'backend:"postgresql"'
+      - db_type: text
+        engine: mysql
+        go_type: "database/sql.NullString"
+        go_struct_tag: 'backend:"mysql"'
+      - db_type: text
+        engine: sqlite
+        go_type:
+          type: byte
+          slice: true
+        go_struct_tag: 'backend:"sqlite"'
+      - column: entries.code
+        engine: postgresql
+        go_type:
+          import: encoding/json
+          type: RawMessage
+      - column: entries.code
+        engine: mysql
+        go_type:
+          type: byte
+          slice: true
+      - column: entries.code
+        engine: sqlite
+        go_type: string
+sql:
+  - engine: postgresql
+    schema: schema.sql
+    queries: query.sql
+    gen:
+      go:
+        package: pg
+        out: pg
+  - engine: mysql
+    schema: schema.sql
+    queries: query.sql
+    gen:
+      go:
+        package: mysql
+        out: mysql
+  - engine: sqlite
+    schema: schema.sql
+    queries: query.sql
+    gen:
+      go:
+        package: sqlite
+        out: sqlite
