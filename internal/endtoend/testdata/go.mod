@@ -1,6 +1,6 @@
 module github.com/sqlc-dev/sqlc/endtoend
 
-go 1.25.0
+go 1.26.0
 
 require (
 	cloud.google.com/go/spanner v1.95.1

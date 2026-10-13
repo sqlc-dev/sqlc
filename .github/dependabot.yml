@@ -8,6 +8,7 @@ updates:
       - "/"
       - "/examples"
       - "/internal/goldeneye"
+      - "/internal/endtoend/testdata"
     schedule:
       interval: "daily"
     groups:
