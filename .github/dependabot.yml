@@ -1,12 +1,13 @@
 version: 2
 updates:
   # The examples module replaces github.com/sqlc-dev/sqlc with ../, so it has
-  # to carry the same versions as the root module. Listing both directories
-  # lets each group update them together in a single pull request.
+  # to carry the same versions as the root module. Listing the directories
+  # together lets each group update them in a single pull request.
   - package-ecosystem: "gomod"
     directories:
       - "/"
       - "/examples"
+      - "/internal/goldeneye"
     schedule:
       interval: "daily"
     groups:
