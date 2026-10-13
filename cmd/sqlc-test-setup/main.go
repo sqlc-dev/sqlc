@@ -740,9 +740,15 @@ func startSpannerOmni() error {
 	}
 	defer logFile.Close()
 
+	env, err := omniEnv(dir)
+	if err != nil {
+		return err
+	}
+
 	// The launcher supervises the server processes for as long as it runs,
 	// so it is detached from this process and left running.
 	cmd := exec.Command(launcher, "start-single-server", "--base-dir", data)
+	cmd.Env = env
 	cmd.Stdout = logFile
 	cmd.Stderr = logFile
 	cmd.SysProcAttr = detachedProcess()
