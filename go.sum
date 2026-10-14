@@ -68,8 +68,8 @@ github.com/sqlc-dev/oliphant v0.2.0 h1:jJ/s2fh4Plj3U1HsdqiY/clw/IHb4FCNaHfqirwxc
 github.com/sqlc-dev/oliphant v0.2.0/go.mod h1:fRM/t4FutRddTIq2YCuS4O9o+2rRwSwELRvLMqtPloo=
 github.com/sqlc-dev/teesql v1.1.0 h1:3sVYQ9FGxQVcqrqQOQ27bk0aF4c4yN1H1zLL79uaSxQ=
 github.com/sqlc-dev/teesql v1.1.0/go.mod h1:WwOp9UtnxG17+eNFT5KXu/AGBQ8ucdGc8wIOpnj4XCI=
-github.com/sqlc-dev/zetajones v0.1.0 h1:VeG0atx6lNABr9V2bSI5vL9DvOKTHX0XjMqWUE/rv40=
-github.com/sqlc-dev/zetajones v0.1.0/go.mod h1:dU1DxwqC6Cahbpnw16KpH1J2waWRDMdwyDSvovMZR4I=
+github.com/sqlc-dev/zetajones v0.2.0 h1:MSOmZfik8ue884guNFXV1WoPydNA4kjHZN1U3arPBIM=
+github.com/sqlc-dev/zetajones v0.2.0/go.mod h1:dU1DxwqC6Cahbpnw16KpH1J2waWRDMdwyDSvovMZR4I=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
