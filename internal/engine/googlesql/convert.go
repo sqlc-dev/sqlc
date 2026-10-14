@@ -479,9 +479,42 @@ func (c *cc) convertExpr(node zjast.Node) ast.Node {
 			Arg: c.convertExpr(n.Array),
 			Indirection: &ast.List{
 				Items: []ast.Node{
-					&ast.A_Indices{Uidx: c.convertExpr(n.Position)},
+					&ast.A_Indices{Uidx: c.convertExpr(arrayPosition(n.Position))},
 				},
 			},
+		}
+	case *zjast.ArrayConstructor:
+		return c.convertArrayConstructor(n)
+	case *zjast.DateOrTimeLiteral:
+		kind := strings.ToLower(strings.TrimPrefix(n.TypeKind, "TYPE_"))
+		return c.typedLiteral(n.Value, kind, n.Pos())
+	case *zjast.NumericLiteral:
+		return c.typedLiteral(n.Value, "numeric", n.Pos())
+	case *zjast.BigNumericLiteral:
+		return c.typedLiteral(n.Value, "bignumeric", n.Pos())
+	case *zjast.JSONLiteral:
+		return c.typedLiteral(n.Value, "json", n.Pos())
+	case *zjast.BytesLiteral:
+		var sb strings.Builder
+		for _, comp := range n.Components {
+			if comp != nil {
+				sb.WriteString(unquote(comp.Image))
+			}
+		}
+		return &ast.TypeCast{
+			Arg:      &ast.A_Const{Val: &ast.String{Str: sb.String()}, Location: n.Pos()},
+			TypeName: spelledTypeName("bytes"),
+			Location: n.Pos(),
+		}
+	case *zjast.IntervalExpr:
+		unit := ""
+		if n.DatePart != nil {
+			unit = strings.ToLower(n.DatePart.Name)
+		}
+		return &ast.IntervalExpr{
+			Value:    c.convertExpr(n.Value),
+			Unit:     unit,
+			Location: n.Pos(),
 		}
 	case *zjast.NamedArgument:
 		return c.convertExpr(n.Value)
@@ -619,6 +652,25 @@ func (c *cc) convertBoolExpr(op ast.BoolExprType, operands []zjast.Node, loc int
 }
 
 func (c *cc) convertInExpression(n *zjast.InExpression) ast.Node {
+	// "x IN UNNEST(array)" tests membership of an array, which is what
+	// "x = ANY(array)" says.
+	if n.UnnestExpr != nil && len(n.UnnestExpr.Expressions) == 1 && n.UnnestExpr.Expressions[0] != nil {
+		var expr ast.Node = &ast.A_Expr{
+			Kind:     ast.A_Expr_Kind_OP_ANY,
+			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: "="}}},
+			Lexpr:    c.convertExpr(n.Lhs),
+			Rexpr:    c.convertExpr(n.UnnestExpr.Expressions[0].Expr),
+			Location: n.Pos(),
+		}
+		if n.IsNot {
+			expr = &ast.BoolExpr{
+				Boolop:   ast.BoolExprTypeNot,
+				Args:     &ast.List{Items: []ast.Node{expr}},
+				Location: n.Pos(),
+			}
+		}
+		return expr
+	}
 	in := &ast.In{
 		Expr:     c.convertExpr(n.Lhs),
 		Not:      n.IsNot,
@@ -694,6 +746,52 @@ func (c *cc) newFuncCall(parts []string, loc int) *ast.FuncCall {
 		Args:     &ast.List{},
 		Location: loc,
 	}
+}
+
+// typedLiteral converts a literal spelled with its type, DATE '2024-01-01'
+// or JSON '{}', to its string cast to that type.
+func (c *cc) typedLiteral(value *zjast.StringLiteral, typ string, loc int) ast.Node {
+	if value == nil || typ == "" {
+		return todo(value)
+	}
+	return &ast.TypeCast{
+		Arg:      &ast.A_Const{Val: &ast.String{Str: stringLiteralValue(value)}, Location: value.Pos()},
+		TypeName: spelledTypeName(typ),
+		Location: loc,
+	}
+}
+
+// convertArrayConstructor converts [a, b] and ARRAY<T>[a, b]. An explicit
+// element type is a cast of the array to it, which is what gives an empty
+// array its type.
+func (c *cc) convertArrayConstructor(n *zjast.ArrayConstructor) ast.Node {
+	arr := &ast.A_ArrayExpr{Elements: &ast.List{}, Location: n.Pos()}
+	for _, elem := range n.Elements {
+		arr.Elements.Items = append(arr.Elements.Items, c.convertExpr(elem))
+	}
+	if n.Type == nil {
+		return arr
+	}
+	return &ast.TypeCast{
+		Arg:      arr,
+		TypeName: spelledTypeName(typeName(n.Type)),
+		Location: n.Pos(),
+	}
+}
+
+// arrayPosition unwraps the OFFSET, ORDINAL, SAFE_OFFSET or SAFE_ORDINAL
+// that says how an array subscript counts to the position it wraps. They all
+// address one element, so they type alike.
+func arrayPosition(node zjast.Node) zjast.Node {
+	call, ok := node.(*zjast.FunctionCall)
+	if !ok || call.IsChained || len(call.Args) != 1 {
+		return node
+	}
+	switch strings.ToUpper(strings.Join(pathParts(call.Function), ".")) {
+	case "OFFSET", "ORDINAL", "SAFE_OFFSET", "SAFE_ORDINAL":
+		return call.Args[0]
+	}
+	return node
 }
 
 func (c *cc) convertFunctionCall(n *zjast.FunctionCall) ast.Node {

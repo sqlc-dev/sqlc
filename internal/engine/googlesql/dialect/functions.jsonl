@@ -1,1 +1,2 @@
 {"name": "count", "kind": "a", "returns": "int64"}
+{"name": "unnest", "args": [{"type": "anyarray"}], "returns": "anyelement", "nullable": true}

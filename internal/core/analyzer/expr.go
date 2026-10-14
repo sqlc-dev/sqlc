@@ -79,6 +79,9 @@ func (a *analyzer) typeExpr(n ast.Node) (exprType, error) {
 	case *ast.A_ArrayExpr:
 		return a.typeArrayExpr(e)
 
+	case *ast.A_Indirection:
+		return a.typeIndirection(e)
+
 	case *ast.SubLink:
 		return a.typeSubLink(e)
 
@@ -366,7 +369,17 @@ func (a *analyzer) typeQuantifiedExpr(e *ast.A_Expr) (exprType, error) {
 	if err != nil {
 		return exprType{}, err
 	}
-	if err := a.typeOperands(e.Rexpr, leftT); err != nil {
+	// "x = ANY(SELECT ...)" compares x against the subquery's column, but
+	// "x = ANY(array)" against the elements of an array, so a placeholder
+	// there is an array of x's type.
+	right := leftT
+	if _, sub := e.Rexpr.(*ast.SubLink); !sub {
+		right = a.arrayOf(leftT)
+		right.sourceClassOID = leftT.sourceClassOID
+		right.sourceAttributeOID = leftT.sourceAttributeOID
+		right.sourceTableAlias = leftT.sourceTableAlias
+	}
+	if err := a.typeOperands(e.Rexpr, right); err != nil {
 		return exprType{}, err
 	}
 	return a.boolType(false)
@@ -524,6 +537,51 @@ func (a *analyzer) typeArrayExpr(e *ast.A_ArrayExpr) (exprType, error) {
 	return a.lookupType(core.Array(element.WithNullable(false))), nil
 }
 
+// typeIndirection types an array subscript, arr[i], as the array's element,
+// and a slice, arr[i:j], as the array itself. An element may be NULL, and a
+// subscript past the end of the array yields NULL in the dialects that do not
+// raise an error for it. The subscripts are integers.
+func (a *analyzer) typeIndirection(e *ast.A_Indirection) (exprType, error) {
+	t, err := a.typeExpr(e.Arg)
+	if err != nil {
+		return exprType{}, err
+	}
+	intT := exprType{}
+	if oid, err := a.cat.ConstTypeOID(core.ConstInteger); err == nil {
+		intT.typeOID = oid
+	}
+	for _, item := range listItems(e.Indirection) {
+		idx, ok := item.(*ast.A_Indices)
+		if !ok {
+			return exprType{}, fmt.Errorf("typeExpr: unsupported indirection %T", item)
+		}
+		for _, bound := range []ast.Node{idx.Lidx, idx.Uidx} {
+			if err := a.typeOperands(bound, intT); err != nil {
+				return exprType{}, err
+			}
+		}
+		if idx.IsSlice {
+			continue
+		}
+		element := a.exprOf(t).Element()
+		if element == nil {
+			return exprType{nullable: true}, nil
+		}
+		t = a.lookupType(element)
+		t.nullable = true
+	}
+	return t, nil
+}
+
+// arrayOf is the type of an array of t's type.
+func (a *analyzer) arrayOf(t exprType) exprType {
+	element := a.exprOf(t)
+	if element == nil {
+		return exprType{}
+	}
+	return a.lookupType(core.Array(element.WithNullable(false)))
+}
+
 // lookupType is the type an expression refers to: its row when the catalog
 // holds one, its family's row when it holds only that, and the expression
 // alone when it holds neither.
@@ -619,7 +677,7 @@ func (a *analyzer) typeSubLink(e *ast.SubLink) (exprType, error) {
 		return exprType{}, err
 	}
 	switch e.SubLinkType {
-	case ast.EXPR_SUBLINK, ast.ARRAY_SUBLINK:
+	case ast.EXPR_SUBLINK:
 		if len(cols) == 0 {
 			return exprType{nullable: true}, nil
 		}
@@ -627,6 +685,13 @@ func (a *analyzer) typeSubLink(e *ast.SubLink) (exprType, error) {
 		t := columnExprType(cols[0])
 		t.nullable = true
 		return t, nil
+	case ast.ARRAY_SUBLINK:
+		// ARRAY(SELECT ...) collects the column into an array, which is
+		// empty rather than NULL when no row matches.
+		if len(cols) == 0 {
+			return exprType{}, nil
+		}
+		return a.arrayOf(columnExprType(cols[0])), nil
 	default:
 		return a.boolType(false)
 	}
@@ -916,9 +981,30 @@ func (a *analyzer) returnType(p core.ProcOverload, argTypes []exprType) exprType
 		return exprType{}
 	}
 	if isPolymorphic(name) && (argTypes[0].typeOID != 0 || argTypes[0].expr != nil) {
-		return exprType{typeOID: argTypes[0].typeOID, expr: argTypes[0].expr}
+		arg := exprType{typeOID: argTypes[0].typeOID, expr: argTypes[0].expr}
+		// An element taken from an array argument, unnest(anyarray)
+		// returning anyelement, is the array's element; an array built from
+		// an element argument is an array of it.
+		paramName := ""
+		if len(p.ArgTypes) > 0 {
+			paramName, _ = a.cat.TypeName(p.ArgTypes[0])
+		}
+		switch {
+		case isPolymorphicArray(paramName) && !isPolymorphicArray(name):
+			if element := a.exprOf(arg).Element(); element != nil {
+				return a.lookupType(element)
+			}
+		case !isPolymorphicArray(paramName) && isPolymorphicArray(name) && isPolymorphic(paramName):
+			return a.arrayOf(arg)
+		}
+		return arg
 	}
 	return exprType{typeOID: p.ReturnTypeOID}
+}
+
+// isPolymorphicArray reports whether a polymorphic type stands for an array.
+func isPolymorphicArray(typeName string) bool {
+	return typeName == "anyarray" || typeName == "anycompatiblearray"
 }
 
 // argIndex reads a seed's "$n" pseudo-type as the zero-based index of the
