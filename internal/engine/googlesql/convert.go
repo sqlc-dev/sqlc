@@ -28,6 +28,12 @@ func (c *cc) convert(node zjast.Node) ast.Node {
 		return c.convertDeleteStatement(n)
 	case *zjast.CreateTableStatement:
 		return c.convertCreateTableStatement(n)
+	case *zjast.CreateViewStatement:
+		return c.convertCreateViewStatement(n)
+	case *zjast.AlterStatement:
+		return c.convertAlterStatement(n)
+	case *zjast.RenameStatement:
+		return c.convertRenameStatement(n)
 	case *zjast.DropStatement:
 		return c.convertDropStatement(n)
 	case *zjast.TruncateStatement:
@@ -932,12 +938,17 @@ func (c *cc) convertColumnDefinition(n *zjast.ColumnDefinition) *ast.ColumnDef {
 				col.IsNotNull = true
 			case *zjast.PrimaryKeyColumnAttribute:
 				col.PrimaryKey = true
+			case *zjast.HiddenColumnAttribute:
+				// Spanner leaves a HIDDEN column out of SELECT *.
+				col.IsHidden = true
 			}
 		}
 	}
 
 	if simple, ok := n.Schema.(*zjast.SimpleColumnSchema); ok {
-		if simple.DefaultExpression != nil {
+		// A generated column's "AS (expression) STORED" and an identity
+		// column's IDENTITY(...) arrive here too; neither is a default.
+		if _, generated := simple.DefaultExpression.(*zjast.GeneratedColumnInfo); !generated && simple.DefaultExpression != nil {
 			col.RawDefault = c.convertExpr(simple.DefaultExpression)
 		}
 	}
@@ -945,10 +956,174 @@ func (c *cc) convertColumnDefinition(n *zjast.ColumnDefinition) *ast.ColumnDef {
 	return col
 }
 
+// convertCreateViewStatement converts CREATE [OR REPLACE] VIEW. Spanner's
+// SQL SECURITY clause says nothing about the view's columns.
+func (c *cc) convertCreateViewStatement(n *zjast.CreateViewStatement) ast.Node {
+	if n.ViewKind != "" || n.Query == nil || n.Name == nil {
+		return todo(n)
+	}
+	stmt := &ast.ViewStmt{
+		View:    parseRangeVar(n.Name),
+		Query:   c.convertQuery(n.Query),
+		Replace: n.IsOrReplace,
+	}
+	if n.Columns != nil {
+		stmt.Aliases = &ast.List{}
+		for _, col := range n.Columns.Columns {
+			if col == nil || col.Name == nil {
+				continue
+			}
+			stmt.Aliases.Items = append(stmt.Aliases.Items, NewIdentifier(col.Name.Name))
+		}
+	}
+	return stmt
+}
+
+// convertAlterStatement converts ALTER TABLE. Its column actions become one
+// AlterTableStmt; RENAME COLUMN and RENAME TO, which the sqlc AST spells as
+// statements of their own, follow it in a list. Actions that change nothing
+// about a column's name, type or nullability, such as constraints, options,
+// defaults and row deletion policies, are dropped.
+func (c *cc) convertAlterStatement(n *zjast.AlterStatement) ast.Node {
+	if n.NodeName != "AlterTableStatement" || n.Path == nil || n.Actions == nil {
+		return todo(n)
+	}
+	table := parseTableName(n.Path)
+	alter := &ast.AlterTableStmt{
+		Table:     table,
+		Cmds:      &ast.List{},
+		MissingOk: n.IsIfExists,
+	}
+	stmts := []ast.Node{alter}
+	for _, action := range n.Actions.Actions {
+		switch a := action.(type) {
+		case *zjast.AddColumnAction:
+			if a.Column == nil {
+				continue
+			}
+			def := c.convertColumnDefinition(a.Column)
+			alter.Cmds.Items = append(alter.Cmds.Items, &ast.AlterTableCmd{
+				Name:      &def.Colname,
+				Subtype:   ast.AT_AddColumn,
+				Def:       def,
+				MissingOk: a.IsIfNotExists,
+			})
+		case *zjast.DropColumnAction:
+			if a.Name == nil {
+				continue
+			}
+			name := identifier(a.Name.Name)
+			alter.Cmds.Items = append(alter.Cmds.Items, &ast.AlterTableCmd{
+				Name:      &name,
+				Subtype:   ast.AT_DropColumn,
+				MissingOk: a.IsIfExists,
+			})
+		case *zjast.SpannerAlterColumnAction:
+			// Spanner's "ALTER COLUMN c <type> [NOT NULL] ..." restates the
+			// column's whole definition, nullability included.
+			if a.Column == nil {
+				continue
+			}
+			def := c.convertColumnDefinition(a.Column)
+			alter.Cmds.Items = append(alter.Cmds.Items, &ast.AlterTableCmd{
+				Name:    &def.Colname,
+				Subtype: ast.AT_AlterColumnType,
+				Def:     def,
+			})
+			if !def.IsNotNull {
+				alter.Cmds.Items = append(alter.Cmds.Items, &ast.AlterTableCmd{
+					Name:    &def.Colname,
+					Subtype: ast.AT_DropNotNull,
+				})
+			}
+		case *zjast.AlterColumnTypeAction:
+			if a.Column == nil {
+				continue
+			}
+			name := identifier(a.Column.Name)
+			alter.Cmds.Items = append(alter.Cmds.Items, &ast.AlterTableCmd{
+				Name:      &name,
+				Subtype:   ast.AT_AlterColumnType,
+				MissingOk: a.IsIfExists,
+				Def: &ast.ColumnDef{
+					Colname:  name,
+					TypeName: spelledTypeName(columnSchemaTypeName(a.Schema)),
+				},
+			})
+		case *zjast.AlterColumnDropNotNullAction:
+			if a.Column == nil {
+				continue
+			}
+			name := identifier(a.Column.Name)
+			alter.Cmds.Items = append(alter.Cmds.Items, &ast.AlterTableCmd{
+				Name:      &name,
+				Subtype:   ast.AT_DropNotNull,
+				MissingOk: a.IsIfExists,
+			})
+		case *zjast.RenameColumnAction:
+			if a.Name == nil || a.NewName == nil {
+				continue
+			}
+			newName := identifier(a.NewName.Name)
+			stmts = append(stmts, &ast.RenameColumnStmt{
+				Table:     table,
+				Col:       &ast.ColumnRef{Name: identifier(a.Name.Name)},
+				NewName:   &newName,
+				MissingOk: n.IsIfExists,
+			})
+		case *zjast.RenameToClause:
+			parts := pathParts(a.NewName)
+			if len(parts) == 0 {
+				continue
+			}
+			newName := identifier(parts[len(parts)-1])
+			stmts = append(stmts, &ast.RenameTableStmt{
+				Table:     table,
+				NewName:   &newName,
+				MissingOk: n.IsIfExists,
+			})
+		}
+	}
+	if len(stmts) == 1 {
+		return alter
+	}
+	return &ast.List{Items: stmts}
+}
+
+// convertRenameStatement converts Spanner's "RENAME TABLE a TO b [, c TO
+// d ...]", which renames each table in turn.
+func (c *cc) convertRenameStatement(n *zjast.RenameStatement) ast.Node {
+	if n.Identifier == nil || !strings.EqualFold(n.Identifier.Name, "TABLE") {
+		return todo(n)
+	}
+	list := &ast.List{}
+	add := func(oldName, newName *zjast.PathExpression) {
+		parts := pathParts(newName)
+		if oldName == nil || len(parts) == 0 {
+			return
+		}
+		name := identifier(parts[len(parts)-1])
+		list.Items = append(list.Items, &ast.RenameTableStmt{
+			Table:   parseTableName(oldName),
+			NewName: &name,
+		})
+	}
+	add(n.OldName, n.NewName)
+	for _, more := range n.MoreRenames {
+		add(more.OldName, more.NewName)
+	}
+	if len(list.Items) == 0 {
+		return todo(n)
+	}
+	return list
+}
+
 func (c *cc) convertDropStatement(n *zjast.DropStatement) ast.Node {
-	// Only DROP TABLE maps onto the sqlc AST; other object kinds (views,
-	// functions, schemas, ...) fall through to TODO.
-	if strings.EqualFold(n.ObjectKind, "TABLE") && n.Path != nil {
+	// DROP TABLE and DROP VIEW map onto the sqlc AST, which drops both
+	// kinds of relation alike; other object kinds (indexes, sequences,
+	// schemas, ...) fall through to TODO.
+	kind := strings.ToUpper(n.ObjectKind)
+	if (kind == "TABLE" || kind == "VIEW") && n.Path != nil {
 		return &ast.DropTableStmt{
 			IfExists: n.IsIfExists,
 			Tables:   []*ast.TableName{parseTableName(n.Path)},
