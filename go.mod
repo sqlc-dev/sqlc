@@ -23,7 +23,7 @@ require (
 	github.com/sqlc-dev/meyer v0.1.2
 	github.com/sqlc-dev/oliphant v0.2.0
 	github.com/sqlc-dev/teesql v1.1.0
-	github.com/sqlc-dev/zetajones v0.1.0
+	github.com/sqlc-dev/zetajones v0.2.0
 	github.com/tetratelabs/wazero v1.12.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	github.com/yuin/goldmark v1.8.6
