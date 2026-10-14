@@ -49,6 +49,15 @@ Each element in the `overrides` list has the following keys:
 
 - `db_type`:
   - A database type to override. Find the full list of supported types in [postgresql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/postgresql_type.go#L12) or [mysql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/mysql_type.go#L12). Note that for Postgres you must use pg_catalog-prefixed names where available. `db_type` and `column` are mutually exclusive.
+
+    > [!WARNING]
+    > `db_type` is matched against the canonical type name the Postgres parser
+    > assigns to the column, not the type name from your schema. For example,
+    > a column declared `INTEGER` has the canonical type `pg_catalog.int4`, so
+    > `db_type: "integer"` will silently fail to match (no error, no
+    > override) and you must write `db_type: "pg_catalog.int4"` instead. When
+    > unsure of a column's canonical type, check the aliases handled in
+    > [postgresql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/postgresql_type.go).
 - `column`:
   - A column name to override. The value should be of the form `table.column` but you can also specify `schema.table.column` or `catalog.schema.table.column`. `column` and `db_type` are mutually exclusive.
 - `go_type`:
