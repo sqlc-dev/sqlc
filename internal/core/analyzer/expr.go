@@ -896,12 +896,20 @@ func (a *analyzer) typeFuncCall(f *ast.FuncCall) (exprType, error) {
 	}
 	p := a.pickOverload(overloads, argOIDs)
 	// An argument that is a bare placeholder takes the parameter's type,
-	// unless the parameter is polymorphic and says nothing.
+	// unless the parameter is polymorphic, when it takes what the other
+	// arguments say: the element of the array passed for an anyarray, or
+	// an array of the value passed for an anyelement, as
+	// array_includes(anyarray, anyelement) relates them.
 	for i, arg := range args {
 		if i >= len(p.ArgTypes) {
 			break
 		}
 		if a.isPolymorphicOID(p.ArgTypes[i]) {
+			if t, ok := a.polymorphicArg(p, i, argTypes); ok {
+				if err := a.typeOperands(arg, t); err != nil {
+					return exprType{}, err
+				}
+			}
 			continue
 		}
 		if err := a.typeOperands(arg, exprType{typeOID: p.ArgTypes[i]}); err != nil {
@@ -1000,6 +1008,35 @@ func (a *analyzer) returnType(p core.ProcOverload, argTypes []exprType) exprType
 		return arg
 	}
 	return exprType{typeOID: p.ReturnTypeOID}
+}
+
+// polymorphicArg is the type the other arguments of a call give its i-th,
+// polymorphic, parameter: the element of an array passed for an anyarray
+// when the parameter is an element, or an array of an element passed for
+// an anyelement when the parameter is an array.
+func (a *analyzer) polymorphicArg(p core.ProcOverload, i int, argTypes []exprType) (exprType, bool) {
+	name, err := a.cat.TypeName(p.ArgTypes[i])
+	if err != nil || !isPolymorphic(name) {
+		return exprType{}, false
+	}
+	for j, other := range p.ArgTypes {
+		if j == i || j >= len(argTypes) || (argTypes[j].typeOID == 0 && argTypes[j].expr == nil) {
+			continue
+		}
+		otherName, err := a.cat.TypeName(other)
+		if err != nil || !isPolymorphic(otherName) {
+			continue
+		}
+		switch {
+		case isPolymorphicArray(otherName) && !isPolymorphicArray(name):
+			if element := a.exprOf(argTypes[j]).Element(); element != nil {
+				return a.lookupType(element), true
+			}
+		case !isPolymorphicArray(otherName) && isPolymorphicArray(name):
+			return a.arrayOf(argTypes[j]), true
+		}
+	}
+	return exprType{}, false
 }
 
 // isPolymorphicArray reports whether a polymorphic type stands for an array.

@@ -1,0 +1,12 @@
+CREATE TABLE events (
+  id INT64 NOT NULL,
+  name STRING(MAX) NOT NULL,
+  payload BYTES(MAX) NOT NULL,
+  amount NUMERIC NOT NULL,
+  ratio FLOAT64 NOT NULL,
+  happened_on DATE NOT NULL,
+  happened_at TIMESTAMP NOT NULL,
+  details JSON NOT NULL,
+  scores ARRAY<INT64> NOT NULL,
+  embedding ARRAY<FLOAT64> NOT NULL,
+) PRIMARY KEY (id);

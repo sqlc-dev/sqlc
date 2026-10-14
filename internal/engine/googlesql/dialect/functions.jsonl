@@ -1,2 +1,291 @@
-{"name": "count", "kind": "a", "returns": "int64"}
+{"name": "abs", "args": [{"type": "int64"}], "returns": "int64"}
+{"name": "abs", "args": [{"type": "float64"}], "returns": "float64"}
+{"name": "abs", "args": [{"type": "float32"}], "returns": "float32"}
+{"name": "abs", "args": [{"type": "numeric"}], "returns": "numeric"}
+{"name": "acos", "args": [{"type": "float64"}], "returns": "float64"}
+{"name": "any_value", "kind": "a", "args": [{"type": "anyelement"}], "returns": "$1", "nullable": true}
+{"name": "array_agg", "kind": "a", "args": [{"type": "anyelement"}], "returns": "array($1)", "nullable": true}
+{"name": "array_concat", "args": [{"type": "anyarray"}, {"type": "anyarray"}], "returns": "$1"}
+{"name": "array_concat_agg", "kind": "a", "args": [{"type": "anyarray"}], "returns": "$1", "nullable": true}
+{"name": "array_first", "args": [{"type": "anyarray"}], "returns": "anyelement", "nullable": true}
+{"name": "array_includes", "args": [{"type": "anyarray"}, {"type": "anyelement"}], "returns": "bool"}
+{"name": "array_includes_all", "args": [{"type": "anyarray"}, {"type": "anyarray"}], "returns": "bool"}
+{"name": "array_includes_any", "args": [{"type": "anyarray"}, {"type": "anyarray"}], "returns": "bool"}
+{"name": "array_is_distinct", "args": [{"type": "anyarray"}], "returns": "bool"}
+{"name": "array_last", "args": [{"type": "anyarray"}], "returns": "anyelement", "nullable": true}
+{"name": "array_length", "args": [{"type": "anyarray"}], "returns": "int64"}
+{"name": "array_max", "args": [{"type": "anyarray"}], "returns": "anyelement", "nullable": true}
+{"name": "array_min", "args": [{"type": "anyarray"}], "returns": "anyelement", "nullable": true}
+{"name": "array_reverse", "args": [{"type": "anyarray"}], "returns": "$1"}
+{"name": "array_slice", "args": [{"type": "anyarray"}, {"type": "int64"}, {"type": "int64"}], "returns": "$1"}
+{"name": "array_to_string", "args": [{"type": "array(string)"}, {"type": "string"}], "returns": "string"}
+{"name": "array_to_string", "args": [{"type": "array(bytes)"}, {"type": "bytes"}], "returns": "bytes"}
+{"name": "array_to_string", "args": [{"type": "array(string)"}, {"type": "string"}, {"type": "string"}], "returns": "string"}
+{"name": "asin", "args": [{"type": "float64"}], "returns": "float64"}
+{"name": "atan", "args": [{"type": "float64"}], "returns": "float64"}
+{"name": "atan2", "args": [{"type": "float64"}, {"type": "float64"}], "returns": "float64"}
+{"name": "avg", "kind": "a", "args": [{"type": "int64"}], "returns": "float64", "nullable": true}
+{"name": "avg", "kind": "a", "args": [{"type": "float64"}], "returns": "float64", "nullable": true}
+{"name": "avg", "kind": "a", "args": [{"type": "float32"}], "returns": "float64", "nullable": true}
+{"name": "avg", "kind": "a", "args": [{"type": "numeric"}], "returns": "numeric", "nullable": true}
+{"name": "avg", "kind": "a", "args": [{"type": "interval"}], "returns": "interval", "nullable": true}
+{"name": "bit_and", "kind": "a", "args": [{"type": "int64"}], "returns": "int64", "nullable": true}
+{"name": "bit_count", "args": [{"type": "int64"}], "returns": "int64"}
+{"name": "bit_count", "args": [{"type": "bytes"}], "returns": "int64"}
+{"name": "bit_or", "kind": "a", "args": [{"type": "int64"}], "returns": "int64", "nullable": true}
+{"name": "bit_reverse", "args": [{"type": "int64"}, {"type": "bool"}], "returns": "int64"}
+{"name": "bit_xor", "kind": "a", "args": [{"type": "int64"}], "returns": "int64", "nullable": true}
+{"name": "bool", "args": [{"type": "json"}], "returns": "bool"}
+{"name": "byte_length", "args": [{"type": "string"}], "returns": "int64"}
+{"name": "byte_length", "args": [{"type": "bytes"}], "returns": "int64"}
+{"name": "ceil", "args": [{"type": "float64"}], "returns": "float64"}
+{"name": "ceil", "args": [{"type": "numeric"}], "returns": "numeric"}
+{"name": "ceiling", "args": [{"type": "float64"}], "returns": "float64"}
+{"name": "ceiling", "args": [{"type": "numeric"}], "returns": "numeric"}
+{"name": "char_length", "args": [{"type": "string"}], "returns": "int64"}
+{"name": "character_length", "args": [{"type": "string"}], "returns": "int64"}
+{"name": "code_points_to_bytes", "args": [{"type": "array(int64)"}], "returns": "bytes"}
+{"name": "code_points_to_string", "args": [{"type": "array(int64)"}], "returns": "string"}
+{"name": "concat", "args": [{"type": "string"}, {"type": "string"}], "returns": "string"}
+{"name": "concat", "args": [{"type": "bytes"}, {"type": "bytes"}], "returns": "bytes"}
+{"name": "cos", "args": [{"type": "float64"}], "returns": "float64"}
+{"name": "cosine_distance", "args": [{"type": "array(float64)"}, {"type": "array(float64)"}], "returns": "float64"}
+{"name": "cosine_distance", "args": [{"type": "array(float32)"}, {"type": "array(float32)"}], "returns": "float64"}
+{"name": "count", "kind": "a", "args": [{"type": "anyelement"}], "returns": "int64", "never_null": true}
+{"name": "countif", "kind": "a", "args": [{"type": "bool"}], "returns": "int64", "never_null": true}
+{"name": "current_date", "returns": "date"}
+{"name": "current_timestamp", "returns": "timestamp"}
+{"name": "date", "args": [{"type": "timestamp"}], "returns": "date"}
+{"name": "date", "args": [{"type": "timestamp"}, {"type": "string"}], "returns": "date"}
+{"name": "date", "args": [{"type": "int64"}, {"type": "int64"}, {"type": "int64"}], "returns": "date"}
+{"name": "date_add", "args": [{"type": "date"}, {"type": "interval"}], "returns": "date"}
+{"name": "date_diff", "args": [{"type": "date"}, {"type": "date"}, {"type": "string"}], "returns": "int64"}
+{"name": "date_from_unix_date", "args": [{"type": "int64"}], "returns": "date"}
+{"name": "date_sub", "args": [{"type": "date"}, {"type": "interval"}], "returns": "date"}
+{"name": "date_trunc", "args": [{"type": "date"}, {"type": "string"}], "returns": "date"}
+{"name": "div", "args": [{"type": "int64"}, {"type": "int64"}], "returns": "int64"}
+{"name": "div", "args": [{"type": "numeric"}, {"type": "numeric"}], "returns": "numeric"}
+{"name": "dot_product", "args": [{"type": "array(float64)"}, {"type": "array(float64)"}], "returns": "float64"}
+{"name": "dot_product", "args": [{"type": "array(float32)"}, {"type": "array(float32)"}], "returns": "float64"}
+{"name": "dot_product", "args": [{"type": "array(int64)"}, {"type": "array(int64)"}], "returns": "float64"}
+{"name": "ends_with", "args": [{"type": "string"}, {"type": "string"}], "returns": "bool"}
+{"name": "ends_with", "args": [{"type": "bytes"}, {"type": "bytes"}], "returns": "bool"}
+{"name": "euclidean_distance", "args": [{"type": "array(float64)"}, {"type": "array(float64)"}], "returns": "float64"}
+{"name": "euclidean_distance", "args": [{"type": "array(float32)"}, {"type": "array(float32)"}], "returns": "float64"}
+{"name": "exp", "args": [{"type": "float64"}], "returns": "float64"}
+{"name": "exp", "args": [{"type": "numeric"}], "returns": "numeric"}
+{"name": "extract", "args": [{"type": "timestamp"}], "returns": "int64"}
+{"name": "extract", "args": [{"type": "date"}], "returns": "int64"}
+{"name": "extract", "args": [{"type": "timestamp"}, {"type": "string"}], "returns": "int64"}
+{"name": "farm_fingerprint", "args": [{"type": "string"}], "returns": "int64"}
+{"name": "farm_fingerprint", "args": [{"type": "bytes"}], "returns": "int64"}
+{"name": "float32", "args": [{"type": "json"}], "returns": "float32"}
+{"name": "float64", "args": [{"type": "json"}], "returns": "float64"}
+{"name": "floor", "args": [{"type": "float64"}], "returns": "float64"}
+{"name": "floor", "args": [{"type": "numeric"}], "returns": "numeric"}
+{"name": "format", "args": [{"type": "string"}], "returns": "string"}
+{"name": "format_date", "args": [{"type": "string"}, {"type": "date"}], "returns": "string"}
+{"name": "format_timestamp", "args": [{"type": "string"}, {"type": "timestamp"}], "returns": "string"}
+{"name": "format_timestamp", "args": [{"type": "string"}, {"type": "timestamp"}, {"type": "string"}], "returns": "string"}
+{"name": "from_base32", "args": [{"type": "string"}], "returns": "bytes"}
+{"name": "from_base64", "args": [{"type": "string"}], "returns": "bytes"}
+{"name": "from_hex", "args": [{"type": "string"}], "returns": "bytes"}
+{"name": "generate_array", "args": [{"type": "int64"}, {"type": "int64"}], "returns": "array(int64)"}
+{"name": "generate_array", "args": [{"type": "int64"}, {"type": "int64"}, {"type": "int64"}], "returns": "array(int64)"}
+{"name": "generate_array", "args": [{"type": "float64"}, {"type": "float64"}, {"type": "float64"}], "returns": "array(float64)"}
+{"name": "generate_date_array", "args": [{"type": "date"}, {"type": "date"}], "returns": "array(date)"}
+{"name": "generate_date_array", "args": [{"type": "date"}, {"type": "date"}, {"type": "interval"}], "returns": "array(date)"}
+{"name": "generate_uuid", "returns": "string", "never_null": true}
+{"name": "get_next_sequence_value", "args": [{"type": "anyelement"}], "returns": "int64", "never_null": true}
+{"name": "ieee_divide", "args": [{"type": "float64"}, {"type": "float64"}], "returns": "float64"}
+{"name": "int64", "args": [{"type": "json"}], "returns": "int64"}
+{"name": "is_inf", "args": [{"type": "float64"}], "returns": "bool"}
+{"name": "is_nan", "args": [{"type": "float64"}], "returns": "bool"}
+{"name": "json_array", "args": [{"type": "anyelement"}], "returns": "json"}
+{"name": "json_array_append", "args": [{"type": "json"}, {"type": "string"}, {"type": "anyelement"}], "returns": "json"}
+{"name": "json_array_insert", "args": [{"type": "json"}, {"type": "string"}, {"type": "anyelement"}], "returns": "json"}
+{"name": "json_contains", "args": [{"type": "json"}, {"type": "json"}], "returns": "bool"}
+{"name": "json_keys", "args": [{"type": "json"}], "returns": "array(string)"}
+{"name": "json_object", "args": [{"type": "string"}, {"type": "anyelement"}], "returns": "json"}
+{"name": "json_query", "args": [{"type": "json"}, {"type": "string"}], "returns": "json", "nullable": true}
+{"name": "json_query", "args": [{"type": "string"}, {"type": "string"}], "returns": "string", "nullable": true}
+{"name": "json_query_array", "args": [{"type": "json"}], "returns": "array(json)", "nullable": true}
+{"name": "json_query_array", "args": [{"type": "json"}, {"type": "string"}], "returns": "array(json)", "nullable": true}
+{"name": "json_remove", "args": [{"type": "json"}, {"type": "string"}], "returns": "json"}
+{"name": "json_set", "args": [{"type": "json"}, {"type": "string"}, {"type": "anyelement"}], "returns": "json"}
+{"name": "json_strip_nulls", "args": [{"type": "json"}], "returns": "json"}
+{"name": "json_type", "args": [{"type": "json"}], "returns": "string"}
+{"name": "json_value", "args": [{"type": "json"}, {"type": "string"}], "returns": "string", "nullable": true}
+{"name": "json_value", "args": [{"type": "string"}, {"type": "string"}], "returns": "string", "nullable": true}
+{"name": "json_value_array", "args": [{"type": "json"}], "returns": "array(string)", "nullable": true}
+{"name": "json_value_array", "args": [{"type": "json"}, {"type": "string"}], "returns": "array(string)", "nullable": true}
+{"name": "justify_days", "args": [{"type": "interval"}], "returns": "interval"}
+{"name": "justify_hours", "args": [{"type": "interval"}], "returns": "interval"}
+{"name": "justify_interval", "args": [{"type": "interval"}], "returns": "interval"}
+{"name": "lax_bool", "args": [{"type": "json"}], "returns": "bool", "nullable": true}
+{"name": "lax_float64", "args": [{"type": "json"}], "returns": "float64", "nullable": true}
+{"name": "lax_int64", "args": [{"type": "json"}], "returns": "int64", "nullable": true}
+{"name": "lax_string", "args": [{"type": "json"}], "returns": "string", "nullable": true}
+{"name": "length", "args": [{"type": "string"}], "returns": "int64"}
+{"name": "length", "args": [{"type": "bytes"}], "returns": "int64"}
+{"name": "ln", "args": [{"type": "float64"}], "returns": "float64"}
+{"name": "ln", "args": [{"type": "numeric"}], "returns": "numeric"}
+{"name": "log", "args": [{"type": "float64"}], "returns": "float64"}
+{"name": "log", "args": [{"type": "numeric"}], "returns": "numeric"}
+{"name": "log", "args": [{"type": "float64"}, {"type": "float64"}], "returns": "float64"}
+{"name": "log10", "args": [{"type": "float64"}], "returns": "float64"}
+{"name": "log10", "args": [{"type": "numeric"}], "returns": "numeric"}
+{"name": "logical_and", "kind": "a", "args": [{"type": "bool"}], "returns": "bool", "nullable": true}
+{"name": "logical_or", "kind": "a", "args": [{"type": "bool"}], "returns": "bool", "nullable": true}
+{"name": "lower", "args": [{"type": "string"}], "returns": "string"}
+{"name": "lower", "args": [{"type": "bytes"}], "returns": "bytes"}
+{"name": "lpad", "args": [{"type": "string"}, {"type": "int64"}], "returns": "string"}
+{"name": "lpad", "args": [{"type": "string"}, {"type": "int64"}, {"type": "string"}], "returns": "string"}
+{"name": "lpad", "args": [{"type": "bytes"}, {"type": "int64"}, {"type": "bytes"}], "returns": "bytes"}
+{"name": "ltrim", "args": [{"type": "string"}], "returns": "string"}
+{"name": "ltrim", "args": [{"type": "string"}, {"type": "string"}], "returns": "string"}
+{"name": "ltrim", "args": [{"type": "bytes"}, {"type": "bytes"}], "returns": "bytes"}
+{"name": "make_interval", "args": [{"type": "int64"}, {"type": "int64"}, {"type": "int64"}], "returns": "interval"}
+{"name": "max", "kind": "a", "args": [{"type": "anyelement"}], "returns": "$1", "nullable": true}
+{"name": "md5", "args": [{"type": "string"}], "returns": "bytes"}
+{"name": "md5", "args": [{"type": "bytes"}], "returns": "bytes"}
+{"name": "min", "kind": "a", "args": [{"type": "anyelement"}], "returns": "$1", "nullable": true}
+{"name": "mod", "args": [{"type": "int64"}, {"type": "int64"}], "returns": "int64"}
+{"name": "mod", "args": [{"type": "numeric"}, {"type": "numeric"}], "returns": "numeric"}
+{"name": "new_uuid", "returns": "uuid", "never_null": true}
+{"name": "normalize", "args": [{"type": "string"}], "returns": "string"}
+{"name": "normalize_and_casefold", "args": [{"type": "string"}], "returns": "string"}
+{"name": "parse_date", "args": [{"type": "string"}, {"type": "string"}], "returns": "date"}
+{"name": "parse_json", "args": [{"type": "string"}], "returns": "json"}
+{"name": "parse_timestamp", "args": [{"type": "string"}, {"type": "string"}], "returns": "timestamp"}
+{"name": "parse_timestamp", "args": [{"type": "string"}, {"type": "string"}, {"type": "string"}], "returns": "timestamp"}
+{"name": "pending_commit_timestamp", "returns": "timestamp", "never_null": true}
+{"name": "pow", "args": [{"type": "float64"}, {"type": "float64"}], "returns": "float64"}
+{"name": "pow", "args": [{"type": "numeric"}, {"type": "numeric"}], "returns": "numeric"}
+{"name": "power", "args": [{"type": "float64"}, {"type": "float64"}], "returns": "float64"}
+{"name": "power", "args": [{"type": "numeric"}, {"type": "numeric"}], "returns": "numeric"}
+{"name": "regexp_contains", "args": [{"type": "string"}, {"type": "string"}], "returns": "bool"}
+{"name": "regexp_contains", "args": [{"type": "bytes"}, {"type": "bytes"}], "returns": "bool"}
+{"name": "regexp_extract", "args": [{"type": "string"}, {"type": "string"}], "returns": "string", "nullable": true}
+{"name": "regexp_extract", "args": [{"type": "bytes"}, {"type": "bytes"}], "returns": "bytes", "nullable": true}
+{"name": "regexp_extract_all", "args": [{"type": "string"}, {"type": "string"}], "returns": "array(string)"}
+{"name": "regexp_extract_all", "args": [{"type": "bytes"}, {"type": "bytes"}], "returns": "array(bytes)"}
+{"name": "regexp_replace", "args": [{"type": "string"}, {"type": "string"}, {"type": "string"}], "returns": "string"}
+{"name": "regexp_replace", "args": [{"type": "bytes"}, {"type": "bytes"}, {"type": "bytes"}], "returns": "bytes"}
+{"name": "repeat", "args": [{"type": "string"}, {"type": "int64"}], "returns": "string"}
+{"name": "repeat", "args": [{"type": "bytes"}, {"type": "int64"}], "returns": "bytes"}
+{"name": "replace", "args": [{"type": "string"}, {"type": "string"}, {"type": "string"}], "returns": "string"}
+{"name": "replace", "args": [{"type": "bytes"}, {"type": "bytes"}, {"type": "bytes"}], "returns": "bytes"}
+{"name": "reverse", "args": [{"type": "string"}], "returns": "string"}
+{"name": "reverse", "args": [{"type": "bytes"}], "returns": "bytes"}
+{"name": "round", "args": [{"type": "float64"}], "returns": "float64"}
+{"name": "round", "args": [{"type": "numeric"}], "returns": "numeric"}
+{"name": "round", "args": [{"type": "float64"}, {"type": "int64"}], "returns": "float64"}
+{"name": "round", "args": [{"type": "numeric"}, {"type": "int64"}], "returns": "numeric"}
+{"name": "rpad", "args": [{"type": "string"}, {"type": "int64"}], "returns": "string"}
+{"name": "rpad", "args": [{"type": "string"}, {"type": "int64"}, {"type": "string"}], "returns": "string"}
+{"name": "rpad", "args": [{"type": "bytes"}, {"type": "int64"}, {"type": "bytes"}], "returns": "bytes"}
+{"name": "rtrim", "args": [{"type": "string"}], "returns": "string"}
+{"name": "rtrim", "args": [{"type": "string"}, {"type": "string"}], "returns": "string"}
+{"name": "rtrim", "args": [{"type": "bytes"}, {"type": "bytes"}], "returns": "bytes"}
+{"name": "safe_add", "args": [{"type": "int64"}, {"type": "int64"}], "returns": "int64", "nullable": true}
+{"name": "safe_add", "args": [{"type": "float64"}, {"type": "float64"}], "returns": "float64", "nullable": true}
+{"name": "safe_add", "args": [{"type": "numeric"}, {"type": "numeric"}], "returns": "numeric", "nullable": true}
+{"name": "safe_convert_bytes_to_string", "args": [{"type": "bytes"}], "returns": "string"}
+{"name": "safe_divide", "args": [{"type": "int64"}, {"type": "int64"}], "returns": "float64", "nullable": true}
+{"name": "safe_divide", "args": [{"type": "float64"}, {"type": "float64"}], "returns": "float64", "nullable": true}
+{"name": "safe_divide", "args": [{"type": "numeric"}, {"type": "numeric"}], "returns": "numeric", "nullable": true}
+{"name": "safe_multiply", "args": [{"type": "int64"}, {"type": "int64"}], "returns": "int64", "nullable": true}
+{"name": "safe_multiply", "args": [{"type": "float64"}, {"type": "float64"}], "returns": "float64", "nullable": true}
+{"name": "safe_multiply", "args": [{"type": "numeric"}, {"type": "numeric"}], "returns": "numeric", "nullable": true}
+{"name": "safe_negate", "args": [{"type": "int64"}], "returns": "int64", "nullable": true}
+{"name": "safe_negate", "args": [{"type": "float64"}], "returns": "float64", "nullable": true}
+{"name": "safe_negate", "args": [{"type": "numeric"}], "returns": "numeric", "nullable": true}
+{"name": "safe_subtract", "args": [{"type": "int64"}, {"type": "int64"}], "returns": "int64", "nullable": true}
+{"name": "safe_subtract", "args": [{"type": "float64"}, {"type": "float64"}], "returns": "float64", "nullable": true}
+{"name": "safe_subtract", "args": [{"type": "numeric"}, {"type": "numeric"}], "returns": "numeric", "nullable": true}
+{"name": "safe_to_json", "args": [{"type": "anyelement"}], "returns": "json", "never_null": true}
+{"name": "score", "args": [{"type": "tokenlist"}, {"type": "string"}], "returns": "float64"}
+{"name": "score_ngrams", "args": [{"type": "tokenlist"}, {"type": "string"}], "returns": "float64"}
+{"name": "search", "args": [{"type": "tokenlist"}, {"type": "string"}], "returns": "bool"}
+{"name": "search_ngrams", "args": [{"type": "tokenlist"}, {"type": "string"}], "returns": "bool"}
+{"name": "search_substring", "args": [{"type": "tokenlist"}, {"type": "string"}], "returns": "bool"}
+{"name": "sha1", "args": [{"type": "string"}], "returns": "bytes"}
+{"name": "sha1", "args": [{"type": "bytes"}], "returns": "bytes"}
+{"name": "sha256", "args": [{"type": "string"}], "returns": "bytes"}
+{"name": "sha256", "args": [{"type": "bytes"}], "returns": "bytes"}
+{"name": "sha512", "args": [{"type": "string"}], "returns": "bytes"}
+{"name": "sha512", "args": [{"type": "bytes"}], "returns": "bytes"}
+{"name": "sign", "args": [{"type": "int64"}], "returns": "int64"}
+{"name": "sign", "args": [{"type": "float64"}], "returns": "float64"}
+{"name": "sign", "args": [{"type": "numeric"}], "returns": "numeric"}
+{"name": "sin", "args": [{"type": "float64"}], "returns": "float64"}
+{"name": "snippet", "args": [{"type": "string"}, {"type": "string"}], "returns": "json"}
+{"name": "soundex", "args": [{"type": "string"}], "returns": "string"}
+{"name": "split", "args": [{"type": "string"}], "returns": "array(string)"}
+{"name": "split", "args": [{"type": "string"}, {"type": "string"}], "returns": "array(string)"}
+{"name": "split", "args": [{"type": "bytes"}, {"type": "bytes"}], "returns": "array(bytes)"}
+{"name": "split_substr", "args": [{"type": "string"}, {"type": "string"}, {"type": "int64"}], "returns": "string"}
+{"name": "split_substr", "args": [{"type": "string"}, {"type": "string"}, {"type": "int64"}, {"type": "int64"}], "returns": "string"}
+{"name": "sqrt", "args": [{"type": "float64"}], "returns": "float64"}
+{"name": "sqrt", "args": [{"type": "numeric"}], "returns": "numeric"}
+{"name": "starts_with", "args": [{"type": "string"}, {"type": "string"}], "returns": "bool"}
+{"name": "starts_with", "args": [{"type": "bytes"}, {"type": "bytes"}], "returns": "bool"}
+{"name": "stddev", "kind": "a", "args": [{"type": "float64"}], "returns": "float64", "nullable": true}
+{"name": "stddev_samp", "kind": "a", "args": [{"type": "float64"}], "returns": "float64", "nullable": true}
+{"name": "string", "args": [{"type": "timestamp"}], "returns": "string"}
+{"name": "string", "args": [{"type": "json"}], "returns": "string"}
+{"name": "string", "args": [{"type": "timestamp"}, {"type": "string"}], "returns": "string"}
+{"name": "string_agg", "kind": "a", "args": [{"type": "string"}], "returns": "string", "nullable": true}
+{"name": "string_agg", "kind": "a", "args": [{"type": "bytes"}], "returns": "bytes", "nullable": true}
+{"name": "string_agg", "kind": "a", "args": [{"type": "string"}, {"type": "string"}], "returns": "string", "nullable": true}
+{"name": "string_agg", "kind": "a", "args": [{"type": "bytes"}, {"type": "bytes"}], "returns": "bytes", "nullable": true}
+{"name": "strpos", "args": [{"type": "string"}, {"type": "string"}], "returns": "int64"}
+{"name": "strpos", "args": [{"type": "bytes"}, {"type": "bytes"}], "returns": "int64"}
+{"name": "substr", "args": [{"type": "string"}, {"type": "int64"}], "returns": "string"}
+{"name": "substr", "args": [{"type": "bytes"}, {"type": "int64"}], "returns": "bytes"}
+{"name": "substr", "args": [{"type": "string"}, {"type": "int64"}, {"type": "int64"}], "returns": "string"}
+{"name": "substr", "args": [{"type": "bytes"}, {"type": "int64"}, {"type": "int64"}], "returns": "bytes"}
+{"name": "substring", "args": [{"type": "string"}, {"type": "int64"}], "returns": "string"}
+{"name": "substring", "args": [{"type": "string"}, {"type": "int64"}, {"type": "int64"}], "returns": "string"}
+{"name": "sum", "kind": "a", "args": [{"type": "int64"}], "returns": "int64", "nullable": true}
+{"name": "sum", "kind": "a", "args": [{"type": "float64"}], "returns": "float64", "nullable": true}
+{"name": "sum", "kind": "a", "args": [{"type": "float32"}], "returns": "float64", "nullable": true}
+{"name": "sum", "kind": "a", "args": [{"type": "numeric"}], "returns": "numeric", "nullable": true}
+{"name": "sum", "kind": "a", "args": [{"type": "interval"}], "returns": "interval", "nullable": true}
+{"name": "tan", "args": [{"type": "float64"}], "returns": "float64"}
+{"name": "timestamp", "args": [{"type": "string"}], "returns": "timestamp"}
+{"name": "timestamp", "args": [{"type": "date"}], "returns": "timestamp"}
+{"name": "timestamp", "args": [{"type": "string"}, {"type": "string"}], "returns": "timestamp"}
+{"name": "timestamp", "args": [{"type": "date"}, {"type": "string"}], "returns": "timestamp"}
+{"name": "timestamp_add", "args": [{"type": "timestamp"}, {"type": "interval"}], "returns": "timestamp"}
+{"name": "timestamp_diff", "args": [{"type": "timestamp"}, {"type": "timestamp"}, {"type": "string"}], "returns": "int64"}
+{"name": "timestamp_micros", "args": [{"type": "int64"}], "returns": "timestamp"}
+{"name": "timestamp_millis", "args": [{"type": "int64"}], "returns": "timestamp"}
+{"name": "timestamp_seconds", "args": [{"type": "int64"}], "returns": "timestamp"}
+{"name": "timestamp_sub", "args": [{"type": "timestamp"}, {"type": "interval"}], "returns": "timestamp"}
+{"name": "timestamp_trunc", "args": [{"type": "timestamp"}, {"type": "string"}], "returns": "timestamp"}
+{"name": "timestamp_trunc", "args": [{"type": "timestamp"}, {"type": "string"}, {"type": "string"}], "returns": "timestamp"}
+{"name": "to_base32", "args": [{"type": "bytes"}], "returns": "string"}
+{"name": "to_base64", "args": [{"type": "bytes"}], "returns": "string"}
+{"name": "to_code_points", "args": [{"type": "string"}], "returns": "array(int64)"}
+{"name": "to_code_points", "args": [{"type": "bytes"}], "returns": "array(int64)"}
+{"name": "to_hex", "args": [{"type": "bytes"}], "returns": "string"}
+{"name": "to_json", "args": [{"type": "anyelement"}], "returns": "json", "never_null": true}
+{"name": "to_json_string", "args": [{"type": "json"}], "returns": "string", "never_null": true}
+{"name": "trim", "args": [{"type": "string"}], "returns": "string"}
+{"name": "trim", "args": [{"type": "string"}, {"type": "string"}], "returns": "string"}
+{"name": "trim", "args": [{"type": "bytes"}, {"type": "bytes"}], "returns": "bytes"}
+{"name": "trunc", "args": [{"type": "float64"}], "returns": "float64"}
+{"name": "trunc", "args": [{"type": "numeric"}], "returns": "numeric"}
+{"name": "trunc", "args": [{"type": "float64"}, {"type": "int64"}], "returns": "float64"}
+{"name": "trunc", "args": [{"type": "numeric"}, {"type": "int64"}], "returns": "numeric"}
+{"name": "unix_date", "args": [{"type": "date"}], "returns": "int64"}
+{"name": "unix_micros", "args": [{"type": "timestamp"}], "returns": "int64"}
+{"name": "unix_millis", "args": [{"type": "timestamp"}], "returns": "int64"}
+{"name": "unix_seconds", "args": [{"type": "timestamp"}], "returns": "int64"}
 {"name": "unnest", "args": [{"type": "anyarray"}], "returns": "anyelement", "nullable": true}
+{"name": "upper", "args": [{"type": "string"}], "returns": "string"}
+{"name": "upper", "args": [{"type": "bytes"}], "returns": "bytes"}
+{"name": "var_samp", "kind": "a", "args": [{"type": "float64"}], "returns": "float64", "nullable": true}
+{"name": "variance", "kind": "a", "args": [{"type": "float64"}], "returns": "float64", "nullable": true}

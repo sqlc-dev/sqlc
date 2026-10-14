@@ -485,6 +485,8 @@ func (c *cc) convertExpr(node zjast.Node) ast.Node {
 		}
 	case *zjast.ArrayConstructor:
 		return c.convertArrayConstructor(n)
+	case *zjast.ExtractExpression:
+		return c.convertExtractExpression(n)
 	case *zjast.DateOrTimeLiteral:
 		kind := strings.ToLower(strings.TrimPrefix(n.TypeKind, "TYPE_"))
 		return c.typedLiteral(n.Value, kind, n.Pos())
@@ -748,6 +750,43 @@ func (c *cc) newFuncCall(parts []string, loc int) *ast.FuncCall {
 	}
 }
 
+// convertConditional converts the conditional functions whose result is one
+// of their arguments to the nodes that say so, which is what types the
+// result after the arguments and makes it nullable only when it can be:
+// COALESCE and IFNULL, NULLIF, IF, GREATEST and LEAST. It returns nil for
+// anything else.
+func (c *cc) convertConditional(name string, args []zjast.Node, loc int) ast.Node {
+	convert := func() *ast.List {
+		list := &ast.List{}
+		for _, arg := range args {
+			list.Items = append(list.Items, c.convertExpr(arg))
+		}
+		return list
+	}
+	switch {
+	case (name == "coalesce" && len(args) > 0) || (name == "ifnull" && len(args) == 2):
+		return &ast.CoalesceExpr{Args: convert(), Location: loc}
+	case name == "nullif" && len(args) == 2:
+		return &ast.A_Expr{
+			Kind:     ast.A_Expr_Kind_NULLIF,
+			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: "="}}},
+			Lexpr:    c.convertExpr(args[0]),
+			Rexpr:    c.convertExpr(args[1]),
+			Location: loc,
+		}
+	case name == "if" && len(args) == 3:
+		return c.buildCaseExpr(nil, args, loc)
+	case (name == "greatest" || name == "least") && len(args) > 0:
+		// The ops number as PostgreSQL's do: IS_GREATEST, then IS_LEAST.
+		op := ast.MinMaxOp(0)
+		if name == "least" {
+			op = 1
+		}
+		return &ast.MinMaxExpr{Op: op, Args: convert(), Location: loc}
+	}
+	return nil
+}
+
 // typedLiteral converts a literal spelled with its type, DATE '2024-01-01'
 // or JSON '{}', to its string cast to that type.
 func (c *cc) typedLiteral(value *zjast.StringLiteral, typ string, loc int) ast.Node {
@@ -803,17 +842,92 @@ func (c *cc) convertFunctionCall(n *zjast.FunctionCall) ast.Node {
 	if len(parts) == 0 {
 		return todo(n)
 	}
+	// SAFE.f(...) is f(...), except that it returns NULL where f raises an
+	// error, so its result is f's made nullable: a CASE with no ELSE.
+	if len(parts) == 2 && strings.EqualFold(parts[0], "SAFE") {
+		call := *n
+		call.Function = &zjast.PathExpression{Names: n.Function.Names[1:]}
+		return &ast.CaseExpr{
+			Args: &ast.List{Items: []ast.Node{&ast.CaseWhen{
+				Expr:   &ast.A_Const{Val: &ast.Boolean{Boolval: true}, Location: n.Pos()},
+				Result: c.convertFunctionCall(&call),
+			}}},
+			Location: n.Pos(),
+		}
+	}
+	if len(parts) == 1 && !n.Distinct && n.OrderBy == nil {
+		if expr := c.convertConditional(strings.ToLower(parts[0]), n.Args, n.Pos()); expr != nil {
+			return expr
+		}
+	}
 	fc := c.newFuncCall(parts, n.Pos())
 	fc.AggDistinct = n.Distinct
-	for _, arg := range n.Args {
+	partArg, hasPart := datePartArg[fc.Func.Name]
+	for i, arg := range n.Args {
 		if _, ok := arg.(*zjast.Star); ok {
 			fc.AggStar = true
 			continue
+		}
+		if hasPart && i == partArg {
+			if part, ok := datePart(arg); ok {
+				fc.Args.Items = append(fc.Args.Items, &ast.A_Const{Val: &ast.String{Str: part}, Location: arg.Pos()})
+				continue
+			}
 		}
 		fc.Args.Items = append(fc.Args.Items, c.convertExpr(arg))
 	}
 	if n.OrderBy != nil {
 		fc.AggOrder = c.convertOrderBy(n.OrderBy)
+	}
+	return fc
+}
+
+// datePartArg is the position of the argument naming a date part, DAY or
+// WEEK(MONDAY), in the functions that take one. The part is a keyword, not
+// a column, so it is converted to a string.
+var datePartArg = map[string]int{
+	"date_diff":       2,
+	"date_trunc":      1,
+	"timestamp_diff":  2,
+	"timestamp_trunc": 1,
+	"last_day":        1,
+}
+
+// datePart spells a date part argument: DAY, or WEEK(MONDAY).
+func datePart(node zjast.Node) (string, bool) {
+	switch n := node.(type) {
+	case *zjast.PathExpression:
+		if parts := pathParts(n); len(parts) == 1 {
+			return strings.ToUpper(parts[0]), true
+		}
+	case *zjast.FunctionCall:
+		parts := pathParts(n.Function)
+		if len(parts) == 1 && len(n.Args) == 1 {
+			if arg, ok := datePart(n.Args[0]); ok {
+				return strings.ToUpper(parts[0]) + "(" + arg + ")", true
+			}
+		}
+	}
+	return "", false
+}
+
+// convertExtractExpression converts EXTRACT(part FROM expr). Every part is
+// an INT64 but DATE, which is the date of a timestamp, so EXTRACT is the
+// extract function the dialect seeds as INT64, and EXTRACT(DATE FROM ts)
+// is date(ts).
+func (c *cc) convertExtractExpression(n *zjast.ExtractExpression) ast.Node {
+	part, ok := datePart(n.LhsExpr)
+	if !ok || n.RhsExpr == nil {
+		return todo(n)
+	}
+	name := "extract"
+	if part == "DATE" {
+		name = "date"
+	}
+	fc := c.newFuncCall([]string{name}, n.Pos())
+	fc.Args.Items = append(fc.Args.Items, c.convertExpr(n.RhsExpr))
+	if n.TimeZone != nil {
+		fc.Args.Items = append(fc.Args.Items, c.convertExpr(n.TimeZone))
 	}
 	return fc
 }
