@@ -110,9 +110,15 @@ the hand-written files alone, and the checks do not look at them.
   the gRPC endpoint such as `localhost:15000`, reached without TLS or
   credentials as Omni is, and writes into `internal/engine/googlesql/dialect`,
   since sqlc's engine is named after the language Spanner speaks. Spanner
-  keeps no catalog of its types, functions or operators, so `types.jsonl`,
-  `functions.jsonl` and `operators.jsonl` are hand-written. What it does
-  describe is its information schema: `relations.jsonl` is every view of
+  keeps no catalog of its types, functions or operators, so they are read
+  by asking: `spanner/library.jsonl` lists the function signatures to try,
+  and each is compiled in PLAN mode against a probe database, the ones
+  Spanner accepts written to `functions.jsonl` with the type it reports;
+  `operators.jsonl` is every binary operator Spanner accepts over the
+  operands tried, and `types.jsonl` the types the dialect lists, each one
+  Spanner has checked by a cast. Whether a result can be NULL is what
+  Spanner does not say, so `library.jsonl` says it. Spanner also
+  describes its information schema: `relations.jsonl` is every view of
   `INFORMATION_SCHEMA` and `SPANNER_SYS`, read from `INFORMATION_SCHEMA`
   itself in a database created for the purpose in the instance Omni's
   single server provides, `projects/default/instances/default`. Names are

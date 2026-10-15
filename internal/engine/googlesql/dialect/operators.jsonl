@@ -1,83 +1,83 @@
-{"name": "+", "left": "int64", "right": "int64", "result": "int64"}
-{"name": "+", "left": "int64", "right": "float64", "result": "float64"}
-{"name": "+", "left": "int64", "right": "float32", "result": "float64"}
-{"name": "+", "left": "int64", "right": "numeric", "result": "numeric"}
-{"name": "+", "left": "float64", "right": "int64", "result": "float64"}
-{"name": "+", "left": "float64", "right": "float64", "result": "float64"}
-{"name": "+", "left": "float64", "right": "float32", "result": "float64"}
-{"name": "+", "left": "float64", "right": "numeric", "result": "float64"}
-{"name": "+", "left": "float32", "right": "int64", "result": "float64"}
-{"name": "+", "left": "float32", "right": "float64", "result": "float64"}
-{"name": "+", "left": "float32", "right": "float32", "result": "float64"}
-{"name": "+", "left": "float32", "right": "numeric", "result": "float64"}
-{"name": "+", "left": "numeric", "right": "int64", "result": "numeric"}
-{"name": "+", "left": "numeric", "right": "float64", "result": "float64"}
-{"name": "+", "left": "numeric", "right": "float32", "result": "float64"}
-{"name": "+", "left": "numeric", "right": "numeric", "result": "numeric"}
-{"name": "-", "left": "int64", "right": "int64", "result": "int64"}
-{"name": "-", "left": "int64", "right": "float64", "result": "float64"}
-{"name": "-", "left": "int64", "right": "float32", "result": "float64"}
-{"name": "-", "left": "int64", "right": "numeric", "result": "numeric"}
-{"name": "-", "left": "float64", "right": "int64", "result": "float64"}
-{"name": "-", "left": "float64", "right": "float64", "result": "float64"}
-{"name": "-", "left": "float64", "right": "float32", "result": "float64"}
-{"name": "-", "left": "float64", "right": "numeric", "result": "float64"}
-{"name": "-", "left": "float32", "right": "int64", "result": "float64"}
-{"name": "-", "left": "float32", "right": "float64", "result": "float64"}
-{"name": "-", "left": "float32", "right": "float32", "result": "float64"}
-{"name": "-", "left": "float32", "right": "numeric", "result": "float64"}
-{"name": "-", "left": "numeric", "right": "int64", "result": "numeric"}
-{"name": "-", "left": "numeric", "right": "float64", "result": "float64"}
-{"name": "-", "left": "numeric", "right": "float32", "result": "float64"}
-{"name": "-", "left": "numeric", "right": "numeric", "result": "numeric"}
-{"name": "*", "left": "int64", "right": "int64", "result": "int64"}
-{"name": "*", "left": "int64", "right": "float64", "result": "float64"}
-{"name": "*", "left": "int64", "right": "float32", "result": "float64"}
-{"name": "*", "left": "int64", "right": "numeric", "result": "numeric"}
-{"name": "*", "left": "float64", "right": "int64", "result": "float64"}
-{"name": "*", "left": "float64", "right": "float64", "result": "float64"}
-{"name": "*", "left": "float64", "right": "float32", "result": "float64"}
-{"name": "*", "left": "float64", "right": "numeric", "result": "float64"}
-{"name": "*", "left": "float32", "right": "int64", "result": "float64"}
-{"name": "*", "left": "float32", "right": "float64", "result": "float64"}
-{"name": "*", "left": "float32", "right": "float32", "result": "float64"}
-{"name": "*", "left": "float32", "right": "numeric", "result": "float64"}
-{"name": "*", "left": "numeric", "right": "int64", "result": "numeric"}
-{"name": "*", "left": "numeric", "right": "float64", "result": "float64"}
-{"name": "*", "left": "numeric", "right": "float32", "result": "float64"}
-{"name": "*", "left": "numeric", "right": "numeric", "result": "numeric"}
-{"name": "/", "left": "int64", "right": "int64", "result": "float64"}
-{"name": "/", "left": "int64", "right": "float64", "result": "float64"}
-{"name": "/", "left": "int64", "right": "float32", "result": "float64"}
-{"name": "/", "left": "int64", "right": "numeric", "result": "numeric"}
-{"name": "/", "left": "float64", "right": "int64", "result": "float64"}
-{"name": "/", "left": "float64", "right": "float64", "result": "float64"}
-{"name": "/", "left": "float64", "right": "float32", "result": "float64"}
-{"name": "/", "left": "float64", "right": "numeric", "result": "float64"}
-{"name": "/", "left": "float32", "right": "int64", "result": "float64"}
-{"name": "/", "left": "float32", "right": "float64", "result": "float64"}
-{"name": "/", "left": "float32", "right": "float32", "result": "float64"}
-{"name": "/", "left": "float32", "right": "numeric", "result": "float64"}
-{"name": "/", "left": "numeric", "right": "int64", "result": "numeric"}
-{"name": "/", "left": "numeric", "right": "float64", "result": "float64"}
-{"name": "/", "left": "numeric", "right": "float32", "result": "float64"}
-{"name": "/", "left": "numeric", "right": "numeric", "result": "numeric"}
-{"name": "||", "left": "string", "right": "string", "result": "string"}
-{"name": "||", "left": "bytes", "right": "bytes", "result": "bytes"}
-{"name": "+", "left": "timestamp", "right": "interval", "result": "timestamp"}
-{"name": "-", "left": "timestamp", "right": "interval", "result": "timestamp"}
-{"name": "+", "left": "interval", "right": "timestamp", "result": "timestamp"}
-{"name": "-", "left": "date", "right": "date", "result": "interval"}
-{"name": "-", "left": "timestamp", "right": "timestamp", "result": "interval"}
-{"name": "+", "left": "interval", "right": "interval", "result": "interval"}
-{"name": "-", "left": "interval", "right": "interval", "result": "interval"}
-{"name": "*", "left": "interval", "right": "int64", "result": "interval"}
-{"name": "/", "left": "interval", "right": "int64", "result": "interval"}
-{"name": "&", "left": "int64", "right": "int64", "result": "int64"}
-{"name": "|", "left": "int64", "right": "int64", "result": "int64"}
-{"name": "^", "left": "int64", "right": "int64", "result": "int64"}
-{"name": "<<", "left": "int64", "right": "int64", "result": "int64"}
-{"name": ">>", "left": "int64", "right": "int64", "result": "int64"}
-{"name": "&", "left": "bytes", "right": "bytes", "result": "bytes"}
-{"name": "|", "left": "bytes", "right": "bytes", "result": "bytes"}
-{"name": "^", "left": "bytes", "right": "bytes", "result": "bytes"}
+{"name":"+","left":"int64","right":"int64","result":"int64"}
+{"name":"+","left":"int64","right":"float64","result":"float64"}
+{"name":"+","left":"int64","right":"float32","result":"float64"}
+{"name":"+","left":"int64","right":"numeric","result":"numeric"}
+{"name":"+","left":"float64","right":"int64","result":"float64"}
+{"name":"+","left":"float64","right":"float64","result":"float64"}
+{"name":"+","left":"float64","right":"float32","result":"float64"}
+{"name":"+","left":"float64","right":"numeric","result":"float64"}
+{"name":"+","left":"float32","right":"int64","result":"float64"}
+{"name":"+","left":"float32","right":"float64","result":"float64"}
+{"name":"+","left":"float32","right":"float32","result":"float64"}
+{"name":"+","left":"float32","right":"numeric","result":"float64"}
+{"name":"+","left":"numeric","right":"int64","result":"numeric"}
+{"name":"+","left":"numeric","right":"float64","result":"float64"}
+{"name":"+","left":"numeric","right":"float32","result":"float64"}
+{"name":"+","left":"numeric","right":"numeric","result":"numeric"}
+{"name":"-","left":"int64","right":"int64","result":"int64"}
+{"name":"-","left":"int64","right":"float64","result":"float64"}
+{"name":"-","left":"int64","right":"float32","result":"float64"}
+{"name":"-","left":"int64","right":"numeric","result":"numeric"}
+{"name":"-","left":"float64","right":"int64","result":"float64"}
+{"name":"-","left":"float64","right":"float64","result":"float64"}
+{"name":"-","left":"float64","right":"float32","result":"float64"}
+{"name":"-","left":"float64","right":"numeric","result":"float64"}
+{"name":"-","left":"float32","right":"int64","result":"float64"}
+{"name":"-","left":"float32","right":"float64","result":"float64"}
+{"name":"-","left":"float32","right":"float32","result":"float64"}
+{"name":"-","left":"float32","right":"numeric","result":"float64"}
+{"name":"-","left":"numeric","right":"int64","result":"numeric"}
+{"name":"-","left":"numeric","right":"float64","result":"float64"}
+{"name":"-","left":"numeric","right":"float32","result":"float64"}
+{"name":"-","left":"numeric","right":"numeric","result":"numeric"}
+{"name":"*","left":"int64","right":"int64","result":"int64"}
+{"name":"*","left":"int64","right":"float64","result":"float64"}
+{"name":"*","left":"int64","right":"float32","result":"float64"}
+{"name":"*","left":"int64","right":"numeric","result":"numeric"}
+{"name":"*","left":"float64","right":"int64","result":"float64"}
+{"name":"*","left":"float64","right":"float64","result":"float64"}
+{"name":"*","left":"float64","right":"float32","result":"float64"}
+{"name":"*","left":"float64","right":"numeric","result":"float64"}
+{"name":"*","left":"float32","right":"int64","result":"float64"}
+{"name":"*","left":"float32","right":"float64","result":"float64"}
+{"name":"*","left":"float32","right":"float32","result":"float64"}
+{"name":"*","left":"float32","right":"numeric","result":"float64"}
+{"name":"*","left":"numeric","right":"int64","result":"numeric"}
+{"name":"*","left":"numeric","right":"float64","result":"float64"}
+{"name":"*","left":"numeric","right":"float32","result":"float64"}
+{"name":"*","left":"numeric","right":"numeric","result":"numeric"}
+{"name":"/","left":"int64","right":"int64","result":"float64"}
+{"name":"/","left":"int64","right":"float64","result":"float64"}
+{"name":"/","left":"int64","right":"float32","result":"float64"}
+{"name":"/","left":"int64","right":"numeric","result":"numeric"}
+{"name":"/","left":"float64","right":"int64","result":"float64"}
+{"name":"/","left":"float64","right":"float64","result":"float64"}
+{"name":"/","left":"float64","right":"float32","result":"float64"}
+{"name":"/","left":"float64","right":"numeric","result":"float64"}
+{"name":"/","left":"float32","right":"int64","result":"float64"}
+{"name":"/","left":"float32","right":"float64","result":"float64"}
+{"name":"/","left":"float32","right":"float32","result":"float64"}
+{"name":"/","left":"float32","right":"numeric","result":"float64"}
+{"name":"/","left":"numeric","right":"int64","result":"numeric"}
+{"name":"/","left":"numeric","right":"float64","result":"float64"}
+{"name":"/","left":"numeric","right":"float32","result":"float64"}
+{"name":"/","left":"numeric","right":"numeric","result":"numeric"}
+{"name":"||","left":"string","right":"string","result":"string"}
+{"name":"||","left":"bytes","right":"bytes","result":"bytes"}
+{"name":"+","left":"timestamp","right":"interval","result":"timestamp"}
+{"name":"+","left":"interval","right":"interval","result":"interval"}
+{"name":"-","left":"timestamp","right":"interval","result":"timestamp"}
+{"name":"-","left":"interval","right":"interval","result":"interval"}
+{"name":"+","left":"interval","right":"timestamp","result":"timestamp"}
+{"name":"-","left":"date","right":"date","result":"interval"}
+{"name":"-","left":"timestamp","right":"timestamp","result":"interval"}
+{"name":"*","left":"interval","right":"int64","result":"interval"}
+{"name":"/","left":"interval","right":"int64","result":"interval"}
+{"name":"\u0026","left":"int64","right":"int64","result":"int64"}
+{"name":"|","left":"int64","right":"int64","result":"int64"}
+{"name":"^","left":"int64","right":"int64","result":"int64"}
+{"name":"\u003c\u003c","left":"int64","right":"int64","result":"int64"}
+{"name":"\u003e\u003e","left":"int64","right":"int64","result":"int64"}
+{"name":"\u0026","left":"bytes","right":"bytes","result":"bytes"}
+{"name":"|","left":"bytes","right":"bytes","result":"bytes"}
+{"name":"^","left":"bytes","right":"bytes","result":"bytes"}

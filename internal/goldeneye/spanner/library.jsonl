@@ -1,0 +1,322 @@
+# Candidate signatures of Spanner's GoogleSQL functions. Spanner keeps no
+# catalog of its functions, so this file lists the calls to try; goldeneye
+# compiles each one in PLAN mode against the probe table in library.go,
+# keeps the ones Spanner accepts and writes the result type Spanner reports.
+#
+# An argument is a type, a type=literal for an argument Spanner wants as a
+# literal, T for a polymorphic value or AT for an array of one. A
+# polymorphic signature is tried with INT64 and STRING, and its returns
+# ($1 for the first argument's type, array($1), anyelement for an AT's
+# element) must match what Spanner reports for both. nullable and
+# never_null say what Spanner cannot: whether the result can be NULL when
+# the arguments are not, or is never NULL when they are.
+# Aggregates: NULL over no rows, except the counts.
+{"name": "count", "kind": "a", "args": ["T"], "returns": "int64", "never_null": true}
+{"name": "countif", "kind": "a", "args": ["bool"], "never_null": true}
+{"name": "any_value", "kind": "a", "args": ["T"], "returns": "$1", "nullable": true}
+{"name": "array_agg", "kind": "a", "args": ["T"], "returns": "array($1)", "nullable": true}
+{"name": "array_concat_agg", "kind": "a", "args": ["AT"], "returns": "$1", "nullable": true}
+{"name": "avg", "kind": "a", "args": ["int64"], "nullable": true}
+{"name": "avg", "kind": "a", "args": ["float64"], "nullable": true}
+{"name": "avg", "kind": "a", "args": ["float32"], "nullable": true}
+{"name": "avg", "kind": "a", "args": ["numeric"], "nullable": true}
+{"name": "avg", "kind": "a", "args": ["interval"], "nullable": true}
+{"name": "bit_and", "kind": "a", "args": ["int64"], "nullable": true}
+{"name": "bit_or", "kind": "a", "args": ["int64"], "nullable": true}
+{"name": "bit_xor", "kind": "a", "args": ["int64"], "nullable": true}
+{"name": "logical_and", "kind": "a", "args": ["bool"], "nullable": true}
+{"name": "logical_or", "kind": "a", "args": ["bool"], "nullable": true}
+{"name": "max", "kind": "a", "args": ["T"], "returns": "$1", "nullable": true}
+{"name": "min", "kind": "a", "args": ["T"], "returns": "$1", "nullable": true}
+{"name": "string_agg", "kind": "a", "args": ["string"], "nullable": true}
+{"name": "string_agg", "kind": "a", "args": ["string", "string=','"], "nullable": true}
+{"name": "string_agg", "kind": "a", "args": ["bytes"], "nullable": true}
+{"name": "string_agg", "kind": "a", "args": ["bytes", "bytes=b','"], "nullable": true}
+{"name": "sum", "kind": "a", "args": ["int64"], "nullable": true}
+{"name": "sum", "kind": "a", "args": ["float64"], "nullable": true}
+{"name": "sum", "kind": "a", "args": ["float32"], "nullable": true}
+{"name": "sum", "kind": "a", "args": ["numeric"], "nullable": true}
+{"name": "sum", "kind": "a", "args": ["interval"], "nullable": true}
+{"name": "stddev", "kind": "a", "args": ["float64"], "nullable": true}
+{"name": "stddev_samp", "kind": "a", "args": ["float64"], "nullable": true}
+{"name": "variance", "kind": "a", "args": ["float64"], "nullable": true}
+{"name": "var_samp", "kind": "a", "args": ["float64"], "nullable": true}
+# Window functions.
+# Math.
+{"name": "abs", "args": ["int64"]}
+{"name": "abs", "args": ["float64"]}
+{"name": "abs", "args": ["float32"]}
+{"name": "abs", "args": ["numeric"]}
+{"name": "sign", "args": ["int64"]}
+{"name": "sign", "args": ["float64"]}
+{"name": "sign", "args": ["numeric"]}
+{"name": "mod", "args": ["int64", "int64"]}
+{"name": "mod", "args": ["numeric", "numeric"]}
+{"name": "div", "args": ["int64", "int64"]}
+{"name": "div", "args": ["numeric", "numeric"]}
+{"name": "round", "args": ["float64"]}
+{"name": "round", "args": ["numeric"]}
+{"name": "round", "args": ["float64", "int64"]}
+{"name": "round", "args": ["numeric", "int64"]}
+{"name": "trunc", "args": ["float64"]}
+{"name": "trunc", "args": ["numeric"]}
+{"name": "trunc", "args": ["float64", "int64"]}
+{"name": "trunc", "args": ["numeric", "int64"]}
+{"name": "ceil", "args": ["float64"]}
+{"name": "ceil", "args": ["numeric"]}
+{"name": "ceiling", "args": ["float64"]}
+{"name": "ceiling", "args": ["numeric"]}
+{"name": "floor", "args": ["float64"]}
+{"name": "floor", "args": ["numeric"]}
+{"name": "sqrt", "args": ["float64"]}
+{"name": "sqrt", "args": ["numeric"]}
+{"name": "pow", "args": ["float64", "float64"]}
+{"name": "pow", "args": ["numeric", "numeric"]}
+{"name": "power", "args": ["float64", "float64"]}
+{"name": "power", "args": ["numeric", "numeric"]}
+{"name": "exp", "args": ["float64"]}
+{"name": "exp", "args": ["numeric"]}
+{"name": "ln", "args": ["float64"]}
+{"name": "ln", "args": ["numeric"]}
+{"name": "log", "args": ["float64"]}
+{"name": "log", "args": ["numeric"]}
+{"name": "log", "args": ["float64", "float64"]}
+{"name": "log10", "args": ["float64"]}
+{"name": "log10", "args": ["numeric"]}
+{"name": "ieee_divide", "args": ["float64", "float64"]}
+{"name": "safe_divide", "args": ["int64", "int64"], "nullable": true}
+{"name": "safe_divide", "args": ["float64", "float64"], "nullable": true}
+{"name": "safe_divide", "args": ["numeric", "numeric"], "nullable": true}
+{"name": "safe_add", "args": ["int64", "int64"], "nullable": true}
+{"name": "safe_add", "args": ["float64", "float64"], "nullable": true}
+{"name": "safe_add", "args": ["numeric", "numeric"], "nullable": true}
+{"name": "safe_subtract", "args": ["int64", "int64"], "nullable": true}
+{"name": "safe_subtract", "args": ["float64", "float64"], "nullable": true}
+{"name": "safe_subtract", "args": ["numeric", "numeric"], "nullable": true}
+{"name": "safe_multiply", "args": ["int64", "int64"], "nullable": true}
+{"name": "safe_multiply", "args": ["float64", "float64"], "nullable": true}
+{"name": "safe_multiply", "args": ["numeric", "numeric"], "nullable": true}
+{"name": "safe_negate", "args": ["int64"], "nullable": true}
+{"name": "safe_negate", "args": ["float64"], "nullable": true}
+{"name": "safe_negate", "args": ["numeric"], "nullable": true}
+{"name": "is_inf", "args": ["float64"]}
+{"name": "is_nan", "args": ["float64"]}
+{"name": "sin", "args": ["float64"]}
+{"name": "cos", "args": ["float64"]}
+{"name": "tan", "args": ["float64"]}
+{"name": "asin", "args": ["float64"]}
+{"name": "acos", "args": ["float64"]}
+{"name": "atan", "args": ["float64"]}
+{"name": "atan2", "args": ["float64", "float64"]}
+{"name": "bit_count", "args": ["int64"]}
+{"name": "bit_count", "args": ["bytes"]}
+{"name": "bit_reverse", "args": ["int64", "bool"]}
+# Strings.
+{"name": "length", "args": ["string"]}
+{"name": "length", "args": ["bytes"]}
+{"name": "byte_length", "args": ["string"]}
+{"name": "byte_length", "args": ["bytes"]}
+{"name": "char_length", "args": ["string"]}
+{"name": "character_length", "args": ["string"]}
+{"name": "concat", "args": ["string", "string"]}
+{"name": "concat", "args": ["bytes", "bytes"]}
+{"name": "lower", "args": ["string"]}
+{"name": "lower", "args": ["bytes"]}
+{"name": "upper", "args": ["string"]}
+{"name": "upper", "args": ["bytes"]}
+{"name": "trim", "args": ["string"]}
+{"name": "trim", "args": ["string", "string"]}
+{"name": "trim", "args": ["bytes", "bytes"]}
+{"name": "ltrim", "args": ["string"]}
+{"name": "ltrim", "args": ["string", "string"]}
+{"name": "rtrim", "args": ["string"]}
+{"name": "rtrim", "args": ["string", "string"]}
+{"name": "lpad", "args": ["string", "int64"]}
+{"name": "lpad", "args": ["string", "int64", "string"]}
+{"name": "lpad", "args": ["bytes", "int64", "bytes"]}
+{"name": "rpad", "args": ["string", "int64"]}
+{"name": "rpad", "args": ["string", "int64", "string"]}
+{"name": "rpad", "args": ["bytes", "int64", "bytes"]}
+{"name": "substr", "args": ["string", "int64"]}
+{"name": "substr", "args": ["string", "int64", "int64"]}
+{"name": "substr", "args": ["bytes", "int64"]}
+{"name": "substr", "args": ["bytes", "int64", "int64"]}
+{"name": "substring", "args": ["string", "int64"]}
+{"name": "substring", "args": ["string", "int64", "int64"]}
+{"name": "strpos", "args": ["string", "string"]}
+{"name": "strpos", "args": ["bytes", "bytes"]}
+{"name": "starts_with", "args": ["string", "string"]}
+{"name": "starts_with", "args": ["bytes", "bytes"]}
+{"name": "ends_with", "args": ["string", "string"]}
+{"name": "ends_with", "args": ["bytes", "bytes"]}
+{"name": "replace", "args": ["string", "string", "string"]}
+{"name": "replace", "args": ["bytes", "bytes", "bytes"]}
+{"name": "repeat", "args": ["string", "int64"]}
+{"name": "repeat", "args": ["bytes", "int64"]}
+{"name": "reverse", "args": ["string"]}
+{"name": "reverse", "args": ["bytes"]}
+{"name": "split", "args": ["string"]}
+{"name": "split", "args": ["string", "string"]}
+{"name": "split", "args": ["bytes", "bytes"]}
+{"name": "split_substr", "args": ["string", "string", "int64"]}
+{"name": "split_substr", "args": ["string", "string", "int64", "int64"]}
+{"name": "regexp_contains", "args": ["string", "string='a'"]}
+{"name": "regexp_contains", "args": ["bytes", "bytes=b'a'"]}
+{"name": "regexp_extract", "args": ["string", "string='a'"], "nullable": true}
+{"name": "regexp_extract", "args": ["bytes", "bytes=b'a'"], "nullable": true}
+{"name": "regexp_extract_all", "args": ["string", "string='a'"]}
+{"name": "regexp_extract_all", "args": ["bytes", "bytes=b'a'"]}
+{"name": "regexp_replace", "args": ["string", "string='a'", "string"]}
+{"name": "regexp_replace", "args": ["bytes", "bytes=b'a'", "bytes"]}
+{"name": "format", "args": ["string"]}
+{"name": "to_base64", "args": ["bytes"]}
+{"name": "from_base64", "args": ["string"]}
+{"name": "to_base32", "args": ["bytes"]}
+{"name": "from_base32", "args": ["string"]}
+{"name": "to_hex", "args": ["bytes"]}
+{"name": "from_hex", "args": ["string"]}
+{"name": "to_code_points", "args": ["string"]}
+{"name": "to_code_points", "args": ["bytes"]}
+{"name": "code_points_to_string", "args": ["array(int64)"]}
+{"name": "code_points_to_bytes", "args": ["array(int64)"]}
+{"name": "safe_convert_bytes_to_string", "args": ["bytes"]}
+{"name": "soundex", "args": ["string"]}
+{"name": "normalize", "args": ["string"]}
+{"name": "normalize_and_casefold", "args": ["string"]}
+{"name": "ltrim", "args": ["bytes", "bytes"]}
+{"name": "rtrim", "args": ["bytes", "bytes"]}
+# Dates and timestamps; date parts are passed as their keyword.
+{"name": "current_date"}
+{"name": "current_timestamp"}
+{"name": "date", "args": ["int64", "int64", "int64"]}
+{"name": "date", "args": ["timestamp"]}
+{"name": "date", "args": ["timestamp", "string"]}
+{"name": "date_add", "args": ["date", "interval"]}
+{"name": "date_sub", "args": ["date", "interval"]}
+{"name": "date_diff", "args": ["date", "date", "string=DAY"]}
+{"name": "date_trunc", "args": ["date", "string=MONTH"]}
+{"name": "date_from_unix_date", "args": ["int64"]}
+{"name": "unix_date", "args": ["date"]}
+{"name": "format_date", "args": ["string", "date"]}
+{"name": "parse_date", "args": ["string", "string"]}
+{"name": "timestamp", "args": ["string"]}
+{"name": "timestamp", "args": ["date"]}
+{"name": "timestamp", "args": ["string", "string"]}
+{"name": "timestamp", "args": ["date", "string"]}
+{"name": "timestamp_add", "args": ["timestamp", "interval"]}
+{"name": "timestamp_sub", "args": ["timestamp", "interval"]}
+{"name": "timestamp_diff", "args": ["timestamp", "timestamp", "string=SECOND"]}
+{"name": "timestamp_trunc", "args": ["timestamp", "string=DAY"]}
+{"name": "timestamp_trunc", "args": ["timestamp", "string=DAY", "string"]}
+{"name": "timestamp_seconds", "args": ["int64"]}
+{"name": "timestamp_millis", "args": ["int64"]}
+{"name": "timestamp_micros", "args": ["int64"]}
+{"name": "unix_seconds", "args": ["timestamp"]}
+{"name": "unix_millis", "args": ["timestamp"]}
+{"name": "unix_micros", "args": ["timestamp"]}
+{"name": "format_timestamp", "args": ["string", "timestamp"]}
+{"name": "format_timestamp", "args": ["string", "timestamp", "string"]}
+{"name": "parse_timestamp", "args": ["string", "string"]}
+{"name": "parse_timestamp", "args": ["string", "string", "string"]}
+{"name": "string", "args": ["timestamp"]}
+{"name": "string", "args": ["timestamp", "string"]}
+{"name": "string", "args": ["json"]}
+{"name": "make_interval", "args": ["int64", "int64", "int64"]}
+{"name": "justify_days", "args": ["interval"]}
+{"name": "justify_hours", "args": ["interval"]}
+{"name": "justify_interval", "args": ["interval"]}
+# JSON.
+{"name": "json_value", "args": ["json", "string='$.a'"], "nullable": true}
+{"name": "json_value", "args": ["string", "string='$.a'"], "nullable": true}
+{"name": "json_query", "args": ["json", "string='$.a'"], "nullable": true}
+{"name": "json_query", "args": ["string", "string='$.a'"], "nullable": true}
+{"name": "json_query_array", "args": ["json", "string='$.a'"], "nullable": true}
+{"name": "json_query_array", "args": ["json"], "nullable": true}
+{"name": "json_value_array", "args": ["json", "string='$.a'"], "nullable": true}
+{"name": "json_value_array", "args": ["json"], "nullable": true}
+{"name": "json_type", "args": ["json"]}
+{"name": "json_keys", "args": ["json"]}
+{"name": "json_strip_nulls", "args": ["json"]}
+{"name": "parse_json", "args": ["string"]}
+{"name": "to_json", "args": ["T"], "returns": "json", "never_null": true}
+{"name": "to_json_string", "args": ["json"], "never_null": true}
+{"name": "safe_to_json", "args": ["T"], "returns": "json", "never_null": true}
+{"name": "bool", "args": ["json"]}
+{"name": "int64", "args": ["json"]}
+{"name": "float64", "args": ["json"]}
+{"name": "float32", "args": ["json"]}
+{"name": "lax_bool", "args": ["json"], "nullable": true}
+{"name": "lax_int64", "args": ["json"], "nullable": true}
+{"name": "lax_float64", "args": ["json"], "nullable": true}
+{"name": "lax_string", "args": ["json"], "nullable": true}
+{"name": "json_array", "args": ["T"], "returns": "json"}
+{"name": "json_object", "args": ["string", "T"], "returns": "json"}
+{"name": "json_set", "args": ["json", "string='$.a'", "T"], "returns": "json"}
+{"name": "json_remove", "args": ["json", "string='$.a'"]}
+{"name": "json_array_append", "args": ["json", "string='$'", "T"], "returns": "json"}
+{"name": "json_array_insert", "args": ["json", "string='$[0]'", "T"], "returns": "json"}
+{"name": "json_contains", "args": ["json", "json"]}
+# Arrays.
+{"name": "array_length", "args": ["AT"], "returns": "int64"}
+{"name": "array_to_string", "args": ["array(string)", "string"]}
+{"name": "array_to_string", "args": ["array(string)", "string", "string"]}
+{"name": "array_to_string", "args": ["array(bytes)", "bytes"]}
+{"name": "array_reverse", "args": ["AT"], "returns": "$1"}
+{"name": "array_concat", "args": ["AT", "AT"], "returns": "$1"}
+{"name": "array_first", "args": ["AT"], "returns": "anyelement", "nullable": true}
+{"name": "array_last", "args": ["AT"], "returns": "anyelement", "nullable": true}
+{"name": "array_min", "args": ["AT"], "returns": "anyelement", "nullable": true}
+{"name": "array_max", "args": ["AT"], "returns": "anyelement", "nullable": true}
+{"name": "array_slice", "args": ["AT", "int64", "int64"], "returns": "$1"}
+{"name": "array_includes", "args": ["AT", "T"], "returns": "bool"}
+{"name": "array_includes_any", "args": ["AT", "AT"], "returns": "bool"}
+{"name": "array_includes_all", "args": ["AT", "AT"], "returns": "bool"}
+{"name": "array_is_distinct", "args": ["AT"], "returns": "bool"}
+{"name": "generate_array", "args": ["int64", "int64"]}
+{"name": "generate_array", "args": ["int64", "int64", "int64"]}
+{"name": "generate_array", "args": ["float64", "float64", "float64"]}
+{"name": "generate_date_array", "args": ["date", "date"]}
+{"name": "generate_date_array", "args": ["date", "date", "interval"]}
+# Hashing, ids and sequences.
+{"name": "farm_fingerprint", "args": ["string"]}
+{"name": "farm_fingerprint", "args": ["bytes"]}
+{"name": "md5", "args": ["string"]}
+{"name": "md5", "args": ["bytes"]}
+{"name": "sha1", "args": ["string"]}
+{"name": "sha1", "args": ["bytes"]}
+{"name": "sha256", "args": ["string"]}
+{"name": "sha256", "args": ["bytes"]}
+{"name": "sha512", "args": ["string"]}
+{"name": "sha512", "args": ["bytes"]}
+{"name": "generate_uuid", "never_null": true}
+{"name": "new_uuid", "never_null": true}
+# Search and vectors.
+{"name": "search", "args": ["tokenlist", "string='a'"]}
+{"name": "search_substring", "args": ["tokenlist", "string='a'"]}
+{"name": "search_ngrams", "args": ["tokenlist", "string='a'"]}
+{"name": "score", "args": ["tokenlist", "string='a'"]}
+{"name": "score_ngrams", "args": ["tokenlist", "string='a'"]}
+{"name": "snippet", "args": ["string", "string='a'"]}
+{"name": "cosine_distance", "args": ["array(float64)", "array(float64)"]}
+{"name": "cosine_distance", "args": ["array(float32)", "array(float32)"]}
+{"name": "euclidean_distance", "args": ["array(float64)", "array(float64)"]}
+{"name": "euclidean_distance", "args": ["array(float32)", "array(float32)"]}
+{"name": "dot_product", "args": ["array(float64)", "array(float64)"]}
+{"name": "dot_product", "args": ["array(float32)", "array(float32)"]}
+{"name": "dot_product", "args": ["array(int64)", "array(int64)"]}
+# Calls a select list cannot spell as name(args): the expression or the
+# whole statement to compile instead, with $1, $2... for the arguments. A
+# statement whose result is not the call names what the call returns.
+{"name": "extract", "args": ["timestamp"], "expr": "EXTRACT(YEAR FROM $1)"}
+{"name": "extract", "args": ["timestamp", "string"], "expr": "EXTRACT(YEAR FROM $1 AT TIME ZONE $2)"}
+{"name": "extract", "args": ["date"], "expr": "EXTRACT(YEAR FROM $1)"}
+{"name": "get_next_sequence_value", "args": ["anyelement"], "expr": "GET_NEXT_SEQUENCE_VALUE(SEQUENCE probe_sequence)", "never_null": true}
+{"name": "pending_commit_timestamp", "query": "INSERT INTO probe_commits (id, committed_at) VALUES (1, PENDING_COMMIT_TIMESTAMP())", "returns": "timestamp", "never_null": true}
+{"name": "search", "args": ["tokenlist", "string='a'"], "query": "SELECT id FROM probe WHERE SEARCH($1, $2)", "returns": "bool"}
+{"name": "search_substring", "args": ["tokenlist", "string='a'"], "query": "SELECT id FROM probe WHERE SEARCH_SUBSTRING(tl_substring, $2)", "returns": "bool"}
+{"name": "search_ngrams", "args": ["tokenlist", "string='a'"], "query": "SELECT id FROM probe WHERE SEARCH_NGRAMS(tl_ngrams, $2)", "returns": "bool"}
+{"name": "score", "args": ["tokenlist", "string='a'"], "query": "SELECT SCORE($1, $2) FROM probe WHERE SEARCH($1, $2)"}
+{"name": "score_ngrams", "args": ["tokenlist", "string='a'"], "query": "SELECT SCORE_NGRAMS(tl_ngrams, $2) FROM probe WHERE SEARCH_NGRAMS(tl_ngrams, $2)"}
+# unnest stands for UNNEST(array) in FROM and IN, which sqlc reads as a
+# call; its element can be NULL.
+{"name": "unnest", "args": ["AT"], "returns": "anyelement", "expr": "(SELECT e FROM UNNEST($1) AS e LIMIT 1)", "nullable": true}

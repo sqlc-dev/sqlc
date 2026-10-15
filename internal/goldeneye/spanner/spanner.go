@@ -6,11 +6,13 @@
 // googlesql directory, since sqlc's engine is named after the language
 // Spanner speaks rather than the database.
 //
-// Spanner keeps no catalog of its types, functions or operators, so
-// types.jsonl, functions.jsonl and operators.jsonl are written by hand and
-// are not this package's business. What it does describe is its
-// information schema: relations.jsonl is every view of INFORMATION_SCHEMA
-// and SPANNER_SYS, read from INFORMATION_SCHEMA itself.
+// relations.jsonl is every view of INFORMATION_SCHEMA and SPANNER_SYS,
+// read from INFORMATION_SCHEMA itself. Spanner keeps no catalog of its
+// types, functions or operators, so types.jsonl, functions.jsonl and
+// operators.jsonl are read by asking: library.jsonl lists the function
+// signatures to try, and each is compiled in PLAN mode against a probe
+// database, the ones Spanner accepts kept with the type it reports; the
+// operators and types are tried the same way (see library.go).
 //
 // The package also verifies the GoogleSQL analyze cases against the same
 // server: each case's schema becomes a database of its own, its fixture is
@@ -193,7 +195,8 @@ func (s *server) query(ctx context.Context, session, sql string) ([][]*structpb.
 
 // Generate reads the dialect from the server: relations.jsonl, the views of
 // INFORMATION_SCHEMA and SPANNER_SYS, read from a database of their own,
-// since every database has the same ones.
+// since every database has the same ones, and the types, functions and
+// operators, read from a probe database.
 func Generate(ctx context.Context, endpoint string) (dialect.Files, error) {
 	s, err := open(ctx, endpoint)
 	if err != nil {
@@ -220,5 +223,23 @@ func Generate(ctx context.Context, endpoint string) (dialect.Files, error) {
 	if err != nil {
 		return nil, err
 	}
-	return dialect.Files{dialect.RelationsFile: blob}, nil
+
+	lib := Instance + "/databases/" + libraryDatabase
+	if err := s.dropDatabase(ctx, lib); err != nil {
+		return nil, err
+	}
+	if _, err := s.createDatabase(ctx, libraryDatabase, librarySchema); err != nil {
+		return nil, err
+	}
+	defer s.dropDatabase(context.WithoutCancel(ctx), lib)
+	libSession, err := s.session(ctx, lib)
+	if err != nil {
+		return nil, err
+	}
+	files, err := readLibrary(ctx, s, libSession)
+	if err != nil {
+		return nil, err
+	}
+	files[dialect.RelationsFile] = blob
+	return files, nil
 }
