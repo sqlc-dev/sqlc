@@ -28,6 +28,12 @@ func (c *cc) convert(node zjast.Node) ast.Node {
 		return c.convertDeleteStatement(n)
 	case *zjast.CreateTableStatement:
 		return c.convertCreateTableStatement(n)
+	case *zjast.CreateViewStatement:
+		return c.convertCreateViewStatement(n)
+	case *zjast.AlterStatement:
+		return c.convertAlterStatement(n)
+	case *zjast.RenameStatement:
+		return c.convertRenameStatement(n)
 	case *zjast.DropStatement:
 		return c.convertDropStatement(n)
 	case *zjast.TruncateStatement:
@@ -473,9 +479,44 @@ func (c *cc) convertExpr(node zjast.Node) ast.Node {
 			Arg: c.convertExpr(n.Array),
 			Indirection: &ast.List{
 				Items: []ast.Node{
-					&ast.A_Indices{Uidx: c.convertExpr(n.Position)},
+					&ast.A_Indices{Uidx: c.convertExpr(arrayPosition(n.Position))},
 				},
 			},
+		}
+	case *zjast.ArrayConstructor:
+		return c.convertArrayConstructor(n)
+	case *zjast.ExtractExpression:
+		return c.convertExtractExpression(n)
+	case *zjast.DateOrTimeLiteral:
+		kind := strings.ToLower(strings.TrimPrefix(n.TypeKind, "TYPE_"))
+		return c.typedLiteral(n.Value, kind, n.Pos())
+	case *zjast.NumericLiteral:
+		return c.typedLiteral(n.Value, "numeric", n.Pos())
+	case *zjast.BigNumericLiteral:
+		return c.typedLiteral(n.Value, "bignumeric", n.Pos())
+	case *zjast.JSONLiteral:
+		return c.typedLiteral(n.Value, "json", n.Pos())
+	case *zjast.BytesLiteral:
+		var sb strings.Builder
+		for _, comp := range n.Components {
+			if comp != nil {
+				sb.WriteString(unquote(comp.Image))
+			}
+		}
+		return &ast.TypeCast{
+			Arg:      &ast.A_Const{Val: &ast.String{Str: sb.String()}, Location: n.Pos()},
+			TypeName: spelledTypeName("bytes"),
+			Location: n.Pos(),
+		}
+	case *zjast.IntervalExpr:
+		unit := ""
+		if n.DatePart != nil {
+			unit = strings.ToLower(n.DatePart.Name)
+		}
+		return &ast.IntervalExpr{
+			Value:    c.convertExpr(n.Value),
+			Unit:     unit,
+			Location: n.Pos(),
 		}
 	case *zjast.NamedArgument:
 		return c.convertExpr(n.Value)
@@ -613,6 +654,25 @@ func (c *cc) convertBoolExpr(op ast.BoolExprType, operands []zjast.Node, loc int
 }
 
 func (c *cc) convertInExpression(n *zjast.InExpression) ast.Node {
+	// "x IN UNNEST(array)" tests membership of an array, which is what
+	// "x = ANY(array)" says.
+	if n.UnnestExpr != nil && len(n.UnnestExpr.Expressions) == 1 && n.UnnestExpr.Expressions[0] != nil {
+		var expr ast.Node = &ast.A_Expr{
+			Kind:     ast.A_Expr_Kind_OP_ANY,
+			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: "="}}},
+			Lexpr:    c.convertExpr(n.Lhs),
+			Rexpr:    c.convertExpr(n.UnnestExpr.Expressions[0].Expr),
+			Location: n.Pos(),
+		}
+		if n.IsNot {
+			expr = &ast.BoolExpr{
+				Boolop:   ast.BoolExprTypeNot,
+				Args:     &ast.List{Items: []ast.Node{expr}},
+				Location: n.Pos(),
+			}
+		}
+		return expr
+	}
 	in := &ast.In{
 		Expr:     c.convertExpr(n.Lhs),
 		Not:      n.IsNot,
@@ -690,6 +750,89 @@ func (c *cc) newFuncCall(parts []string, loc int) *ast.FuncCall {
 	}
 }
 
+// convertConditional converts the conditional functions whose result is one
+// of their arguments to the nodes that say so, which is what types the
+// result after the arguments and makes it nullable only when it can be:
+// COALESCE and IFNULL, NULLIF, IF, GREATEST and LEAST. It returns nil for
+// anything else.
+func (c *cc) convertConditional(name string, args []zjast.Node, loc int) ast.Node {
+	convert := func() *ast.List {
+		list := &ast.List{}
+		for _, arg := range args {
+			list.Items = append(list.Items, c.convertExpr(arg))
+		}
+		return list
+	}
+	switch {
+	case (name == "coalesce" && len(args) > 0) || (name == "ifnull" && len(args) == 2):
+		return &ast.CoalesceExpr{Args: convert(), Location: loc}
+	case name == "nullif" && len(args) == 2:
+		return &ast.A_Expr{
+			Kind:     ast.A_Expr_Kind_NULLIF,
+			Name:     &ast.List{Items: []ast.Node{&ast.String{Str: "="}}},
+			Lexpr:    c.convertExpr(args[0]),
+			Rexpr:    c.convertExpr(args[1]),
+			Location: loc,
+		}
+	case name == "if" && len(args) == 3:
+		return c.buildCaseExpr(nil, args, loc)
+	case (name == "greatest" || name == "least") && len(args) > 0:
+		// The ops number as PostgreSQL's do: IS_GREATEST, then IS_LEAST.
+		op := ast.MinMaxOp(0)
+		if name == "least" {
+			op = 1
+		}
+		return &ast.MinMaxExpr{Op: op, Args: convert(), Location: loc}
+	}
+	return nil
+}
+
+// typedLiteral converts a literal spelled with its type, DATE '2024-01-01'
+// or JSON '{}', to its string cast to that type.
+func (c *cc) typedLiteral(value *zjast.StringLiteral, typ string, loc int) ast.Node {
+	if value == nil || typ == "" {
+		return todo(value)
+	}
+	return &ast.TypeCast{
+		Arg:      &ast.A_Const{Val: &ast.String{Str: stringLiteralValue(value)}, Location: value.Pos()},
+		TypeName: spelledTypeName(typ),
+		Location: loc,
+	}
+}
+
+// convertArrayConstructor converts [a, b] and ARRAY<T>[a, b]. An explicit
+// element type is a cast of the array to it, which is what gives an empty
+// array its type.
+func (c *cc) convertArrayConstructor(n *zjast.ArrayConstructor) ast.Node {
+	arr := &ast.A_ArrayExpr{Elements: &ast.List{}, Location: n.Pos()}
+	for _, elem := range n.Elements {
+		arr.Elements.Items = append(arr.Elements.Items, c.convertExpr(elem))
+	}
+	if n.Type == nil {
+		return arr
+	}
+	return &ast.TypeCast{
+		Arg:      arr,
+		TypeName: spelledTypeName(typeName(n.Type)),
+		Location: n.Pos(),
+	}
+}
+
+// arrayPosition unwraps the OFFSET, ORDINAL, SAFE_OFFSET or SAFE_ORDINAL
+// that says how an array subscript counts to the position it wraps. They all
+// address one element, so they type alike.
+func arrayPosition(node zjast.Node) zjast.Node {
+	call, ok := node.(*zjast.FunctionCall)
+	if !ok || call.IsChained || len(call.Args) != 1 {
+		return node
+	}
+	switch strings.ToUpper(strings.Join(pathParts(call.Function), ".")) {
+	case "OFFSET", "ORDINAL", "SAFE_OFFSET", "SAFE_ORDINAL":
+		return call.Args[0]
+	}
+	return node
+}
+
 func (c *cc) convertFunctionCall(n *zjast.FunctionCall) ast.Node {
 	// Chained calls ("expr.method(...)") have no sqlc AST equivalent.
 	if n.IsChained {
@@ -699,17 +842,92 @@ func (c *cc) convertFunctionCall(n *zjast.FunctionCall) ast.Node {
 	if len(parts) == 0 {
 		return todo(n)
 	}
+	// SAFE.f(...) is f(...), except that it returns NULL where f raises an
+	// error, so its result is f's made nullable: a CASE with no ELSE.
+	if len(parts) == 2 && strings.EqualFold(parts[0], "SAFE") {
+		call := *n
+		call.Function = &zjast.PathExpression{Names: n.Function.Names[1:]}
+		return &ast.CaseExpr{
+			Args: &ast.List{Items: []ast.Node{&ast.CaseWhen{
+				Expr:   &ast.A_Const{Val: &ast.Boolean{Boolval: true}, Location: n.Pos()},
+				Result: c.convertFunctionCall(&call),
+			}}},
+			Location: n.Pos(),
+		}
+	}
+	if len(parts) == 1 && !n.Distinct && n.OrderBy == nil {
+		if expr := c.convertConditional(strings.ToLower(parts[0]), n.Args, n.Pos()); expr != nil {
+			return expr
+		}
+	}
 	fc := c.newFuncCall(parts, n.Pos())
 	fc.AggDistinct = n.Distinct
-	for _, arg := range n.Args {
+	partArg, hasPart := datePartArg[fc.Func.Name]
+	for i, arg := range n.Args {
 		if _, ok := arg.(*zjast.Star); ok {
 			fc.AggStar = true
 			continue
+		}
+		if hasPart && i == partArg {
+			if part, ok := datePart(arg); ok {
+				fc.Args.Items = append(fc.Args.Items, &ast.A_Const{Val: &ast.String{Str: part}, Location: arg.Pos()})
+				continue
+			}
 		}
 		fc.Args.Items = append(fc.Args.Items, c.convertExpr(arg))
 	}
 	if n.OrderBy != nil {
 		fc.AggOrder = c.convertOrderBy(n.OrderBy)
+	}
+	return fc
+}
+
+// datePartArg is the position of the argument naming a date part, DAY or
+// WEEK(MONDAY), in the functions that take one. The part is a keyword, not
+// a column, so it is converted to a string.
+var datePartArg = map[string]int{
+	"date_diff":       2,
+	"date_trunc":      1,
+	"timestamp_diff":  2,
+	"timestamp_trunc": 1,
+	"last_day":        1,
+}
+
+// datePart spells a date part argument: DAY, or WEEK(MONDAY).
+func datePart(node zjast.Node) (string, bool) {
+	switch n := node.(type) {
+	case *zjast.PathExpression:
+		if parts := pathParts(n); len(parts) == 1 {
+			return strings.ToUpper(parts[0]), true
+		}
+	case *zjast.FunctionCall:
+		parts := pathParts(n.Function)
+		if len(parts) == 1 && len(n.Args) == 1 {
+			if arg, ok := datePart(n.Args[0]); ok {
+				return strings.ToUpper(parts[0]) + "(" + arg + ")", true
+			}
+		}
+	}
+	return "", false
+}
+
+// convertExtractExpression converts EXTRACT(part FROM expr). Every part is
+// an INT64 but DATE, which is the date of a timestamp, so EXTRACT is the
+// extract function the dialect seeds as INT64, and EXTRACT(DATE FROM ts)
+// is date(ts).
+func (c *cc) convertExtractExpression(n *zjast.ExtractExpression) ast.Node {
+	part, ok := datePart(n.LhsExpr)
+	if !ok || n.RhsExpr == nil {
+		return todo(n)
+	}
+	name := "extract"
+	if part == "DATE" {
+		name = "date"
+	}
+	fc := c.newFuncCall([]string{name}, n.Pos())
+	fc.Args.Items = append(fc.Args.Items, c.convertExpr(n.RhsExpr))
+	if n.TimeZone != nil {
+		fc.Args.Items = append(fc.Args.Items, c.convertExpr(n.TimeZone))
 	}
 	return fc
 }
@@ -932,12 +1150,17 @@ func (c *cc) convertColumnDefinition(n *zjast.ColumnDefinition) *ast.ColumnDef {
 				col.IsNotNull = true
 			case *zjast.PrimaryKeyColumnAttribute:
 				col.PrimaryKey = true
+			case *zjast.HiddenColumnAttribute:
+				// Spanner leaves a HIDDEN column out of SELECT *.
+				col.IsHidden = true
 			}
 		}
 	}
 
 	if simple, ok := n.Schema.(*zjast.SimpleColumnSchema); ok {
-		if simple.DefaultExpression != nil {
+		// A generated column's "AS (expression) STORED" and an identity
+		// column's IDENTITY(...) arrive here too; neither is a default.
+		if _, generated := simple.DefaultExpression.(*zjast.GeneratedColumnInfo); !generated && simple.DefaultExpression != nil {
 			col.RawDefault = c.convertExpr(simple.DefaultExpression)
 		}
 	}
@@ -945,10 +1168,174 @@ func (c *cc) convertColumnDefinition(n *zjast.ColumnDefinition) *ast.ColumnDef {
 	return col
 }
 
+// convertCreateViewStatement converts CREATE [OR REPLACE] VIEW. Spanner's
+// SQL SECURITY clause says nothing about the view's columns.
+func (c *cc) convertCreateViewStatement(n *zjast.CreateViewStatement) ast.Node {
+	if n.ViewKind != "" || n.Query == nil || n.Name == nil {
+		return todo(n)
+	}
+	stmt := &ast.ViewStmt{
+		View:    parseRangeVar(n.Name),
+		Query:   c.convertQuery(n.Query),
+		Replace: n.IsOrReplace,
+	}
+	if n.Columns != nil {
+		stmt.Aliases = &ast.List{}
+		for _, col := range n.Columns.Columns {
+			if col == nil || col.Name == nil {
+				continue
+			}
+			stmt.Aliases.Items = append(stmt.Aliases.Items, NewIdentifier(col.Name.Name))
+		}
+	}
+	return stmt
+}
+
+// convertAlterStatement converts ALTER TABLE. Its column actions become one
+// AlterTableStmt; RENAME COLUMN and RENAME TO, which the sqlc AST spells as
+// statements of their own, follow it in a list. Actions that change nothing
+// about a column's name, type or nullability, such as constraints, options,
+// defaults and row deletion policies, are dropped.
+func (c *cc) convertAlterStatement(n *zjast.AlterStatement) ast.Node {
+	if n.NodeName != "AlterTableStatement" || n.Path == nil || n.Actions == nil {
+		return todo(n)
+	}
+	table := parseTableName(n.Path)
+	alter := &ast.AlterTableStmt{
+		Table:     table,
+		Cmds:      &ast.List{},
+		MissingOk: n.IsIfExists,
+	}
+	stmts := []ast.Node{alter}
+	for _, action := range n.Actions.Actions {
+		switch a := action.(type) {
+		case *zjast.AddColumnAction:
+			if a.Column == nil {
+				continue
+			}
+			def := c.convertColumnDefinition(a.Column)
+			alter.Cmds.Items = append(alter.Cmds.Items, &ast.AlterTableCmd{
+				Name:      &def.Colname,
+				Subtype:   ast.AT_AddColumn,
+				Def:       def,
+				MissingOk: a.IsIfNotExists,
+			})
+		case *zjast.DropColumnAction:
+			if a.Name == nil {
+				continue
+			}
+			name := identifier(a.Name.Name)
+			alter.Cmds.Items = append(alter.Cmds.Items, &ast.AlterTableCmd{
+				Name:      &name,
+				Subtype:   ast.AT_DropColumn,
+				MissingOk: a.IsIfExists,
+			})
+		case *zjast.SpannerAlterColumnAction:
+			// Spanner's "ALTER COLUMN c <type> [NOT NULL] ..." restates the
+			// column's whole definition, nullability included.
+			if a.Column == nil {
+				continue
+			}
+			def := c.convertColumnDefinition(a.Column)
+			alter.Cmds.Items = append(alter.Cmds.Items, &ast.AlterTableCmd{
+				Name:    &def.Colname,
+				Subtype: ast.AT_AlterColumnType,
+				Def:     def,
+			})
+			if !def.IsNotNull {
+				alter.Cmds.Items = append(alter.Cmds.Items, &ast.AlterTableCmd{
+					Name:    &def.Colname,
+					Subtype: ast.AT_DropNotNull,
+				})
+			}
+		case *zjast.AlterColumnTypeAction:
+			if a.Column == nil {
+				continue
+			}
+			name := identifier(a.Column.Name)
+			alter.Cmds.Items = append(alter.Cmds.Items, &ast.AlterTableCmd{
+				Name:      &name,
+				Subtype:   ast.AT_AlterColumnType,
+				MissingOk: a.IsIfExists,
+				Def: &ast.ColumnDef{
+					Colname:  name,
+					TypeName: spelledTypeName(columnSchemaTypeName(a.Schema)),
+				},
+			})
+		case *zjast.AlterColumnDropNotNullAction:
+			if a.Column == nil {
+				continue
+			}
+			name := identifier(a.Column.Name)
+			alter.Cmds.Items = append(alter.Cmds.Items, &ast.AlterTableCmd{
+				Name:      &name,
+				Subtype:   ast.AT_DropNotNull,
+				MissingOk: a.IsIfExists,
+			})
+		case *zjast.RenameColumnAction:
+			if a.Name == nil || a.NewName == nil {
+				continue
+			}
+			newName := identifier(a.NewName.Name)
+			stmts = append(stmts, &ast.RenameColumnStmt{
+				Table:     table,
+				Col:       &ast.ColumnRef{Name: identifier(a.Name.Name)},
+				NewName:   &newName,
+				MissingOk: n.IsIfExists,
+			})
+		case *zjast.RenameToClause:
+			parts := pathParts(a.NewName)
+			if len(parts) == 0 {
+				continue
+			}
+			newName := identifier(parts[len(parts)-1])
+			stmts = append(stmts, &ast.RenameTableStmt{
+				Table:     table,
+				NewName:   &newName,
+				MissingOk: n.IsIfExists,
+			})
+		}
+	}
+	if len(stmts) == 1 {
+		return alter
+	}
+	return &ast.List{Items: stmts}
+}
+
+// convertRenameStatement converts Spanner's "RENAME TABLE a TO b [, c TO
+// d ...]", which renames each table in turn.
+func (c *cc) convertRenameStatement(n *zjast.RenameStatement) ast.Node {
+	if n.Identifier == nil || !strings.EqualFold(n.Identifier.Name, "TABLE") {
+		return todo(n)
+	}
+	list := &ast.List{}
+	add := func(oldName, newName *zjast.PathExpression) {
+		parts := pathParts(newName)
+		if oldName == nil || len(parts) == 0 {
+			return
+		}
+		name := identifier(parts[len(parts)-1])
+		list.Items = append(list.Items, &ast.RenameTableStmt{
+			Table:   parseTableName(oldName),
+			NewName: &name,
+		})
+	}
+	add(n.OldName, n.NewName)
+	for _, more := range n.MoreRenames {
+		add(more.OldName, more.NewName)
+	}
+	if len(list.Items) == 0 {
+		return todo(n)
+	}
+	return list
+}
+
 func (c *cc) convertDropStatement(n *zjast.DropStatement) ast.Node {
-	// Only DROP TABLE maps onto the sqlc AST; other object kinds (views,
-	// functions, schemas, ...) fall through to TODO.
-	if strings.EqualFold(n.ObjectKind, "TABLE") && n.Path != nil {
+	// DROP TABLE and DROP VIEW map onto the sqlc AST, which drops both
+	// kinds of relation alike; other object kinds (indexes, sequences,
+	// schemas, ...) fall through to TODO.
+	kind := strings.ToUpper(n.ObjectKind)
+	if (kind == "TABLE" || kind == "VIEW") && n.Path != nil {
 		return &ast.DropTableStmt{
 			IfExists: n.IsIfExists,
 			Tables:   []*ast.TableName{parseTableName(n.Path)},

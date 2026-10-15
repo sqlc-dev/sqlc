@@ -69,6 +69,9 @@ type Function struct {
 	Args     []Arg  `json:"args,omitempty"`
 	Returns  string `json:"returns"`
 	Nullable bool   `json:"nullable,omitempty"`
+	// NeverNull marks a result that is never NULL even when an argument
+	// is, in a dialect that propagates nullability.
+	NeverNull bool `json:"never_null,omitempty"`
 }
 
 // Arg is one of a function's parameters. Mode is 'i'n, 'o'ut, 'b'oth,

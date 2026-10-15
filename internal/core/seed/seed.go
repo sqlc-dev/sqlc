@@ -320,11 +320,23 @@ func apply(cat *core.Catalog, fsys fs.FS, settings Settings) error {
 	if err := b.rules(); err != nil {
 		return err
 	}
-	if err := b.categoryOperators(); err != nil {
+	// An operator the dialect lists replaces the one its rules would
+	// generate for the same operands, as GoogleSQL's INT64 / INT64 is a
+	// FLOAT64, so the list is read before the rules apply.
+	var operators []Operator
+	if err := stream(fsys, OperatorsFile, func(op Operator) error {
+		operators = append(operators, op)
+		return nil
+	}); err != nil {
 		return err
 	}
-	if err := stream(fsys, OperatorsFile, b.addOperator); err != nil {
+	if err := b.categoryOperators(operators); err != nil {
 		return err
+	}
+	for i, op := range operators {
+		if err := b.addOperator(op); err != nil {
+			return fmt.Errorf("seed: %s: record %d: %w", OperatorsFile, i+1, err)
+		}
 	}
 	if err := stream(fsys, CastsFile, b.addCast); err != nil {
 		return err
@@ -713,8 +725,12 @@ func (b *builder) rules() error {
 	return nil
 }
 
-func (b *builder) categoryOperators() error {
+func (b *builder) categoryOperators(listed []Operator) error {
 	s := b.settings
+	overridden := map[[3]string]bool{}
+	for _, op := range listed {
+		overridden[[3]string{op.Name, strings.ToLower(op.Left), strings.ToLower(op.Right)}] = true
+	}
 	boolOID, ok := b.oids[strings.ToLower(s.Bool)]
 	if len(s.Comparison) > 0 && !ok {
 		return fmt.Errorf("seed %s: comparison operators need a bool type", s.Dialect)
@@ -729,6 +745,9 @@ func (b *builder) categoryOperators() error {
 		}
 		if strings.Contains(s.ArithmeticCategories, t.category) {
 			for _, op := range s.Arithmetic {
+				if overridden[[3]string{op, strings.ToLower(t.name), strings.ToLower(t.name)}] {
+					continue
+				}
 				if err := b.operator(op, t.name, t.name, t.name, b.oids[t.name]); err != nil {
 					return err
 				}

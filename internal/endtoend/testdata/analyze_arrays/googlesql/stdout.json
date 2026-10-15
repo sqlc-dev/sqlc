@@ -1,0 +1,109 @@
+[
+  {
+    "name": "AlbumIDs",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "singer_id",
+        "type": {
+          "name": "int64"
+        },
+        "table": "singers"
+      },
+      {
+        "name": "album_ids",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "int64"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "singer_id",
+          "type": {
+            "name": "int64"
+          },
+          "table": "singers"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Literals",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "ints",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "int64"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "strs",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "d",
+        "type": {
+          "name": "date"
+        }
+      },
+      {
+        "name": "ts",
+        "type": {
+          "name": "timestamp"
+        }
+      },
+      {
+        "name": "n",
+        "type": {
+          "name": "numeric"
+        }
+      },
+      {
+        "name": "j",
+        "type": {
+          "name": "json"
+        }
+      },
+      {
+        "name": "raw",
+        "type": {
+          "name": "bytes"
+        }
+      },
+      {
+        "name": "iv",
+        "type": {
+          "name": "interval"
+        }
+      }
+    ],
+    "params": []
+  }
+]

@@ -201,5 +201,13 @@ func coreParamColumn(p core.Parameter, params *named.ParamSet) *Column {
 		col.IsSqlcSlice = param.IsSqlcSlice()
 		col.IsNamedParam = true
 	}
+	// sqlc.slice() already says the argument is a list of values, so a
+	// slice the analyzer typed as an array, as it does "= ANY(sqlc.slice(x))",
+	// is a slice of the array's elements.
+	if col.IsSqlcSlice && col.TypeExpr.IsArray() {
+		col.TypeExpr = col.TypeExpr.Element()
+		col.IsArray = false
+		describeType(col, col.TypeExpr)
+	}
 	return col
 }
