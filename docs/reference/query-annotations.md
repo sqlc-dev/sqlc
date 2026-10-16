@@ -77,6 +77,49 @@ func (q *Queries) InsertAuthor(ctx context.Context, name string) (int64, error) 
 }
 ```
 
+## `:iter`
+
+The generated method will return an [iter.Seq](https://pkg.go.dev/iter#Seq) that
+streams records as they are scanned, together with a function that eventually
+reports the query's error. This needs Go 1.23 or later.
+
+```sql
+-- name: ListAuthors :iter
+SELECT * FROM authors
+ORDER BY name;
+```
+
+```go
+func (q *Queries) ListAuthors(ctx context.Context) (iter.Seq[Author], func() error) {
+	// ...
+}
+```
+
+To consume, you can range over the `iter.Seq`:
+
+```go
+authors, ferr := q.ListAuthors(ctx)
+for author := range authors {
+	// ...
+}
+if err := ferr(); err != nil {
+	// ...
+}
+```
+
+The query starts only when the iterator is ranged over, not when the method is
+called. When `q` runs on a single connection or transaction, it must not be
+used inside the `for` loop, as the query is still reading from it. Once the
+loop ends, by running out of rows or by `break`, the rows are closed and the
+connection is released.
+
+The function returned alongside the iterator reports any error from running the
+query or scanning its rows, so call it after the loop.
+
+The iterator is single-use: it runs its query once, which matters for a
+`DELETE ... RETURNING` or `INSERT ... RETURNING`. Ranging over it a second
+time yields nothing, and the returned function then reports an error.
+
 ## `:many`
 
 The generated method will return a slice of records via
