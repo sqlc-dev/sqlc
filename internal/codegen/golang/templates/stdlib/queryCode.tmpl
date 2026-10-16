@@ -164,7 +164,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{end}}
 
 {{define "queryCodeStdExec"}}
-    {{- if .Arg.HasSqlcSlices }}
+    {{- if .Arg.HasSqlcSlices -}}
         query := {{.ConstantName}}
         var queryParams []any
         {{- if .Arg.Struct }}
