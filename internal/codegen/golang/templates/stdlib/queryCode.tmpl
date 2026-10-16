@@ -68,6 +68,45 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 }
 {{end}}
 
+{{if eq .Cmd ":iter"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}) (iter.Seq[{{.Ret.DefineType}}], func() error) {
+    var _err error
+    var _used bool
+    return func(_yield func({{.Ret.DefineType}}) bool) {
+        if _used {
+            _err = errors.New("query {{.MethodName}}: iterator already used")
+            return
+        }
+        _used = true
+        {{ template "queryCodeStdExec" . }}
+        if err != nil {
+            _err = {{if $.WrapErrors}}fmt.Errorf("query {{.MethodName}}: %w", err){{else}}err{{end}}
+            return
+        }
+        defer rows.Close()
+        for rows.Next() {
+            var {{.Ret.Name}} {{.Ret.Type}}
+            if err := rows.Scan({{.Ret.Scan}}); err != nil {
+                _err = {{if $.WrapErrors}}fmt.Errorf("query {{.MethodName}}: %w", err){{else}}err{{end}}
+                return
+            }
+            if !_yield({{.Ret.ReturnName}}) {
+                break
+            }
+        }
+        if err := rows.Close(); err != nil {
+            _err = {{if $.WrapErrors}}fmt.Errorf("query {{.MethodName}}: %w", err){{else}}err{{end}}
+            return
+        }
+        if err := rows.Err(); err != nil {
+            _err = {{if $.WrapErrors}}fmt.Errorf("query {{.MethodName}}: %w", err){{else}}err{{end}}
+        }
+    }, func() error { return _err }
+}
+{{end}}
+
 {{if eq .Cmd ":exec"}}
 {{range .Comments}}//{{.}}
 {{end -}}
@@ -125,7 +164,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
 {{end}}
 
 {{define "queryCodeStdExec"}}
-    {{- if .Arg.HasSqlcSlices }}
+    {{- if .Arg.HasSqlcSlices -}}
         query := {{.ConstantName}}
         var queryParams []any
         {{- if .Arg.Struct }}

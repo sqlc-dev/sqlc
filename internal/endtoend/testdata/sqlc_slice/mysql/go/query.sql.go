@@ -8,6 +8,8 @@ package querytest
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"iter"
 	"strings"
 
 	"github.com/sqlc-dev/sqlc-testdata/mysql"
@@ -132,6 +134,66 @@ func (q *Queries) FuncParamIdent(ctx context.Context, arg FuncParamIdentParams) 
 		return nil, err
 	}
 	return items, nil
+}
+
+const funcParamIdentIter = `-- name: FuncParamIdentIter :iter
+SELECT name FROM foo
+WHERE name = ?
+  AND id IN (/*SLICE:favourites*/?)
+`
+
+type FuncParamIdentIterParams struct {
+	Slug       string
+	Favourites []int32
+}
+
+// FuncParamIdentIter returns a single-use iterator. The query runs when the
+// iterator is ranged over, and the returned func reports its error
+// after the loop.
+func (q *Queries) FuncParamIdentIter(ctx context.Context, arg FuncParamIdentIterParams) (iter.Seq[string], func() error) {
+	var _err error
+	var _used bool
+	return func(_yield func(string) bool) {
+		if _used {
+			_err = errors.New("query FuncParamIdentIter: iterator already used")
+			return
+		}
+		_used = true
+		query := funcParamIdentIter
+		var queryParams []any
+		queryParams = append(queryParams, arg.Slug)
+		if len(arg.Favourites) > 0 {
+			for _, v := range arg.Favourites {
+				queryParams = append(queryParams, v)
+			}
+			query = strings.Replace(query, "/*SLICE:favourites*/?", strings.Repeat(",?", len(arg.Favourites))[1:], 1)
+		} else {
+			query = strings.Replace(query, "/*SLICE:favourites*/?", "NULL", 1)
+		}
+		rows, err := q.db.QueryContext(ctx, query, queryParams...)
+		if err != nil {
+			_err = err
+			return
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var name string
+			if err := rows.Scan(&name); err != nil {
+				_err = err
+				return
+			}
+			if !_yield(name) {
+				break
+			}
+		}
+		if err := rows.Close(); err != nil {
+			_err = err
+			return
+		}
+		if err := rows.Err(); err != nil {
+			_err = err
+		}
+	}, func() error { return _err }
 }
 
 const funcParamSoloArg = `-- name: FuncParamSoloArg :many

@@ -7,6 +7,8 @@ package querytest
 
 import (
 	"context"
+	"errors"
+	"iter"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -42,6 +44,47 @@ func (q *Queries) ExecRowFoo(ctx context.Context, db DBTX) (int64, error) {
 		return 0, err
 	}
 	return result.RowsAffected(), nil
+}
+
+const iterFoo = `-- name: IterFoo :iter
+SELECT bar FROM foo
+`
+
+// This function returns an iterator over Foos
+//
+// IterFoo returns a single-use iterator. The query runs when the
+// iterator is ranged over, and the returned func reports its error
+// after the loop.
+func (q *Queries) IterFoo(ctx context.Context, db DBTX) (iter.Seq[pgtype.Text], func() error) {
+	var _err error
+	var _used bool
+	return func(_yield func(pgtype.Text) bool) {
+		if _used {
+			_err = errors.New("query IterFoo: iterator already used")
+			return
+		}
+		_used = true
+		rows, err := db.Query(ctx, iterFoo)
+		if err != nil {
+			_err = err
+			return
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var bar pgtype.Text
+			if err := rows.Scan(&bar); err != nil {
+				_err = err
+				return
+			}
+			if !_yield(bar) {
+				break
+			}
+		}
+		rows.Close()
+		if err := rows.Err(); err != nil {
+			_err = err
+		}
+	}, func() error { return _err }
 }
 
 const manyFoo = `-- name: ManyFoo :many

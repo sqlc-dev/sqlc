@@ -206,6 +206,9 @@ func buildImports(options *opts.Options, engine string, queries []Query, uses fu
 				std["database/sql"] = struct{}{}
 			}
 		}
+		if q.Cmd == metadata.CmdIter {
+			std["iter"] = struct{}{}
+		}
 	}
 
 	for typeName, pkg := range stdlibTypes {
@@ -443,6 +446,13 @@ func (i *importer) queryImports(filename string) fileImports {
 	for _, q := range gq {
 		if q.Arg.NamedArgs && !q.Arg.isEmpty() {
 			std["database/sql"] = struct{}{}
+		}
+	}
+
+	// An :iter method reports a second range over its iterator as an error.
+	for _, q := range gq {
+		if q.Cmd == metadata.CmdIter {
+			std["errors"] = struct{}{}
 		}
 	}
 
