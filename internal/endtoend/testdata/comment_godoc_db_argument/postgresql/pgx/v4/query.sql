@@ -2,6 +2,10 @@
 -- This function returns a list of Foos
 SELECT * FROM foo;
 
+-- name: IterFoo :iter
+-- This function returns an iterator over Foos
+SELECT * FROM foo;
+
 -- name: OneFoo :one
 -- This function returns one Foo
 SELECT * FROM foo;

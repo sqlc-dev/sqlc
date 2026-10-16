@@ -99,7 +99,7 @@ func ParseQueryNameAndType(t string, commentStyle CommentSyntax) (string, string
 			part = part[:len(part)-1] // removes the trailing "*/" element
 		}
 		if len(part) == 3 {
-			return "", "", fmt.Errorf("missing query type [':one', ':many', ':exec', ':execrows', ':execlastid', ':execresult', ':copyfrom', 'batchexec', 'batchmany', 'batchone']: %s", line)
+			return "", "", fmt.Errorf("missing query type [':one', ':many', ':iter', ':exec', ':execrows', ':execlastid', ':execresult', ':copyfrom', 'batchexec', 'batchmany', 'batchone']: %s", line)
 		}
 		if len(part) != 4 {
 			return "", "", fmt.Errorf("invalid query comment: %s", line)

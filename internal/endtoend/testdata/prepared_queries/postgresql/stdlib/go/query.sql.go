@@ -8,6 +8,8 @@ package querytest
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"iter"
 )
 
 const deleteUsersByName = `-- name: DeleteUsersByName :execrows
@@ -69,6 +71,53 @@ type InsertNewUserWithResultParams struct {
 
 func (q *Queries) InsertNewUserWithResult(ctx context.Context, arg InsertNewUserWithResultParams) (sql.Result, error) {
 	return q.exec(ctx, q.insertNewUserWithResultStmt, insertNewUserWithResult, arg.FirstName, arg.LastName)
+}
+
+const iterUsers = `-- name: IterUsers :iter
+SELECT first_name, last_name FROM users
+`
+
+type IterUsersRow struct {
+	FirstName string
+	LastName  sql.NullString
+}
+
+// IterUsers returns a single-use iterator. The query runs when the
+// iterator is ranged over, and the returned func reports its error
+// after the loop.
+func (q *Queries) IterUsers(ctx context.Context) (iter.Seq[IterUsersRow], func() error) {
+	var _err error
+	var _used bool
+	return func(_yield func(IterUsersRow) bool) {
+		if _used {
+			_err = errors.New("query IterUsers: iterator already used")
+			return
+		}
+		_used = true
+		rows, err := q.query(ctx, q.iterUsersStmt, iterUsers)
+		if err != nil {
+			_err = err
+			return
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var i IterUsersRow
+			if err := rows.Scan(&i.FirstName, &i.LastName); err != nil {
+				_err = err
+				return
+			}
+			if !_yield(i) {
+				break
+			}
+		}
+		if err := rows.Close(); err != nil {
+			_err = err
+			return
+		}
+		if err := rows.Err(); err != nil {
+			_err = err
+		}
+	}, func() error { return _err }
 }
 
 const listUsers = `-- name: ListUsers :many

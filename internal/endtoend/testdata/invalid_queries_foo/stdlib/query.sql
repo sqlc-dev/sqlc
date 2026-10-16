@@ -15,3 +15,6 @@ UPDATE foo SET id = $2 WHERE id = $1;
 
 -- name: InsertFoo :one
 INSERT INTO foo (id) VALUES ($1);
+
+-- name: DeleteFooIter :iter
+DELETE FROM foo WHERE id = $1;
