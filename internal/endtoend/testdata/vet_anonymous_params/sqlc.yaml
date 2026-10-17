@@ -1,0 +1,16 @@
+version: 2
+sql:
+  - schema: "schema.sql"
+    queries: "query.sql"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "querytest"
+        out: "db"
+    rules:
+      - no-anonymous-params
+rules:
+  - name: no-anonymous-params
+    message: "query has an anonymous parameter; name it with sqlc.arg() or @name"
+    rule: |
+      query.params.exists(p, p.name == "")
