@@ -7,13 +7,20 @@ func convertRowsFor{{.MethodName}}(w *io.PipeWriter, {{.Arg.SlicePair}}) {
 	e := mysqltsv.NewEncoder(w, {{ len .Arg.CopyFromMySQLFields }}, nil)
 	for _, row := range {{.Arg.Name}} {
 {{- with $arg := .Arg }}
+{{- $enums := $.Enums }}
 {{- range $arg.CopyFromMySQLFields}}
-{{- if eq .Type "string"}}
-	e.AppendString({{if $arg.Struct}}row.{{.Name}}{{else}}row{{end}})
-{{- else if or (eq .Type "[]byte") (eq .Type "json.RawMessage")}}
-	e.AppendBytes({{if $arg.Struct}}row.{{.Name}}{{else}}row{{end}})
+{{- $expr := "row" }}{{ if $arg.Struct }}{{ $expr = print "row." .Name }}{{ end }}
+{{- $fieldType := .Type }}
+{{- $isStringEnum := false }}
+{{- range $enums }}{{ if or (eq $fieldType .Name) (hasSuffix $fieldType (print "." .Name)) }}{{ $isStringEnum = true }}{{ end }}{{ end }}
+{{- if eq $fieldType "string"}}
+	e.AppendString({{$expr}})
+{{- else if or (eq $fieldType "[]byte") (eq $fieldType "json.RawMessage")}}
+	e.AppendBytes({{$expr}})
+{{- else if $isStringEnum }}
+	e.AppendString(string({{$expr}}))
 {{- else}}
-	e.AppendValue({{if $arg.Struct}}row.{{.Name}}{{else}}row{{end}})
+	e.AppendValue({{$expr}})
 {{- end}}
 {{- end}}
 {{- end}}
