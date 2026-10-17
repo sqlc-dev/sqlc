@@ -28,7 +28,9 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 	// TODO: Deprecate defaultTable
 	var defaultTable *ast.TableName
 	var tables []*ast.TableName
+	var ctes []*ast.TableName
 
+	typeMapCte := map[string]map[string]map[string]*catalog.Column{}
 	typeMap := map[string]map[string]map[string]*catalog.Column{}
 	indexTable := func(table catalog.Table) error {
 		tables = append(tables, table.Rel)
@@ -67,9 +69,35 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				continue
 			}
 			// If the table name doesn't exist, first check if it's a CTE
-			if _, qcerr := qc.GetTable(fqn); qcerr != nil {
+			cte, qcerr := qc.GetTable(fqn)
+			if qcerr != nil {
 				return nil, err
 			}
+			// duplicated logic from indexTable()
+			schema := fqn.Schema
+			if schema == "" {
+				schema = c.DefaultSchema
+			}
+			if _, exists := typeMapCte[schema]; !exists {
+				typeMapCte[schema] = map[string]map[string]*catalog.Column{}
+			}
+			typeMapCte[schema][fqn.Name] = map[string]*catalog.Column{}
+			for _, col := range cte.Columns {
+				cc := &catalog.Column{
+					Name:       col.Name,
+					IsNotNull:  col.NotNull,
+					IsUnsigned: col.Unsigned,
+					IsArray:    col.IsArray,
+					ArrayDims:  col.ArrayDims,
+					Comment:    col.Comment,
+					Length:     col.Length,
+				}
+				if col.Type != nil {
+					cc.Type = *col.Type
+				}
+				typeMapCte[schema][fqn.Name][col.Name] = cc
+			}
+			ctes = append(ctes, fqn)
 			continue
 		}
 		err = indexTable(table)
@@ -195,7 +223,61 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					panic("too many field items: " + strconv.Itoa(len(items)))
 				}
 
-				search := tables
+				search := ctes
+				if alias != "" {
+				    if _, ok := aliasMap[alias]; ok {
+				        // alias maps to a real table, skip CTE search entirely
+				        search = []*ast.TableName{}
+				    }
+				}
+
+				// resolve using ctes first
+				var found int
+				for _, table := range search {
+					schema := table.Schema
+					if schema == "" {
+						schema = c.DefaultSchema
+					}
+					if c, ok := typeMapCte[schema][table.Name][key]; ok {
+						found += 1
+						if ref.name != "" {
+							key = ref.name
+						}
+
+						defaultP := named.NewInferredParam(key, c.IsNotNull)
+						p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
+						a = append(a, Parameter{
+							Number: ref.ref.Number,
+							Column: &Column{
+								Name:         p.Name(),
+								OriginalName: c.Name,
+								DataType:     dataType(&c.Type),
+								NotNull:      p.NotNull(),
+								Unsigned:     c.IsUnsigned,
+								IsArray:      c.IsArray,
+								ArrayDims:    c.ArrayDims,
+								Length:       c.Length,
+								Table:        table,
+								IsNamedParam: isNamed,
+								IsSqlcSlice:  p.IsSqlcSlice(),
+							},
+						})
+					}
+				}
+
+				if found == 1 {
+					continue
+				}
+				if found > 1 {
+					return nil, &sqlerr.Error{
+						Code:     "42703",
+						Message:  fmt.Sprintf("column reference %q is ambiguous", key),
+						Location: node.Location,
+					}
+				}
+
+
+				search = tables
 				if alias != "" {
 					if original, ok := aliasMap[alias]; ok {
 						search = []*ast.TableName{original}
@@ -217,7 +299,9 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					}
 				}
 
-				var found int
+
+				// resolve using regular tables
+				found = 0
 				for _, table := range search {
 					schema := table.Schema
 					if schema == "" {
@@ -286,6 +370,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					schema = c.DefaultSchema
 				}
 
+				// should we use also look in CTEs?
 				if c, ok := typeMap[schema][table.Name][key]; ok {
 					defaultP := named.NewInferredParam(key, c.IsNotNull)
 					p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
@@ -475,6 +560,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				schema = c.DefaultSchema
 			}
 
+			// should we use also look in CTEs?
 			tableMap, ok := typeMap[schema][rel]
 			if !ok {
 				return nil, sqlerr.RelationNotFound(rel)
@@ -583,6 +669,7 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 					}
 				}
 
+				// should we use also look in CTEs?
 				for _, table := range search {
 					schema := table.Schema
 					if schema == "" {
