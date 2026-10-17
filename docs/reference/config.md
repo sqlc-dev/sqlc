@@ -179,6 +179,8 @@ The `gen` mapping supports the following keys:
   - `camel` for camelCase, `pascal` for PascalCase, `snake` for snake_case or `none` to use the column name in the DB. Defaults to `none`.
 - `omit_unused_structs`:
   - If `true`, sqlc won't generate table and enum structs that aren't used in queries for a given package. Defaults to `false`.
+- `omit_catalog_schema`:
+  - If `true`, sqlc won't generate structs for tables and enums in the `pg_catalog` and `information_schema` catalog schemas. Set to `false` to generate models from these schemas. Defaults to `true`.
 - `output_batch_file_name`:
   - Customize the name of the batch file. Defaults to `batch.go`.
 - `output_db_file_name`:
@@ -396,6 +398,7 @@ packages:
     build_tags: "some_tag"
     json_tags_case_style: "camel"
     omit_unused_structs: false
+    omit_catalog_schema: true
     output_batch_file_name: "batch.go"
     output_db_file_name: "db.go"
     output_models_file_name: "models.go"
@@ -458,6 +461,8 @@ Each mapping in the `packages` collection has the following keys:
   - `camel` for camelCase, `pascal` for PascalCase, `snake` for snake_case or `none` to use the column name in the DB. Defaults to `none`.
 - `omit_unused_structs`:
   - If `true`, sqlc won't generate table and enum structs that aren't used in queries for a given package. Defaults to `false`.
+- `omit_catalog_schema`:
+  - If `true`, sqlc won't generate structs for tables and enums in the `pg_catalog` and `information_schema` catalog schemas. Set to `false` to generate models from these schemas. Defaults to `true`.
 - `output_batch_file_name`:
   - Customize the name of the batch file. Defaults to `batch.go`.
 - `output_db_file_name`:

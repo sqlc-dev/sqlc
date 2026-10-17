@@ -16,7 +16,7 @@ import (
 func buildEnums(req *plugin.GenerateRequest, options *opts.Options) []Enum {
 	var enums []Enum
 	for _, schema := range req.Catalog.Schemas {
-		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
+		if options.OmitCatalogSchemaEnabled() && (schema.Name == "pg_catalog" || schema.Name == "information_schema") {
 			continue
 		}
 		for _, enum := range schema.Enums {
@@ -63,7 +63,7 @@ func buildEnums(req *plugin.GenerateRequest, options *opts.Options) []Enum {
 func buildStructs(req *plugin.GenerateRequest, options *opts.Options) []Struct {
 	var structs []Struct
 	for _, schema := range req.Catalog.Schemas {
-		if schema.Name == "pg_catalog" || schema.Name == "information_schema" {
+		if options.OmitCatalogSchemaEnabled() && (schema.Name == "pg_catalog" || schema.Name == "information_schema") {
 			continue
 		}
 		for _, table := range schema.Tables {
