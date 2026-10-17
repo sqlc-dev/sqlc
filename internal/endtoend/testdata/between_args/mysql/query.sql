@@ -17,3 +17,9 @@ WHERE   p.price BETWEEN ? AND ?;
 SELECT  *
 FROM    products
 WHERE   price BETWEEN sqlc.arg(min_price) AND sqlc.arg(max_price);
+
+-- name: GetBetweenPricesTableWithCTE :many
+WITH cte AS (SELECT id FROM products WHERE products.price BETWEEN ? AND ?)
+SELECT * FROM products
+INNER JOIN cte ON products.id = cte.id
+ORDER BY name;
