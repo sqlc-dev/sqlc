@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
@@ -75,6 +76,35 @@ func ConvertColumn(rel *ast.TableName, c *catalog.Column) *Column {
 		Type:      &c.Type,
 		Length:    c.Length,
 	}
+}
+
+func RevertConvertColumn(c *Column) *catalog.Column {
+	out := &catalog.Column{
+		Name:       c.Name,
+		IsNotNull:  c.NotNull,
+		IsUnsigned: c.Unsigned,
+		IsArray:    c.IsArray,
+		ArrayDims:  c.ArrayDims,
+		Length:     c.Length,
+	}
+	if c.Type != nil {
+		out.Type = *c.Type
+	}
+	dataTypes := strings.Split(c.DataType, ".")
+	if len(dataTypes) == 1 {
+		out.Type.Name = dataTypes[0]
+	} else if len(dataTypes) == 2 {
+		out.Type.Schema = dataTypes[0]
+		out.Type.Name = dataTypes[1]
+	}
+	return out
+}
+
+func RevertConvertColumns(columns []*Column) (out []*catalog.Column) {
+	for i := range columns {
+		out = append(out, RevertConvertColumn(columns[i]))
+	}
+	return
 }
 
 func (qc QueryCatalog) GetTable(rel *ast.TableName) (*Table, error) {
