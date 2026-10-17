@@ -21,7 +21,7 @@ sql:
   queries: "postgresql/query.sql"
   engine: "postgresql"
   gen:
-    go: 
+    go:
       package: "authors"
       out: "postgresql"
       rename:
@@ -115,6 +115,28 @@ type Publisher struct {
 	Name string
 }
 ```
+
+## Parameter Structure Names
+
+It is possible to rename the arguments a generated function would use.
+For example, if you had a generated function called `FindWriter`
+which used a generated name of `FindWriterParams`, you can choose to rename
+this:
+
+```yaml
+version: "2"
+sql:
+  - engine: postgresql
+    queries: query.sql
+    schema: query.sql
+overrides:
+  go:
+    rename:
+      FindWriterParams: SomeOtherNameParams
+```
+
+The target name must be unique, and even if multiple structures would
+have the same fields, there will be a conflict.
 
 ## Limitations
 
