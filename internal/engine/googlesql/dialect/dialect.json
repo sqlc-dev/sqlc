@@ -11,5 +11,6 @@
   "comparison_categories": "BNSDTU",
   "arithmetic": ["+", "-", "*", "/"],
   "arithmetic_categories": "N",
-  "idents": ["max"]
+  "idents": ["max"],
+  "propagate_nullable": true
 }

@@ -1,0 +1,250 @@
+[
+  {
+    "name": "Strings",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "len",
+        "type": {
+          "name": "int64"
+        }
+      },
+      {
+        "name": "upper_name",
+        "type": {
+          "name": "string"
+        }
+      },
+      {
+        "name": "shout",
+        "type": {
+          "name": "string"
+        }
+      },
+      {
+        "name": "parts",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "string"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "starts",
+        "type": {
+          "name": "bool"
+        }
+      },
+      {
+        "name": "digest",
+        "type": {
+          "name": "string"
+        }
+      },
+      {
+        "name": "fingerprint",
+        "type": {
+          "name": "int64"
+        }
+      },
+      {
+        "name": "replaced",
+        "type": {
+          "name": "string"
+        }
+      },
+      {
+        "name": "b64",
+        "type": {
+          "name": "string"
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Numbers",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "abs_id",
+        "type": {
+          "name": "int64"
+        }
+      },
+      {
+        "name": "half",
+        "type": {
+          "name": "float64"
+        }
+      },
+      {
+        "name": "scaled",
+        "type": {
+          "name": "numeric"
+        }
+      },
+      {
+        "name": "shifted",
+        "type": {
+          "name": "float64"
+        }
+      },
+      {
+        "name": "rounded",
+        "type": {
+          "name": "float64"
+        }
+      },
+      {
+        "name": "bucket",
+        "type": {
+          "name": "int64"
+        }
+      },
+      {
+        "name": "halved",
+        "type": {
+          "name": "int64"
+        }
+      },
+      {
+        "name": "distance",
+        "type": {
+          "name": "float64"
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Times",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "next_day",
+        "type": {
+          "name": "date"
+        }
+      },
+      {
+        "name": "days",
+        "type": {
+          "name": "int64"
+        }
+      },
+      {
+        "name": "hour",
+        "type": {
+          "name": "timestamp"
+        }
+      },
+      {
+        "name": "year",
+        "type": {
+          "name": "int64"
+        }
+      },
+      {
+        "name": "day",
+        "type": {
+          "name": "date"
+        }
+      },
+      {
+        "name": "epoch",
+        "type": {
+          "name": "int64"
+        }
+      },
+      {
+        "name": "formatted",
+        "type": {
+          "name": "string"
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Collections",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "n",
+        "type": {
+          "name": "int64"
+        }
+      },
+      {
+        "name": "reversed",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "int64"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "series",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "int64"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "as_json",
+        "type": {
+          "name": "json"
+        }
+      },
+      {
+        "name": "json_kind",
+        "type": {
+          "name": "string"
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Counts",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "total",
+        "type": {
+          "name": "int64"
+        }
+      },
+      {
+        "name": "named",
+        "type": {
+          "name": "int64"
+        }
+      },
+      {
+        "name": "high",
+        "type": {
+          "name": "int64"
+        }
+      }
+    ],
+    "params": []
+  }
+]

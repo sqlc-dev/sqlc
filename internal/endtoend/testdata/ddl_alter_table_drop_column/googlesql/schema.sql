@@ -1,0 +1,6 @@
+CREATE TABLE venues (
+  id INT64 NOT NULL,
+  name STRING(MAX),
+  slug STRING(MAX),
+) PRIMARY KEY (id);
+ALTER TABLE venues DROP COLUMN slug;

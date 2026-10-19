@@ -100,19 +100,28 @@ func (a *analyzer) bindRangeFunction(rf *ast.RangeFunction) (scopeRel, error) {
 	}
 
 	// The arguments are typed against the scope built so far, which is what
-	// gives a placeholder passed to the function its type.
-	if _, err := a.typeFuncCall(call); err != nil {
+	// gives a placeholder passed to the function its type, and what
+	// resolves a polymorphic result: unnest of an array of strings yields
+	// strings.
+	t, err := a.typeFuncCall(call)
+	if err != nil {
 		return scopeRel{}, err
 	}
 
-	p := overloads[0]
-	rel := scopeRel{
-		alias: name,
-		cols:  []core.ClassColumn{{Name: name, TypeOID: p.ReturnTypeOID, NotNull: !p.ReturnNullable}},
-	}
+	// The relation's alias names its single column too, as "unnest(tags)
+	// AS tag" does.
+	colName := name
+	rel := scopeRel{alias: name}
 	if rf.Alias != nil && rf.Alias.Aliasname != nil && *rf.Alias.Aliasname != "" {
 		rel.alias = *rf.Alias.Aliasname
+		colName = rel.alias
 	}
+	col := core.ClassColumn{Name: colName, TypeOID: t.typeOID, Type: t.expr, NotNull: !t.nullable}
+	if t.typeOID == 0 && t.expr == nil {
+		p := overloads[0]
+		col.TypeOID, col.NotNull = p.ReturnTypeOID, !p.ReturnNullable
+	}
+	rel.cols = []core.ClassColumn{col}
 	return rel, nil
 }
 

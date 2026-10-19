@@ -291,7 +291,17 @@
         }
       },
       {
-        "name": "f"
+        "name": "f",
+        "type": {
+          "name": "array",
+          "args": [
+            {
+              "type": {
+                "name": "int64"
+              }
+            }
+          ]
+        }
       }
     ],
     "params": [
