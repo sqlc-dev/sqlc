@@ -67,8 +67,19 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				continue
 			}
 			// If the table name doesn't exist, first check if it's a CTE
-			if _, qcerr := qc.GetTable(fqn); qcerr != nil {
+			cteTable, qcerr := qc.GetTable(fqn)
+			if qcerr != nil {
 				return nil, err
+			}
+			err = indexTable(catalog.Table{
+				Rel:     cteTable.Rel,
+				Columns: RevertConvertColumns(cteTable.Columns),
+			})
+			if err != nil {
+				return nil, err
+			}
+			if rv.Alias != nil {
+				aliasMap[*rv.Alias.Aliasname] = fqn
 			}
 			continue
 		}
