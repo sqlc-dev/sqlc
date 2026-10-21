@@ -1,0 +1,1 @@
+CREATE TABLE users (name TEXT NOT NULL, age INT NOT NULL);
