@@ -17,3 +17,7 @@ RETURNING *;
 -- name: DeleteAuthor :exec
 DELETE FROM authors
 WHERE id = $1;
+
+-- name: IterAuthors :iter
+SELECT * FROM authors
+ORDER BY name;

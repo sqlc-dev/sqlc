@@ -8,6 +8,8 @@ package authors
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"iter"
 )
 
 const createAuthor = `-- name: CreateAuthor :execresult
@@ -47,6 +49,49 @@ func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
+}
+
+const iterAuthors = `-- name: IterAuthors :iter
+SELECT id, name, bio FROM authors
+ORDER BY name
+`
+
+// IterAuthors returns a single-use iterator. The query runs when the
+// iterator is ranged over, and the returned func reports its error
+// after the loop.
+func (q *Queries) IterAuthors(ctx context.Context) (iter.Seq[Author], func() error) {
+	var _err error
+	var _used bool
+	return func(_yield func(Author) bool) {
+		if _used {
+			_err = errors.New("query IterAuthors: iterator already used")
+			return
+		}
+		_used = true
+		rows, err := q.db.QueryContext(ctx, iterAuthors)
+		if err != nil {
+			_err = err
+			return
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var i Author
+			if err := rows.Scan(&i.ID, &i.Name, &i.Bio); err != nil {
+				_err = err
+				return
+			}
+			if !_yield(i) {
+				break
+			}
+		}
+		if err := rows.Close(); err != nil {
+			_err = err
+			return
+		}
+		if err := rows.Err(); err != nil {
+			_err = err
+		}
+	}, func() error { return _err }
 }
 
 const listAuthors = `-- name: ListAuthors :many

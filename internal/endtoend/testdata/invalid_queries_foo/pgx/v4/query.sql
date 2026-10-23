@@ -18,3 +18,6 @@ INSERT INTO foo (id) VALUES ($1);
 
 -- name: InsertFoo :batchone
 INSERT INTO foo (id) VALUES ($1);
+
+-- name: DeleteFooIter :iter
+DELETE FROM foo WHERE id = $1;

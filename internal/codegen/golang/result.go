@@ -205,6 +205,16 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 		}
 
 		comments := query.Comments
+		if query.Cmd == metadata.CmdIter {
+			if len(comments) > 0 {
+				comments = append(comments, "")
+			}
+			comments = append(comments,
+				" "+query.Name+" returns a single-use iterator. The query runs when the",
+				" iterator is ranged over, and the returned func reports its error",
+				" after the loop.",
+			)
+		}
 		if options.EmitSqlAsComment {
 			if len(comments) == 0 {
 				comments = append(comments, query.Name)
@@ -370,6 +380,7 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 var cmdReturnsData = map[string]struct{}{
 	metadata.CmdBatchMany: {},
 	metadata.CmdBatchOne:  {},
+	metadata.CmdIter:      {},
 	metadata.CmdMany:      {},
 	metadata.CmdOne:       {},
 }

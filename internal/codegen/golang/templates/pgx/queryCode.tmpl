@@ -79,6 +79,42 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.
 }
 {{end}}
 
+{{if eq .Cmd ":iter"}}
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{if $.EmitMethodsWithDBArgument}}db DBTX, {{end}}{{.Arg.Pair}}) (iter.Seq[{{.Ret.DefineType}}], func() error) {
+	var _err error
+	var _used bool
+	return func(_yield func({{.Ret.DefineType}}) bool) {
+		if _used {
+			_err = errors.New("query {{.MethodName}}: iterator already used")
+			return
+		}
+		_used = true
+		rows, err := {{if $.EmitMethodsWithDBArgument}}db{{else}}q.db{{end}}.Query(ctx, {{.ConstantName}}, {{.Arg.Params}})
+		if err != nil {
+			_err = {{if $.WrapErrors}}fmt.Errorf("query {{.MethodName}}: %w", err){{else}}err{{end}}
+			return
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var {{.Ret.Name}} {{.Ret.Type}}
+			if err := rows.Scan({{.Ret.Scan}}); err != nil {
+				_err = {{if $.WrapErrors}}fmt.Errorf("query {{.MethodName}}: %w", err){{else}}err{{end}}
+				return
+			}
+			if !_yield({{.Ret.ReturnName}}) {
+				break
+			}
+		}
+		rows.Close()
+		if err := rows.Err(); err != nil {
+			_err = {{if $.WrapErrors}}fmt.Errorf("query {{.MethodName}}: %w", err){{else}}err{{end}}
+		}
+	}, func() error { return _err }
+}
+{{end}}
+
 {{if eq .Cmd ":exec"}}
 {{range .Comments}}//{{.}}
 {{end -}}

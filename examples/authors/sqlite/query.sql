@@ -16,3 +16,7 @@ INSERT INTO authors (
 /* name: DeleteAuthor :exec */
 DELETE FROM authors
 WHERE id = ?;
+
+/* name: IterAuthors :iter */
+SELECT * FROM authors
+ORDER BY name;

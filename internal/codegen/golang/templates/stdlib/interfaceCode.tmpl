@@ -20,6 +20,11 @@
             {{end -}}
             {{.MethodName}}(ctx context.Context, {{.Arg.Pair}}) ([]{{.Ret.DefineType}}, error)
         {{- end}}
+        {{- if eq .Cmd ":iter" }}
+            {{range .Comments}}//{{.}}
+            {{end -}}
+            {{.MethodName}}(ctx context.Context, {{if $dbtxParam}}db DBTX, {{end}}{{.Arg.Pair}}) (iter.Seq[{{.Ret.DefineType}}], func() error)
+        {{- end}}
         {{- if and (eq .Cmd ":exec") ($dbtxParam) }}
             {{range .Comments}}//{{.}}
             {{end -}}
