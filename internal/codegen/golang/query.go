@@ -72,7 +72,8 @@ func (v QueryValue) Pairs() []Argument {
 	}
 	if !v.EmitStruct() && v.IsStruct() {
 		var out []Argument
-		for _, f := range v.Struct.Fields {
+		// A named parameter used more than once is one field, so one argument.
+		for _, f := range v.UniqueFields() {
 			out = append(out, Argument{
 				Name: escape(toLowerCase(f.Name)),
 				Type: f.Type,
