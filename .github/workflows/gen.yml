@@ -176,9 +176,6 @@ jobs:
       with:
         go-version-file: internal/goldeneye/go.mod
         check-latest: true
-    # The current build of DuckDB's v2.0 preview channel, until 2.0 is
-    # released: a later build than the dialect was generated from shows up
-    # as a difference.
     - run: go run ./cmd/goldeneye install duckdb
       working-directory: internal/goldeneye
     - run: go run ./cmd/goldeneye generate duckdb

@@ -5,11 +5,12 @@
 // DuckDB analyze cases under internal/endtoend/testdata against the same
 // CLI.
 //
-// The CLI is a DuckDB 2.0 build, the release darkwing is pinned against,
-// which has no release to download yet: Install fetches the current build
-// of DuckDB's v2.0 preview channel into the user cache directory. The CLI
-// is located through the DUCKDB environment variable, then the cached
-// build, then "duckdb" on PATH.
+// The CLI is the DuckDB release pinned in DefaultVersion, the release
+// darkwing is pinned against, which Install downloads into the user cache
+// directory. The CLI is located through the DUCKDB environment variable,
+// then the cached release, then "duckdb" on PATH. Every invocation passes
+// -no-agent: the CLI turns on an agent mode, which prints a banner and
+// reports errors as JSON, whenever it sees a coding agent's environment.
 package duckdb
 
 import (
@@ -29,7 +30,7 @@ import (
 const Engine = "duckdb"
 
 // Locate finds the DuckDB CLI: the DUCKDB environment variable wins, then
-// the cached build of DefaultVersion, then "duckdb" on PATH.
+// the cached copy of DefaultVersion, then "duckdb" on PATH.
 func Locate() (string, error) {
 	if path := os.Getenv("DUCKDB"); path != "" {
 		return path, nil
@@ -48,7 +49,7 @@ func Locate() (string, error) {
 
 // Version reports the release a CLI is.
 func Version(ctx context.Context, binary string) (string, error) {
-	out, err := exec.CommandContext(ctx, binary, "--version").Output()
+	out, err := exec.CommandContext(ctx, binary, "-no-agent", "--version").Output()
 	if err != nil {
 		return "", fmt.Errorf("duckdb --version: %w", err)
 	}
@@ -58,7 +59,7 @@ func Version(ctx context.Context, binary string) (string, error) {
 // query runs a SQL statement against an in-memory database and decodes the
 // CLI's JSON output into rows.
 func query(ctx context.Context, binary, sql string, rows any) error {
-	cmd := exec.CommandContext(ctx, binary, "-json", ":memory:", "-c", sql)
+	cmd := exec.CommandContext(ctx, binary, "-no-agent", "-json", ":memory:", "-c", sql)
 	out, err := cmd.Output()
 	if err != nil {
 		if exit, ok := err.(*exec.ExitError); ok {

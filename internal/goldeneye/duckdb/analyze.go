@@ -195,7 +195,7 @@ func readAliases() (map[string]string, error) {
 // draws a plan. A statement that fails ends the script with DuckDB's own
 // error message.
 func (a *analyzer) run(ctx context.Context, script, mode string, withFixture bool) (string, error) {
-	args := []string{"-bail"}
+	args := []string{"-no-agent", "-bail"}
 	switch mode {
 	case "json":
 		args = append(args, "-json")

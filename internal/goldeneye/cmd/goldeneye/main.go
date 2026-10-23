@@ -6,7 +6,7 @@
 // Usage, from internal/goldeneye:
 //
 //	go run ./cmd/goldeneye install clickhouse   # download the pinned clickhouse binary
-//	go run ./cmd/goldeneye install duckdb       # download the current DuckDB 2.0 preview build
+//	go run ./cmd/goldeneye install duckdb       # download the pinned duckdb CLI
 //	go run ./cmd/goldeneye install sqlite       # build the pinned sqlite3 shells from source
 //	go run ./cmd/goldeneye generate [engine]    # rewrite the generated files from the database
 //	go run ./cmd/goldeneye check [engine]       # compare the committed files and analyze cases with the database
@@ -46,9 +46,8 @@ func main() {
 
 const usage = `usage:
   goldeneye install clickhouse|duckdb|sqlite [-version V]
-      put the pinned release of an engine into the user cache directory: clickhouse is
-      downloaded, duckdb is downloaded from its v2.0 preview channel, sqlite is built from
-      the downloaded amalgamation with cc or $CC
+      put the pinned release of an engine into the user cache directory: clickhouse and
+      duckdb are downloaded, sqlite is built from the downloaded amalgamation with cc or $CC
   goldeneye generate [engine]
       rewrite the generated dialect files from the database, for every available engine or one
   goldeneye check [engine]

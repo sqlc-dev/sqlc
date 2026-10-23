@@ -168,7 +168,7 @@ available skip.
 ```bash
 cd internal/goldeneye
 go run ./cmd/goldeneye install clickhouse   # download the pinned clickhouse binary once
-go run ./cmd/goldeneye install duckdb       # download the current DuckDB 2.0 preview build once
+go run ./cmd/goldeneye install duckdb       # download the pinned duckdb CLI once
 go run ./cmd/goldeneye install sqlite       # build the pinned sqlite3 shells once; needs a C compiler
 POSTGRESQL_SERVER_URI="postgres://postgres:postgres@127.0.0.1:5432/postgres?sslmode=disable" \
 MYSQL_SERVER_URI="root:mysecretpassword@tcp(127.0.0.1:3306)/mysql" \

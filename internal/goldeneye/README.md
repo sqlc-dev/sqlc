@@ -17,7 +17,7 @@ contract. Run it from this directory:
 
 ```bash
 go run ./cmd/goldeneye install clickhouse   # download the pinned clickhouse binary once
-go run ./cmd/goldeneye install duckdb       # download the current DuckDB 2.0 preview build once
+go run ./cmd/goldeneye install duckdb       # download the pinned duckdb CLI once
 go run ./cmd/goldeneye install sqlite       # build the pinned sqlite3 shells once; needs a C compiler
 go run ./cmd/goldeneye check                # check every engine whose database is available
 go run ./cmd/goldeneye check postgresql     # check one engine
@@ -66,17 +66,12 @@ the hand-written files alone, and the checks do not look at them.
 - **`duckdb`** reads the DuckDB CLI named by `DUCKDB`, or the one `install`
   put in the user cache directory, or `duckdb` on `PATH`: `types.jsonl`,
   `functions.jsonl` and `operators.jsonl` come from `duckdb_types()` and
-  `duckdb_functions()`. The CLI has to be a DuckDB 2.0 build, the release
-  darkwing is pinned against, which has no release to download yet: until
-  2.0 is out, `install` downloads the current build of DuckDB's v2.0
-  preview channel, `duckdb.DefaultVersion`, a rolling tarball per platform
-  under `artifacts.duckdb.org` with no per-build download and no checksum
-  to pin, so what a run logs is the version the CLI reports, and
-  `duckdb.GeneratedFrom` records the build the committed dialect came
-  from. A check against a later build reports what the later build added;
-  regenerate, and update `GeneratedFrom`, to move the dialect along. Once
-  2.0 is released, the installer should pin the release and its checksums
-  the way the clickhouse one does.
+  `duckdb_functions()`. The CLI has to be the DuckDB release pinned in
+  `duckdb.DefaultVersion`, the release darkwing is pinned against, since
+  every release adds functions and types. `install` downloads it once from
+  DuckDB's GitHub release into the user cache directory and checks it
+  against the SHA-256 listed in `duckdb/install.go`, the way the clickhouse
+  installer does.
 - **`clickhouse`** needs no server: `types.jsonl` comes from
   `system.data_type_families` of an ephemeral `clickhouse local` process,
   every family that is not an alias becoming a type carrying the spellings
