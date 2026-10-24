@@ -1,0 +1,23 @@
+[
+  {
+    "name": "ListItems",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "integer"
+        },
+        "table": "items"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "varchar"
+        },
+        "table": "items"
+      }
+    ],
+    "params": []
+  }
+]

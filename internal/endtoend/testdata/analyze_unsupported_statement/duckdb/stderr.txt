@@ -1,0 +1,1 @@
+Error: error parsing queries: query.sql:5:1: query ExportItems: statement is not supported by the duckdb engine
