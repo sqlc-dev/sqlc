@@ -1,0 +1,1 @@
+Error: error parsing queries: query.sql:2:41: sqlc.slice is not supported by this engine; bind a list parameter instead

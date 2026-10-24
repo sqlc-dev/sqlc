@@ -112,6 +112,13 @@ func (l *lexer) sqlcCall(start, afterSqlc int) (occurrence, int, bool) {
 	case "narg":
 		occ.kind = kindNarg
 	case "slice":
+		if l.d.NoSlice {
+			occ.err = &sqlerr.Error{
+				Message:  "sqlc.slice is not supported by this engine; bind a list parameter instead",
+				Location: start,
+			}
+			return occ, occ.end, true
+		}
 		occ.kind = kindSlice
 	case "embed":
 		occ.kind = kindEmbed

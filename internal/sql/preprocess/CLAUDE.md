@@ -20,6 +20,7 @@ Native placeholders by dialect:
 | postgresql | `$1` | sqlc syntax |
 | mysql | `?` | user variable, left alone |
 | sqlite | `?1` | sqlc syntax |
+| duckdb | `$1` | sqlc syntax; `sqlc.slice` is rejected |
 
 GoogleSQL and ClickHouse are deliberately absent. They handle their own
 parameter syntax, so `File` returns their source unchanged and sqlc syntax is

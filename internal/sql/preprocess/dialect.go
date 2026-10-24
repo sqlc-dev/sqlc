@@ -61,6 +61,12 @@ type Dialect struct {
 	// identifiers. It decides the case of a parameter named by a bare
 	// reference, e.g. sqlc.arg(FooBar).
 	FoldIdentifier bool
+
+	// NoSlice reports whether sqlc.slice is rejected. A dialect that numbers
+	// its parameters ($1) binds a list as one value, and the Go code that
+	// sqlc.slice generates only expands "?" placeholders, so it would bind
+	// the first element and return wrong rows without an error.
+	NoSlice bool
 }
 
 var dialects = map[config.Engine]Dialect{
@@ -87,6 +93,15 @@ var dialects = map[config.Engine]Dialect{
 		Question:  true,
 		Backtick:  true,
 		Backslash: true,
+	},
+	// DuckDB binds with $1 like PostgreSQL and accepts $$ ... $$ strings. A
+	// bare ? is left to the engine, as it was before DuckDB had an entry.
+	config.EngineDuckDB: {
+		Style:        StyleDollar,
+		AtSign:       true,
+		DollarQuote:  true,
+		DollarNumber: true,
+		NoSlice:      true,
 	},
 	// ClickHouse binds with an unnumbered ?, like MySQL, and its identifiers
 	// keep their case.
