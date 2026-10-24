@@ -105,6 +105,9 @@ func (a *analyzer) decorateSource(col *core.Column, attOID int64, tableAlias str
 
 // targetName picks the output name for a target. fields is the already
 // flattened field list when rt.Val is a column reference, and nil otherwise.
+// A target with no name returns "", so code generation names it by position
+// (column_1) as it does for the other engines. "?column?" is not a valid
+// identifier in the generated code.
 func targetName(rt *ast.ResTarget, fields []string) string {
 	if rt.Name != nil && *rt.Name != "" {
 		return *rt.Name
@@ -117,7 +120,7 @@ func targetName(rt *ast.ResTarget, fields []string) string {
 			return name
 		}
 	}
-	return "?column?"
+	return ""
 }
 
 func isStar(fields []string) bool {
