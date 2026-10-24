@@ -164,12 +164,28 @@ func (a *analyzer) typeColumnRef(c *ast.ColumnRef) (exprType, error) {
 	if err != nil {
 		return exprType{}, err
 	}
+	// Parts after relation.column name fields of a struct column.
+	var fields []string
+	if ok && len(parts) > 2 {
+		fields = parts[2:]
+	}
 	// A dotted name may be a column's own, as ClickHouse names the columns
 	// a Nested column stores as n.a.
 	if !ok && relation != "" {
 		rel, col, ok, err = a.resolveColumn("", relation+"."+column)
 		if err != nil {
 			return exprType{}, err
+		}
+	}
+	// Otherwise the first part may be a struct column and the rest its
+	// fields: info.label, when info is no relation in scope.
+	if !ok && relation != "" {
+		rel, col, ok, err = a.resolveColumn("", relation)
+		if err != nil {
+			return exprType{}, err
+		}
+		if ok {
+			fields = parts[1:]
 		}
 	}
 	if !ok {
@@ -183,7 +199,33 @@ func (a *analyzer) typeColumnRef(c *ast.ColumnRef) (exprType, error) {
 		}
 		return exprType{}, fmt.Errorf("unknown column %q", column)
 	}
-	return columnType(rel, col), nil
+	t := columnType(rel, col)
+	for _, field := range fields {
+		f, ok := a.structField(t, field)
+		if !ok {
+			return exprType{}, fmt.Errorf("unknown field %q of column %q", field, col.Name)
+		}
+		t = f
+	}
+	return t, nil
+}
+
+// structField is the type of a field of a struct-typed expression. A field
+// is never a column of a relation, so the result carries no source column,
+// and it is nullable because a struct field can hold NULL.
+func (a *analyzer) structField(t exprType, field string) (exprType, bool) {
+	e := a.exprOf(t)
+	if e == nil || e.Name != "struct" {
+		return exprType{}, false
+	}
+	for _, arg := range e.Args {
+		if arg.Type != nil && strings.EqualFold(arg.Label, field) {
+			out := a.lookupType(arg.Type)
+			out.nullable = true
+			return out, true
+		}
+	}
+	return exprType{}, false
 }
 
 func flattenFields(fields *ast.List) []string {
