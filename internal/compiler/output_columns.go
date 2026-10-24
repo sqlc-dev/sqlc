@@ -3,6 +3,7 @@ package compiler
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/config"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -349,11 +350,15 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 				if err != nil {
 					return nil, err
 				}
-				first := subcols[0]
+				first := *subcols[0]
 				if res.Name != nil {
 					first.Name = *res.Name
 				}
-				cols = append(cols, first)
+				// A scalar subquery that matches no row yields NULL
+				if !yieldsOneRow(n.Subselect) {
+					first.NotNull = false
+				}
+				cols = append(cols, &first)
 			default:
 				cols = append(cols, &Column{Name: name, DataType: "any", NotNull: false})
 			}
@@ -809,4 +814,53 @@ func findColumnForRef(ref *ast.ColumnRef, tables []*Table, targetList *ast.List)
 	}
 
 	return nil
+}
+
+// aggregates names the aggregate functions that return a row even when no row
+// matches, as count(*) does
+var aggregates = map[string]bool{
+	"count": true, "sum": true, "avg": true, "min": true, "max": true,
+	"bool_and": true, "bool_or": true, "every": true, "array_agg": true,
+	"string_agg": true, "json_agg": true, "jsonb_agg": true,
+	"json_object_agg": true, "jsonb_object_agg": true,
+}
+
+// yieldsOneRow reports whether a scalar subquery always yields exactly one row:
+// a SELECT with no FROM or WHERE, or one whose every column is an aggregate,
+// with no GROUP BY, HAVING, LIMIT, OFFSET or set operation.
+func yieldsOneRow(node ast.Node) bool {
+	sel, ok := node.(*ast.SelectStmt)
+	if !ok || sel.Op != ast.None || given(sel.LimitCount) || given(sel.LimitOffset) || given(sel.HavingClause) {
+		return false
+	}
+	if sel.GroupClause != nil && len(sel.GroupClause.Items) > 0 {
+		return false
+	}
+	if (sel.FromClause == nil || len(sel.FromClause.Items) == 0) && !given(sel.WhereClause) {
+		return true
+	}
+	if sel.TargetList == nil || len(sel.TargetList.Items) == 0 {
+		return false
+	}
+	for _, item := range sel.TargetList.Items {
+		res, ok := item.(*ast.ResTarget)
+		if !ok {
+			return false
+		}
+		call, ok := res.Val.(*ast.FuncCall)
+		if !ok || call.Func == nil || call.Over != nil || !aggregates[strings.ToLower(call.Func.Name)] {
+			return false
+		}
+	}
+	return true
+}
+
+// given reports whether a clause was written: the parser leaves one that wasn't
+// as nil or as a placeholder
+func given(n ast.Node) bool {
+	if n == nil {
+		return false
+	}
+	_, placeholder := n.(*ast.TODO)
+	return !placeholder
 }
