@@ -1,0 +1,8 @@
+CREATE TABLE t1 (
+    id UUID PRIMARY KEY
+);
+
+CREATE TABLE t2 (
+    id    UUID,
+    t1_id UUID REFERENCES t1(id) ON DELETE CASCADE
+);
