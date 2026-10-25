@@ -146,7 +146,12 @@ func (gt GoType) parse() (*ParsedGoType, error) {
 		o.BasicType = true
 	} else {
 		// assume the type lives in a Go package
-		if lastDot == -1 {
+		if lastDot == -1 || lastDot < lastSlash {
+			// Either no dot at all, or every dot is part of the import path
+			// (e.g. "github.com/foo/pkg/Type"). Without a dot separating
+			// package from type after the last slash, we cannot tell where
+			// the import path ends and the type name begins, and silently
+			// guessing produces a broken import like "github".
 			return nil, fmt.Errorf("Package override `go_type` specifier %q is not the proper format, expected 'package.type', e.g. 'github.com/segmentio/ksuid.KSUID'", input)
 		}
 		typename = input[lastSlash+1:]
