@@ -146,6 +146,9 @@
                                     "emit_sql_as_comment": {
                                         "type": "boolean"
                                     },
+                                    "emit_read_only_prepared": {
+                                        "type": "boolean"
+                                    },
                                     "build_tags": {
                                         "type": "string"
                                     },

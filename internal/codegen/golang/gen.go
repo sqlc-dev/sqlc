@@ -25,6 +25,7 @@ type tmplCtx struct {
 	Enums         []Enum
 	Structs       []Struct
 	GoQueries     []Query
+	GoReadQueries []Query
 	SqlcVersion   string
 
 	// TODO: Race conditions
@@ -39,6 +40,7 @@ type tmplCtx struct {
 	EmitMethodsWithDBArgument bool
 	EmitEnumValidMethod       bool
 	EmitAllEnumValues         bool
+	EmitReadOnlyPrepared      bool
 	UsesCopyFrom              bool
 	UsesBatch                 bool
 	OmitSqlcVersion           bool
@@ -187,6 +189,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		EmitMethodsWithDBArgument: options.EmitMethodsWithDbArgument,
 		EmitEnumValidMethod:       options.EmitEnumValidMethod,
 		EmitAllEnumValues:         options.EmitAllEnumValues,
+		EmitReadOnlyPrepared:      options.EmitReadOnlyPrepared,
 		UsesCopyFrom:              usesCopyFrom(queries),
 		UsesBatch:                 usesBatch(queries),
 		SQLDriver:                 parseDriver(options.SqlPackage),
@@ -252,6 +255,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		w := bufio.NewWriter(&b)
 		tctx.SourceName = name
 		tctx.GoQueries = replacedQueries
+		tctx.GoReadQueries = readOnly(replacedQueries)
 		err := tmpl.ExecuteTemplate(w, templateName, &tctx)
 		w.Flush()
 		if err != nil {
@@ -290,6 +294,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 	if options.OutputCopyfromFileName != "" {
 		copyfromFileName = options.OutputCopyfromFileName
 	}
+	readQueriesFileName := "read.go"
 
 	batchFileName := "batch.go"
 	if options.OutputBatchFileName != "" {
@@ -316,6 +321,11 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 	}
 	if tctx.UsesBatch {
 		if err := execute(batchFileName, "batchFile"); err != nil {
+			return nil, err
+		}
+	}
+	if tctx.EmitReadOnlyPrepared {
+		if err := execute(readQueriesFileName, "readQueriesFile"); err != nil {
 			return nil, err
 		}
 	}
@@ -427,4 +437,51 @@ func filterUnusedStructs(enums []Enum, structs []Struct, queries []Query, qualif
 	}
 
 	return keepEnums, keepStructs
+}
+
+// keywordFollowedBySpace reports whether kw appears in s followed by whitespace
+// (space, tab, or newline). A plain substring check on "KEYWORD " misses queries
+// formatted with a newline right after the keyword, e.g.:
+//
+//	SELECT
+//	    col1, col2
+//
+// which is a common style for wide column lists and must not be misclassified
+// as lacking a SELECT (or falsely matching UPDATE/INSERT/DELETE only when
+// followed by a space).
+func keywordFollowedBySpace(s, kw string) bool {
+	for {
+		idx := strings.Index(s, kw)
+		if idx == -1 {
+			return false
+		}
+		after := idx + len(kw)
+		if after < len(s) && (s[after] == ' ' || s[after] == '\t' || s[after] == '\n' || s[after] == '\r') {
+			return true
+		}
+		s = s[after:]
+	}
+}
+
+func readOnly(queries []Query) []Query {
+	var rq []Query
+	for _, q := range queries {
+		if !q.hasRetType() {
+			continue
+		}
+
+		qsql := strings.ToUpper(q.SQL)
+		if !keywordFollowedBySpace(qsql, "SELECT") {
+			continue
+		}
+		if keywordFollowedBySpace(qsql, "INSERT") ||
+			keywordFollowedBySpace(qsql, "UPDATE") ||
+			strings.Contains(qsql, "FOR UPDATE") ||
+			keywordFollowedBySpace(qsql, "DELETE") {
+			continue
+		}
+
+		rq = append(rq, q)
+	}
+	return rq
 }
