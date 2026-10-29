@@ -169,6 +169,8 @@ The `gen` mapping supports the following keys:
     that returns all valid enum values.
 - `emit_sql_as_comment`:
   - If true, emits the SQL statement as a code-block comment above the generated function, appending to any existing comments. Defaults to `false`.
+- `emit_read_only_prepared`:
+  - If true, also generate a `read.go` file with a `ReadQueries` type, created with `PrepareReadOnly`, that holds only the read-only queries: those that `SELECT` and do not `INSERT`, `UPDATE`, `DELETE` or `SELECT ... FOR UPDATE`. Prepare it on a connection whose database user can only read, such as a read replica, while `Prepare` keeps every query. Not supported for `pgx/v4` or `pgx/v5`, where no `read.go` is generated. Defaults to `false`.
 - `build_tags`:
   - If set, add a `//go:build <build_tags>` directive at the beginning of each generated Go file.
 - `initialisms`:
@@ -426,6 +428,8 @@ Each mapping in the `packages` collection has the following keys:
   - If true, add DB tags to generated structs. Defaults to `false`.
 - `emit_prepared_queries`:
   - If true, include support for prepared queries. Defaults to `false`.
+- `emit_read_only_prepared`:
+  - If true, also generate a `read.go` file with a `ReadQueries` type, created with `PrepareReadOnly`, that holds only the read-only queries: those that `SELECT` and do not `INSERT`, `UPDATE`, `DELETE` or `SELECT ... FOR UPDATE`. Prepare it on a connection whose database user can only read, such as a read replica, while `Prepare` keeps every query. Not supported for `pgx/v4` or `pgx/v5`, where no `read.go` is generated. Defaults to `false`.
 - `emit_interface`:
   - If true, output a `Querier` interface in the generated package. Defaults to `false`.
 - `emit_exact_table_names`:

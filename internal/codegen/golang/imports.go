@@ -102,6 +102,7 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 	if i.Options.OutputBatchFileName != "" {
 		batchFileName = i.Options.OutputBatchFileName
 	}
+	readQueriesFileName := "read.go"
 
 	switch filename {
 	case dbFileName:
@@ -114,6 +115,8 @@ func (i *importer) Imports(filename string) [][]ImportSpec {
 		return mergeImports(i.copyfromImports())
 	case batchFileName:
 		return mergeImports(i.batchImports())
+	case readQueriesFileName:
+		return mergeImports(i.readOnlyImports())
 	default:
 		return mergeImports(i.queryImports(filename))
 	}
@@ -360,10 +363,27 @@ func (i *importer) queryImports(filename string) fileImports {
 		}
 	}
 
-	std, pkg := buildImports(i.Options, i.Engine, gq, func(name string) bool {
+	return queryFileImports(i.Options, i.Engine, gq, anyNonCopyFrom, true)
+}
+
+// readOnlyImports computes the imports needed by read.go. Its boilerplate
+// (PrepareReadOnly/Close/query/queryRow) always needs the same baseline as
+// db.go (context, database/sql, fmt), plus whatever the read-only subset of
+// queries (see readOnly) additionally needs for its own Ret/Arg types - e.g.
+// "strings" for a query using sqlc.slice(). Reusing dbImports alone silently
+// misses that second part.
+func (i *importer) readOnlyImports() fileImports {
+	base := i.dbImports()
+	extra := queryFileImports(i.Options, i.Engine, readOnly(i.Queries), false, false)
+	merged := mergeImports(base, extra)
+	return fileImports{Std: merged[0], Dep: merged[1]}
+}
+
+func queryFileImports(options *opts.Options, engine string, gq []Query, anyNonCopyFrom bool, scanStructFields bool) fileImports {
+	std, pkg := buildImports(options, engine, gq, func(name string) bool {
 		for _, q := range gq {
 			if q.hasRetType() {
-				if q.Ret.EmitStruct() {
+				if scanStructFields && q.Ret.EmitStruct() {
 					for _, f := range q.Ret.Struct.Fields {
 						if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
 							return true
@@ -375,7 +395,7 @@ func (i *importer) queryImports(filename string) fileImports {
 				}
 			}
 			// Check the fields of the argument struct if it's emitted
-			if q.Arg.EmitStruct() {
+			if scanStructFields && q.Arg.EmitStruct() {
 				for _, f := range q.Arg.Struct.Fields {
 					if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
 						return true
@@ -392,6 +412,9 @@ func (i *importer) queryImports(filename string) fileImports {
 		return false
 	})
 
+	// lib/pq is needed whenever a query scans into or binds a slice with
+	// pq.Array, which happens in the method bodies whether or not this file
+	// declares the Arg/Ret structs, so it is not gated by scanStructFields.
 	sliceScan := func() bool {
 		for _, q := range gq {
 			if q.hasRetType() {
@@ -450,15 +473,15 @@ func (i *importer) queryImports(filename string) fileImports {
 		std["context"] = struct{}{}
 	}
 
-	sqlpkg := parseDriver(i.Options.SqlPackage)
+	sqlpkg := parseDriver(options.SqlPackage)
 	if sqlcSliceScan() && !sqlpkg.IsPGX() {
 		std["strings"] = struct{}{}
 	}
-	if sliceScan() && usesPqArrays(i.Engine, sqlpkg) {
+	if sliceScan() && usesPqArrays(engine, sqlpkg) {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 	}
 
-	if i.Options.WrapErrors {
+	if options.WrapErrors {
 		std["fmt"] = struct{}{}
 	}
 

@@ -1,0 +1,14 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "name": "querytest",
+      "path": "go",
+      "schema": "schema.sql",
+      "queries": "query.sql",
+      "engine": "mysql",
+      "emit_prepared_queries": true,
+      "emit_read_only_prepared": true
+    }
+  ]
+}
