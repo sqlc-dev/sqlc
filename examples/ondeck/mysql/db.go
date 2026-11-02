@@ -160,6 +160,86 @@ type Queries struct {
 	venueCountByCityStmt *sql.Stmt
 }
 
+func (q *Queries) PrepareCreateCity(ctx context.Context) error {
+	var err error
+	if q.createCityStmt, err = q.db.PrepareContext(ctx, createCity); err != nil {
+		return fmt.Errorf("error preparing query CreateCity: %w", err)
+	}
+	return nil
+}
+
+func (q *Queries) PrepareCreateVenue(ctx context.Context) error {
+	var err error
+	if q.createVenueStmt, err = q.db.PrepareContext(ctx, createVenue); err != nil {
+		return fmt.Errorf("error preparing query CreateVenue: %w", err)
+	}
+	return nil
+}
+
+func (q *Queries) PrepareDeleteVenue(ctx context.Context) error {
+	var err error
+	if q.deleteVenueStmt, err = q.db.PrepareContext(ctx, deleteVenue); err != nil {
+		return fmt.Errorf("error preparing query DeleteVenue: %w", err)
+	}
+	return nil
+}
+
+func (q *Queries) PrepareGetCity(ctx context.Context) error {
+	var err error
+	if q.getCityStmt, err = q.db.PrepareContext(ctx, getCity); err != nil {
+		return fmt.Errorf("error preparing query GetCity: %w", err)
+	}
+	return nil
+}
+
+func (q *Queries) PrepareGetVenue(ctx context.Context) error {
+	var err error
+	if q.getVenueStmt, err = q.db.PrepareContext(ctx, getVenue); err != nil {
+		return fmt.Errorf("error preparing query GetVenue: %w", err)
+	}
+	return nil
+}
+
+func (q *Queries) PrepareListCities(ctx context.Context) error {
+	var err error
+	if q.listCitiesStmt, err = q.db.PrepareContext(ctx, listCities); err != nil {
+		return fmt.Errorf("error preparing query ListCities: %w", err)
+	}
+	return nil
+}
+
+func (q *Queries) PrepareListVenues(ctx context.Context) error {
+	var err error
+	if q.listVenuesStmt, err = q.db.PrepareContext(ctx, listVenues); err != nil {
+		return fmt.Errorf("error preparing query ListVenues: %w", err)
+	}
+	return nil
+}
+
+func (q *Queries) PrepareUpdateCityName(ctx context.Context) error {
+	var err error
+	if q.updateCityNameStmt, err = q.db.PrepareContext(ctx, updateCityName); err != nil {
+		return fmt.Errorf("error preparing query UpdateCityName: %w", err)
+	}
+	return nil
+}
+
+func (q *Queries) PrepareUpdateVenueName(ctx context.Context) error {
+	var err error
+	if q.updateVenueNameStmt, err = q.db.PrepareContext(ctx, updateVenueName); err != nil {
+		return fmt.Errorf("error preparing query UpdateVenueName: %w", err)
+	}
+	return nil
+}
+
+func (q *Queries) PrepareVenueCountByCity(ctx context.Context) error {
+	var err error
+	if q.venueCountByCityStmt, err = q.db.PrepareContext(ctx, venueCountByCity); err != nil {
+		return fmt.Errorf("error preparing query VenueCountByCity: %w", err)
+	}
+	return nil
+}
+
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
 		db:                   tx,

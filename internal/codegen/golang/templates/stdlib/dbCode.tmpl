@@ -88,6 +88,18 @@ type Queries struct {
 	{{- end}}
 	{{- end}}
 }
+{{if .EmitPreparedQueries -}}
+{{range .GoQueries}}
+
+func (q *Queries) Prepare{{.MethodName}}(ctx context.Context) error {
+        var err error
+	if q.{{.FieldName}}, err = q.db.PrepareContext(ctx, {{.ConstantName}}); err != nil {
+		return fmt.Errorf("error preparing query {{.MethodName}}: %w", err)
+	}
+        return nil
+}
+{{- end}}
+{{- end}}
 
 {{if not .EmitMethodsWithDBArgument}}
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
