@@ -62,6 +62,7 @@ type v1PackageSettings struct {
 	QueryParameterLimit          *int32            `json:"query_parameter_limit,omitempty" yaml:"query_parameter_limit"`
 	OmitSqlcVersion              bool              `json:"omit_sqlc_version,omitempty" yaml:"omit_sqlc_version"`
 	OmitUnusedStructs            bool              `json:"omit_unused_structs,omitempty" yaml:"omit_unused_structs"`
+	OmitCatalogSchema            *bool             `json:"omit_catalog_schema,omitempty" yaml:"omit_catalog_schema"`
 	Rules                        []string          `json:"rules" yaml:"rules"`
 	BuildTags                    string            `json:"build_tags,omitempty" yaml:"build_tags"`
 }
@@ -177,6 +178,7 @@ func (c *V1GenerateSettings) Translate() Config {
 					QueryParameterLimit:          pkg.QueryParameterLimit,
 					OmitSqlcVersion:              pkg.OmitSqlcVersion,
 					OmitUnusedStructs:            pkg.OmitUnusedStructs,
+					OmitCatalogSchema:            pkg.OmitCatalogSchema,
 					BuildTags:                    pkg.BuildTags,
 				},
 			},
