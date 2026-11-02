@@ -1,0 +1,4 @@
+CREATE TABLE jobs (
+    id BIGSERIAL PRIMARY KEY,
+    data JSONB NOT NULL
+);
