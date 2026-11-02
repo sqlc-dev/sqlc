@@ -1,9 +1,12 @@
 package opts
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+
+	"github.com/sqlc-dev/sqlc/internal/plugin"
 )
 
 func TestTypeOverrides(t *testing.T) {
@@ -95,6 +98,104 @@ func TestTypeOverrides(t *testing.T) {
 			}
 			if diff := cmp.Diff(tt.err, err.Error()); diff != "" {
 				t.Errorf("error mismatch;\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestMatchesColumnTimestamptzAliases(t *testing.T) {
+	t.Parallel()
+
+	parseOverride := func(t *testing.T, dbType string, nullable bool) Override {
+		t.Helper()
+		o := Override{
+			DBType:   dbType,
+			Nullable: nullable,
+			GoType:   GoType{Spec: "*time.Time"},
+		}
+		if err := o.parse(nil); err != nil {
+			t.Fatalf("override parsing failed: %s", err)
+		}
+		return o
+	}
+
+	column := func(typeName string, nullable bool) *plugin.Column {
+		typ := &plugin.Identifier{Name: typeName}
+		if schema, name, ok := strings.Cut(typeName, "."); ok && schema == "pg_catalog" {
+			typ = &plugin.Identifier{Schema: schema, Name: name}
+		}
+		return &plugin.Column{
+			Type:    typ,
+			NotNull: !nullable,
+		}
+	}
+
+	for _, test := range []struct {
+		name       string
+		override   Override
+		column     *plugin.Column
+		wantMatch  bool
+	}{
+		{
+			name:      "timestamptz override matches timestamptz column",
+			override:  parseOverride(t, "timestamptz", true),
+			column:    column("timestamptz", true),
+			wantMatch: true,
+		},
+		{
+			name:      "timestamptz override matches timestamp with time zone column",
+			override:  parseOverride(t, "timestamptz", true),
+			column:    column("timestamp with time zone", true),
+			wantMatch: true,
+		},
+		{
+			name:      "timestamptz override matches pg_catalog.timestamptz column",
+			override:  parseOverride(t, "timestamptz", true),
+			column:    column("pg_catalog.timestamptz", true),
+			wantMatch: true,
+		},
+		{
+			name:      "pg_catalog.timestamptz override matches timestamptz column",
+			override:  parseOverride(t, "pg_catalog.timestamptz", true),
+			column:    column("timestamptz", true),
+			wantMatch: true,
+		},
+		{
+			name:      "pg_catalog.timestamptz override matches timestamp with time zone column",
+			override:  parseOverride(t, "pg_catalog.timestamptz", true),
+			column:    column("timestamp with time zone", true),
+			wantMatch: true,
+		},
+		{
+			name:      "timestamp with time zone override matches timestamptz column",
+			override:  parseOverride(t, "timestamp with time zone", true),
+			column:    column("timestamptz", true),
+			wantMatch: true,
+		},
+		{
+			name:      "timestamptz override does not match not-null column",
+			override:  parseOverride(t, "timestamptz", true),
+			column:    column("timestamptz", false),
+			wantMatch: false,
+		},
+		{
+			name:      "timestamptz override does not match timestamp without time zone",
+			override:  parseOverride(t, "timestamptz", true),
+			column:    column("timestamp", true),
+			wantMatch: false,
+		},
+		{
+			name:      "timestamptz override does not match timestamp without time zone long form",
+			override:  parseOverride(t, "timestamptz", true),
+			column:    column("timestamp without time zone", true),
+			wantMatch: false,
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			got := test.override.MatchesColumn(test.column)
+			if got != test.wantMatch {
+				t.Errorf("MatchesColumn() = %v, want %v", got, test.wantMatch)
 			}
 		})
 	}
