@@ -144,3 +144,50 @@ func (q *Queries) GetBetweenPricesTableAlias(ctx context.Context, arg GetBetween
 	}
 	return items, nil
 }
+
+const getBetweenPricesTableWithCTE = `-- name: GetBetweenPricesTableWithCTE :many
+WITH cte AS (SELECT id FROM products WHERE products.price BETWEEN ? AND ?)
+SELECT products.id, name, price, cte.id FROM products
+INNER JOIN cte ON products.id = cte.id
+ORDER BY name
+`
+
+type GetBetweenPricesTableWithCTEParams struct {
+	FromPrice int32
+	ToPrice   int32
+}
+
+type GetBetweenPricesTableWithCTERow struct {
+	ID    int64
+	Name  string
+	Price int32
+	ID_2  int64
+}
+
+func (q *Queries) GetBetweenPricesTableWithCTE(ctx context.Context, arg GetBetweenPricesTableWithCTEParams) ([]GetBetweenPricesTableWithCTERow, error) {
+	rows, err := q.db.QueryContext(ctx, getBetweenPricesTableWithCTE, arg.FromPrice, arg.ToPrice)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetBetweenPricesTableWithCTERow
+	for rows.Next() {
+		var i GetBetweenPricesTableWithCTERow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Price,
+			&i.ID_2,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
