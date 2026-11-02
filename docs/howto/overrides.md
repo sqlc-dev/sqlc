@@ -112,6 +112,111 @@ sql:
             pointer: true
 ```
 
+## Choosing the right `db_type` value
+
+Overrides match with an **exact string comparison** against the type name sqlc
+infers for a column. That name is `schema.name` when the catalog includes a
+schema, otherwise just `name` (see
+[sdk.DataType](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/sdk/sdk.go)).
+
+This is why the same logical type can appear under several aliases, and why a
+value that works in SQL (`timestamptz`) sometimes needs a catalog-qualified form
+in config (`pg_catalog.timestamptz`).
+
+### How to discover the type sqlc sees
+
+1. Prefer a `column` override when you only care about one field — it bypasses
+   `db_type` naming entirely (`table.column`, or `schema.table.column`).
+2. For a database-wide override, generate once and inspect the Go field type, or
+   check the switch cases in the engine type mappers linked below.
+3. When an override seems ignored, try the `pg_catalog.`-prefixed form (Postgres)
+   or the lowercase SQL type name (MySQL/SQLite). Configure **both** nullable and
+   non-nullable overrides if needed.
+
+### PostgreSQL
+
+Common `db_type` strings (all aliases in a row match the same mapper branch).
+Prefer the **bold** form when more than one is listed — that is usually what the
+catalog emits:
+
+| SQL / concept | Accepted `db_type` values |
+| --- | --- |
+| `smallint` | `pg_catalog.int2`, `smallint`, `int2` |
+| `integer` | `pg_catalog.int4`, `integer`, `int`, `int4` |
+| `bigint` | `pg_catalog.int8`, `bigint`, `int8` |
+| `smallserial` | `pg_catalog.serial2`, `smallserial`, `serial2` |
+| `serial` | `pg_catalog.serial4`, `serial`, `serial4` |
+| `bigserial` | `pg_catalog.serial8`, `bigserial`, `serial8` |
+| `real` | `pg_catalog.float4`, `real`, `float4` |
+| `double precision` | `pg_catalog.float8`, `float`, `double precision`, `float8` |
+| `numeric` / `decimal` | `pg_catalog.numeric`, `numeric`, `money` |
+| `boolean` | `pg_catalog.bool`, `boolean`, `bool` |
+| `text` / `varchar` / `char` | `text`, `pg_catalog.varchar`, `pg_catalog.bpchar`, `string`, `citext`, `name` |
+| `bytea` | `pg_catalog.bytea`, `bytea`, `blob` |
+| `date` | `date` |
+| `time` | `pg_catalog.time` |
+| `timetz` | `pg_catalog.timetz` |
+| `timestamp` | `pg_catalog.timestamp`, `timestamp` |
+| `timestamptz` | **`pg_catalog.timestamptz`**, `timestamptz` |
+| `interval` | `pg_catalog.interval`, `interval` |
+| `uuid` | `uuid` |
+| `json` | `pg_catalog.json`, `json` |
+| `jsonb` | `pg_catalog.jsonb`, `jsonb` |
+| `inet` / `cidr` | `inet`, `cidr` |
+| `macaddr` | `macaddr`, `macaddr8` |
+| ranges | `int4range`, `int8range`, `numrange`, `tsrange`, `tstzrange`, `daterange` (and `*multirange` variants) |
+| geometric | `point`, `line`, `lseg`, `box`, `path`, `polygon`, `circle` |
+| other | `bit`, `varbit`, `pg_catalog.bit`, `pg_catalog.varbit`, `hstore`, `ltree`, `vector`, `void`, `any` |
+
+Full branch list:
+[postgresql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/postgresql_type.go).
+
+### MySQL
+
+| SQL / concept | Accepted `db_type` values |
+| --- | --- |
+| string | `varchar`, `text`, `char`, `tinytext`, `mediumtext`, `longtext` |
+| `tinyint` | `tinyint` (often used for booleans) |
+| `smallint` | `smallint` |
+| `int` | `int`, `integer`, `mediumint` |
+| `bigint` | `bigint`, `bigint unsigned`, `bigint signed` |
+| `year` | `year` |
+| binary | `blob`, `binary`, `varbinary`, `tinyblob`, `mediumblob`, `longblob` |
+| floating | `double`, `double precision`, `real`, `float` |
+| decimal | `decimal`, `dec`, `fixed` |
+| `enum` | `enum` |
+| date/time | `date`, `timestamp`, `datetime`, `time` |
+| boolean | `boolean`, `bool` |
+| `json` | `json` |
+| other | `any` |
+
+Use `unsigned: true` on the override when matching unsigned numeric columns.
+Full branch list:
+[mysql_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/mysql_type.go).
+
+### SQLite
+
+| SQL / concept | Accepted `db_type` values |
+| --- | --- |
+| integer | `int`, `integer`, `tinyint`, `smallint`, `mediumint`, `bigint`, `unsignedbigint`, `int2`, `int8` |
+| blob | `blob` |
+| real | `real`, `double`, `doubleprecision`, `float` |
+| boolean | `boolean`, `bool` |
+| date/time | `date`, `datetime`, `timestamp` |
+| json | `json`, `jsonb` |
+| other | `any` |
+
+Full branch list:
+[sqlite_type.go](https://github.com/sqlc-dev/sqlc/blob/main/internal/codegen/golang/sqlite_type.go).
+
+### Tips when an override does not apply
+
+- **Postgres timestamps:** try `pg_catalog.timestamptz` / `pg_catalog.timestamp`, not only the short name.
+- **Nullability:** a non-nullable override never applies to a nullable column (and the reverse). Duplicate the entry with `nullable: true`.
+- **Arrays / slices:** element `db_type` still uses the base type name; see [Datatypes](../reference/datatypes.md#arrays).
+- **Expressions / functions:** the inferred type may differ from the underlying column (for example aggregates). Prefer a `column` override or cast in SQL when that happens.
+
+
 ## Global overrides
 
 To override types in all packages that `sqlc` generates, add an override
