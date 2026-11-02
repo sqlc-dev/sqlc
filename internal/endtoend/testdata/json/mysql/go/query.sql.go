@@ -16,7 +16,7 @@ INSERT INTO foo (a, b) VALUES (?, ?)
 
 type BulkInsertParams struct {
 	A json.RawMessage
-	B json.RawMessage
+	B *json.RawMessage
 }
 
 const selectFoo = `-- name: SelectFoo :exec
