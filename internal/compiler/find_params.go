@@ -52,11 +52,27 @@ func (l *limitOffset) Pos() int {
 	return 0
 }
 
+// likeEscape is the parent of a parameter in the ESCAPE clause of a pattern
+// match. It is a string whatever the matched column is, so it must not be
+// typed after the operands as the rest of the A_Expr is.
+type likeEscape struct {
+}
+
+func (l *likeEscape) Pos() int {
+	return 0
+}
+
 func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 	switch n := node.(type) {
 
 	case *ast.A_Expr:
 		p.parent = node
+		if ref, ok := n.Escape.(*ast.ParamRef); ok {
+			if _, found := p.seen[ref.Location]; !found {
+				*p.refs = append(*p.refs, paramRef{parent: &likeEscape{}, ref: ref, rv: p.rangeVar})
+				p.seen[ref.Location] = struct{}{}
+			}
+		}
 
 	case *ast.BetweenExpr:
 		p.parent = node

@@ -141,6 +141,19 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 				},
 			})
 
+		case *likeEscape:
+			defaultP := named.NewInferredParam("escape", true)
+			p, isNamed := params.FetchMerge(ref.ref.Number, defaultP)
+			a = append(a, Parameter{
+				Number: ref.ref.Number,
+				Column: &Column{
+					Name:         p.Name(),
+					DataType:     "text",
+					NotNull:      p.NotNull(),
+					IsNamedParam: isNamed,
+				},
+			})
+
 		case *ast.A_Expr:
 			// TODO: While this works for a wide range of simple expressions,
 			// more complicated expressions will cause this logic to fail.

@@ -17,10 +17,14 @@ type A_Expr struct {
 	// engine that accepts more than one spelling of the same operator
 	// (SQLite's != for <>, == for =), that is the author's spelling, which
 	// is how the printer preserves it.
-	Name     *List `json:"name,omitempty"`
-	Lexpr    Node  `json:"lexpr,omitempty"`
-	Rexpr    Node  `json:"rexpr,omitempty"`
-	Location int   `json:"location"`
+	Name  *List `json:"name,omitempty"`
+	Lexpr Node  `json:"lexpr,omitempty"`
+	Rexpr Node  `json:"rexpr,omitempty"`
+	// Escape is the ESCAPE operand of a pattern match, as SQLite writes
+	// "x LIKE p ESCAPE e". pg_query folds the escape into the pattern as
+	// like_escape(p, e) instead, so PostgreSQL never sets it.
+	Escape   Node `json:"escape,omitempty"`
+	Location int  `json:"location"`
 }
 
 func (n *A_Expr) Pos() int {
@@ -119,6 +123,7 @@ func (n *A_Expr) Format(buf *TrackedBuffer, d format.Dialect) {
 			buf.WriteString(" LIKE ")
 		}
 		buf.astFormat(n.Rexpr, d)
+		n.formatEscape(buf, d)
 	case A_Expr_Kind_ILIKE:
 		buf.astFormat(n.Lexpr, d)
 		if n.negated() {
@@ -127,6 +132,7 @@ func (n *A_Expr) Format(buf *TrackedBuffer, d format.Dialect) {
 			buf.WriteString(" ILIKE ")
 		}
 		buf.astFormat(n.Rexpr, d)
+		n.formatEscape(buf, d)
 	case A_Expr_Kind_SIMILAR:
 		buf.astFormat(n.Lexpr, d)
 		buf.WriteString(" SIMILAR TO ")
@@ -174,5 +180,14 @@ func (n *A_Expr) Format(buf *TrackedBuffer, d format.Dialect) {
 			}
 			buf.astFormat(n.Rexpr, d)
 		}
+		n.formatEscape(buf, d)
+	}
+}
+
+// formatEscape prints the ESCAPE clause of a pattern match, when it has one.
+func (n *A_Expr) formatEscape(buf *TrackedBuffer, d format.Dialect) {
+	if set(n.Escape) {
+		buf.WriteString(" ESCAPE ")
+		buf.astFormat(n.Escape, d)
 	}
 }

@@ -235,6 +235,7 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Name", nil, n.Name)
 		a.apply(n, "Lexpr", nil, n.Lexpr)
 		a.apply(n, "Rexpr", nil, n.Rexpr)
+		a.apply(n, "Escape", nil, n.Escape)
 
 	case *ast.A_Indices:
 		a.apply(n, "Lidx", nil, n.Lidx)
