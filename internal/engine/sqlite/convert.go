@@ -1064,6 +1064,7 @@ func (c *cc) convertLikeExpr(n *meyer.LikeExpr) ast.Node {
 		Name:     &ast.List{Items: []ast.Node{&ast.String{Str: name}}},
 		Lexpr:    c.convert(n.X),
 		Rexpr:    c.convert(n.Y),
+		Escape:   c.convertExpr(n.Escape),
 		Location: n.Pos(),
 	}
 }

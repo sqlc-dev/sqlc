@@ -1,0 +1,6 @@
+{
+  "command": "generate",
+  "env": {
+    "SQLCEXPERIMENT": "coreanalyzer"
+  }
+}

@@ -331,13 +331,34 @@ func (a *analyzer) typeAExpr(e *ast.A_Expr) (exprType, error) {
 	if err != nil {
 		return exprType{}, err
 	}
+	escapeT, err := a.typeEscape(e.Escape)
+	if err != nil {
+		return exprType{}, err
+	}
 	// An operator's result is NULL when an operand is, except for IS and
 	// IS NOT, which test for NULL rather than propagate it: x IS NULL and
 	// x IS y are never NULL, whatever x and y are.
 	return exprType{
 		typeOID:  overload.ResultTypeOID,
-		nullable: (leftT.nullable || rightT.nullable) && !isNullTest(opName),
+		nullable: (leftT.nullable || rightT.nullable || escapeT.nullable) && !isNullTest(opName),
 	}, nil
+}
+
+// typeEscape types the ESCAPE operand of a pattern match. The escape is a
+// one-character string whatever is being matched, so a placeholder there is
+// text, named after the clause rather than after the matched column.
+func (a *analyzer) typeEscape(n ast.Node) (exprType, error) {
+	if n == nil {
+		return exprType{}, nil
+	}
+	if pr, ok := n.(*ast.ParamRef); ok {
+		a.inferParam(pr, a.namedType("text"))
+		if cur := a.params[pr.Number]; cur.Name == "" && cur.Source == nil {
+			cur.Name = "escape"
+			a.params[pr.Number] = cur
+		}
+	}
+	return a.typeExpr(n)
 }
 
 // castParamRef is the placeholder a cast wraps, as ClickHouse's {p:UInt64}

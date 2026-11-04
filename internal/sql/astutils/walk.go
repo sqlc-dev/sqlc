@@ -174,6 +174,9 @@ func Walk(f Visitor, node ast.Node) {
 		if n.Rexpr != nil {
 			Walk(f, n.Rexpr)
 		}
+		if n.Escape != nil {
+			Walk(f, n.Escape)
+		}
 
 	case *ast.A_Indices:
 		if n.Lidx != nil {
