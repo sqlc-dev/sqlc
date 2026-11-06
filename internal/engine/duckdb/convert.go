@@ -1061,6 +1061,25 @@ func (c *cc) convertCreateTableInfo(info *dw.CreateTableInfo) ast.Node {
 	for i := range info.Columns {
 		stmt.Cols = append(stmt.Cols, c.convertColumnDef(&info.Columns[i], primaryKey))
 	}
+
+	// Every base table also has a rowid pseudo-column. It is a nullable
+	// BIGINT that queries can select, filter and sort on, but it is not part
+	// of the table's columns. A column the table declares as rowid takes
+	// precedence.
+	hasRowID := false
+	for _, col := range stmt.Cols {
+		if col.Colname == "rowid" {
+			hasRowID = true
+			break
+		}
+	}
+	if !hasRowID {
+		stmt.Cols = append(stmt.Cols, &ast.ColumnDef{
+			Colname:  "rowid",
+			IsHidden: true,
+			TypeName: &ast.TypeName{Name: "bigint"},
+		})
+	}
 	return stmt
 }
 
