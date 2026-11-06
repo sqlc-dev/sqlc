@@ -1,0 +1,2 @@
+# package querytest
+query.sql:2:8: sqlc.embed(p) on the nullable side of an outer join is not supported
