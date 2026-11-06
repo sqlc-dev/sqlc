@@ -39,6 +39,11 @@ func (e Embed) Orig() string {
 	return fmt.Sprintf("sqlc.embed(%s)", e.param)
 }
 
+// Param returns the table name or alias the embed was written with.
+func (e Embed) Param() string {
+	return e.param
+}
+
 // EmbedSet is the set of embeds in a single statement.
 type EmbedSet []*Embed
 

@@ -9,6 +9,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 	"github.com/sqlc-dev/sqlc/internal/sql/catalog"
 	"github.com/sqlc-dev/sqlc/internal/sql/lang"
+	"github.com/sqlc-dev/sqlc/internal/sql/preprocess"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
 
@@ -53,6 +54,8 @@ func hasStarRef(cf *ast.ColumnRef) bool {
 // Return an error if column references are ambiguous
 // Return an error if column references don't exist
 func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, error) {
+	var embedErr error
+
 	tables, err := c.sourceTables(qc, node)
 	if err != nil {
 		return nil, err
@@ -267,6 +270,11 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 
 				// add a column with a reference to an embedded table
 				if embed, ok := qc.embeds.Find(n.Location, res.Location); ok {
+					// Keep the column and report the error with the rest, so an
+					// analyzer that discards inference errors still sees the embed.
+					if err := checkEmbedRequired(node, embed, res.Location); err != nil && embedErr == nil {
+						embedErr = err
+					}
 					cols = append(cols, &Column{
 						Name:       embed.Table.Name,
 						EmbedTable: embed.Table,
@@ -416,7 +424,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 		}
 	}
 
-	return cols, nil
+	return cols, embedErr
 }
 
 const (
@@ -465,6 +473,31 @@ func isTableRequired(n ast.Node, col *Column, prior int) int {
 	}
 
 	return tableNotFound
+}
+
+// An embedded struct is the model of its table, whose columns may not be
+// nullable, so it cannot hold the NULLs the optional side of an outer join
+// produces.
+func checkEmbedRequired(node ast.Node, embed *preprocess.Embed, location int) error {
+	n, ok := node.(*ast.SelectStmt)
+	if !ok {
+		return nil
+	}
+	col := &Column{Table: embed.Table, TableAlias: embed.Param()}
+	for _, f := range n.FromClause.Items {
+		res := isTableRequired(f, col, tableRequired)
+		if res != tableNotFound {
+			if res == tableOptional {
+				return &sqlerr.Error{
+					Code:     "0A000",
+					Message:  fmt.Sprintf("sqlc.embed(%s) on the nullable side of an outer join is not supported", embed.Param()),
+					Location: location,
+				}
+			}
+			break
+		}
+	}
+	return nil
 }
 
 type tableVisitor struct {
