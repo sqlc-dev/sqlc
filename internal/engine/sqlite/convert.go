@@ -282,12 +282,21 @@ func columnTypeName(t *meyer.TypeName) string {
 }
 
 func (c *cc) convertCreateTableStmt(n *meyer.CreateTableStmt) ast.Node {
+	// CREATE TABLE ... AS SELECT takes its columns from the query, so it is
+	// recorded as a relation defined by that query.
+	if n.Select != nil {
+		return &ast.CreateTableAsStmt{
+			Query:       c.convert(n.Select),
+			Into:        &ast.IntoClause{Rel: parseRangeVar(n.Name, nil)},
+			IfNotExists: n.IfNotExists,
+		}
+	}
 	stmt := &ast.CreateTableStmt{
 		Name:        parseTableName(n.Name),
 		IfNotExists: n.IfNotExists,
 		// The node models none of these, so a statement carrying them has
 		// no faithful rendering and the formatter keeps it as written.
-		Incomplete: n.Temp || n.Select != nil || len(n.Constraints) > 0 || len(n.Options) > 0,
+		Incomplete: n.Temp || len(n.Constraints) > 0 || len(n.Options) > 0,
 	}
 	for _, def := range n.Columns {
 		if !representableColumn(def) {
