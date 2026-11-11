@@ -535,11 +535,16 @@ func (c *cc) convertUpdateStmt(n *meyer.UpdateStmt) ast.Node {
 func (c *cc) convertReturning(cols []*meyer.ResultColumn) *ast.List {
 	list := &ast.List{Items: []ast.Node{}}
 	for _, col := range cols {
-		list.Items = append(list.Items, &ast.ResTarget{
+		target := &ast.ResTarget{
 			Indirection: &ast.List{},
 			Val:         c.convertExpr(col.Expr),
 			Location:    col.Pos(),
-		})
+		}
+		if col.Alias != nil {
+			name := identifier(col.Alias)
+			target.Name = &name
+		}
+		list.Items = append(list.Items, target)
 	}
 	return list
 }
