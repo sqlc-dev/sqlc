@@ -1,0 +1,171 @@
+[
+  {
+    "name": "ApplyBoth",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "int"
+        }
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 20
+            }
+          ]
+        }
+      },
+      {
+        "name": "price",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "mid",
+        "type": {
+          "name": "int"
+        }
+      },
+      {
+        "name": "label",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 30
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "p",
+          "type": {
+            "name": "decimal",
+            "args": [
+              {
+                "int": 10
+              },
+              {
+                "int": 2
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "InlineStar",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "int"
+        }
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 20
+            }
+          ]
+        }
+      },
+      {
+        "name": "price",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "min",
+          "type": {
+            "name": "decimal",
+            "args": [
+              {
+                "int": 10
+              },
+              {
+                "int": 2
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "OuterApply",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "int"
+        },
+        "table": "items"
+      },
+      {
+        "name": "label",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 30
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "int"
+          },
+          "table": "items"
+        }
+      }
+    ]
+  }
+]

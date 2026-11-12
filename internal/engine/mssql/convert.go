@@ -456,6 +456,11 @@ func (c *cc) convertTableReference(ref tsql.TableReference) ast.Node {
 		return c.convertOpenJson(t)
 	case *tsql.GlobalFunctionTableReference:
 		return c.convertGlobalFunctionTableReference(t)
+	case *tsql.SchemaObjectFunctionTableReference:
+		if t.SchemaObject == nil || t.SchemaObject.BaseIdentifier == nil {
+			return todo(t)
+		}
+		return c.rangeFunction(t, identifierValue(t.SchemaObject.BaseIdentifier), t.Parameters, t.Alias, nil)
 	case *tsql.PivotedTableReference:
 		return c.convertPivot(t)
 	case *tsql.UnpivotedTableReference:
@@ -561,7 +566,7 @@ func (c *cc) convertInlineDerivedTable(n *tsql.InlineDerivedTable) ast.Node {
 }
 
 // rangeFunction is a call in FROM to a function returning rows of the
-// columns defs declares.
+// columns defs declares, or of its own columns when there are none.
 func (c *cc) rangeFunction(n tsql.Node, name string, args []tsql.ScalarExpression, alias *tsql.Identifier, defs []ast.Node) *ast.RangeFunction {
 	call := &ast.FuncCall{
 		Funcname: &ast.List{Items: []ast.Node{&ast.String{Str: name}}},
@@ -574,8 +579,10 @@ func (c *cc) rangeFunction(n tsql.Node, name string, args []tsql.ScalarExpressio
 		call.Args.Items = append(call.Args.Items, c.convertScalarExpression(arg))
 	}
 	rf := &ast.RangeFunction{
-		Functions:  &ast.List{Items: []ast.Node{&ast.List{Items: []ast.Node{call}}}},
-		Coldeflist: &ast.List{Items: defs},
+		Functions: &ast.List{Items: []ast.Node{&ast.List{Items: []ast.Node{call}}}},
+	}
+	if len(defs) > 0 {
+		rf.Coldeflist = &ast.List{Items: defs}
 	}
 	if alias != nil {
 		name := identifierValue(alias)
@@ -1515,11 +1522,49 @@ func (c *cc) convertAlterTableAddTableElementStatement(n *tsql.AlterTableAddTabl
 	return stmt
 }
 
-// convertCreateFunctionStatement records a scalar function, whose result
-// SQL Server reports nullable whatever its arguments are.
+// convertCreateFunctionStatement records a function. A scalar function's
+// result SQL Server reports nullable whatever its arguments are. A
+// table-valued function returns rows of table(col type, ...), the columns
+// it declares; an inline one's are those its query selects, which the
+// schema works out from the query, passed as the "query" option.
 func (c *cc) convertCreateFunctionStatement(n *tsql.CreateFunctionStatement) ast.Node {
-	ret, ok := n.ReturnType.(*tsql.ScalarFunctionReturnType)
-	if !ok || ret.DataType == nil || n.Name == nil || n.Name.BaseIdentifier == nil {
+	if n.Name == nil || n.Name.BaseIdentifier == nil {
+		return todo(n)
+	}
+	var returns *ast.TypeName
+	var options *ast.List
+	switch ret := n.ReturnType.(type) {
+	case *tsql.ScalarFunctionReturnType:
+		if ret.DataType == nil {
+			return todo(n)
+		}
+		returns = nullableTypeName(dataTypeName(ret.DataType))
+	case *tsql.TableValuedFunctionReturnType:
+		if ret.DeclareTableVariableBody == nil || ret.DeclareTableVariableBody.Definition == nil {
+			return todo(n)
+		}
+		var cols []string
+		for _, col := range ret.DeclareTableVariableBody.Definition.ColumnDefinitions {
+			def := c.convertColumnDefinition(col, nil)
+			t := def.TypeName
+			if !def.IsNotNull {
+				t = nullableTypeName(t)
+			}
+			spelled := core.TypeExprOfTypeName(t)
+			if spelled == nil {
+				return todo(n)
+			}
+			cols = append(cols, def.Colname+" "+typeSpelling(t, spelled))
+		}
+		returns = &ast.TypeName{Spelling: "table(" + strings.Join(cols, ", ") + ")", Setof: true}
+	case *tsql.SelectFunctionReturnType:
+		if ret.SelectStatement == nil {
+			return todo(n)
+		}
+		returns = &ast.TypeName{Name: "table", Setof: true}
+		query := "query"
+		options = &ast.List{Items: []ast.Node{&ast.DefElem{Defname: &query, Arg: c.convertSelectStatement(ret.SelectStatement)}}}
+	default:
 		return todo(n)
 	}
 	tn := parseTableName(n.Name)
@@ -1538,8 +1583,18 @@ func (c *cc) convertCreateFunctionStatement(n *tsql.CreateFunctionStatement) ast
 	return &ast.CreateFunctionStmt{
 		Func:       &ast.FuncName{Schema: tn.Schema, Name: tn.Name},
 		Params:     params,
-		ReturnType: nullableTypeName(dataTypeName(ret.DataType)),
+		ReturnType: returns,
+		Options:    options,
 	}
+}
+
+// typeSpelling spells a type so that it parses back as the same type, which
+// for a nullable one is the Nullable(T) it was spelled as.
+func typeSpelling(tn *ast.TypeName, t *core.TypeExpr) string {
+	if tn.Spelling != "" {
+		return tn.Spelling
+	}
+	return t.String()
 }
 
 func (c *cc) convertAlterTableDropTableElementStatement(n *tsql.AlterTableDropTableElementStatement) ast.Node {

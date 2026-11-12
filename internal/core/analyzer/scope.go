@@ -158,10 +158,31 @@ func (a *analyzer) bindRangeFunction(rf *ast.RangeFunction) (scopeRel, error) {
 		col.TypeOID, col.NotNull = p.ReturnTypeOID, !p.ReturnNullable
 	}
 	rel.cols = []core.ClassColumn{col}
+	if cols := a.rowColumns(overloads[0]); cols != nil {
+		rel.cols = cols
+	}
 	if rf.Coldeflist != nil {
 		rel.cols = a.coldefColumns(rf.Coldeflist, col)
 	}
 	return rel, nil
+}
+
+// rowColumns are the columns of a function returning rows of
+// table(col type, ...), as a SQL Server table-valued function does.
+func (a *analyzer) rowColumns(p core.ProcOverload) []core.ClassColumn {
+	row, err := a.cat.TypeExprOf(p.ReturnTypeOID)
+	if err != nil || row.Name != "table" || len(row.Args) == 0 {
+		return nil
+	}
+	var cols []core.ClassColumn
+	for _, arg := range row.Args {
+		if arg.Label == "" || arg.Type == nil {
+			return nil
+		}
+		t := a.lookupType(arg.Type.WithNullable(false))
+		cols = append(cols, core.ClassColumn{Name: arg.Label, TypeOID: t.typeOID, Type: t.expr, NotNull: !arg.Type.Nullable})
+	}
+	return cols
 }
 
 // coldefColumns are the columns a function's column definition list
