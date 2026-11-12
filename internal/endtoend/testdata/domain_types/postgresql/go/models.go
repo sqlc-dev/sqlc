@@ -23,4 +23,6 @@ type Shelf struct {
 	TagSets [][]string
 	Label   string
 	Note    pgtype.Text
+	Retyped pgtype.Text
+	Strict  string
 }

@@ -21,5 +21,11 @@ CREATE TABLE shelves (
   tags tags NOT NULL,
   tag_sets tags[] NOT NULL,
   label title,
-  note text
+  note text,
+  retyped title,
+  strict title NOT NULL
 );
+
+-- The domain's NOT NULL leaves with it, and outlasts the column's own.
+ALTER TABLE shelves ALTER COLUMN retyped TYPE text;
+ALTER TABLE shelves ALTER COLUMN strict DROP NOT NULL;
