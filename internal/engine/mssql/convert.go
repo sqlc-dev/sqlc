@@ -324,6 +324,8 @@ func (c *cc) convertTableReference(ref tsql.TableReference) ast.Node {
 			sub.Alias = &ast.Alias{Aliasname: &alias}
 		}
 		return sub
+	case *tsql.InlineDerivedTable:
+		return c.convertInlineDerivedTable(t)
 	case *tsql.QualifiedJoin:
 		join := &ast.JoinExpr{
 			Larg: c.convertTableReference(t.FirstTableReference),
@@ -367,6 +369,39 @@ func (c *cc) convertTableReference(ref tsql.TableReference) ast.Node {
 	default:
 		return todo(ref)
 	}
+}
+
+// convertInlineDerivedTable converts (VALUES ...) AS v(a, b) to the
+// subquery it stands for, its rows selected one after another with UNION
+// ALL, so the relation's columns are typed from its first row.
+func (c *cc) convertInlineDerivedTable(n *tsql.InlineDerivedTable) ast.Node {
+	var query *ast.SelectStmt
+	for _, row := range n.RowValues {
+		sel := &ast.SelectStmt{TargetList: &ast.List{}}
+		for _, val := range row.ColumnValues {
+			sel.TargetList.Items = append(sel.TargetList.Items, &ast.ResTarget{
+				Val:      c.convertScalarExpression(val),
+				Location: c.loc(val),
+			})
+		}
+		if query == nil {
+			query = sel
+			continue
+		}
+		query = &ast.SelectStmt{Op: ast.Union, All: true, Larg: query, Rarg: sel}
+	}
+	if query == nil {
+		return todo(n)
+	}
+	sub := &ast.RangeSubselect{Subquery: query}
+	if n.Alias != nil {
+		alias := identifierValue(n.Alias)
+		sub.Alias = &ast.Alias{Aliasname: &alias, Colnames: &ast.List{}}
+		for _, col := range n.Columns {
+			sub.Alias.Colnames.Items = append(sub.Alias.Colnames.Items, NewIdentifier(col.Value))
+		}
+	}
+	return sub
 }
 
 // rangeFunction is a call in FROM to a function returning rows of the
