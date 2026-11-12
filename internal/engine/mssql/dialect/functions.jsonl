@@ -86,3 +86,4 @@
 {"name": "generate_series", "args": [{"type": "int"}, {"type": "int"}, {"type": "int"}], "returns": "$1"}
 {"name": "generate_series", "args": [{"type": "bigint"}, {"type": "bigint"}, {"type": "bigint"}], "returns": "$1"}
 {"name": "generate_series", "args": [{"type": "decimal"}, {"type": "decimal"}, {"type": "decimal"}], "returns": "$1"}
+{"name": "parse", "args": [{"type": "nvarchar"}, {"type": "nvarchar"}], "returns": "nvarchar"}

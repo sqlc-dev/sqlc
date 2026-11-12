@@ -56,5 +56,61 @@
         }
       }
     ]
+  },
+  {
+    "name": "Parsed",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "readings"
+      },
+      {
+        "name": "try_parsed",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "try_parsed_date",
+        "type": {
+          "name": "datetime2",
+          "nullable": true,
+          "args": [
+            {
+              "int": 7
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "limit",
+          "type": {
+            "name": "nvarchar",
+            "args": [
+              {
+                "int": 4000
+              }
+            ]
+          }
+        }
+      }
+    ]
   }
 ]

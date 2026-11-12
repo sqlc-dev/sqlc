@@ -680,6 +680,10 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 		}
 	case *tsql.TryCastCall:
 		return c.tryCast(e.Parameter, e.DataType, e)
+	case *tsql.ParseCall:
+		return c.parseCall(e.StringValue, e.Culture, e.DataType, false, e)
+	case *tsql.TryParseCall:
+		return c.parseCall(e.StringValue, e.Culture, e.DataType, true, e)
 	case *tsql.ConvertCall:
 		return &ast.TypeCast{
 			Arg:      c.convertScalarExpression(e.Parameter),
@@ -776,17 +780,50 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 // they cannot convert, so their result is nullable whatever the operand is.
 // A placeholder cast this way is typed by the cast as it is by CAST.
 func (c *cc) tryCast(arg tsql.ScalarExpression, dataType tsql.DataTypeReference, n tsql.Node) ast.Node {
-	tn := dataTypeName(dataType)
-	if _, ok := arg.(*tsql.VariableReference); !ok {
-		if t := core.TypeExprOfTypeName(tn); t != nil {
-			tn = &ast.TypeName{Spelling: "Nullable(" + t.String() + ")"}
-		}
-	}
 	return &ast.TypeCast{
 		Arg:      c.convertScalarExpression(arg),
-		TypeName: tn,
+		TypeName: tryTypeName(arg, dataType),
 		Location: c.loc(n),
 	}
+}
+
+// tryTypeName is the type a TRY_ conversion of arg yields: nullable, unless
+// arg is a placeholder, which the conversion types as CAST does.
+func tryTypeName(arg tsql.ScalarExpression, dataType tsql.DataTypeReference) *ast.TypeName {
+	if _, ok := arg.(*tsql.VariableReference); ok {
+		return dataTypeName(dataType)
+	}
+	return nullableTypeName(dataTypeName(dataType))
+}
+
+func nullableTypeName(tn *ast.TypeName) *ast.TypeName {
+	if t := core.TypeExprOfTypeName(tn); t != nil {
+		return &ast.TypeName{Spelling: "Nullable(" + t.String() + ")"}
+	}
+	return tn
+}
+
+// parseCall converts PARSE and TRY_PARSE, which convert a string as CAST
+// and TRY_CAST do. What they convert is a string, so a placeholder there is
+// the nvarchar(4000) SQL Server takes it as. A culture is passed through a
+// call, so a placeholder given for it is still a parameter of the query.
+func (c *cc) parseCall(value, culture tsql.ScalarExpression, dataType tsql.DataTypeReference, try bool, n tsql.Node) ast.Node {
+	tn := dataTypeName(dataType)
+	if try {
+		tn = nullableTypeName(tn)
+	}
+	arg := c.convertScalarExpression(value)
+	if _, ok := value.(*tsql.VariableReference); ok {
+		arg = &ast.TypeCast{Arg: arg, TypeName: typeName("nvarchar", 4000), Location: c.loc(value)}
+	}
+	if culture != nil {
+		arg = &ast.FuncCall{
+			Funcname: &ast.List{Items: []ast.Node{&ast.String{Str: "parse"}}},
+			Args:     &ast.List{Items: []ast.Node{arg, c.convertScalarExpression(culture)}},
+			Location: c.loc(n),
+		}
+	}
+	return &ast.TypeCast{Arg: arg, TypeName: tn, Location: c.loc(n)}
 }
 
 func binaryOperator(binaryExpressionType string) string {
