@@ -21,3 +21,9 @@ ORDER BY books.id;
 
 -- name: ListAuthorsByIDsTwice :many
 SELECT id, name FROM authors WHERE id IN (sqlc.slice(ids)) OR id + 100 IN (sqlc.slice(ids));
+
+-- name: EmbedNarrowSubquery :many
+SELECT sqlc.embed(x) FROM (SELECT id, name FROM authors) x;
+
+-- name: EmbedReorderedSubquery :many
+SELECT sqlc.embed(x) FROM (SELECT name, id, bio FROM authors) x;

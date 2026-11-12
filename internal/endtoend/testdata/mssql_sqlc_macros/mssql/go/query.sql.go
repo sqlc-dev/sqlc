@@ -71,6 +71,71 @@ func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) erro
 	return err
 }
 
+const embedNarrowSubquery = `-- name: EmbedNarrowSubquery :many
+SELECT x.id, x.name FROM (SELECT id, name FROM authors) x;
+`
+
+type EmbedNarrowSubqueryRow struct {
+	ID   int64
+	Name string
+}
+
+func (q *Queries) EmbedNarrowSubquery(ctx context.Context) ([]EmbedNarrowSubqueryRow, error) {
+	rows, err := q.db.QueryContext(ctx, embedNarrowSubquery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []EmbedNarrowSubqueryRow
+	for rows.Next() {
+		var i EmbedNarrowSubqueryRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const embedReorderedSubquery = `-- name: EmbedReorderedSubquery :many
+SELECT x.name, x.id, x.bio FROM (SELECT name, id, bio FROM authors) x;
+`
+
+type EmbedReorderedSubqueryRow struct {
+	Name string
+	ID   int64
+	Bio  sql.NullString
+}
+
+func (q *Queries) EmbedReorderedSubquery(ctx context.Context) ([]EmbedReorderedSubqueryRow, error) {
+	rows, err := q.db.QueryContext(ctx, embedReorderedSubquery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []EmbedReorderedSubqueryRow
+	for rows.Next() {
+		var i EmbedReorderedSubqueryRow
+		if err := rows.Scan(&i.Name, &i.ID, &i.Bio); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listAuthorsByIDs = `-- name: ListAuthorsByIDs :many
 SELECT id, name FROM authors WHERE id IN (/*SLICE:ids*/@ids) ORDER BY id;
 `

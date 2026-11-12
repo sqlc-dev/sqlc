@@ -64,7 +64,7 @@ func (c *Compiler) parseQueryCore(raw *ast.RawStmt, src string, pre *preprocess.
 		for _, col := range res.Columns {
 			cols = append(cols, coreColumn(col))
 		}
-		cols = embedColumns(raw, cols, res.Stars, pre.Embeds)
+		cols = embedColumns(raw, cols, res.Stars, pre.Embeds, c.coreCatalog)
 		placeholders, err := placeholderNames(raw)
 		if err != nil {
 			return nil, err
@@ -108,8 +108,10 @@ func (c *Compiler) parseQueryCore(raw *ast.RawStmt, src string, pre *preprocess.
 
 // embedColumns folds the columns each sqlc.embed() star expanded to into
 // the one column codegen embeds the table's struct for. The table is the
-// columns' source, so an embed of an alias names the table behind it.
-func embedColumns(raw *ast.RawStmt, cols []*Column, stars []core.StarExpansion, embeds preprocess.EmbedSet) []*Column {
+// columns' source, so an embed of an alias names the table behind it. The
+// struct scans every column of the table in order, so only an expansion
+// that is exactly those columns is folded; any other stays flat.
+func embedColumns(raw *ast.RawStmt, cols []*Column, stars []core.StarExpansion, embeds preprocess.EmbedSet, cat *core.Catalog) []*Column {
 	sel, ok := raw.Stmt.(*ast.SelectStmt)
 	if !ok || len(embeds) == 0 || sel.TargetList == nil {
 		return cols
@@ -135,7 +137,7 @@ func embedColumns(raw *ast.RawStmt, cols []*Column, stars []core.StarExpansion, 
 		if !ok || i+n > len(cols) {
 			return cols
 		}
-		if embed, ok := embeds.Find(ref.Location, res.Location); ok && n > 0 && cols[i].Table != nil {
+		if embed, ok := embeds.Find(ref.Location, res.Location); ok && n > 0 && isWholeTable(cat, cols[i:i+n]) {
 			out = append(out, &Column{Name: embed.Table.Name, EmbedTable: cols[i].Table})
 		} else {
 			out = append(out, cols[i:i+n]...)
@@ -143,6 +145,42 @@ func embedColumns(raw *ast.RawStmt, cols []*Column, stars []core.StarExpansion, 
 		i += n
 	}
 	return out
+}
+
+// isWholeTable reports whether cols are every column of one table, in the
+// table's order.
+func isWholeTable(cat *core.Catalog, cols []*Column) bool {
+	table := cols[0].Table
+	if table == nil {
+		return false
+	}
+	schema := table.Schema
+	if schema == "" {
+		schema = "public"
+	}
+	nsOID, err := cat.NamespaceOID(schema)
+	if err != nil {
+		return false
+	}
+	classOID, err := cat.ClassOID(nsOID, table.Name)
+	if err != nil {
+		return false
+	}
+	tableCols, err := cat.ClassColumns(classOID)
+	if err != nil {
+		return false
+	}
+	i := 0
+	for _, tc := range tableCols {
+		if tc.Hidden {
+			continue
+		}
+		if i >= len(cols) || cols[i].Table == nil || *cols[i].Table != *table || cols[i].OriginalName != tc.Name {
+			return false
+		}
+		i++
+	}
+	return i == len(cols)
 }
 
 func coreColumn(c core.Column) *Column {
