@@ -8,6 +8,25 @@
     "bool": "bit"
   },
   "bool": "bit",
+  "set_operations": {
+    "precedence": [
+      "sql_variant", "xml", "datetimeoffset", "datetime2", "datetime",
+      "smalldatetime", "date", "time", "float", "real", "decimal", "money",
+      "smallmoney", "bigint", "int", "smallint", "tinyint", "bit", "ntext",
+      "text", "image", "rowversion", "uniqueidentifier", "nvarchar", "nchar",
+      "varchar", "char", "varbinary", "binary"
+    ],
+    "varying": {"char": "varchar", "nchar": "nvarchar", "binary": "varbinary"},
+    "decimal": "decimal",
+    "decimal_max_precision": 38,
+    "as_decimal": {
+      "tinyint": [3, 0],
+      "smallint": [5, 0],
+      "bigint": [19, 0],
+      "money": [19, 4],
+      "smallmoney": [10, 4]
+    }
+  },
   "comparison": ["=", "<>", "!=", "<", "<=", ">", ">="],
   "comparison_categories": "NBSD",
   "arithmetic": ["+", "-", "*", "/", "%"],

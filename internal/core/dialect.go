@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"slices"
 	"strings"
@@ -76,6 +77,10 @@ const FlagPropagateNullable = "functions.propagate_nullable"
 // relation has the same name, as ClickHouse names the second id of a join
 // e.id.
 const FlagQualifyDuplicateColumns = "columns.qualify_duplicates"
+
+// FlagSetOperations holds, as JSON, the SetOperationRules a dialect types
+// the columns of a set operation by.
+const FlagSetOperations = "set_operations"
 
 // FlagDefaultSchema holds the schema the dialect puts an unqualified object
 // in, when that is not the catalog's own default: a type in it is reported
@@ -194,6 +199,42 @@ func (c *Catalog) QualifiesDuplicateColumns() bool {
 	}
 	v, _ := c.DialectFlag(c.dialectOID, FlagQualifyDuplicateColumns)
 	return v == "true"
+}
+
+// SetOperationRules say how a dialect types a column of UNION, INTERSECT or
+// EXCEPT from its branches, as SQL Server does by data type precedence. A
+// dialect without them types the column from the first branch.
+type SetOperationRules struct {
+	// Precedence lists type families, highest first: the column takes the
+	// highest of its branches'.
+	Precedence []string `json:"precedence"`
+	// Varying maps a fixed-length family to its varying one, which the
+	// column takes when another branch varies: char and varchar make
+	// varchar.
+	Varying map[string]string `json:"varying,omitempty"`
+	// Decimal names the exact numeric family, whose precision and scale
+	// cover every branch's, up to DecimalMaxPrecision, which scale gives
+	// way to. AsDecimal is the precision and scale another family counts
+	// as.
+	Decimal             string              `json:"decimal,omitempty"`
+	DecimalMaxPrecision int64               `json:"decimal_max_precision,omitempty"`
+	AsDecimal           map[string][2]int64 `json:"as_decimal,omitempty"`
+}
+
+// SetOperations returns the dialect's set operation rules, or nil.
+func (c *Catalog) SetOperations() *SetOperationRules {
+	if c.dialectOID == 0 {
+		return nil
+	}
+	v, _ := c.DialectFlag(c.dialectOID, FlagSetOperations)
+	if v == "" {
+		return nil
+	}
+	var rules SetOperationRules
+	if err := json.Unmarshal([]byte(v), &rules); err != nil {
+		return nil
+	}
+	return &rules
 }
 
 // DefaultNamespaces lists the namespaces a type is reported from without

@@ -277,11 +277,15 @@ func (a *analyzer) analyzeSetOperation(s *ast.SelectStmt) error {
 	if err != nil {
 		return err
 	}
-	if _, err := a.subquery(s.Rarg); err != nil {
+	right, err := a.subquery(s.Rarg)
+	if err != nil {
 		return err
 	}
 	a.columns = left.columns
 	a.scope = left.scope
+	if rules := a.cat.SetOperations(); rules != nil {
+		a.columns = a.combineColumns(rules, s.Op, left.columns, right.columns)
+	}
 	return nil
 }
 

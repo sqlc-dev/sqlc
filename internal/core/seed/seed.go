@@ -84,6 +84,10 @@ type Settings struct {
 	// ClickHouse names the second id of a join e.id.
 	QualifyDuplicateColumns bool `json:"qualify_duplicate_columns,omitempty"`
 
+	// SetOperations types a column of a set operation from every branch,
+	// rather than from the first.
+	SetOperations *core.SetOperationRules `json:"set_operations,omitempty"`
+
 	// Comparison operators are registered as (T, T) -> Bool for every type in
 	// ComparisonCategories.
 	Comparison           []string `json:"comparison,omitempty"`
@@ -657,6 +661,15 @@ func (b *builder) consts() error {
 	}
 	if b.settings.QualifyDuplicateColumns {
 		if err := b.cat.SetDialectFlag(b.dialectOID, core.FlagQualifyDuplicateColumns, "true"); err != nil {
+			return err
+		}
+	}
+	if b.settings.SetOperations != nil {
+		rules, err := json.Marshal(b.settings.SetOperations)
+		if err != nil {
+			return err
+		}
+		if err := b.cat.SetDialectFlag(b.dialectOID, core.FlagSetOperations, string(rules)); err != nil {
 			return err
 		}
 	}
