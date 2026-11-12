@@ -511,6 +511,8 @@ func (a *analyzer) typeCoalesce(e *ast.CoalesceExpr) (exprType, error) {
 			}
 		}
 	}
+	// A placeholder there is one that may be NULL.
+	a.inferAlternatives(listItems(e.Args), t, true)
 	// The result is an expression's, not the column's it came from.
 	return exprType{typeOID: t.typeOID, expr: t.expr, nullable: nullable}, nil
 }
@@ -530,8 +532,22 @@ func (a *analyzer) typeFirstOf(nodes []ast.Node, nullable bool) (exprType, error
 		nullable = nullable || t.nullable
 	}
 	out := a.commonType(types)
+	a.inferAlternatives(nodes, out, false)
 	out.nullable = nullable
 	return out, nil
+}
+
+// inferAlternatives types a placeholder among alternatives as the type the
+// others combine to, as GREATEST(1, @n) takes @n as an integer.
+func (a *analyzer) inferAlternatives(nodes []ast.Node, t exprType, nullable bool) {
+	if t.typeOID == 0 && t.expr == nil {
+		return
+	}
+	for _, n := range nodes {
+		if p, ok := n.(*ast.ParamRef); ok {
+			a.inferParam(p, exprType{typeOID: t.typeOID, expr: t.expr, nullable: nullable})
+		}
+	}
 }
 
 // typeArrayExpr types ARRAY[...], whose type is an array of its elements'.
