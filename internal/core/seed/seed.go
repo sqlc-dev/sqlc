@@ -84,6 +84,10 @@ type Settings struct {
 	// ClickHouse names the second id of a join e.id.
 	QualifyDuplicateColumns bool `json:"qualify_duplicate_columns,omitempty"`
 
+	// OuterJoinNullable makes the columns of an outer join's optional side
+	// nullable, as SQL Server fills an unmatched row with NULL.
+	OuterJoinNullable bool `json:"outer_join_nullable,omitempty"`
+
 	// Comparison operators are registered as (T, T) -> Bool for every type in
 	// ComparisonCategories.
 	Comparison           []string `json:"comparison,omitempty"`
@@ -657,6 +661,11 @@ func (b *builder) consts() error {
 	}
 	if b.settings.QualifyDuplicateColumns {
 		if err := b.cat.SetDialectFlag(b.dialectOID, core.FlagQualifyDuplicateColumns, "true"); err != nil {
+			return err
+		}
+	}
+	if b.settings.OuterJoinNullable {
+		if err := b.cat.SetDialectFlag(b.dialectOID, core.FlagOuterJoinNullable, "true"); err != nil {
 			return err
 		}
 	}

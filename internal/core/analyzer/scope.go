@@ -52,10 +52,25 @@ func (a *analyzer) appendFromItem(sc *scope, item ast.Node) error {
 		sc.rels = append(sc.rels, rel)
 		return nil
 	case *ast.JoinExpr:
+		start := len(sc.rels)
 		if err := a.appendFromItem(sc, v.Larg); err != nil {
 			return err
 		}
-		return a.appendFromItem(sc, v.Rarg)
+		mid := len(sc.rels)
+		if err := a.appendFromItem(sc, v.Rarg); err != nil {
+			return err
+		}
+		if a.cat.OuterJoinsNullable() {
+			switch v.Jointype {
+			case ast.JoinTypeLeft:
+				nullableRels(sc.rels[mid:])
+			case ast.JoinTypeRight:
+				nullableRels(sc.rels[start:mid])
+			case ast.JoinTypeFull:
+				nullableRels(sc.rels[start:])
+			}
+		}
+		return nil
 	case *ast.RangeFunction:
 		rel, err := a.bindRangeFunction(v)
 		if err != nil {
@@ -80,6 +95,20 @@ func (a *analyzer) appendFromItem(sc *scope, item ast.Node) error {
 		return nil
 	default:
 		return fmt.Errorf("scope: unsupported FROM item %T", item)
+	}
+}
+
+// nullableRels makes every column of rels nullable, as the optional side of
+// an outer join is. The columns are copied: a relation's column list is the
+// catalog's own.
+func nullableRels(rels []scopeRel) {
+	for i := range rels {
+		cols := make([]core.ClassColumn, len(rels[i].cols))
+		for j, c := range rels[i].cols {
+			c.NotNull = false
+			cols[j] = c
+		}
+		rels[i].cols = cols
 	}
 }
 
