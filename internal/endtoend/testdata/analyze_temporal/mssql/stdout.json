@@ -1,0 +1,138 @@
+[
+  {
+    "name": "PriceAsOf",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "int"
+        },
+        "table": "prices"
+      },
+      {
+        "name": "amount",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        },
+        "table": "prices"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "at",
+          "type": {
+            "name": "datetime2",
+            "args": [
+              {
+                "int": 7
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "int"
+          },
+          "table": "prices"
+        }
+      }
+    ]
+  },
+  {
+    "name": "PriceHistory",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "int"
+        },
+        "table": "prices"
+      },
+      {
+        "name": "amount",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        },
+        "table": "prices"
+      },
+      {
+        "name": "valid_from",
+        "type": {
+          "name": "datetime2",
+          "args": [
+            {
+              "int": 7
+            }
+          ]
+        },
+        "table": "prices"
+      },
+      {
+        "name": "valid_to",
+        "type": {
+          "name": "datetime2",
+          "args": [
+            {
+              "int": 7
+            }
+          ]
+        },
+        "table": "prices"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "from",
+          "type": {
+            "name": "datetime2",
+            "args": [
+              {
+                "int": 7
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "to",
+          "type": {
+            "name": "datetime2",
+            "args": [
+              {
+                "int": 7
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+]

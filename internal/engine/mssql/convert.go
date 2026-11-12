@@ -18,6 +18,10 @@ type cc struct {
 	// toByte maps a teesql UTF-16 code-unit offset to a byte offset in the
 	// source, so Location fields agree with StmtLocation/StmtLen.
 	toByte func(int) int
+	// fromExprs are expressions a FROM item holds that the AST has no place
+	// for, as FOR SYSTEM_TIME AS OF @t does, analyzed with the query's WHERE
+	// clause so a placeholder in them is still a parameter.
+	fromExprs []ast.Node
 }
 
 // loc returns a node's start offset in bytes, for the Location fields of the
@@ -201,15 +205,25 @@ func (c *cc) convertQuerySpecification(n *tsql.QuerySpecification) *ast.SelectSt
 		}
 	}
 
+	outerFromExprs := c.fromExprs
+	c.fromExprs = nil
 	if n.FromClause != nil {
 		stmt.FromClause = &ast.List{}
 		for _, ref := range n.FromClause.TableReferences {
 			stmt.FromClause.Items = append(stmt.FromClause.Items, c.convertTableReference(ref))
 		}
 	}
+	fromExprs := c.fromExprs
+	c.fromExprs = outerFromExprs
 
 	if n.WhereClause != nil {
 		stmt.WhereClause = c.convertBooleanExpression(n.WhereClause.SearchCondition)
+	}
+	if len(fromExprs) > 0 {
+		if stmt.WhereClause != nil {
+			fromExprs = append([]ast.Node{stmt.WhereClause}, fromExprs...)
+		}
+		stmt.WhereClause = &ast.BoolExpr{Boolop: ast.BoolExprTypeAnd, Args: &ast.List{Items: fromExprs}}
 	}
 
 	if n.GroupByClause != nil {
@@ -379,6 +393,14 @@ func (c *cc) convertTableReference(ref tsql.TableReference) ast.Node {
 		if t.Alias != nil {
 			alias := identifierValue(t.Alias)
 			rv.Alias = &ast.Alias{Aliasname: &alias}
+		}
+		// The times of FOR SYSTEM_TIME are the datetime2 SQL Server takes.
+		if tc := t.TemporalClause; tc != nil {
+			for _, e := range []tsql.ScalarExpression{tc.StartTime, tc.EndTime} {
+				if e != nil {
+					c.fromExprs = append(c.fromExprs, &ast.TypeCast{Arg: c.convertScalarExpression(e), TypeName: typeName("datetime2", 7)})
+				}
+			}
 		}
 		return rv
 	case *tsql.QueryDerivedTable:
