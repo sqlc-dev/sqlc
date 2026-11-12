@@ -72,7 +72,7 @@ func (q *Queries) ListBooks(ctx context.Context, price pgtype.Numeric) ([]Book, 
 }
 
 const listShelves = `-- name: ListShelves :many
-SELECT id, titles, tags, tag_sets, label, note, retyped, strict FROM shelves
+SELECT id, titles, tags, tag_sets, label, note, retyped, strict, relaxed, tightened FROM shelves
 `
 
 func (q *Queries) ListShelves(ctx context.Context) ([]Shelf, error) {
@@ -93,6 +93,8 @@ func (q *Queries) ListShelves(ctx context.Context) ([]Shelf, error) {
 			&i.Note,
 			&i.Retyped,
 			&i.Strict,
+			&i.Relaxed,
+			&i.Tightened,
 		); err != nil {
 			return nil, err
 		}

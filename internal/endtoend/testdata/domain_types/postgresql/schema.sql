@@ -5,6 +5,8 @@ CREATE SCHEMA billing;
 CREATE DOMAIN billing.ksuid AS char(27);
 -- Named like a built-in, but off the search path.
 CREATE DOMAIN billing.text AS integer;
+CREATE DOMAIN relaxed AS text NOT NULL;
+CREATE DOMAIN tightened AS text;
 CREATE DOMAIN dropped AS text;
 DROP DOMAIN dropped;
 
@@ -23,9 +25,14 @@ CREATE TABLE shelves (
   label title,
   note text,
   retyped title,
-  strict title NOT NULL
+  strict title NOT NULL,
+  relaxed relaxed,
+  tightened tightened
 );
 
 -- The domain's NOT NULL leaves with it, and outlasts the column's own.
 ALTER TABLE shelves ALTER COLUMN retyped TYPE text;
 ALTER TABLE shelves ALTER COLUMN strict DROP NOT NULL;
+
+ALTER DOMAIN relaxed DROP NOT NULL;
+ALTER DOMAIN tightened SET NOT NULL;

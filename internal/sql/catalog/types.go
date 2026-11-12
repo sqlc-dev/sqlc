@@ -109,13 +109,9 @@ func (c *Catalog) createEnum(stmt *ast.CreateEnumStmt) error {
 }
 
 func (c *Catalog) createDomain(stmt *ast.CreateDomainStmt) error {
-	names := stringSlice(stmt.Domainname)
-	if len(names) == 0 || stmt.TypeName == nil {
+	name := domainName(stmt.Domainname)
+	if name == nil || stmt.TypeName == nil {
 		return fmt.Errorf("create domain: missing name or type")
-	}
-	name := &ast.TypeName{Name: names[len(names)-1]}
-	if len(names) > 1 {
-		name.Schema = names[len(names)-2]
 	}
 	ns := name.Schema
 	if ns == "" {
@@ -140,6 +136,48 @@ func (c *Catalog) createDomain(stmt *ast.CreateDomainStmt) error {
 		}
 	}
 	schema.Types = append(schema.Types, domain)
+	return nil
+}
+
+func domainName(list *ast.List) *ast.TypeName {
+	names := stringSlice(list)
+	if len(names) == 0 {
+		return nil
+	}
+	name := &ast.TypeName{Name: names[len(names)-1]}
+	if len(names) > 1 {
+		name.Schema = names[len(names)-2]
+	}
+	return name
+}
+
+// alterDomain applies the one change to a domain codegen sees, its NOT
+// NULL, to the domain and every column of it.
+func (c *Catalog) alterDomain(stmt *ast.AlterDomainStmt) error {
+	// PostgreSQL's subtypes: O sets NOT NULL, N drops it.
+	if stmt.Subtype != 'O' && stmt.Subtype != 'N' {
+		return nil
+	}
+	name := domainName(stmt.TypeName)
+	if name == nil {
+		return fmt.Errorf("alter domain: missing name")
+	}
+	typ, _, err := c.getType(name)
+	if err != nil {
+		return err
+	}
+	d, ok := typ.(*Domain)
+	if !ok {
+		return fmt.Errorf("%q is not a domain", name.Name)
+	}
+	d.NotNull = stmt.Subtype == 'O'
+	for _, schema := range c.Schemas {
+		for _, table := range schema.Tables {
+			for _, col := range table.Columns {
+				c.setDomainNotNull(col)
+			}
+		}
+	}
 	return nil
 }
 
