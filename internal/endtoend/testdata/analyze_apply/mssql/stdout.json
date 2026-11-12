@@ -73,7 +73,7 @@
         "column": {
           "name": "n",
           "type": {
-            "name": "int"
+            "name": "bigint"
           }
         }
       },

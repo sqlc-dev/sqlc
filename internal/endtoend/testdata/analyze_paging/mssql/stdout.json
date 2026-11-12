@@ -1,0 +1,83 @@
+[
+  {
+    "name": "TopAuthors",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "authors"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "int": 100
+            }
+          ]
+        },
+        "table": "authors"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "n",
+          "type": {
+            "name": "bigint"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "PageAuthors",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "authors"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "int": 100
+            }
+          ]
+        },
+        "table": "authors"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "skip",
+          "type": {
+            "name": "bigint"
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "take",
+          "type": {
+            "name": "bigint"
+          }
+        }
+      }
+    ]
+  }
+]

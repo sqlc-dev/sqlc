@@ -8,6 +8,7 @@
     "bool": "bit"
   },
   "bool": "bit",
+  "limit": "bigint",
   "outer_join_nullable": true,
   "comparison": ["=", "<>", "!=", "<", "<=", ">", ">="],
   "comparison_categories": "NBSD",
