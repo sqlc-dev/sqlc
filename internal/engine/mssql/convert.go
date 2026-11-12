@@ -724,6 +724,18 @@ func (c *cc) convertBooleanExpression(expr tsql.BooleanExpression) ast.Node {
 		}
 	case *tsql.BooleanScalarPlaceholder:
 		return c.convertScalarExpression(e.Scalar)
+	case *tsql.FullTextPredicate:
+		// CONTAINS and FREETEXT are the predicates the dialect seeds under
+		// their names, over their search condition and language term.
+		call := &ast.FuncCall{
+			Funcname: &ast.List{Items: []ast.Node{&ast.String{Str: identifier(e.FullTextFunctionType)}}},
+			Args:     &ast.List{Items: []ast.Node{c.convertScalarExpression(e.Value)}},
+			Location: c.loc(e),
+		}
+		if e.LanguageTerm != nil {
+			call.Args.Items = append(call.Args.Items, c.convertScalarExpression(e.LanguageTerm))
+		}
+		return call
 	default:
 		return todo(expr)
 	}

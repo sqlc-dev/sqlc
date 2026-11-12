@@ -106,3 +106,7 @@
 {"name": "@@options", "returns": "int"}
 {"name": "@@textsize", "returns": "int"}
 {"name": "@@cursor_rows", "returns": "int"}
+{"name": "contains", "args": [{"type": "nvarchar(4000)"}], "returns": "bit"}
+{"name": "contains", "args": [{"type": "nvarchar(4000)"}, {"type": "any"}], "returns": "bit"}
+{"name": "freetext", "args": [{"type": "nvarchar(4000)"}], "returns": "bit"}
+{"name": "freetext", "args": [{"type": "nvarchar(4000)"}, {"type": "any"}], "returns": "bit"}
