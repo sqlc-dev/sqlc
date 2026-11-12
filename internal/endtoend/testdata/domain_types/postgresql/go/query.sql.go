@@ -13,12 +13,13 @@ import (
 )
 
 const booksByRef = `-- name: BooksByRef :many
-SELECT b.id, b.title FROM books b LEFT JOIN shelves s ON s.label = b.title WHERE b.ref = $1
+SELECT b.id, b.title, s.label FROM books b LEFT JOIN shelves s ON s.label = b.title WHERE b.ref = $1
 `
 
 type BooksByRefRow struct {
 	ID    int32
-	Title pgtype.Text
+	Title string
+	Label pgtype.Text
 }
 
 func (q *Queries) BooksByRef(ctx context.Context, ref uuid.NullUUID) ([]BooksByRefRow, error) {
@@ -30,7 +31,7 @@ func (q *Queries) BooksByRef(ctx context.Context, ref uuid.NullUUID) ([]BooksByR
 	var items []BooksByRefRow
 	for rows.Next() {
 		var i BooksByRefRow
-		if err := rows.Scan(&i.ID, &i.Title); err != nil {
+		if err := rows.Scan(&i.ID, &i.Title, &i.Label); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

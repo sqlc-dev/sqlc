@@ -357,6 +357,15 @@ func (c *Catalog) defineColumn(table *ast.TableName, col *ast.ColumnDef) (*Colum
 		Comment:    col.Comment,
 		Length:     col.Length,
 	}
+	// A domain declared NOT NULL forbids NULL in every column of it. An
+	// array of one may still be NULL itself.
+	if !col.IsArray && col.TypeName != nil {
+		if typ, _, err := c.getType(col.TypeName); err == nil {
+			if d, ok := typ.(*Domain); ok && d.NotNull {
+				tc.IsNotNull = true
+			}
+		}
+	}
 	if col.Vals != nil {
 		typeName := ast.TypeName{
 			Name: fmt.Sprintf("%s_%s", table.Name, col.Colname),

@@ -62,7 +62,7 @@
               },
               {
                 "name": "title",
-                "not_null": false,
+                "not_null": true,
                 "is_array": false,
                 "comment": "",
                 "length": -1,
@@ -68862,7 +68862,7 @@
         },
         {
           "name": "title",
-          "not_null": false,
+          "not_null": true,
           "is_array": false,
           "comment": "",
           "length": -1,

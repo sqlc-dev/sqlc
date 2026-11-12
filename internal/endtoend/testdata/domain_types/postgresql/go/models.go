@@ -11,7 +11,7 @@ import (
 
 type Book struct {
 	ID    int32
-	Title pgtype.Text
+	Title string
 	Price pgtype.Numeric
 	Ref   uuid.NullUUID
 }
@@ -19,5 +19,5 @@ type Book struct {
 type Shelf struct {
 	ID     int32
 	Titles []string
-	Label  pgtype.Text
+	Label  string
 }
