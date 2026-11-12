@@ -547,6 +547,9 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 	case *tsql.ParenthesisExpression:
 		return c.convertScalarExpression(e.Expression)
 	case *tsql.FunctionCall:
+		if out := c.convertMethodCall(e); out != nil {
+			return out
+		}
 		if e.OverClause == nil {
 			if out := c.convertAlternatives(e); out != nil {
 				return out
@@ -778,6 +781,68 @@ func (c *cc) convertVariableReference(n *tsql.VariableReference) ast.Node {
 type namedParam struct {
 	number int
 	name   string
+}
+
+// typeMethods are the methods of xml, geography, geometry and hierarchyid
+// a query calls on a value, as doc.exist('/a') or node.GetLevel() do. A
+// call to one is seeded as ".name" taking the value first, which tells it
+// from a function in a schema, as dbo.f(), the parser sees alike.
+var typeMethods = map[string]bool{
+	"exist":    true,
+	"getlevel": true, "tostring": true, "getancestor": true, "getdescendant": true,
+	"isdescendantof": true, "getreparentedvalue": true,
+	"stastext": true, "stasbinary": true, "starea": true, "stlength": true,
+	"stdistance": true, "stintersects": true, "stcontains": true, "stwithin": true,
+	"stequals": true, "stbuffer": true, "stunion": true, "stintersection": true,
+	"stnumpoints": true, "stgeometrytype": true, "stdimension": true,
+	"stisvalid": true, "stpointn": true,
+}
+
+// convertMethodCall converts a call of a method on a value, or of a static
+// one on a type, as geography::Point(...) is, seeded as "geography::point".
+// xml's value(path, 'type') returns the type it names, or NULL when the
+// path finds nothing.
+func (c *cc) convertMethodCall(n *tsql.FunctionCall) ast.Node {
+	method := identifierValue(n.FunctionName)
+	var receiver ast.Node
+	switch t := n.CallTarget.(type) {
+	case *tsql.UserDefinedTypeCallTarget:
+		if t.SchemaObjectName == nil || t.SchemaObjectName.BaseIdentifier == nil {
+			return nil
+		}
+		fc := c.convertFunctionCall(n)
+		fc.Funcname = &ast.List{Items: []ast.Node{&ast.String{Str: identifierValue(t.SchemaObjectName.BaseIdentifier) + "::" + method}}}
+		return fc
+	case *tsql.MultiPartIdentifierCallTarget:
+		if t.MultiPartIdentifier == nil {
+			return nil
+		}
+		receiver = c.convertColumnReference(&tsql.ColumnReferenceExpression{MultiPartIdentifier: t.MultiPartIdentifier})
+	case *tsql.ExpressionCallTarget:
+		receiver = c.convertScalarExpression(t.Expression)
+	default:
+		return nil
+	}
+	if method == "value" && len(n.Parameters) == 2 {
+		if lit, ok := n.Parameters[1].(*tsql.StringLiteral); ok {
+			return &ast.TypeCast{
+				Arg:      receiver,
+				TypeName: &ast.TypeName{Spelling: "Nullable(" + strings.ToLower(lit.Value) + ")"},
+				Location: c.loc(n),
+			}
+		}
+	}
+	if !typeMethods[method] {
+		return nil
+	}
+	fc := c.convertFunctionCall(n)
+	fc.Funcname = &ast.List{Items: []ast.Node{&ast.String{Str: "." + method}}}
+	args := []ast.Node{receiver}
+	if fc.Args != nil {
+		args = append(args, fc.Args.Items...)
+	}
+	fc.Args = &ast.List{Items: args}
+	return fc
 }
 
 func (c *cc) convertFunctionCall(n *tsql.FunctionCall) *ast.FuncCall {
