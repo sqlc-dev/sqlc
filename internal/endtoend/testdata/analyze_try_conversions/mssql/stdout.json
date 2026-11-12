@@ -1,0 +1,60 @@
+[
+  {
+    "name": "Converted",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "readings"
+      },
+      {
+        "name": "as_int",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "as_decimal",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 5
+            },
+            {
+              "int": 1
+            }
+          ]
+        }
+      },
+      {
+        "name": "as_text",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "min",
+          "type": {
+            "name": "int"
+          }
+        }
+      }
+    ]
+  }
+]

@@ -6,6 +6,7 @@ import (
 
 	tsql "github.com/sqlc-dev/teesql/ast"
 
+	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
@@ -678,11 +679,7 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 			Location: c.loc(e),
 		}
 	case *tsql.TryCastCall:
-		return &ast.TypeCast{
-			Arg:      c.convertScalarExpression(e.Parameter),
-			TypeName: dataTypeName(e.DataType),
-			Location: c.loc(e),
-		}
+		return c.tryCast(e.Parameter, e.DataType, e)
 	case *tsql.ConvertCall:
 		return &ast.TypeCast{
 			Arg:      c.convertScalarExpression(e.Parameter),
@@ -690,11 +687,7 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 			Location: c.loc(e),
 		}
 	case *tsql.TryConvertCall:
-		return &ast.TypeCast{
-			Arg:      c.convertScalarExpression(e.Parameter),
-			TypeName: dataTypeName(e.DataType),
-			Location: c.loc(e),
-		}
+		return c.tryCast(e.Parameter, e.DataType, e)
 	case *tsql.CoalesceExpression:
 		coalesce := &ast.CoalesceExpr{
 			Args:     &ast.List{},
@@ -776,6 +769,23 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 		}
 	default:
 		return todo(expr)
+	}
+}
+
+// tryCast converts TRY_CAST and TRY_CONVERT, which yield NULL for a value
+// they cannot convert, so their result is nullable whatever the operand is.
+// A placeholder cast this way is typed by the cast as it is by CAST.
+func (c *cc) tryCast(arg tsql.ScalarExpression, dataType tsql.DataTypeReference, n tsql.Node) ast.Node {
+	tn := dataTypeName(dataType)
+	if _, ok := arg.(*tsql.VariableReference); !ok {
+		if t := core.TypeExprOfTypeName(tn); t != nil {
+			tn = &ast.TypeName{Spelling: "Nullable(" + t.String() + ")"}
+		}
+	}
+	return &ast.TypeCast{
+		Arg:      c.convertScalarExpression(arg),
+		TypeName: tn,
+		Location: c.loc(n),
 	}
 }
 
