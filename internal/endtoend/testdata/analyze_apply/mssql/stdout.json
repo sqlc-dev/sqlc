@@ -1,0 +1,97 @@
+[
+  {
+    "name": "LatestBook",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "authors"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "int": 100
+            }
+          ]
+        },
+        "table": "authors"
+      },
+      {
+        "name": "title",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "int": 200
+            }
+          ]
+        },
+        "table": "books"
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "TopBooks",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "name",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "int": 100
+            }
+          ]
+        },
+        "table": "authors"
+      },
+      {
+        "name": "title",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 200
+            }
+          ]
+        },
+        "table": "books"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "n",
+          "type": {
+            "name": "int"
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "nvarchar",
+            "args": [
+              {
+                "int": 100
+              }
+            ]
+          },
+          "table": "authors"
+        }
+      }
+    ]
+  }
+]

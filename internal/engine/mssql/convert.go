@@ -341,14 +341,22 @@ func (c *cc) convertTableReference(ref tsql.TableReference) ast.Node {
 		}
 		return join
 	case *tsql.UnqualifiedJoin:
-		if t.UnqualifiedJoinType != "CrossJoin" {
+		// APPLY is a lateral join: its right side may refer to the left,
+		// which the analyzer allows for every FROM item bound after another.
+		// OUTER APPLY keeps unmatched left rows, as a left join does.
+		join := &ast.JoinExpr{
+			Larg: c.convertTableReference(t.FirstTableReference),
+			Rarg: c.convertTableReference(t.SecondTableReference),
+		}
+		switch t.UnqualifiedJoinType {
+		case "CrossJoin", "CrossApply":
+			join.Jointype = ast.JoinTypeInner
+		case "OuterApply":
+			join.Jointype = ast.JoinTypeLeft
+		default:
 			return todo(ref)
 		}
-		return &ast.JoinExpr{
-			Jointype: ast.JoinTypeInner,
-			Larg:     c.convertTableReference(t.FirstTableReference),
-			Rarg:     c.convertTableReference(t.SecondTableReference),
-		}
+		return join
 	default:
 		return todo(ref)
 	}
