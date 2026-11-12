@@ -11,6 +11,9 @@ func (a *analyzer) analyzeInsert(s *ast.InsertStmt) error {
 	if s.Relation == nil {
 		return fmt.Errorf("insert: missing relation")
 	}
+	if err := a.bindCTEs(s.WithClause); err != nil {
+		return err
+	}
 	rel, err := a.bindRangeVar(s.Relation)
 	if err != nil {
 		return err

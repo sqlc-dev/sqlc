@@ -1,0 +1,67 @@
+[
+  {
+    "name": "CopyFromAuthor",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "int"
+        },
+        "table": "books"
+      },
+      {
+        "name": "title",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "int": 200
+            }
+          ]
+        },
+        "table": "books"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "nvarchar",
+            "args": [
+              {
+                "int": 100
+              }
+            ]
+          },
+          "table": "authors"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "book_id",
+          "type": {
+            "name": "int"
+          }
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "title",
+          "type": {
+            "name": "nvarchar",
+            "args": [
+              {
+                "int": 200
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+]

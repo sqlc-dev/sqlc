@@ -1133,7 +1133,8 @@ func (c *cc) convertInsertStatement(n *tsql.InsertStatement) ast.Node {
 	}
 
 	stmt := &ast.InsertStmt{
-		Relation: c.parseRangeVar(target.SchemaObject),
+		Relation:   c.parseRangeVar(target.SchemaObject),
+		WithClause: c.convertWithClause(n.WithCtesAndXmlNamespaces),
 	}
 
 	if len(spec.Columns) > 0 {
