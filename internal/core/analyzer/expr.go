@@ -462,6 +462,13 @@ func (a *analyzer) typeCase(e *ast.CaseExpr) (exprType, error) {
 			continue
 		}
 		// "CASE x WHEN y" compares y against x; "CASE WHEN y" is a predicate.
+		// A placeholder for x takes the type of what it is compared with.
+		if pr, ok := e.Arg.(*ast.ParamRef); ok && argT.typeOID == 0 && argT.expr == nil {
+			if argT, err = a.typeExpr(when.Expr); err != nil {
+				return exprType{}, err
+			}
+			a.inferParam(pr, argT)
+		}
 		if e.Arg != nil {
 			if err := a.typeOperands(when.Expr, argT); err != nil {
 				return exprType{}, err
@@ -481,45 +488,48 @@ func (a *analyzer) typeCase(e *ast.CaseExpr) (exprType, error) {
 	return t, nil
 }
 
-// typeCoalesce types COALESCE, which is its first typed argument's type and
-// is null only when every argument is.
+// typeCoalesce types COALESCE, which is null only when every argument is,
+// and of the type its arguments combine to, or its first typed argument's
+// for SQL Server's ISNULL.
 func (a *analyzer) typeCoalesce(e *ast.CoalesceExpr) (exprType, error) {
-	var out exprType
-	found := false
+	types := make([]exprType, 0, len(listItems(e.Args)))
 	nullable := true
 	for _, n := range listItems(e.Args) {
 		t, err := a.typeExpr(n)
 		if err != nil {
 			return exprType{}, err
 		}
-		if !found && (t.typeOID != 0 || t.expr != nil) {
-			// The result is an expression's, not the column's it came from.
-			out = exprType{typeOID: t.typeOID, expr: t.expr}
-			found = true
-		}
+		types = append(types, t)
 		nullable = nullable && t.nullable
 	}
-	out.nullable = nullable
-	return out, nil
+	t := a.commonType(types)
+	if e.FirstArgType {
+		for _, first := range types {
+			if first.typeOID != 0 || first.expr != nil {
+				t = first
+				break
+			}
+		}
+	}
+	// The result is an expression's, not the column's it came from.
+	return exprType{typeOID: t.typeOID, expr: t.expr, nullable: nullable}, nil
 }
 
-// typeFirstOf types a set of alternative results, taking the first one that has
-// a type. The result is nullable when any alternative is, or when the caller
-// says the set is not exhaustive.
+// typeFirstOf types a set of alternative results, as the type they combine
+// to, which without a dialect's rules is the first typed one's. The result
+// is nullable when any alternative is, or when the caller says the set is
+// not exhaustive.
 func (a *analyzer) typeFirstOf(nodes []ast.Node, nullable bool) (exprType, error) {
-	var out exprType
-	found := false
+	types := make([]exprType, 0, len(nodes))
 	for _, n := range nodes {
 		t, err := a.typeExpr(n)
 		if err != nil {
 			return exprType{}, err
 		}
-		if !found && (t.typeOID != 0 || t.expr != nil) {
-			out = t
-			found = true
-		}
+		types = append(types, t)
 		nullable = nullable || t.nullable
 	}
+	out := a.commonType(types)
 	out.nullable = nullable
 	return out, nil
 }

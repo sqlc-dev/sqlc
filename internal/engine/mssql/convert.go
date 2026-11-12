@@ -547,15 +547,9 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 	case *tsql.ParenthesisExpression:
 		return c.convertScalarExpression(e.Expression)
 	case *tsql.FunctionCall:
-		// ISNULL(a, b) is typed as COALESCE is: the first argument's type,
-		// NULL only when both are.
-		if identifierValue(e.FunctionName) == "isnull" && len(e.Parameters) == 2 && e.OverClause == nil {
-			return &ast.CoalesceExpr{
-				Args: &ast.List{Items: []ast.Node{
-					c.convertScalarExpression(e.Parameters[0]),
-					c.convertScalarExpression(e.Parameters[1]),
-				}},
-				Location: c.loc(e),
+		if e.OverClause == nil {
+			if out := c.convertAlternatives(e); out != nil {
+				return out
 			}
 		}
 		return c.convertFunctionCall(e)
@@ -680,6 +674,41 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 	default:
 		return todo(expr)
 	}
+}
+
+// convertAlternatives converts the functions that yield one of their
+// arguments, which SQL Server types as the type their candidates combine
+// to, as it does CASE: GREATEST and LEAST, and CHOOSE, which is the CASE
+// over its index it is defined as. ISNULL, NULL only when both arguments
+// are, as COALESCE is, keeps its first argument's type.
+func (c *cc) convertAlternatives(e *tsql.FunctionCall) ast.Node {
+	args := &ast.List{}
+	for _, p := range e.Parameters {
+		args.Items = append(args.Items, c.convertScalarExpression(p))
+	}
+	switch identifierValue(e.FunctionName) {
+	case "isnull":
+		if len(args.Items) == 2 {
+			return &ast.CoalesceExpr{Args: args, FirstArgType: true, Location: c.loc(e)}
+		}
+	case "greatest":
+		return &ast.MinMaxExpr{Op: 0, Args: args, Location: c.loc(e)}
+	case "least":
+		return &ast.MinMaxExpr{Op: 1, Args: args, Location: c.loc(e)}
+	case "choose":
+		if len(args.Items) < 2 {
+			return nil
+		}
+		choose := &ast.CaseExpr{Arg: args.Items[0], Args: &ast.List{}, Location: c.loc(e)}
+		for i, item := range args.Items[1:] {
+			choose.Args.Items = append(choose.Args.Items, &ast.CaseWhen{
+				Expr:   &ast.A_Const{Val: &ast.Integer{Ival: int64(i + 1)}},
+				Result: item,
+			})
+		}
+		return choose
+	}
+	return nil
 }
 
 func binaryOperator(binaryExpressionType string) string {

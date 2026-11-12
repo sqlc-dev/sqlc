@@ -1,0 +1,122 @@
+[
+  {
+    "name": "Combined",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "greatest_of",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 12
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "least_of",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 12
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "chosen",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 12
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "case_of",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "iif_of",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 20
+            }
+          ]
+        }
+      },
+      {
+        "name": "coalesce_of",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 19
+            },
+            {
+              "int": 4
+            }
+          ]
+        }
+      },
+      {
+        "name": "isnull_int",
+        "type": {
+          "name": "int"
+        }
+      },
+      {
+        "name": "isnull_text",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "pick",
+          "type": {
+            "name": "int"
+          }
+        }
+      }
+    ]
+  }
+]

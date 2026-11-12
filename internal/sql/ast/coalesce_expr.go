@@ -10,6 +10,9 @@ type CoalesceExpr struct {
 	Coalescecollid Oid   `json:"coalescecollid"`
 	Args           *List `json:"args,omitempty"`
 	Location       int   `json:"location"`
+	// FirstArgType marks SQL Server's ISNULL, which takes its first
+	// argument's type rather than the type its arguments combine to.
+	FirstArgType bool `json:"first_arg_type,omitempty"`
 }
 
 func (n *CoalesceExpr) Pos() int {

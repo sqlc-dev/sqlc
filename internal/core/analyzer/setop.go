@@ -27,7 +27,7 @@ func (a *analyzer) combineColumns(rules *core.SetOperationRules, op ast.SetOpera
 		case ast.Except:
 			col.NotNull = l.NotNull
 		}
-		t := a.combineTypes(rules, l, r)
+		t := a.combineTypes(rules, columnExprType(l), columnExprType(r))
 		t.nullable = !col.NotNull
 		col.TypeOID = t.typeOID
 		col.DataType, col.IsArray = a.typeNameOf(t)
@@ -40,17 +40,17 @@ func (a *analyzer) combineColumns(rules *core.SetOperationRules, op ast.SetOpera
 // combineTypes is the type a column takes from two branches: the one of
 // higher precedence, varying when either branch varies, with the length or
 // precision that holds both.
-func (a *analyzer) combineTypes(rules *core.SetOperationRules, l, r core.Column) exprType {
-	lt, rt := a.exprOf(columnExprType(l)), a.exprOf(columnExprType(r))
+func (a *analyzer) combineTypes(rules *core.SetOperationRules, l, r exprType) exprType {
+	lt, rt := a.exprOf(l), a.exprOf(r)
 	switch {
 	case lt == nil:
-		return columnExprType(r)
+		return r
 	case rt == nil:
-		return columnExprType(l)
+		return l
 	}
 	li, ri := slices.Index(rules.Precedence, lt.Name), slices.Index(rules.Precedence, rt.Name)
 	if li < 0 || ri < 0 {
-		return columnExprType(l)
+		return l
 	}
 	winner, loser := lt, rt
 	if ri < li {
@@ -67,6 +67,32 @@ func (a *analyzer) combineTypes(rules *core.SetOperationRules, l, r core.Column)
 		out.Args[0] = widerArg(out.Args[0], loser.Args[0])
 	}
 	return a.lookupType(out)
+}
+
+// commonType is the type a dialect gives an expression that yields one of
+// several values, as CASE, COALESCE and GREATEST do, by the rules it
+// combines a set operation's branches by; a dialect without them takes the
+// first typed value's. The result is no one column's.
+func (a *analyzer) commonType(types []exprType) exprType {
+	var out exprType
+	rules := a.cat.SetOperations()
+	for i, t := range types {
+		if t.typeOID == 0 && t.expr == nil {
+			continue
+		}
+		switch {
+		case out.typeOID == 0 && out.expr == nil:
+			out = t
+		case rules == nil:
+			return out
+		default:
+			out = a.combineTypes(rules, out, t)
+		}
+		if i > 0 {
+			out.sourceClassOID, out.sourceAttributeOID, out.sourceTableAlias = 0, 0, ""
+		}
+	}
+	return out
 }
 
 func mapValues(m map[string]string) []string {
