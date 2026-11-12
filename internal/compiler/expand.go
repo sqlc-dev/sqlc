@@ -110,6 +110,10 @@ func (c *Compiler) starOldFunc(parts []string) func(string) int {
 				length += len(o)
 			} else if quoted := c.quote(o); strings.HasPrefix(s[length:], quoted) {
 				length += len(quoted)
+			} else if quoted := `"` + o + `"`; strings.HasPrefix(s[length:], quoted) {
+				// SQL Server quotes with brackets, but reads double quotes
+				// as an identifier too.
+				length += len(quoted)
 			} else {
 				length += len(o)
 			}

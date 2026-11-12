@@ -37,6 +37,33 @@ func (q *Queries) ListOrders(ctx context.Context) ([]Order, error) {
 	return items, nil
 }
 
+const listOrdersDoubleQuoted = `-- name: ListOrdersDoubleQuoted :many
+SELECT o.id, o.[select], o.[weird]]name] FROM [order] "o";
+`
+
+func (q *Queries) ListOrdersDoubleQuoted(ctx context.Context) ([]Order, error) {
+	rows, err := q.db.QueryContext(ctx, listOrdersDoubleQuoted)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(&i.ID, &i.Select, &i.WeirdName); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const salesByYear = `-- name: SalesByYear :many
 SELECT pv.author_id, pv.[2023], pv.[2024] FROM sales PIVOT (SUM(amount) FOR year IN ([2023], [2024])) pv;
 `
