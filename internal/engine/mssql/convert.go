@@ -644,6 +644,21 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 			Subselect:   c.convertQueryExpression(e.QueryExpression),
 			Location:    c.loc(e),
 		}
+	case *tsql.AtTimeZoneCall:
+		// x AT TIME ZONE tz is typed as the call the dialect seeds under a
+		// name no function can have.
+		return &ast.FuncCall{
+			Funcname: &ast.List{
+				Items: []ast.Node{&ast.String{Str: "at time zone"}},
+			},
+			Args: &ast.List{
+				Items: []ast.Node{
+					c.convertScalarExpression(e.DateValue),
+					c.convertScalarExpression(e.TimeZone),
+				},
+			},
+			Location: c.loc(e),
+		}
 	case *tsql.ParameterlessCall:
 		return &ast.FuncCall{
 			Funcname: &ast.List{

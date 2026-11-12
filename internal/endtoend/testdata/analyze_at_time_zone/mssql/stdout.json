@@ -1,0 +1,55 @@
+[
+  {
+    "name": "CreatedIn",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "authors"
+      },
+      {
+        "name": "created_utc",
+        "type": {
+          "name": "datetimeoffset",
+          "nullable": true,
+          "args": [
+            {
+              "int": 7
+            }
+          ]
+        }
+      },
+      {
+        "name": "now_utc",
+        "type": {
+          "name": "datetimeoffset",
+          "nullable": true,
+          "args": [
+            {
+              "int": 3
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "tz",
+          "type": {
+            "name": "nvarchar",
+            "args": [
+              {
+                "int": 4000
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+]

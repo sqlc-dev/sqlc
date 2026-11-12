@@ -74,3 +74,7 @@
 {"name": "rtrim", "args": [{"type": "nvarchar"}], "returns": "nvarchar"}
 {"name": "trim", "args": [{"type": "varchar"}], "returns": "varchar"}
 {"name": "trim", "args": [{"type": "nvarchar"}], "returns": "nvarchar"}
+{"name": "at time zone", "args": [{"type": "datetimeoffset"}, {"type": "nvarchar(4000)"}], "returns": "datetimeoffset(7)", "nullable": true}
+{"name": "at time zone", "args": [{"type": "datetime2"}, {"type": "nvarchar(4000)"}], "returns": "datetimeoffset(7)", "nullable": true}
+{"name": "at time zone", "args": [{"type": "datetime"}, {"type": "nvarchar(4000)"}], "returns": "datetimeoffset(3)", "nullable": true}
+{"name": "at time zone", "args": [{"type": "smalldatetime"}, {"type": "nvarchar(4000)"}], "returns": "datetimeoffset(0)", "nullable": true}
