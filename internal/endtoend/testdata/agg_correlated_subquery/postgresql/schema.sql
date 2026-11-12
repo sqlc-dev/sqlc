@@ -1,0 +1,7 @@
+CREATE TABLE o (
+  x INT NOT NULL
+);
+
+CREATE TABLE b (
+  x INT NOT NULL
+);

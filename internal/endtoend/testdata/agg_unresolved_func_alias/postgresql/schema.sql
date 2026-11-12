@@ -1,0 +1,3 @@
+CREATE TABLE o (
+  x INT NOT NULL
+);

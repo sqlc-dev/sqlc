@@ -320,6 +320,13 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 			if res.Name != nil {
 				name = *res.Name
 			}
+			if n.Args != nil {
+				for _, arg := range n.Args.Items {
+					if err := checkStarRelation(qc, node, arg, tables, rtables); err != nil {
+						return nil, err
+					}
+				}
+			}
 			fun, err := qc.catalog.ResolveFuncCall(n)
 			if err == nil {
 				cols = append(cols, &Column{
@@ -345,7 +352,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 			case ast.EXISTS_SUBLINK:
 				cols = append(cols, &Column{Name: name, DataType: "bool", NotNull: true})
 			case ast.EXPR_SUBLINK:
-				subcols, err := c.outputColumns(qc, n.Subselect)
+				subcols, err := c.subqueryOutputColumns(qc, n.Subselect, tables)
 				if err != nil {
 					return nil, err
 				}
@@ -381,7 +388,7 @@ func (c *Compiler) outputColumns(qc *QueryCatalog, node ast.Node) ([]*Column, er
 			cols = append(cols, col)
 
 		case *ast.SelectStmt:
-			subcols, err := c.outputColumns(qc, n)
+			subcols, err := c.subqueryOutputColumns(qc, n, tables)
 			if err != nil {
 				return nil, err
 			}
@@ -610,7 +617,7 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 			tables = append(tables, table)
 
 		case *ast.RangeSubselect:
-			cols, err := c.outputColumns(qc, n.Subquery)
+			cols, err := c.subqueryOutputColumns(qc, n.Subquery, tables)
 			if err != nil {
 				return nil, err
 			}
@@ -656,6 +663,77 @@ func (c *Compiler) sourceTables(qc *QueryCatalog, node ast.Node) ([]*Table, erro
 		}
 	}
 	return tables, nil
+}
+
+// subqueryOutputColumns computes the output columns of a nested statement.
+// The relations of the enclosing statement stay visible to it, because a
+// correlated subquery may refer to them.
+func (c *Compiler) subqueryOutputColumns(qc *QueryCatalog, node ast.Node, outer []*Table) ([]*Column, error) {
+	saved := qc.outer
+	qc.outer = append(append([]*Table{}, saved...), outer...)
+	defer func() { qc.outer = saved }()
+	return c.outputColumns(qc, node)
+}
+
+// fromNameVisitor collects the names that FROM items of a statement can be
+// referred to by, including set-returning functions that sqlc cannot resolve
+// and therefore does not register as tables.
+type fromNameVisitor struct {
+	names map[string]struct{}
+}
+
+func (v *fromNameVisitor) Visit(n ast.Node) astutils.Visitor {
+	var alias *ast.Alias
+	switch n := n.(type) {
+	case *ast.RangeVar:
+		alias = n.Alias
+		if alias == nil && n.Relname != nil {
+			v.names[*n.Relname] = struct{}{}
+		}
+	case *ast.RangeFunction:
+		alias = n.Alias
+	case *ast.RangeSubselect:
+		alias = n.Alias
+	}
+	if alias != nil && alias.Aliasname != nil {
+		v.names[*alias.Aliasname] = struct{}{}
+	}
+	return v
+}
+
+// checkStarRelation returns an error when arg is a qualified star such as
+// "whatever.*" and the qualifier does not name a relation in scope. It
+// reports the same error as other references to an unknown table alias.
+func checkStarRelation(qc *QueryCatalog, node, arg ast.Node, tables, rtables []*Table) error {
+	ref, ok := arg.(*ast.ColumnRef)
+	if !ok || !hasStarRef(ref) {
+		return nil
+	}
+	parts := stringSlice(ref.Fields)
+	if len(parts) != 1 {
+		return nil
+	}
+	scope := parts[0]
+	for _, list := range [][]*Table{tables, qc.outer} {
+		for _, t := range list {
+			if t.Rel != nil && t.Rel.Name == scope {
+				return nil
+			}
+		}
+	}
+	if returningTableForScope(tables, rtables, scope) != nil {
+		return nil
+	}
+	v := &fromNameVisitor{names: map[string]struct{}{}}
+	astutils.Walk(v, node)
+	if _, ok := v.names[scope]; ok {
+		return nil
+	}
+	return &sqlerr.Error{
+		Code:     "42703",
+		Message:  fmt.Sprintf("table alias %q does not exist", scope),
+		Location: ref.Location,
+	}
 }
 
 func outputColumnRefs(res *ast.ResTarget, tables []*Table, node *ast.ColumnRef) ([]*Column, error) {

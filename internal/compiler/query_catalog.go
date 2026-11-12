@@ -12,6 +12,10 @@ type QueryCatalog struct {
 	catalog *catalog.Catalog
 	ctes    map[string]*Table
 	embeds  preprocess.EmbedSet
+
+	// outer holds the relations of the enclosing statements while the output
+	// columns of a nested statement are computed.
+	outer []*Table
 }
 
 func (comp *Compiler) buildQueryCatalog(c *catalog.Catalog, node ast.Node, embeds preprocess.EmbedSet) (*QueryCatalog, error) {
