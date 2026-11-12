@@ -1,0 +1,97 @@
+[
+  {
+    "name": "InsertSelected",
+    "cmd": ":exec",
+    "columns": [],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "a",
+          "type": {
+            "name": "int"
+          },
+          "table": "t"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "b",
+          "type": {
+            "name": "nvarchar",
+            "nullable": true,
+            "args": [
+              {
+                "int": 50
+              }
+            ]
+          },
+          "table": "t"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "c",
+          "type": {
+            "name": "datetime2",
+            "args": [
+              {
+                "int": 3
+              }
+            ]
+          },
+          "table": "t"
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "d",
+          "type": {
+            "name": "bigint"
+          },
+          "table": "t"
+        }
+      }
+    ]
+  },
+  {
+    "name": "CopyRow",
+    "cmd": ":exec",
+    "columns": [],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "a",
+          "type": {
+            "name": "int"
+          },
+          "table": "t"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "inc",
+          "type": {
+            "name": "bigint"
+          },
+          "table": "t"
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "src",
+          "type": {
+            "name": "int"
+          },
+          "table": "t"
+        }
+      }
+    ]
+  }
+]

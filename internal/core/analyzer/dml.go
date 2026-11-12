@@ -145,6 +145,19 @@ func (a *analyzer) bindInsertValues(n ast.Node, rel scopeRel, targets []core.Cla
 	// INSERT ... SELECT inserts whatever the query returns. The rows are not
 	// the statement's result, but the query still holds placeholders.
 	if sel.ValuesLists == nil {
+		// A placeholder selected as it is takes the type of the column it
+		// is inserted into, as one in VALUES does.
+		if sel.Op == ast.None {
+			for i, item := range listItems(sel.TargetList) {
+				rt, ok := item.(*ast.ResTarget)
+				if !ok || i >= len(targets) {
+					continue
+				}
+				if p, ok := rt.Val.(*ast.ParamRef); ok {
+					a.inferParam(p, columnType(rel, targets[i]))
+				}
+			}
+		}
 		_, err := a.subqueryColumns(sel)
 		return err
 	}
