@@ -66,6 +66,10 @@ type analyzer struct {
 	// resolving guards against an alias that refers to itself.
 	resolving map[string]bool
 
+	// returning maps the names a RETURNING list may give the statement's
+	// target to the target's own, while that list is analyzed.
+	returning map[string]string
+
 	// stars are the expansions every star in the statement asked for, shared
 	// with the analyzers of the queries nested in it so one statement reports
 	// all of them.

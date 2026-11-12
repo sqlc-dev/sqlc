@@ -10,6 +10,7 @@
   "bool": "bit",
   "limit": "bigint",
   "outer_join_nullable": true,
+  "returning_aliases": ["inserted", "deleted"],
   "comparison": ["=", "<>", "!=", "<", "<=", ">", ">="],
   "comparison_categories": "NBSD",
   "arithmetic": ["+", "-", "*", "/", "%"],

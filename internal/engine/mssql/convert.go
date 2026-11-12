@@ -886,34 +886,18 @@ func (c *cc) convertFunctionCall(n *tsql.FunctionCall) *ast.FuncCall {
 }
 
 // convertOutputClause converts an OUTPUT clause to a returning list. The
-// INSERTED and DELETED pseudo-table qualifiers are stripped so the columns
-// resolve against the statement's target table.
+// dialect names INSERTED and DELETED as the target's aliases there, so the
+// qualifiers are kept, and a star they qualify expands to columns they
+// qualify too.
 func (c *cc) convertOutputClause(n *tsql.OutputClause) *ast.List {
 	if n == nil || len(n.SelectColumns) == 0 {
 		return nil
 	}
 	list := &ast.List{}
 	for _, elem := range n.SelectColumns {
-		target := c.convertSelectElement(elem)
-		if res, ok := target.(*ast.ResTarget); ok {
-			stripOutputQualifier(res.Val)
-		}
-		list.Items = append(list.Items, target)
+		list.Items = append(list.Items, c.convertSelectElement(elem))
 	}
 	return list
-}
-
-func stripOutputQualifier(node ast.Node) {
-	ref, ok := node.(*ast.ColumnRef)
-	if !ok || ref.Fields == nil || len(ref.Fields.Items) < 2 {
-		return
-	}
-	if first, ok := ref.Fields.Items[0].(*ast.String); ok {
-		switch first.Str {
-		case "inserted", "deleted":
-			ref.Fields.Items = ref.Fields.Items[1:]
-		}
-	}
 }
 
 func (c *cc) convertInsertStatement(n *tsql.InsertStatement) ast.Node {

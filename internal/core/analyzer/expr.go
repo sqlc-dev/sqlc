@@ -160,6 +160,9 @@ func (a *analyzer) typeColumnRef(c *ast.ColumnRef) (exprType, error) {
 		relation = parts[0]
 		column = parts[1]
 	}
+	if target, ok := a.returning[relation]; ok {
+		relation = target
+	}
 	rel, col, ok, err := a.resolveColumn(relation, column)
 	if err != nil {
 		return exprType{}, err

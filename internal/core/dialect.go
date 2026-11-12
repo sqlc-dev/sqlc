@@ -82,6 +82,10 @@ const FlagQualifyDuplicateColumns = "columns.qualify_duplicates"
 // fill them with the type's default instead.
 const FlagOuterJoinNullable = "joins.outer_nullable"
 
+// FlagReturningAliases holds, comma separated, the names a RETURNING list
+// may use for the statement's target.
+const FlagReturningAliases = "returning.aliases"
+
 // FlagDefaultSchema holds the schema the dialect puts an unqualified object
 // in, when that is not the catalog's own default: a type in it is reported
 // without its schema.
@@ -209,6 +213,20 @@ func (c *Catalog) OuterJoinsNullable() bool {
 	}
 	v, _ := c.DialectFlag(c.dialectOID, FlagOuterJoinNullable)
 	return v == "true"
+}
+
+// ReturningAliases lists the names a RETURNING list may qualify a column of
+// the statement's target with, as SQL Server's OUTPUT clause reads
+// INSERTED.id and DELETED.id.
+func (c *Catalog) ReturningAliases() []string {
+	if c.dialectOID == 0 {
+		return nil
+	}
+	v, _ := c.DialectFlag(c.dialectOID, FlagReturningAliases)
+	if v == "" {
+		return nil
+	}
+	return strings.Split(v, ",")
 }
 
 // DefaultNamespaces lists the namespaces a type is reported from without

@@ -24,7 +24,7 @@ func (a *analyzer) analyzeInsert(s *ast.InsertStmt) error {
 	if err := a.bindInsertValues(s.SelectStmt, rel, targets); err != nil {
 		return err
 	}
-	return a.projectReturning(s.ReturningList)
+	return a.projectReturning(s.ReturningList, rel)
 }
 
 func (a *analyzer) analyzeUpdate(s *ast.UpdateStmt) error {
@@ -57,7 +57,7 @@ func (a *analyzer) analyzeUpdate(s *ast.UpdateStmt) error {
 			return fmt.Errorf("where: %w", err)
 		}
 	}
-	return a.projectReturning(s.ReturningList)
+	return a.projectReturning(s.ReturningList, target)
 }
 
 func (a *analyzer) analyzeDelete(s *ast.DeleteStmt) error {
@@ -75,7 +75,7 @@ func (a *analyzer) analyzeDelete(s *ast.DeleteStmt) error {
 			return fmt.Errorf("where: %w", err)
 		}
 	}
-	return a.projectReturning(s.ReturningList)
+	return a.projectReturning(s.ReturningList, sc.rels[0])
 }
 
 // relationScope builds the scope a DML statement operates on: the relations it
@@ -177,7 +177,16 @@ func (a *analyzer) bindValue(rel scopeRel, target *core.ClassColumn, v ast.Node)
 	return err
 }
 
-func (a *analyzer) projectReturning(l *ast.List) error {
+func (a *analyzer) projectReturning(l *ast.List, target scopeRel) error {
+	// A dialect's names for the target, such as SQL Server's INSERTED and
+	// DELETED, refer to it within the list.
+	if aliases := a.cat.ReturningAliases(); len(aliases) > 0 {
+		a.returning = map[string]string{}
+		for _, name := range aliases {
+			a.returning[name] = target.alias
+		}
+		defer func() { a.returning = nil }()
+	}
 	for _, item := range listItems(l) {
 		rt, ok := item.(*ast.ResTarget)
 		if !ok {
