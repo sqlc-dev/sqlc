@@ -140,9 +140,9 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
                         queryParams = append(queryParams, v)
                         placeholders = append(placeholders, "@p"+strconv.Itoa(len(queryParams)))
                       }
-                      query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/@{{.Column.Name}}", strings.Join(placeholders, ","), 1)
+                      query = strings.ReplaceAll(query, "/*SLICE:{{.Column.Name}}*/@{{.Column.Name}}", strings.Join(placeholders, ","))
                     } else {
-                      query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/@{{.Column.Name}}", "NULL", 1)
+                      query = strings.ReplaceAll(query, "/*SLICE:{{.Column.Name}}*/@{{.Column.Name}}", "NULL")
                     }
                 {{- else if .HasSqlcSlice }}
                     if len({{$arg.VariableForField .}}) > 0 {
@@ -171,9 +171,9 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
                 queryParams = append(queryParams, v)
                 placeholders = append(placeholders, "@p"+strconv.Itoa(len(queryParams)))
               }
-              query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/@{{.Arg.Column.Name}}", strings.Join(placeholders, ","), 1)
+              query = strings.ReplaceAll(query, "/*SLICE:{{.Arg.Column.Name}}*/@{{.Arg.Column.Name}}", strings.Join(placeholders, ","))
             } else {
-              query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/@{{.Arg.Column.Name}}", "NULL", 1)
+              query = strings.ReplaceAll(query, "/*SLICE:{{.Arg.Column.Name}}*/@{{.Arg.Column.Name}}", "NULL")
             }
             {{- else }}
             if len({{.Arg.Name}}) > 0 {

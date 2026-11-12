@@ -89,9 +89,9 @@ func (q *Queries) ListAuthorsByIDs(ctx context.Context, ids []int64) ([]ListAuth
 			queryParams = append(queryParams, v)
 			placeholders = append(placeholders, "@p"+strconv.Itoa(len(queryParams)))
 		}
-		query = strings.Replace(query, "/*SLICE:ids*/@ids", strings.Join(placeholders, ","), 1)
+		query = strings.ReplaceAll(query, "/*SLICE:ids*/@ids", strings.Join(placeholders, ","))
 	} else {
-		query = strings.Replace(query, "/*SLICE:ids*/@ids", "NULL", 1)
+		query = strings.ReplaceAll(query, "/*SLICE:ids*/@ids", "NULL")
 	}
 	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
@@ -139,9 +139,9 @@ func (q *Queries) ListAuthorsByIDsAndName(ctx context.Context, arg ListAuthorsBy
 			queryParams = append(queryParams, v)
 			placeholders = append(placeholders, "@p"+strconv.Itoa(len(queryParams)))
 		}
-		query = strings.Replace(query, "/*SLICE:ids*/@ids", strings.Join(placeholders, ","), 1)
+		query = strings.ReplaceAll(query, "/*SLICE:ids*/@ids", strings.Join(placeholders, ","))
 	} else {
-		query = strings.Replace(query, "/*SLICE:ids*/@ids", "NULL", 1)
+		query = strings.ReplaceAll(query, "/*SLICE:ids*/@ids", "NULL")
 	}
 	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
@@ -151,6 +151,50 @@ func (q *Queries) ListAuthorsByIDsAndName(ctx context.Context, arg ListAuthorsBy
 	var items []ListAuthorsByIDsAndNameRow
 	for rows.Next() {
 		var i ListAuthorsByIDsAndNameRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAuthorsByIDsTwice = `-- name: ListAuthorsByIDsTwice :many
+SELECT id, name FROM authors WHERE id IN (/*SLICE:ids*/@ids) OR id + 100 IN (/*SLICE:ids*/@ids);
+`
+
+type ListAuthorsByIDsTwiceRow struct {
+	ID   int64
+	Name string
+}
+
+func (q *Queries) ListAuthorsByIDsTwice(ctx context.Context, ids []int64) ([]ListAuthorsByIDsTwiceRow, error) {
+	query := listAuthorsByIDsTwice
+	var queryParams []any
+	if len(ids) > 0 {
+		var placeholders []string
+		for _, v := range ids {
+			queryParams = append(queryParams, v)
+			placeholders = append(placeholders, "@p"+strconv.Itoa(len(queryParams)))
+		}
+		query = strings.ReplaceAll(query, "/*SLICE:ids*/@ids", strings.Join(placeholders, ","))
+	} else {
+		query = strings.ReplaceAll(query, "/*SLICE:ids*/@ids", "NULL")
+	}
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListAuthorsByIDsTwiceRow
+	for rows.Next() {
+		var i ListAuthorsByIDsTwiceRow
 		if err := rows.Scan(&i.ID, &i.Name); err != nil {
 			return nil, err
 		}

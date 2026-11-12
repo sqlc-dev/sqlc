@@ -18,3 +18,6 @@ SELECT sqlc.embed(a), sqlc.embed(books), books.title AS book_title
 FROM authors a JOIN books ON books.author_id = a.id
 WHERE a.id = sqlc.arg(author_id)
 ORDER BY books.id;
+
+-- name: ListAuthorsByIDsTwice :many
+SELECT id, name FROM authors WHERE id IN (sqlc.slice(ids)) OR id + 100 IN (sqlc.slice(ids));
