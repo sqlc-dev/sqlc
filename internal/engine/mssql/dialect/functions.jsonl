@@ -124,10 +124,10 @@
 {"name": "replace", "args": [{"type": "nchar"}, {"type": "any"}, {"type": "any"}], "returns": "nvarchar(4000)", "nullable": true}
 {"name": "translate", "args": [{"type": "varchar"}, {"type": "any"}, {"type": "any"}], "returns": "varchar(8000)", "nullable": true}
 {"name": "translate", "args": [{"type": "nvarchar"}, {"type": "any"}, {"type": "any"}], "returns": "nvarchar(4000)", "nullable": true}
-{"name": "replicate", "args": [{"type": "varchar"}, {"type": "bigint"}], "returns": "varchar", "nullable": true}
-{"name": "replicate", "args": [{"type": "char"}, {"type": "bigint"}], "returns": "varchar", "nullable": true}
-{"name": "replicate", "args": [{"type": "nvarchar"}, {"type": "bigint"}], "returns": "nvarchar", "nullable": true}
-{"name": "replicate", "args": [{"type": "nchar"}, {"type": "bigint"}], "returns": "nvarchar", "nullable": true}
+{"name": "replicate", "args": [{"type": "varchar"}, {"type": "int"}], "returns": "varchar", "nullable": true}
+{"name": "replicate", "args": [{"type": "char"}, {"type": "int"}], "returns": "varchar", "nullable": true}
+{"name": "replicate", "args": [{"type": "nvarchar"}, {"type": "int"}], "returns": "nvarchar", "nullable": true}
+{"name": "replicate", "args": [{"type": "nchar"}, {"type": "int"}], "returns": "nvarchar", "nullable": true}
 {"name": "reverse", "args": [{"type": "varchar"}], "returns": "$1", "nullable": true}
 {"name": "reverse", "args": [{"type": "char"}], "returns": "varchar", "nullable": true}
 {"name": "reverse", "args": [{"type": "nvarchar"}], "returns": "$1", "nullable": true}
@@ -138,7 +138,7 @@
 {"name": "stuff", "args": [{"type": "nchar"}, {"type": "bigint"}, {"type": "bigint"}, {"type": "any"}], "returns": "nvarchar", "nullable": true}
 {"name": "space", "args": [{"type": "int"}], "returns": "varchar(8000)", "nullable": true}
 {"name": "charindex", "args": [{"type": "any"}, {"type": "any"}], "returns": "int", "nullable": true}
-{"name": "charindex", "args": [{"type": "any"}, {"type": "any"}, {"type": "bigint"}], "returns": "int", "nullable": true}
+{"name": "charindex", "args": [{"type": "any"}, {"type": "any"}, {"type": "int"}], "returns": "int", "nullable": true}
 {"name": "patindex", "args": [{"type": "any"}, {"type": "any"}], "returns": "int", "nullable": true}
 {"name": "ascii", "args": [{"type": "varchar"}], "returns": "int", "nullable": true}
 {"name": "unicode", "args": [{"type": "nvarchar"}], "returns": "int", "nullable": true}

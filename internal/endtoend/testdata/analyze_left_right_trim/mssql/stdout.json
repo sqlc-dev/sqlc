@@ -51,5 +51,45 @@
         }
       }
     ]
+  },
+  {
+    "name": "Repeated",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "r",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true
+        }
+      },
+      {
+        "name": "ci",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "r",
+          "type": {
+            "name": "int"
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "ci",
+          "type": {
+            "name": "int"
+          }
+        }
+      }
+    ]
   }
 ]
