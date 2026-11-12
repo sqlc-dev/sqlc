@@ -78,6 +78,9 @@ func (c *Compiler) quote(x string) string {
 	switch c.conf.Engine {
 	case config.EngineMySQL:
 		return "`" + x + "`"
+	case config.EngineMSSQL:
+		// Brackets quote whatever QUOTED_IDENTIFIER is set to.
+		return "[" + strings.ReplaceAll(x, "]", "]]") + "]"
 	default:
 		return "\"" + x + "\""
 	}
