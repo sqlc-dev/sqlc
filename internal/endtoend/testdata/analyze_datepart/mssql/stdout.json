@@ -1,0 +1,35 @@
+[
+  {
+    "name": "Recent",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "authors"
+      },
+      {
+        "name": "due"
+      },
+      {
+        "name": "age"
+      },
+      {
+        "name": "month_of"
+      },
+      {
+        "name": "weekday_of"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "days"
+        }
+      }
+    ]
+  }
+]

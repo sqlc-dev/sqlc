@@ -734,7 +734,15 @@ func (c *cc) convertFunctionCall(n *tsql.FunctionCall) *ast.FuncCall {
 		AggDistinct: n.UniqueRowFilter == "Distinct",
 	}
 
-	for _, param := range n.Parameters {
+	for i, param := range n.Parameters {
+		// The datepart DATEADD and its relatives take first is a keyword,
+		// not a column: it is passed on as the string it names.
+		if i == 0 && datepartFunctions[identifierValue(n.FunctionName)] {
+			if part := datepart(param); part != "" {
+				fc.Args = &ast.List{Items: []ast.Node{&ast.A_Const{Val: &ast.String{Str: part}, Location: c.loc(param)}}}
+				continue
+			}
+		}
 		// COUNT(*) and friends carry the star as a wildcard column reference.
 		if col, ok := param.(*tsql.ColumnReferenceExpression); ok && col.ColumnType == "Wildcard" && col.MultiPartIdentifier == nil {
 			fc.AggStar = true
@@ -760,6 +768,27 @@ func (c *cc) convertFunctionCall(n *tsql.FunctionCall) *ast.FuncCall {
 	}
 
 	return fc
+}
+
+// datepartFunctions are the functions whose first argument is a datepart.
+var datepartFunctions = map[string]bool{
+	"dateadd":      true,
+	"datediff":     true,
+	"datediff_big": true,
+	"datename":     true,
+	"datepart":     true,
+	"datetrunc":    true,
+	"date_bucket":  true,
+}
+
+// datepart returns the datepart keyword an argument spells, as in
+// DATEADD(day, ...), or "" when it is not a bare name.
+func datepart(n tsql.ScalarExpression) string {
+	col, ok := n.(*tsql.ColumnReferenceExpression)
+	if !ok || col.MultiPartIdentifier == nil || len(col.MultiPartIdentifier.Identifiers) != 1 {
+		return ""
+	}
+	return identifierValue(col.MultiPartIdentifier.Identifiers[0])
 }
 
 // convertOutputClause converts an OUTPUT clause to a returning list. The
