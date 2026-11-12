@@ -157,6 +157,12 @@ func (v QueryValue) namedArg(name, expr string) string {
 	return "sql.Named(" + strconv.Quote(name) + ", " + expr + ")"
 }
 
+// NamedArgForField is the argument expr passed for a field of a query bound
+// by name.
+func (v QueryValue) NamedArgForField(f Field) string {
+	return v.namedArg(f.ParamName, v.VariableForField(f))
+}
+
 func (v QueryValue) Params() string {
 	if v.isEmpty() {
 		return ""
@@ -218,6 +224,20 @@ func (v QueryValue) HasSqlcSlices() bool {
 	}
 	for _, v := range v.Struct.Fields {
 		if v.Column.IsSqlcSlice {
+			return true
+		}
+	}
+	return false
+}
+
+// hasNamedArg reports whether any parameter is passed as sql.Named, which a
+// sqlc.slice() never is.
+func (v QueryValue) hasNamedArg() bool {
+	if v.Struct == nil {
+		return !v.HasSqlcSlices()
+	}
+	for _, f := range v.Struct.Fields {
+		if !f.HasSqlcSlice() {
 			return true
 		}
 	}

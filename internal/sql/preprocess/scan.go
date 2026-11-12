@@ -33,7 +33,8 @@ func (l *lexer) scan(start, end int) []occurrence {
 			}
 			i = j
 
-		case c == '@' && l.d.AtSign && isIdentStart(l.at(i+1)):
+		// @@name is a system function, such as SQL Server's @@ROWCOUNT.
+		case c == '@' && l.d.AtSign && isIdentStart(l.at(i+1)) && l.at(i-1) != '@':
 			j := l.identEnd(i + 1)
 			out = append(out, occurrence{
 				kind:  kindArg,

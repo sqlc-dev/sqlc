@@ -14,6 +14,8 @@ const (
 	StyleQuestion
 	// StyleOrdinal numbers parameters as ?1, ?2, ... (SQLite)
 	StyleOrdinal
+	// StyleAt names parameters as @name (SQL Server)
+	StyleAt
 )
 
 // Dialect describes the lexical rules the preprocessor needs to walk a query
@@ -87,6 +89,13 @@ var dialects = map[config.Engine]Dialect{
 		Question:  true,
 		Backtick:  true,
 		Backslash: true,
+	},
+	// SQL Server's @name is already a named parameter, so sqlc.arg(name)
+	// becomes one. Its comments nest and its identifiers keep their case.
+	config.EngineMSSQL: {
+		Style:              StyleAt,
+		AtSign:             true,
+		NestedBlockComment: true,
 	},
 	// ClickHouse binds with an unnumbered ?, like MySQL, and its identifiers
 	// keep their case.

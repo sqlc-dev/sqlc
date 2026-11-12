@@ -131,7 +131,20 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
         {{- if .Arg.Struct }}
             {{- $arg := .Arg }}
             {{- range .Arg.Struct.Fields }}
-                {{- if .HasSqlcSlice }}
+                {{- if and .HasSqlcSlice $arg.NamedArgs }}
+                    {{- /* The driver names an unnamed argument @p<ordinal>, its
+                        1-based position in queryParams. */}}
+                    if len({{$arg.VariableForField .}}) > 0 {
+                      var placeholders []string
+                      for _, v := range {{$arg.VariableForField .}} {
+                        queryParams = append(queryParams, v)
+                        placeholders = append(placeholders, "@p"+strconv.Itoa(len(queryParams)))
+                      }
+                      query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/@{{.Column.Name}}", strings.Join(placeholders, ","), 1)
+                    } else {
+                      query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/@{{.Column.Name}}", "NULL", 1)
+                    }
+                {{- else if .HasSqlcSlice }}
                     if len({{$arg.VariableForField .}}) > 0 {
                       for _, v := range {{$arg.VariableForField .}} {
                         queryParams = append(queryParams, v)
@@ -140,6 +153,8 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
                     } else {
                       query = strings.Replace(query, "/*SLICE:{{.Column.Name}}*/?", "NULL", 1)
                     }
+                {{- else if $arg.NamedArgs }}
+                  queryParams = append(queryParams, {{$arg.NamedArgForField .}})
                 {{- else }}
                   queryParams = append(queryParams, {{$arg.VariableForField .}})
                 {{- end }}
@@ -149,6 +164,18 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
                 in a struct), because .Arg.HasSqlcSlices further up above was true,
                 this section is 100% a slice (impossible to get here otherwise).
             */}}
+            {{- if .Arg.NamedArgs }}
+            if len({{.Arg.Name}}) > 0 {
+              var placeholders []string
+              for _, v := range {{.Arg.Name}} {
+                queryParams = append(queryParams, v)
+                placeholders = append(placeholders, "@p"+strconv.Itoa(len(queryParams)))
+              }
+              query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/@{{.Arg.Column.Name}}", strings.Join(placeholders, ","), 1)
+            } else {
+              query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/@{{.Arg.Column.Name}}", "NULL", 1)
+            }
+            {{- else }}
             if len({{.Arg.Name}}) > 0 {
               for _, v := range {{.Arg.Name}} {
                 queryParams = append(queryParams, v)
@@ -157,6 +184,7 @@ func (q *Queries) {{.MethodName}}(ctx context.Context, {{ dbarg }} {{.Arg.Pair}}
             } else {
               query = strings.Replace(query, "/*SLICE:{{.Arg.Column.Name}}*/?", "NULL", 1)
             }
+            {{- end }}
         {{- end }}
         {{- if emitPreparedQueries }}
         {{ queryRetval . }} {{ queryMethod . }}(ctx, nil, query, queryParams...)
