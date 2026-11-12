@@ -1,0 +1,495 @@
+[
+  {
+    "name": "Ranking",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "int"
+        },
+        "table": "books"
+      },
+      {
+        "name": "previous_price",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "next_title",
+        "type": {
+          "name": "varchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 100
+            }
+          ]
+        }
+      },
+      {
+        "name": "first_subtitle",
+        "type": {
+          "name": "varchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 100
+            }
+          ]
+        }
+      },
+      {
+        "name": "last_qty",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Nulls",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "rating",
+        "type": {
+          "name": "int"
+        }
+      },
+      {
+        "name": "discount",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 5
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "qty",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "chosen",
+        "type": {
+          "name": "varchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 100
+            }
+          ]
+        }
+      },
+      {
+        "name": "greatest_price",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "least_title",
+        "type": {
+          "name": "varchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 100
+            }
+          ]
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Strings",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "replaced",
+        "type": {
+          "name": "varchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 8000
+            }
+          ]
+        }
+      },
+      {
+        "name": "replaced_n",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 4000
+            }
+          ]
+        }
+      },
+      {
+        "name": "reversed",
+        "type": {
+          "name": "varchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 100
+            }
+          ]
+        }
+      },
+      {
+        "name": "position",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "pattern_position",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "formatted",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 4000
+            }
+          ]
+        }
+      },
+      {
+        "name": "quoted",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 258
+            }
+          ]
+        }
+      },
+      {
+        "name": "str_weight",
+        "type": {
+          "name": "varchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Aggregates",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "titles",
+        "type": {
+          "name": "varchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 8000
+            }
+          ]
+        }
+      },
+      {
+        "name": "notes",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 4000
+            }
+          ]
+        }
+      },
+      {
+        "name": "qty_stdev",
+        "type": {
+          "name": "float",
+          "nullable": true
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Math",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "abs_qty",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "abs_price",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "abs_cost",
+        "type": {
+          "name": "money",
+          "nullable": true
+        }
+      },
+      {
+        "name": "ceiling_weight",
+        "type": {
+          "name": "float",
+          "nullable": true
+        }
+      },
+      {
+        "name": "floor_rating",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "rounded",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 5
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "squared",
+        "type": {
+          "name": "float",
+          "nullable": true
+        }
+      },
+      {
+        "name": "root",
+        "type": {
+          "name": "float",
+          "nullable": true
+        }
+      },
+      {
+        "name": "sign_discount",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 5
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Dates",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "year",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "month",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "day",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "month_end",
+        "type": {
+          "name": "date",
+          "nullable": true
+        }
+      },
+      {
+        "name": "start_date",
+        "type": {
+          "name": "date",
+          "nullable": true
+        }
+      },
+      {
+        "name": "start_time",
+        "type": {
+          "name": "datetime2",
+          "nullable": true,
+          "args": [
+            {
+              "int": 3
+            }
+          ]
+        }
+      },
+      {
+        "name": "switched",
+        "type": {
+          "name": "datetimeoffset",
+          "nullable": true,
+          "args": [
+            {
+              "int": 7
+            }
+          ]
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Json",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "is_json",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "json_value",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 4000
+            }
+          ]
+        }
+      },
+      {
+        "name": "json_query",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
+        }
+      },
+      {
+        "name": "json_modified",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
+        }
+      },
+      {
+        "name": "hash",
+        "type": {
+          "name": "varbinary",
+          "nullable": true,
+          "args": [
+            {
+              "int": 8000
+            }
+          ]
+        }
+      },
+      {
+        "name": "checksum",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      }
+    ],
+    "params": []
+  }
+]

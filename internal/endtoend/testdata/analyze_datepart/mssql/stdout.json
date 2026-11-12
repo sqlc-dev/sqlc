@@ -11,23 +11,52 @@
         "table": "authors"
       },
       {
-        "name": "due"
+        "name": "due",
+        "type": {
+          "name": "datetime2",
+          "nullable": true,
+          "args": [
+            {
+              "int": 7
+            }
+          ]
+        }
       },
       {
-        "name": "age"
+        "name": "age",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
       },
       {
-        "name": "month_of"
+        "name": "month_of",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
       },
       {
-        "name": "weekday_of"
+        "name": "weekday_of",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 30
+            }
+          ]
+        }
       }
     ],
     "params": [
       {
         "number": 1,
         "column": {
-          "name": "days"
+          "name": "days",
+          "type": {
+            "name": "int"
+          }
         }
       }
     ]
