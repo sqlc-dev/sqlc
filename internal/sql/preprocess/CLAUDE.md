@@ -31,9 +31,9 @@ looks like.
 
 `lexer` is a dialect-parameterized scanner. It does not parse SQL — it knows
 only enough to skip the regions where sqlc syntax must not be rewritten:
-comments (`--`, `/* */`, `#`), string literals, quoted identifiers, backticks
-and PostgreSQL dollar-quoted strings. `Dialect` (dialect.go) is the single
-place those lexical rules live.
+comments (`--`, `/* */`, `#`), string literals, quoted identifiers, backticks,
+SQL Server brackets and PostgreSQL dollar-quoted strings. `Dialect`
+(dialect.go) is the single place those lexical rules live.
 
 `File(engine, src)` looks up the dialect; an engine with no entry gets its
 source back untouched. Otherwise it walks the whole file, splits it at

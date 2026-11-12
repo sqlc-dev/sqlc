@@ -44,6 +44,10 @@ type Dialect struct {
 	// Backtick reports whether `ident` is a quoted identifier.
 	Backtick bool
 
+	// Bracket reports whether [ident] is a quoted identifier, with ]]
+	// standing for a closing bracket in it.
+	Bracket bool
+
 	// HashComment reports whether # starts a line comment.
 	HashComment bool
 
@@ -95,6 +99,7 @@ var dialects = map[config.Engine]Dialect{
 	config.EngineMSSQL: {
 		Style:              StyleAt,
 		AtSign:             true,
+		Bracket:            true,
 		NestedBlockComment: true,
 	},
 	// ClickHouse binds with an unnumbered ?, like MySQL, and its identifiers
