@@ -2,6 +2,7 @@ package analyzer
 
 import (
 	"fmt"
+	"maps"
 
 	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -302,6 +303,12 @@ func (a *analyzer) bindCTEs(with *ast.WithClause) error {
 	if with == nil {
 		return nil
 	}
+	// The analyzers of nested queries share the map they inherit, so a WITH
+	// clause binds its names in a copy, out of sight of the enclosing query.
+	a.ctes = maps.Clone(a.ctes)
+	if a.ctes == nil {
+		a.ctes = map[string]scopeRel{}
+	}
 	for _, item := range listItems(with.Ctes) {
 		cte, ok := item.(*ast.CommonTableExpr)
 		if !ok || cte.Ctename == nil {
@@ -310,9 +317,6 @@ func (a *analyzer) bindCTEs(with *ast.WithClause) error {
 		sel, ok := cte.Ctequery.(*ast.SelectStmt)
 		if !ok {
 			continue
-		}
-		if a.ctes == nil {
-			a.ctes = map[string]scopeRel{}
 		}
 		// A recursive CTE refers to itself in the branches after its first,
 		// which gives the columns, so the first is bound before the rest.

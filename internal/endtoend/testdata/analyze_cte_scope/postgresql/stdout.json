@@ -1,0 +1,23 @@
+[
+  {
+    "name": "InnerWithDoesNotLeak",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "inner_count",
+        "type": {
+          "name": "bigint",
+          "nullable": true
+        }
+      },
+      {
+        "name": "outer_name",
+        "type": {
+          "name": "text",
+          "nullable": true
+        }
+      }
+    ],
+    "params": []
+  }
+]
