@@ -19,7 +19,9 @@ func domainColumn(req *plugin.GenerateRequest, col *plugin.Column) *plugin.Colum
 		}
 		out := proto.Clone(col).(*plugin.Column)
 		out.TypeExpr = t
-		out.Type = &plugin.Identifier{Name: t.GetName()}
+		name, dims := flatType(t)
+		out.Type = &plugin.Identifier{Name: name}
+		out.IsArray, out.ArrayDims = dims > 0, dims
 		return out
 	}
 	d := findDomain(req, col.Type.GetSchema(), col.Type.GetName())
@@ -29,6 +31,18 @@ func domainColumn(req *plugin.GenerateRequest, col *plugin.Column) *plugin.Colum
 	out := proto.Clone(col).(*plugin.Column)
 	out.Type = &plugin.Identifier{Name: d.Base.Name}
 	return out
+}
+
+// flatType is t as the flat description reads it, the way
+// coreResultCatalog writes one: the innermost element's name, with one
+// dimension per array around it.
+func flatType(t *plugin.TypeExpr) (string, int32) {
+	var dims int32
+	for typeExprName(t) == "array" && typeExprArg(t, 0) != nil {
+		t = typeExprArg(t, 0)
+		dims++
+	}
+	return t.GetName(), dims
 }
 
 // resolveDomains replaces each domain in t with its base, keeping the
