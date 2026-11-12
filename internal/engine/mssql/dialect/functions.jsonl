@@ -235,11 +235,15 @@
 {"name": "switchoffset", "args": [{"type": "datetimeoffset"}, {"type": "any"}], "returns": "$1", "nullable": true}
 {"name": "todatetimeoffset", "args": [{"type": "any"}, {"type": "any"}], "returns": "datetimeoffset", "nullable": true}
 {"name": "dateadd", "args": [{"type": "varchar"}, {"type": "int"}, {"type": "any"}], "returns": "$3", "nullable": true}
+{"name": "dateadd", "args": [{"type": "varchar"}, {"type": "int"}, {"type": "varchar"}], "returns": "datetime", "nullable": true}
+{"name": "dateadd", "args": [{"type": "varchar"}, {"type": "int"}, {"type": "nvarchar"}], "returns": "datetime", "nullable": true}
 {"name": "datediff", "args": [{"type": "varchar"}, {"type": "any"}, {"type": "any"}], "returns": "int", "nullable": true}
 {"name": "datediff_big", "args": [{"type": "varchar"}, {"type": "any"}, {"type": "any"}], "returns": "bigint", "nullable": true}
 {"name": "datepart", "args": [{"type": "varchar"}, {"type": "any"}], "returns": "int", "nullable": true}
 {"name": "datename", "args": [{"type": "varchar"}, {"type": "any"}], "returns": "nvarchar(30)", "nullable": true}
 {"name": "datetrunc", "args": [{"type": "varchar"}, {"type": "any"}], "returns": "$2", "nullable": true}
+{"name": "datetrunc", "args": [{"type": "varchar"}, {"type": "varchar"}], "returns": "datetime2(7)", "nullable": true}
+{"name": "datetrunc", "args": [{"type": "varchar"}, {"type": "nvarchar"}], "returns": "datetime2(7)", "nullable": true}
 {"name": "isjson", "args": [{"type": "any"}], "returns": "int", "nullable": true}
 {"name": "isjson", "args": [{"type": "any"}, {"type": "varchar"}], "returns": "int", "nullable": true}
 {"name": "json_value", "args": [{"type": "any"}, {"type": "nvarchar"}], "returns": "nvarchar(4000)", "nullable": true}
