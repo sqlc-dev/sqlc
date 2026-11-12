@@ -309,3 +309,76 @@
 {"name": "geometry::stgeomfromtext", "args": [{"type": "nvarchar(max)"}, {"type": "int"}], "returns": "geometry", "nullable": true}
 {"name": "geometry::stpointfromtext", "args": [{"type": "nvarchar(max)"}, {"type": "int"}], "returns": "geometry", "nullable": true}
 {"name": "geography::point", "args": [{"type": "float"}, {"type": "float"}, {"type": "int"}], "returns": "geography", "nullable": true}
+{"name": "grouping", "kind": "a", "args": [{"type": "any"}], "returns": "tinyint", "never_null": true}
+{"name": "grouping_id", "kind": "a", "args": [{"type": "any"}, {"type": "any", "mode": "v"}], "returns": "int", "never_null": true}
+{"name": "approx_count_distinct", "kind": "a", "args": [{"type": "any"}], "returns": "bigint", "nullable": true}
+{"name": "checksum_agg", "kind": "a", "args": [{"type": "int"}], "returns": "int", "nullable": true}
+{"name": "percentile_cont", "kind": "w", "args": [{"type": "float"}], "returns": "float", "nullable": true}
+{"name": "ident_current", "args": [{"type": "nvarchar"}], "returns": "decimal(38,0)", "nullable": true}
+{"name": "ident_seed", "args": [{"type": "nvarchar"}], "returns": "decimal(38,0)", "nullable": true}
+{"name": "ident_incr", "args": [{"type": "nvarchar"}], "returns": "decimal(38,0)", "nullable": true}
+{"name": "rowcount_big", "returns": "bigint", "never_null": true}
+{"name": "db_name", "returns": "nvarchar(128)", "nullable": true}
+{"name": "suser_sname", "returns": "nvarchar(128)", "nullable": true}
+{"name": "schema_name", "returns": "nvarchar(128)", "nullable": true}
+{"name": "user_name", "returns": "nvarchar(128)", "nullable": true}
+{"name": "db_name", "args": [{"type": "int"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "suser_sname", "args": [{"type": "varbinary"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "schema_name", "args": [{"type": "int"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "user_name", "args": [{"type": "int"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "host_name", "returns": "nvarchar(128)", "nullable": true}
+{"name": "app_name", "returns": "nvarchar(128)", "nullable": true}
+{"name": "suser_name", "returns": "nvarchar(128)", "nullable": true}
+{"name": "current_timezone", "returns": "nvarchar(128)", "nullable": true}
+{"name": "current_timezone_id", "returns": "nvarchar(128)", "nullable": true}
+{"name": "error_procedure", "returns": "nvarchar(128)", "nullable": true}
+{"name": "original_login", "returns": "nvarchar(4000)", "nullable": true}
+{"name": "object_id", "args": [{"type": "nvarchar"}], "returns": "int", "nullable": true}
+{"name": "object_id", "args": [{"type": "nvarchar"}, {"type": "nvarchar"}], "returns": "int", "nullable": true}
+{"name": "object_name", "args": [{"type": "int"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "object_name", "args": [{"type": "int"}, {"type": "int"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "object_schema_name", "args": [{"type": "int"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "object_schema_name", "args": [{"type": "int"}, {"type": "int"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "object_definition", "args": [{"type": "int"}], "returns": "nvarchar(max)", "nullable": true}
+{"name": "db_id", "returns": "smallint", "nullable": true}
+{"name": "db_id", "args": [{"type": "nvarchar"}], "returns": "smallint", "nullable": true}
+{"name": "user_id", "returns": "smallint", "nullable": true}
+{"name": "user_id", "args": [{"type": "nvarchar"}], "returns": "smallint", "nullable": true}
+{"name": "suser_id", "returns": "int", "nullable": true}
+{"name": "suser_id", "args": [{"type": "nvarchar"}], "returns": "int", "nullable": true}
+{"name": "schema_id", "returns": "int", "nullable": true}
+{"name": "schema_id", "args": [{"type": "nvarchar"}], "returns": "int", "nullable": true}
+{"name": "suser_sid", "returns": "varbinary(85)", "nullable": true}
+{"name": "col_length", "args": [{"type": "nvarchar"}, {"type": "nvarchar"}], "returns": "smallint", "nullable": true}
+{"name": "col_name", "args": [{"type": "int"}, {"type": "int"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "type_name", "args": [{"type": "int"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "error_number", "returns": "int", "nullable": true}
+{"name": "error_severity", "returns": "int", "nullable": true}
+{"name": "error_state", "returns": "int", "nullable": true}
+{"name": "error_line", "returns": "int", "nullable": true}
+{"name": "error_message", "returns": "nvarchar(4000)", "nullable": true}
+{"name": "xact_state", "returns": "smallint", "nullable": true}
+{"name": "session_context", "args": [{"type": "nvarchar"}], "returns": "sql_variant", "nullable": true}
+{"name": "context_info", "returns": "varbinary(128)", "nullable": true}
+{"name": "sql_variant_property", "args": [{"type": "any"}, {"type": "varchar"}], "returns": "sql_variant", "nullable": true}
+{"name": "string_escape", "args": [{"type": "nvarchar"}, {"type": "varchar"}], "returns": "nvarchar(max)", "nullable": true}
+{"name": "soundex", "args": [{"type": "varchar"}], "returns": "varchar(5)", "nullable": true}
+{"name": "difference", "args": [{"type": "varchar"}, {"type": "varchar"}], "returns": "int", "nullable": true}
+{"name": "formatmessage", "args": [{"type": "any"}, {"type": "any", "mode": "v"}], "returns": "nvarchar(4000)", "nullable": true}
+{"name": "ltrim", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1", "nullable": true}
+{"name": "rtrim", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1", "nullable": true}
+{"name": "compress", "args": [{"type": "any"}], "returns": "varbinary(max)", "nullable": true}
+{"name": "decompress", "args": [{"type": "any"}], "returns": "varbinary(max)", "nullable": true}
+{"name": "bit_count", "args": [{"type": "any"}], "returns": "bigint", "nullable": true}
+{"name": "left_shift", "args": [{"type": "any"}, {"type": "int"}], "returns": "$1", "nullable": true}
+{"name": "right_shift", "args": [{"type": "any"}, {"type": "int"}], "returns": "$1", "nullable": true}
+{"name": "get_bit", "args": [{"type": "any"}, {"type": "int"}], "returns": "bit", "nullable": true}
+{"name": "set_bit", "args": [{"type": "any"}, {"type": "int"}], "returns": "$1", "nullable": true}
+{"name": "set_bit", "args": [{"type": "any"}, {"type": "int"}, {"type": "int"}], "returns": "$1", "nullable": true}
+{"name": "date_bucket", "args": [{"type": "varchar"}, {"type": "int"}, {"type": "any"}], "returns": "$3", "nullable": true}
+{"name": "date_bucket", "args": [{"type": "varchar"}, {"type": "int"}, {"type": "any"}, {"type": "any"}], "returns": "$3", "nullable": true}
+{"name": "regexp_replace", "args": [{"type": "any"}, {"type": "any"}, {"type": "any", "mode": "v"}], "returns": "nvarchar(4000)", "nullable": true}
+{"name": "regexp_substr", "args": [{"type": "any"}, {"type": "any"}, {"type": "any", "mode": "v"}], "returns": "$1", "nullable": true}
+{"name": "regexp_instr", "args": [{"type": "any"}, {"type": "any"}, {"type": "any", "mode": "v"}], "returns": "int", "nullable": true}
+{"name": "regexp_count", "args": [{"type": "any"}, {"type": "any"}, {"type": "any", "mode": "v"}], "returns": "int", "nullable": true}
+{"name": "vector_distance", "args": [{"type": "varchar"}, {"type": "vector"}, {"type": "vector"}], "returns": "float", "nullable": true}

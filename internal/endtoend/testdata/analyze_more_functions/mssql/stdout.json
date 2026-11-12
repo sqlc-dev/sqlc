@@ -1,0 +1,367 @@
+[
+  {
+    "name": "Grouping",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "g",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        },
+        "table": "s"
+      },
+      {
+        "name": "gr",
+        "type": {
+          "name": "tinyint"
+        }
+      },
+      {
+        "name": "gid",
+        "type": {
+          "name": "int"
+        }
+      },
+      {
+        "name": "approx",
+        "type": {
+          "name": "bigint",
+          "nullable": true
+        }
+      },
+      {
+        "name": "ca",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Percentiles",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "med",
+        "type": {
+          "name": "float",
+          "nullable": true
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Metadata",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "d",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 128
+            }
+          ]
+        }
+      },
+      {
+        "name": "sn",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 128
+            }
+          ]
+        }
+      },
+      {
+        "name": "o",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "obj",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 128
+            }
+          ]
+        }
+      },
+      {
+        "name": "ic",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 38
+            },
+            {
+              "int": 0
+            }
+          ]
+        }
+      },
+      {
+        "name": "rc",
+        "type": {
+          "name": "bigint"
+        }
+      },
+      {
+        "name": "ol",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 4000
+            }
+          ]
+        }
+      },
+      {
+        "name": "dbid",
+        "type": {
+          "name": "smallint",
+          "nullable": true
+        }
+      },
+      {
+        "name": "em",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 4000
+            }
+          ]
+        }
+      },
+      {
+        "name": "en",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "xs",
+        "type": {
+          "name": "smallint",
+          "nullable": true
+        }
+      },
+      {
+        "name": "sc",
+        "type": {
+          "name": "sql_variant",
+          "nullable": true
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "oid",
+          "type": {
+            "name": "int"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "Strings",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "se",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
+        }
+      },
+      {
+        "name": "sx",
+        "type": {
+          "name": "varchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 5
+            }
+          ]
+        }
+      },
+      {
+        "name": "df",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "lt",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        }
+      },
+      {
+        "name": "rt",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        }
+      },
+      {
+        "name": "c",
+        "type": {
+          "name": "varbinary",
+          "nullable": true,
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
+        }
+      },
+      {
+        "name": "rr",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 4000
+            }
+          ]
+        }
+      },
+      {
+        "name": "rs",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        }
+      },
+      {
+        "name": "rc",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "other",
+          "type": {
+            "name": "varchar"
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "pattern"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Bits",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "bc",
+        "type": {
+          "name": "bigint",
+          "nullable": true
+        }
+      },
+      {
+        "name": "ls",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "gb",
+        "type": {
+          "name": "bit",
+          "nullable": true
+        }
+      },
+      {
+        "name": "sb",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "db",
+        "type": {
+          "name": "date",
+          "nullable": true
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "bit",
+          "type": {
+            "name": "int"
+          }
+        }
+      }
+    ]
+  }
+]
