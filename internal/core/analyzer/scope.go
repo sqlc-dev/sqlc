@@ -85,6 +85,13 @@ func (a *analyzer) appendFromItem(sc *scope, item ast.Node) error {
 		}
 		sc.rels = append(sc.rels, rel)
 		return nil
+	case *ast.RangePivot:
+		rel, err := a.bindRangePivot(v)
+		if err != nil {
+			return err
+		}
+		sc.rels = append(sc.rels, rel)
+		return nil
 	case *ast.List:
 		// Some engines report a comma-separated FROM as a nested list.
 		for _, item := range listItems(v) {
@@ -191,6 +198,67 @@ func findFuncCall(l *ast.List) *ast.FuncCall {
 		}
 	}
 	return nil
+}
+
+// bindRangePivot binds PIVOT and UNPIVOT. The columns of the source that
+// are not rotated pass through, followed by those the rotation makes, typed
+// against the source.
+func (a *analyzer) bindRangePivot(p *ast.RangePivot) (scopeRel, error) {
+	src := &scope{}
+	if err := a.appendFromItem(src, p.Source); err != nil {
+		return scopeRel{}, err
+	}
+	defer a.binding(src)()
+	rotated := map[string]bool{}
+	var made []core.ClassColumn
+	if p.Unpivot {
+		// The value column has the type the rotated columns share, and is
+		// nullable when any of them is.
+		value := core.ClassColumn{Name: p.ValueColumn, NotNull: true}
+		for i, item := range listItems(p.InList) {
+			t, err := a.typeExpr(&ast.ColumnRef{Fields: &ast.List{Items: []ast.Node{item}}})
+			if err != nil {
+				return scopeRel{}, err
+			}
+			if i == 0 {
+				value.TypeOID, value.Type = t.typeOID, t.expr
+			}
+			value.NotNull = value.NotNull && !t.nullable
+			rotated[item.(*ast.String).Str] = true
+		}
+		name := a.lookupType(core.TypeExprOfTypeName(p.ForType))
+		made = []core.ClassColumn{value, {Name: p.ForColumn, TypeOID: name.typeOID, Type: name.expr}}
+	} else {
+		// Each value in the list names a column of the aggregate over the
+		// rows with that value, null when there are none.
+		t, err := a.typeExpr(p.Aggregate)
+		if err != nil {
+			return scopeRel{}, err
+		}
+		rotated[p.ForColumn] = true
+		for _, arg := range listItems(p.Aggregate.Args) {
+			if cr, ok := arg.(*ast.ColumnRef); ok {
+				fields := flattenFields(cr.Fields)
+				rotated[fields[len(fields)-1]] = true
+			}
+		}
+		for _, item := range listItems(p.InList) {
+			made = append(made, core.ClassColumn{Name: item.(*ast.String).Str, TypeOID: t.typeOID, Type: t.expr})
+		}
+	}
+	var rel scopeRel
+	if p.Alias != nil && p.Alias.Aliasname != nil {
+		rel.alias = *p.Alias.Aliasname
+	}
+	for _, r := range src.rels {
+		for _, c := range r.cols {
+			if !rotated[c.Name] {
+				rel.cols = append(rel.cols, c)
+			}
+		}
+	}
+	rel.cols = append(rel.cols, made...)
+	return rel, nil
 }
 
 // bindRangeSubselect binds a subquery used as a relation in FROM.

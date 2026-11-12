@@ -367,9 +367,75 @@ func (c *cc) convertTableReference(ref tsql.TableReference) ast.Node {
 		return c.convertOpenJson(t)
 	case *tsql.GlobalFunctionTableReference:
 		return c.convertGlobalFunctionTableReference(t)
+	case *tsql.PivotedTableReference:
+		return c.convertPivot(t)
+	case *tsql.UnpivotedTableReference:
+		return c.convertUnpivot(t)
 	default:
 		return todo(ref)
 	}
+}
+
+// convertPivot converts PIVOT. Its columns depend on those of its source,
+// which only the analyzer knows, so it is passed on rather than rewritten
+// as the grouped query it stands for.
+func (c *cc) convertPivot(n *tsql.PivotedTableReference) ast.Node {
+	if n.AggregateFunctionIdentifier == nil || len(n.AggregateFunctionIdentifier.Identifiers) == 0 || n.PivotColumn == nil {
+		return todo(n)
+	}
+	ids := n.AggregateFunctionIdentifier.Identifiers
+	agg := &ast.FuncCall{
+		Funcname: &ast.List{Items: []ast.Node{&ast.String{Str: identifierValue(ids[len(ids)-1])}}},
+		Args:     &ast.List{},
+		Location: c.loc(n),
+	}
+	for _, col := range n.ValueColumns {
+		agg.Args.Items = append(agg.Args.Items, c.convertColumnReference(col))
+	}
+	p := &ast.RangePivot{
+		Source:    c.convertTableReference(n.TableReference),
+		Aggregate: agg,
+		ForColumn: columnName(n.PivotColumn),
+		InList:    &ast.List{},
+	}
+	for _, id := range n.InColumns {
+		p.InList.Items = append(p.InList.Items, NewIdentifier(id.Value))
+	}
+	if n.Alias != nil {
+		alias := identifierValue(n.Alias)
+		p.Alias = &ast.Alias{Aliasname: &alias}
+	}
+	return p
+}
+
+// convertUnpivot converts UNPIVOT, which, as PIVOT, keeps the columns of
+// its source the analyzer knows.
+func (c *cc) convertUnpivot(n *tsql.UnpivotedTableReference) ast.Node {
+	p := &ast.RangePivot{
+		Source:      c.convertTableReference(n.TableReference),
+		Unpivot:     true,
+		ValueColumn: identifierValue(n.ValueColumn),
+		ForColumn:   identifierValue(n.PivotColumn),
+		ForType:     typeName("nvarchar", 128),
+		InList:      &ast.List{},
+	}
+	for _, col := range n.InColumns {
+		p.InList.Items = append(p.InList.Items, &ast.String{Str: columnName(col)})
+	}
+	if n.Alias != nil {
+		alias := identifierValue(n.Alias)
+		p.Alias = &ast.Alias{Aliasname: &alias}
+	}
+	return p
+}
+
+// columnName is the name a column reference ends in.
+func columnName(n *tsql.ColumnReferenceExpression) string {
+	if n == nil || n.MultiPartIdentifier == nil || len(n.MultiPartIdentifier.Identifiers) == 0 {
+		return ""
+	}
+	ids := n.MultiPartIdentifier.Identifiers
+	return identifierValue(ids[len(ids)-1])
 }
 
 // convertInlineDerivedTable converts (VALUES ...) AS v(a, b) to the

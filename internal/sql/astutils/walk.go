@@ -1615,6 +1615,20 @@ func Walk(f Visitor, node ast.Node) {
 			Walk(f, n.Coldeflist)
 		}
 
+	case *ast.RangePivot:
+		if n.Source != nil {
+			Walk(f, n.Source)
+		}
+		if n.Aggregate != nil {
+			Walk(f, n.Aggregate)
+		}
+		if n.InList != nil {
+			Walk(f, n.InList)
+		}
+		if n.Alias != nil {
+			Walk(f, n.Alias)
+		}
+
 	case *ast.RangeSubselect:
 		if n.Subquery != nil {
 			Walk(f, n.Subquery)

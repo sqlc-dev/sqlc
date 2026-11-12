@@ -66,6 +66,11 @@ func (c *Compiler) quoteIdent(ident string) string {
 			return c.quote(ident)
 		}
 	}
+	// A column PIVOT names after a value, as [2023], is no regular
+	// identifier.
+	if c.conf.Engine == config.EngineMSSQL && !validPostgresIdent.MatchString(strings.ToLower(ident)) {
+		return c.quote(ident)
+	}
 	return ident
 }
 

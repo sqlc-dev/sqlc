@@ -967,6 +967,12 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Alias", nil, n.Alias)
 		a.apply(n, "Coldeflist", nil, n.Coldeflist)
 
+	case *ast.RangePivot:
+		a.apply(n, "Source", nil, n.Source)
+		a.apply(n, "Aggregate", nil, n.Aggregate)
+		a.apply(n, "InList", nil, n.InList)
+		a.apply(n, "Alias", nil, n.Alias)
+
 	case *ast.RangeSubselect:
 		a.apply(n, "Subquery", nil, n.Subquery)
 		a.apply(n, "Alias", nil, n.Alias)
