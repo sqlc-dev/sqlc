@@ -74,3 +74,15 @@
 {"name": "rtrim", "args": [{"type": "nvarchar"}], "returns": "nvarchar"}
 {"name": "trim", "args": [{"type": "varchar"}], "returns": "varchar"}
 {"name": "trim", "args": [{"type": "nvarchar"}], "returns": "nvarchar"}
+{"name": "openjson", "args": [{"type": "nvarchar"}], "returns": "nvarchar", "nullable": true}
+{"name": "openjson", "args": [{"type": "nvarchar"}, {"type": "nvarchar"}], "returns": "nvarchar", "nullable": true}
+{"name": "string_split", "args": [{"type": "nvarchar"}, {"type": "nvarchar"}], "returns": "$1"}
+{"name": "string_split", "args": [{"type": "varchar"}, {"type": "varchar"}], "returns": "$1"}
+{"name": "string_split", "args": [{"type": "nvarchar"}, {"type": "nvarchar"}, {"type": "int"}], "returns": "$1"}
+{"name": "string_split", "args": [{"type": "varchar"}, {"type": "varchar"}, {"type": "int"}], "returns": "$1"}
+{"name": "generate_series", "args": [{"type": "int"}, {"type": "int"}], "returns": "$1"}
+{"name": "generate_series", "args": [{"type": "bigint"}, {"type": "bigint"}], "returns": "$1"}
+{"name": "generate_series", "args": [{"type": "decimal"}, {"type": "decimal"}], "returns": "$1"}
+{"name": "generate_series", "args": [{"type": "int"}, {"type": "int"}, {"type": "int"}], "returns": "$1"}
+{"name": "generate_series", "args": [{"type": "bigint"}, {"type": "bigint"}, {"type": "bigint"}], "returns": "$1"}
+{"name": "generate_series", "args": [{"type": "decimal"}, {"type": "decimal"}, {"type": "decimal"}], "returns": "$1"}

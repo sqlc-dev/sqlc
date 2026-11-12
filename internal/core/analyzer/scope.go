@@ -151,7 +151,32 @@ func (a *analyzer) bindRangeFunction(rf *ast.RangeFunction) (scopeRel, error) {
 		col.TypeOID, col.NotNull = p.ReturnTypeOID, !p.ReturnNullable
 	}
 	rel.cols = []core.ClassColumn{col}
+	if rf.Coldeflist != nil {
+		rel.cols = a.coldefColumns(rf.Coldeflist, col)
+	}
 	return rel, nil
+}
+
+// coldefColumns are the columns a function's column definition list
+// declares, for a function returning rows of more than one column. A
+// definition with no type is the function's own result.
+func (a *analyzer) coldefColumns(defs *ast.List, result core.ClassColumn) []core.ClassColumn {
+	var cols []core.ClassColumn
+	for _, item := range listItems(defs) {
+		def, ok := item.(*ast.ColumnDef)
+		if !ok {
+			continue
+		}
+		if def.TypeName == nil {
+			col := result
+			col.Name = def.Colname
+			cols = append(cols, col)
+			continue
+		}
+		t := a.lookupType(core.TypeExprOfTypeName(def.TypeName))
+		cols = append(cols, core.ClassColumn{Name: def.Colname, TypeOID: t.typeOID, Type: t.expr, NotNull: def.IsNotNull})
+	}
+	return cols
 }
 
 func findFuncCall(l *ast.List) *ast.FuncCall {

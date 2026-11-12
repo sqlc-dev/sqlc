@@ -984,6 +984,11 @@ func (a *analyzer) returnType(p core.ProcOverload, argTypes []exprType) exprType
 	}
 	if n, ok := argIndex(name); ok {
 		if n < len(argTypes) {
+			// A placeholder passed there takes the parameter's type, and so
+			// does the result.
+			if argTypes[n].typeOID == 0 && argTypes[n].expr == nil && n < len(p.ArgTypes) && !a.isPolymorphicOID(p.ArgTypes[n]) {
+				return exprType{typeOID: p.ArgTypes[n]}
+			}
 			return exprType{typeOID: argTypes[n].typeOID, expr: argTypes[n].expr}
 		}
 		return exprType{}

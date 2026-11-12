@@ -1,0 +1,61 @@
+[
+  {
+    "name": "ByIDs",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "documents"
+      },
+      {
+        "name": "title",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "int": 100
+            }
+          ]
+        },
+        "table": "documents"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "ids",
+          "type": {
+            "name": "varchar"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "Tokens",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "value",
+        "type": {
+          "name": "varchar"
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "list",
+          "type": {
+            "name": "varchar"
+          }
+        }
+      }
+    ]
+  }
+]

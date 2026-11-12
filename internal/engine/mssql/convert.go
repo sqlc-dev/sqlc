@@ -360,9 +360,86 @@ func (c *cc) convertTableReference(ref tsql.TableReference) ast.Node {
 			return todo(ref)
 		}
 		return join
+	case *tsql.OpenJsonTableReference:
+		return c.convertOpenJson(t)
+	case *tsql.GlobalFunctionTableReference:
+		return c.convertGlobalFunctionTableReference(t)
 	default:
 		return todo(ref)
 	}
+}
+
+// rangeFunction is a call in FROM to a function returning rows of the
+// columns defs declares.
+func (c *cc) rangeFunction(n tsql.Node, name string, args []tsql.ScalarExpression, alias *tsql.Identifier, defs []ast.Node) *ast.RangeFunction {
+	call := &ast.FuncCall{
+		Funcname: &ast.List{Items: []ast.Node{&ast.String{Str: name}}},
+		Location: c.loc(n),
+	}
+	for _, arg := range args {
+		if call.Args == nil {
+			call.Args = &ast.List{}
+		}
+		call.Args.Items = append(call.Args.Items, c.convertScalarExpression(arg))
+	}
+	rf := &ast.RangeFunction{
+		Functions:  &ast.List{Items: []ast.Node{&ast.List{Items: []ast.Node{call}}}},
+		Coldeflist: &ast.List{Items: defs},
+	}
+	if alias != nil {
+		name := identifierValue(alias)
+		rf.Alias = &ast.Alias{Aliasname: &name}
+	}
+	return rf
+}
+
+// convertOpenJson converts OPENJSON, whose rows are the key, value and type
+// of each JSON element, or the columns its WITH clause declares.
+func (c *cc) convertOpenJson(n *tsql.OpenJsonTableReference) ast.Node {
+	args := []tsql.ScalarExpression{n.Variable}
+	if n.RowPattern != nil {
+		args = append(args, n.RowPattern)
+	}
+	var defs []ast.Node
+	if len(n.SchemaDeclarationItems) == 0 {
+		defs = []ast.Node{
+			&ast.ColumnDef{Colname: "key", TypeName: typeName("nvarchar", 4000), IsNotNull: true},
+			&ast.ColumnDef{Colname: "value", TypeName: &ast.TypeName{Name: "nvarchar", Typmods: appendTypmod(nil, &ast.String{Str: "max"})}},
+			&ast.ColumnDef{Colname: "type", TypeName: &ast.TypeName{Name: "tinyint"}, IsNotNull: true},
+		}
+	}
+	for _, item := range n.SchemaDeclarationItems {
+		if item.ColumnDefinition == nil {
+			continue
+		}
+		defs = append(defs, &ast.ColumnDef{
+			Colname:  identifierValue(item.ColumnDefinition.ColumnIdentifier),
+			TypeName: dataTypeName(item.ColumnDefinition.DataType),
+		})
+	}
+	return c.rangeFunction(n, "openjson", args, n.Alias, defs)
+}
+
+// convertGlobalFunctionTableReference converts STRING_SPLIT and
+// GENERATE_SERIES. Each returns a value of its seeded result type, and
+// STRING_SPLIT with enable_ordinal set adds the ordinal of each.
+func (c *cc) convertGlobalFunctionTableReference(n *tsql.GlobalFunctionTableReference) ast.Node {
+	name := identifierValue(n.Name)
+	defs := []ast.Node{&ast.ColumnDef{Colname: "value"}}
+	switch name {
+	case "string_split":
+		if len(n.Parameters) == 3 {
+			defs = append(defs, &ast.ColumnDef{Colname: "ordinal", TypeName: &ast.TypeName{Name: "bigint"}, IsNotNull: true})
+		}
+	case "generate_series":
+	default:
+		return todo(n)
+	}
+	return c.rangeFunction(n, name, n.Parameters, n.Alias, defs)
+}
+
+func typeName(name string, length int64) *ast.TypeName {
+	return &ast.TypeName{Name: name, Typmods: appendTypmod(nil, &ast.A_Const{Val: &ast.Integer{Ival: length}})}
 }
 
 func (c *cc) convertBooleanExpression(expr tsql.BooleanExpression) ast.Node {
