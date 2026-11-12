@@ -98,6 +98,17 @@ func (c *cc) convertSelectStatement(n *tsql.SelectStatement) ast.Node {
 	if !ok {
 		return stmt
 	}
+	// A query's own FOR JSON or FOR XML result is a column with the name
+	// SQL Server gives it, and FOR XML is ntext there.
+	if qs, ok := n.QueryExpression.(*tsql.QuerySpecification); ok {
+		if tn := forClauseType(qs.ForClause, true); tn != nil {
+			res := sel.TargetList.Items[0].(*ast.ResTarget)
+			res.Val.(*ast.TypeCast).TypeName = nullableTypeName(tn)
+			if name := forClauseColumn(qs.ForClause, tn); name != "" {
+				res.Name = &name
+			}
+		}
+	}
 	if with := c.convertWithClause(n.WithCtesAndXmlNamespaces); with != nil {
 		sel.WithClause = with
 	}
@@ -237,7 +248,61 @@ func (c *cc) convertQuerySpecification(n *tsql.QuerySpecification) *ast.SelectSt
 		stmt.DistinctClause = &ast.List{}
 	}
 
+	if tn := forClauseType(n.ForClause, false); tn != nil {
+		return forClauseResult(stmt, tn, c.loc(n))
+	}
 	return stmt
+}
+
+// forClauseResult is a query with FOR JSON or FOR XML as what it returns: a
+// single nullable column of the document its rows make. The query itself is
+// kept as a subquery, so its placeholders and stars are still analyzed.
+func forClauseResult(query *ast.SelectStmt, tn *ast.TypeName, loc int) *ast.SelectStmt {
+	return &ast.SelectStmt{TargetList: &ast.List{Items: []ast.Node{&ast.ResTarget{
+		Val: &ast.TypeCast{
+			Arg:      &ast.SubLink{SubLinkType: ast.EXPR_SUBLINK, Subselect: query, Location: loc},
+			TypeName: nullableTypeName(tn),
+			Location: loc,
+		},
+		Location: loc,
+	}}}}
+}
+
+// forClauseType is the type of the document FOR JSON or FOR XML makes, or
+// nil for any other FOR clause. FOR XML without TYPE is ntext as a query's
+// result but nvarchar(max) as a subquery's.
+func forClauseType(fc tsql.ForClause, topLevel bool) *ast.TypeName {
+	maxText := &ast.TypeName{Name: "nvarchar", Typmods: appendTypmod(nil, &ast.String{Str: "max"})}
+	switch f := fc.(type) {
+	case *tsql.JsonForClause:
+		return maxText
+	case *tsql.XmlForClause:
+		for _, o := range f.Options {
+			if o.OptionKind == "Type" {
+				return &ast.TypeName{Name: "xml"}
+			}
+		}
+		if topLevel {
+			return &ast.TypeName{Name: "ntext"}
+		}
+		return maxText
+	}
+	return nil
+}
+
+// forClauseColumn is the name SQL Server gives the column FOR JSON or FOR
+// XML returns, which XML with TYPE leaves unnamed.
+func forClauseColumn(fc tsql.ForClause, tn *ast.TypeName) string {
+	switch {
+	case tn.Name == "xml":
+		return ""
+	case fc != nil:
+		if _, ok := fc.(*tsql.JsonForClause); ok {
+			return identifier("JSON_F52E2B61-18A1-11d1-B105-00805F49916B")
+		}
+		return identifier("XML_F52E2B61-18A1-11d1-B105-00805F49916B")
+	}
+	return ""
 }
 
 func (c *cc) convertSelectElement(elem tsql.SelectElement) ast.Node {
