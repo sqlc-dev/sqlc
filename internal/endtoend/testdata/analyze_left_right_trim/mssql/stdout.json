@@ -1,0 +1,55 @@
+[
+  {
+    "name": "Trimmed",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "lf",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true
+        }
+      },
+      {
+        "name": "rt",
+        "type": {
+          "name": "varchar",
+          "nullable": true
+        }
+      },
+      {
+        "name": "tr",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        }
+      },
+      {
+        "name": "tl",
+        "type": {
+          "name": "varchar",
+          "args": [
+            {
+              "int": 5
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "n",
+          "type": {
+            "name": "int"
+          }
+        }
+      }
+    ]
+  }
+]

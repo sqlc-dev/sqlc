@@ -110,14 +110,14 @@
 {"name": "substring", "args": [{"type": "nchar"}, {"type": "bigint"}, {"type": "bigint"}], "returns": "nvarchar", "nullable": true}
 {"name": "substring", "args": [{"type": "varbinary"}, {"type": "bigint"}, {"type": "bigint"}], "returns": "varbinary", "nullable": true}
 {"name": "substring", "args": [{"type": "binary"}, {"type": "bigint"}, {"type": "bigint"}], "returns": "varbinary", "nullable": true}
-{"name": "left", "args": [{"type": "varchar"}, {"type": "bigint"}], "returns": "varchar", "nullable": true}
-{"name": "left", "args": [{"type": "char"}, {"type": "bigint"}], "returns": "varchar", "nullable": true}
-{"name": "left", "args": [{"type": "nvarchar"}, {"type": "bigint"}], "returns": "nvarchar", "nullable": true}
-{"name": "left", "args": [{"type": "nchar"}, {"type": "bigint"}], "returns": "nvarchar", "nullable": true}
-{"name": "right", "args": [{"type": "varchar"}, {"type": "bigint"}], "returns": "varchar", "nullable": true}
-{"name": "right", "args": [{"type": "char"}, {"type": "bigint"}], "returns": "varchar", "nullable": true}
-{"name": "right", "args": [{"type": "nvarchar"}, {"type": "bigint"}], "returns": "nvarchar", "nullable": true}
-{"name": "right", "args": [{"type": "nchar"}, {"type": "bigint"}], "returns": "nvarchar", "nullable": true}
+{"name": "left", "args": [{"type": "varchar"}, {"type": "int"}], "returns": "varchar", "nullable": true}
+{"name": "left", "args": [{"type": "char"}, {"type": "int"}], "returns": "varchar", "nullable": true}
+{"name": "left", "args": [{"type": "nvarchar"}, {"type": "int"}], "returns": "nvarchar", "nullable": true}
+{"name": "left", "args": [{"type": "nchar"}, {"type": "int"}], "returns": "nvarchar", "nullable": true}
+{"name": "right", "args": [{"type": "varchar"}, {"type": "int"}], "returns": "varchar", "nullable": true}
+{"name": "right", "args": [{"type": "char"}, {"type": "int"}], "returns": "varchar", "nullable": true}
+{"name": "right", "args": [{"type": "nvarchar"}, {"type": "int"}], "returns": "nvarchar", "nullable": true}
+{"name": "right", "args": [{"type": "nchar"}, {"type": "int"}], "returns": "nvarchar", "nullable": true}
 {"name": "replace", "args": [{"type": "varchar"}, {"type": "any"}, {"type": "any"}], "returns": "varchar(8000)", "nullable": true}
 {"name": "replace", "args": [{"type": "char"}, {"type": "any"}, {"type": "any"}], "returns": "varchar(8000)", "nullable": true}
 {"name": "replace", "args": [{"type": "nvarchar"}, {"type": "any"}, {"type": "any"}], "returns": "nvarchar(4000)", "nullable": true}
@@ -382,3 +382,4 @@
 {"name": "regexp_instr", "args": [{"type": "any"}, {"type": "any"}, {"type": "any", "mode": "v"}], "returns": "int", "nullable": true}
 {"name": "regexp_count", "args": [{"type": "any"}, {"type": "any"}, {"type": "any", "mode": "v"}], "returns": "int", "nullable": true}
 {"name": "vector_distance", "args": [{"type": "varchar"}, {"type": "vector"}, {"type": "vector"}], "returns": "float", "nullable": true}
+{"name": "trim", "args": [{"type": "any"}, {"type": "any"}], "returns": "$2"}
