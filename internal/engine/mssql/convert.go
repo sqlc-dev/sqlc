@@ -547,6 +547,17 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 	case *tsql.ParenthesisExpression:
 		return c.convertScalarExpression(e.Expression)
 	case *tsql.FunctionCall:
+		// ISNULL(a, b) is typed as COALESCE is: the first argument's type,
+		// NULL only when both are.
+		if identifierValue(e.FunctionName) == "isnull" && len(e.Parameters) == 2 && e.OverClause == nil {
+			return &ast.CoalesceExpr{
+				Args: &ast.List{Items: []ast.Node{
+					c.convertScalarExpression(e.Parameters[0]),
+					c.convertScalarExpression(e.Parameters[1]),
+				}},
+				Location: c.loc(e),
+			}
+		}
 		return c.convertFunctionCall(e)
 	case *tsql.CastCall:
 		return &ast.TypeCast{

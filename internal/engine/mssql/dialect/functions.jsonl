@@ -96,7 +96,6 @@
 {"name": "rtrim", "args": [{"type": "nvarchar"}], "returns": "nvarchar"}
 {"name": "trim", "args": [{"type": "varchar"}], "returns": "varchar"}
 {"name": "trim", "args": [{"type": "nvarchar"}], "returns": "nvarchar"}
-{"name": "isnull", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1"}
 {"name": "nullif", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1", "nullable": true}
 {"name": "choose", "args": [{"type": "int"}, {"type": "any"}], "returns": "$2", "nullable": true}
 {"name": "greatest", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1", "nullable": true}

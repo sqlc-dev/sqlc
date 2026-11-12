@@ -1,0 +1,68 @@
+[
+  {
+    "name": "Defaults",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "readings"
+      },
+      {
+        "name": "note_or_raw",
+        "type": {
+          "name": "varchar",
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        }
+      },
+      {
+        "name": "still_nullable",
+        "type": {
+          "name": "varchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        }
+      },
+      {
+        "name": "amount",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "value",
+          "type": {
+            "name": "varchar",
+            "args": [
+              {
+                "int": 10
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+]
