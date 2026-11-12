@@ -81,6 +81,10 @@ func (s *Schema) getType(rel *ast.TypeName) (Type, int, error) {
 			if typ.Name == rel.Name {
 				return s.Types[i], i, nil
 			}
+		case *Domain:
+			if typ.Name == rel.Name {
+				return s.Types[i], i, nil
+			}
 		}
 	}
 	return nil, -1, sqlerr.TypeNotFound(rel.Name)

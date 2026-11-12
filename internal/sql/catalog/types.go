@@ -108,6 +108,41 @@ func (c *Catalog) createEnum(stmt *ast.CreateEnumStmt) error {
 	return nil
 }
 
+func (c *Catalog) createDomain(stmt *ast.CreateDomainStmt) error {
+	names := stringSlice(stmt.Domainname)
+	if len(names) == 0 || stmt.TypeName == nil {
+		return fmt.Errorf("create domain: missing name or type")
+	}
+	name := &ast.TypeName{Name: names[len(names)-1]}
+	if len(names) > 1 {
+		name.Schema = names[len(names)-2]
+	}
+	ns := name.Schema
+	if ns == "" {
+		ns = c.DefaultSchema
+	}
+	schema, err := c.getSchema(ns)
+	if err != nil {
+		return err
+	}
+	if _, _, err := schema.getType(name); err == nil {
+		return sqlerr.TypeExists(name.Name)
+	}
+	domain := &Domain{
+		Name: name.Name,
+		Base: core.TypeExprOfTypeName(stmt.TypeName),
+	}
+	if stmt.Constraints != nil {
+		for _, item := range stmt.Constraints.Items {
+			if con, ok := item.(*ast.Constraint); ok && con.Contype == ast.ConstrTypeNotNull {
+				domain.NotNull = true
+			}
+		}
+	}
+	schema.Types = append(schema.Types, domain)
+	return nil
+}
+
 func stringSlice(list *ast.List) []string {
 	items := []string{}
 	for _, item := range list.Items {
