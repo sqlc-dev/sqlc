@@ -659,7 +659,11 @@ func (c *Catalog) LookupTypeExpr(t *TypeExpr) (TypeLookup, bool) {
 		// The family is known and the instance is not a row.
 		familyOID, _, err := c.internType(&TypeExpr{Name: canonical.Name}, refuse, false)
 		if err != nil {
-			return TypeLookup{}, false
+			// The bare name may take default arguments, as SQL Server's
+			// decimal is decimal(18,0), and so name no row either.
+			if familyOID, err = c.TypeOID(canonical.Name); err != nil {
+				return TypeLookup{}, false
+			}
 		}
 		return TypeLookup{OID: familyOID, FamilyOID: familyOID, Expr: canonical}, true
 	}
