@@ -1,6 +1,10 @@
 CREATE DOMAIN tags AS text[];
 CREATE DOMAIN title AS varchar(100) NOT NULL DEFAULT '';
 CREATE DOMAIN price AS numeric(10, 2) CHECK (VALUE >= 0);
+-- The base keeps a quoted name's case and pg_catalog.
+CREATE TYPE "Mood" AS ENUM ('happy', 'sad');
+CREATE DOMAIN feeling AS "Mood";
+CREATE DOMAIN amount AS numeric(10, 2) NOT NULL;
 CREATE SCHEMA billing;
 CREATE DOMAIN billing.ksuid AS char(27);
 -- Named like a built-in, but off the search path.
@@ -19,7 +23,9 @@ CREATE TABLE books (
   id serial PRIMARY KEY,
   title title,
   price price,
-  ref billing.ksuid
+  ref billing.ksuid,
+  feeling feeling NOT NULL,
+  amount amount
 );
 
 CREATE TABLE shelves (

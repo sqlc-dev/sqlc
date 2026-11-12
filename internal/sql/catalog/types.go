@@ -3,6 +3,7 @@ package catalog
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
@@ -131,6 +132,12 @@ func (c *Catalog) createDomain(stmt *ast.CreateDomainStmt) error {
 	domain := &Domain{
 		Name: name.Name,
 		Base: core.TypeExprOfTypeName(stmt.TypeName),
+	}
+	// The base keeps the name the parser gave it, a quoted name's case and
+	// pg_catalog included, as a column of the type does, so the two map to
+	// Go and match overrides alike.
+	if domain.Base != nil && stmt.TypeName.Names != nil {
+		domain.Base.Innermost().Name = strings.Join(stringSlice(stmt.TypeName.Names), ".")
 	}
 	if !isArrayTypeName(stmt.TypeName) {
 		domain.base = domainName(stmt.TypeName.Names)

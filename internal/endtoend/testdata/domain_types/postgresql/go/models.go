@@ -5,15 +5,63 @@
 package querytest
 
 import (
+	"database/sql/driver"
+	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/shopspring/decimal"
 )
 
+type Mood string
+
+const (
+	MoodHappy Mood = "happy"
+	MoodSad   Mood = "sad"
+)
+
+func (e *Mood) Scan(src any) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Mood(s)
+	case string:
+		*e = Mood(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Mood: %T", src)
+	}
+	return nil
+}
+
+type NullMood struct {
+	Mood  Mood
+	Valid bool // Valid is true if Mood is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullMood) Scan(value any) error {
+	if value == nil {
+		ns.Mood, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Mood.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullMood) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Mood), nil
+}
+
 type Book struct {
-	ID    int32
-	Title string
-	Price pgtype.Numeric
-	Ref   uuid.NullUUID
+	ID      int32
+	Title   string
+	Price   pgtype.Numeric
+	Ref     uuid.NullUUID
+	Feeling Mood
+	Amount  decimal.Decimal
 }
 
 type Shelf struct {

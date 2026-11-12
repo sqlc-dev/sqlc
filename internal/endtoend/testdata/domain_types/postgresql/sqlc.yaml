@@ -12,3 +12,5 @@ sql:
           - db_type: "billing.ksuid"
             go_type: "github.com/google/uuid.NullUUID"
             nullable: true
+          - db_type: "pg_catalog.numeric"
+            go_type: "github.com/shopspring/decimal.Decimal"

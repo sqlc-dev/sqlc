@@ -46,15 +46,22 @@ const listBooks = `-- name: ListBooks :many
 SELECT id, title, price, ref FROM books WHERE price > $1
 `
 
-func (q *Queries) ListBooks(ctx context.Context, price pgtype.Numeric) ([]Book, error) {
+type ListBooksRow struct {
+	ID    int32
+	Title string
+	Price pgtype.Numeric
+	Ref   uuid.NullUUID
+}
+
+func (q *Queries) ListBooks(ctx context.Context, price pgtype.Numeric) ([]ListBooksRow, error) {
 	rows, err := q.db.Query(ctx, listBooks, price)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Book
+	var items []ListBooksRow
 	for rows.Next() {
-		var i Book
+		var i ListBooksRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,

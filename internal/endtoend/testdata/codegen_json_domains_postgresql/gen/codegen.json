@@ -151,7 +151,7 @@
           {
             "name": "title",
             "base": {
-              "name": "varchar",
+              "name": "pg_catalog.varchar",
               "nullable": false,
               "args": [
                 {
@@ -166,7 +166,7 @@
           {
             "name": "price",
             "base": {
-              "name": "numeric",
+              "name": "pg_catalog.numeric",
               "nullable": false,
               "args": [
                 {
@@ -68811,7 +68811,7 @@
           {
             "name": "ksuid",
             "base": {
-              "name": "bpchar",
+              "name": "pg_catalog.bpchar",
               "nullable": false,
               "args": [
                 {
