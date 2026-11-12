@@ -17,8 +17,10 @@ type Book struct {
 }
 
 type Shelf struct {
-	ID     int32
-	Titles []string
-	Label  string
-	Note   pgtype.Text
+	ID      int32
+	Titles  []string
+	Tags    []string
+	TagSets [][]string
+	Label   string
+	Note    pgtype.Text
 }

@@ -10,7 +10,7 @@ import (
 )
 
 const listShelves = `-- name: ListShelves :many
-SELECT id, titles FROM shelves
+SELECT id, titles, tags, tag_sets FROM shelves
 `
 
 func (q *Queries) ListShelves(ctx context.Context) ([]Shelf, error) {
@@ -22,7 +22,12 @@ func (q *Queries) ListShelves(ctx context.Context) ([]Shelf, error) {
 	var items []Shelf
 	for rows.Next() {
 		var i Shelf
-		if err := rows.Scan(&i.ID, &i.Titles); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Titles,
+			&i.Tags,
+			&i.TagSets,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

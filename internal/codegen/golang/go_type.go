@@ -96,9 +96,14 @@ func goInnerType(req *plugin.GenerateRequest, options *opts.Options, col *plugin
 	}
 
 	// A domain is generated as the type it stands on, unless an override
-	// above named the domain itself.
+	// above named the domain itself. The base says how many dimensions the
+	// column has, since a domain may stand on an array.
 	if base := domainColumn(req, col); base != nil {
-		return goInnerType(req, options, base, param)
+		typ, complete := goInnerType(req, options, base, param)
+		if base.IsArray && !complete {
+			typ = strings.Repeat("[]", int(base.ArrayDims)) + typ
+		}
+		return typ, true
 	}
 
 	// TODO: Extend the engine interface to handle types

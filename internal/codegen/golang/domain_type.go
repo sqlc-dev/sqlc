@@ -28,8 +28,13 @@ func domainColumn(req *plugin.GenerateRequest, col *plugin.Column) *plugin.Colum
 	if baseless(req, d) {
 		return nil
 	}
+	// A domain over an array adds its dimensions to the column's own.
 	out := proto.Clone(col).(*plugin.Column)
-	out.Type = &plugin.Identifier{Name: d.Base.Name}
+	name, dims := flatType(d.Base)
+	out.Type = &plugin.Identifier{Name: name}
+	if dims > 0 {
+		out.IsArray, out.ArrayDims = true, out.ArrayDims+dims
+	}
 	return out
 }
 

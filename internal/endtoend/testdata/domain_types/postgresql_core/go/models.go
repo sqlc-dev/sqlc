@@ -5,6 +5,8 @@
 package querytest
 
 type Shelf struct {
-	ID     int32
-	Titles []string
+	ID      int32
+	Titles  []string
+	Tags    []string
+	TagSets [][]string
 }
