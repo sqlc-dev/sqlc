@@ -12,6 +12,50 @@ import (
 	"strings"
 )
 
+const authorBooks = `-- name: AuthorBooks :many
+SELECT a.id, a.name, a.bio, books.id, books.author_id, books.title, books.title AS book_title
+FROM authors a JOIN books ON books.author_id = a.id
+WHERE a.id = @author_id
+ORDER BY books.id;
+`
+
+type AuthorBooksRow struct {
+	Author    Author
+	Book      Book
+	BookTitle string
+}
+
+func (q *Queries) AuthorBooks(ctx context.Context, authorID int64) ([]AuthorBooksRow, error) {
+	rows, err := q.db.QueryContext(ctx, authorBooks, sql.Named("author_id", authorID))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []AuthorBooksRow
+	for rows.Next() {
+		var i AuthorBooksRow
+		if err := rows.Scan(
+			&i.Author.ID,
+			&i.Author.Name,
+			&i.Author.Bio,
+			&i.Book.ID,
+			&i.Book.AuthorID,
+			&i.Book.Title,
+			&i.BookTitle,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const createAuthor = `-- name: CreateAuthor :exec
 INSERT INTO authors (id, name, bio) VALUES (@id, @name, @bio);
 `

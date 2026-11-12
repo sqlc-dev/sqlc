@@ -64,6 +64,7 @@ func (c *Compiler) parseQueryCore(raw *ast.RawStmt, src string, pre *preprocess.
 		for _, col := range res.Columns {
 			cols = append(cols, coreColumn(col))
 		}
+		cols = embedColumns(raw, cols, res.Stars, pre.Embeds)
 		placeholders, err := placeholderNames(raw)
 		if err != nil {
 			return nil, err
@@ -103,6 +104,45 @@ func (c *Compiler) parseQueryCore(raw *ast.RawStmt, src string, pre *preprocess.
 		SQL:             trimmed,
 		InsertIntoTable: insertTable,
 	}, nil
+}
+
+// embedColumns folds the columns each sqlc.embed() star expanded to into
+// the one column codegen embeds the table's struct for. The table is the
+// columns' source, so an embed of an alias names the table behind it.
+func embedColumns(raw *ast.RawStmt, cols []*Column, stars []core.StarExpansion, embeds preprocess.EmbedSet) []*Column {
+	sel, ok := raw.Stmt.(*ast.SelectStmt)
+	if !ok || len(embeds) == 0 || sel.TargetList == nil {
+		return cols
+	}
+	width := map[int]int{}
+	for _, star := range stars {
+		width[star.Location] = len(star.Columns)
+	}
+	var out []*Column
+	i := 0
+	for _, item := range sel.TargetList.Items {
+		res, ok := item.(*ast.ResTarget)
+		if !ok {
+			return cols
+		}
+		ref, ok := res.Val.(*ast.ColumnRef)
+		if !ok || !hasStarRef(ref) {
+			out = append(out, cols[i])
+			i++
+			continue
+		}
+		n, ok := width[res.Location]
+		if !ok || i+n > len(cols) {
+			return cols
+		}
+		if embed, ok := embeds.Find(ref.Location, res.Location); ok && n > 0 && cols[i].Table != nil {
+			out = append(out, &Column{Name: embed.Table.Name, EmbedTable: cols[i].Table})
+		} else {
+			out = append(out, cols[i:i+n]...)
+		}
+		i += n
+	}
+	return out
 }
 
 func coreColumn(c core.Column) *Column {
