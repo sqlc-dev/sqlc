@@ -47,6 +47,10 @@ type Domain struct {
 	Base    *core.TypeExpr
 	NotNull bool
 	Comment string
+
+	// base names the type the domain stands on, unless it is an array,
+	// so a domain over a NOT NULL domain is NOT NULL too.
+	base *ast.TypeName
 }
 
 func (d *Domain) isType() {
@@ -128,6 +132,9 @@ func (c *Catalog) createDomain(stmt *ast.CreateDomainStmt) error {
 		Name: name.Name,
 		Base: core.TypeExprOfTypeName(stmt.TypeName),
 	}
+	if !isArrayTypeName(stmt.TypeName) {
+		domain.base = domainName(stmt.TypeName.Names)
+	}
 	if stmt.Constraints != nil {
 		for _, item := range stmt.Constraints.Items {
 			if con, ok := item.(*ast.Constraint); ok && con.Contype == ast.ConstrTypeNotNull {
@@ -137,6 +144,29 @@ func (c *Catalog) createDomain(stmt *ast.CreateDomainStmt) error {
 	}
 	schema.Types = append(schema.Types, domain)
 	return nil
+}
+
+func isArrayTypeName(tn *ast.TypeName) bool {
+	return tn.ArrayBounds != nil && len(tn.ArrayBounds.Items) > 0
+}
+
+// domainNotNull reports whether tn is a domain that is NOT NULL, declared
+// so or standing on one that is.
+func (c *Catalog) domainNotNull(tn *ast.TypeName) bool {
+	seen := map[*Domain]bool{}
+	for tn != nil {
+		typ, _, err := c.getType(tn)
+		d, ok := typ.(*Domain)
+		if err != nil || !ok || seen[d] {
+			return false
+		}
+		if d.NotNull {
+			return true
+		}
+		seen[d] = true
+		tn = d.base
+	}
+	return false
 }
 
 func domainName(list *ast.List) *ast.TypeName {

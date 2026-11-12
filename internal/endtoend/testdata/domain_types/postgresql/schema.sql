@@ -7,6 +7,11 @@ CREATE DOMAIN billing.ksuid AS char(27);
 CREATE DOMAIN billing.text AS integer;
 CREATE DOMAIN relaxed AS text NOT NULL;
 CREATE DOMAIN tightened AS text;
+-- A domain carries the NOT NULL of the domain it stands on, an array
+-- of that domain does not.
+CREATE DOMAIN required_text AS text NOT NULL;
+CREATE DOMAIN derived AS required_text;
+CREATE DOMAIN derived_list AS required_text[];
 CREATE DOMAIN dropped AS text;
 DROP DOMAIN dropped;
 
@@ -27,7 +32,9 @@ CREATE TABLE shelves (
   retyped title,
   strict title NOT NULL,
   relaxed relaxed,
-  tightened tightened
+  tightened tightened,
+  derived derived,
+  derived_list derived_list
 );
 
 -- The domain's NOT NULL leaves with it, and outlasts the column's own.

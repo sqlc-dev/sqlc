@@ -379,8 +379,8 @@ func (c *Catalog) defineColumn(table *ast.TableName, col *ast.ColumnDef) (*Colum
 	return tc, nil
 }
 
-// setDomainNotNull makes col NOT NULL when its type is a domain declared
-// NOT NULL, which forbids NULL in every column of it, and drops what an
+// setDomainNotNull makes col NOT NULL when its type is a NOT NULL domain,
+// which forbids NULL in every column of it, and drops what an
 // earlier type gave it. An array of one may still be NULL itself.
 func (c *Catalog) setDomainNotNull(col *Column) {
 	if col.domainNotNull {
@@ -389,10 +389,8 @@ func (c *Catalog) setDomainNotNull(col *Column) {
 	if col.IsNotNull || col.IsArray {
 		return
 	}
-	if typ, _, err := c.getType(&col.Type); err == nil {
-		if d, ok := typ.(*Domain); ok && d.NotNull {
-			col.IsNotNull, col.domainNotNull = true, true
-		}
+	if c.domainNotNull(&col.Type) {
+		col.IsNotNull, col.domainNotNull = true, true
 	}
 }
 
