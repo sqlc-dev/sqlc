@@ -491,7 +491,12 @@ func applyCreateFunction(cat *core.Catalog, stmt *ast.CreateFunctionStmt) error 
 	if stmt.Func == nil || stmt.Func.Name == "" || stmt.ReturnType == nil {
 		return nil
 	}
-	returnOID, err := cat.ResolveType(stmt.ReturnType)
+	// A Nullable(T) result is a T the function may return NULL for.
+	ret := core.TypeExprOfTypeName(stmt.ReturnType)
+	if ret == nil {
+		return fmt.Errorf("function %q: missing type name", stmt.Func.Name)
+	}
+	returnOID, err := cat.ResolveTypeExpr(ret.WithNullable(false))
 	if err != nil {
 		return fmt.Errorf("function %q: %w", stmt.Func.Name, err)
 	}
@@ -518,10 +523,11 @@ func applyCreateFunction(cat *core.Catalog, stmt *ast.CreateFunctionStmt) error 
 		}
 	}
 	_, err = cat.CreateProc(core.ProcSpec{
-		Name:          stmt.Func.Name,
-		ReturnTypeOID: returnOID,
-		ReturnSet:     stmt.ReturnType != nil && stmt.ReturnType.Setof,
-		Args:          args,
+		Name:           stmt.Func.Name,
+		ReturnTypeOID:  returnOID,
+		ReturnSet:      stmt.ReturnType != nil && stmt.ReturnType.Setof,
+		ReturnNullable: ret.Nullable,
+		Args:           args,
 	})
 	return err
 }

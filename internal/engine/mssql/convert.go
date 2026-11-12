@@ -68,6 +68,8 @@ func (c *cc) convert(node tsql.Node) ast.Node {
 		return c.convertAlterTableAddTableElementStatement(n)
 	case *tsql.AlterTableDropTableElementStatement:
 		return c.convertAlterTableDropTableElementStatement(n)
+	case *tsql.CreateFunctionStatement:
+		return c.convertCreateFunctionStatement(n)
 	case *tsql.CreateTypeUddtStatement:
 		return c.convertCreateTypeUddtStatement(n)
 	default:
@@ -1511,6 +1513,33 @@ func (c *cc) convertAlterTableAddTableElementStatement(n *tsql.AlterTableAddTabl
 		})
 	}
 	return stmt
+}
+
+// convertCreateFunctionStatement records a scalar function, whose result
+// SQL Server reports nullable whatever its arguments are.
+func (c *cc) convertCreateFunctionStatement(n *tsql.CreateFunctionStatement) ast.Node {
+	ret, ok := n.ReturnType.(*tsql.ScalarFunctionReturnType)
+	if !ok || ret.DataType == nil || n.Name == nil || n.Name.BaseIdentifier == nil {
+		return todo(n)
+	}
+	tn := parseTableName(n.Name)
+	params := &ast.List{}
+	for _, p := range n.Parameters {
+		if p.VariableName == nil || p.DataType == nil {
+			continue
+		}
+		name := strings.TrimPrefix(p.VariableName.Value, "@")
+		param := &ast.FuncParam{Name: &name, Type: dataTypeName(p.DataType)}
+		if p.Value != nil {
+			param.DefExpr = c.convertScalarExpression(p.Value)
+		}
+		params.Items = append(params.Items, param)
+	}
+	return &ast.CreateFunctionStmt{
+		Func:       &ast.FuncName{Schema: tn.Schema, Name: tn.Name},
+		Params:     params,
+		ReturnType: nullableTypeName(dataTypeName(ret.DataType)),
+	}
 }
 
 func (c *cc) convertAlterTableDropTableElementStatement(n *tsql.AlterTableDropTableElementStatement) ast.Node {
