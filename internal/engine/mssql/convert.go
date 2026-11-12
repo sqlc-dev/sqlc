@@ -3,6 +3,7 @@ package mssql
 import (
 	"strconv"
 	"strings"
+	"unicode/utf16"
 
 	tsql "github.com/sqlc-dev/teesql/ast"
 
@@ -800,10 +801,15 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 			Location: c.loc(e),
 		}
 	case *tsql.StringLiteral:
-		return &ast.A_Const{
+		lit := &ast.A_Const{
 			Val:      &ast.String{Str: e.Value},
 			Location: c.loc(e),
 		}
+		// N'...' is an nvarchar as long as the string, and at least 1.
+		if e.IsNational {
+			return &ast.TypeCast{Arg: lit, TypeName: typeName("nvarchar", max(1, int64(len(utf16.Encode([]rune(e.Value)))))), Location: c.loc(e)}
+		}
+		return lit
 	case *tsql.NullLiteral:
 		return &ast.A_Const{
 			Val:      &ast.Null{},
