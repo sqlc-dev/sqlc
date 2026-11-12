@@ -194,6 +194,15 @@
 {"name": "round", "args": [{"type": "smallmoney"}, {"type": "int"}], "returns": "money", "nullable": true}
 {"name": "round", "args": [{"type": "float"}, {"type": "int"}], "returns": "float", "nullable": true}
 {"name": "round", "args": [{"type": "real"}, {"type": "int"}], "returns": "float", "nullable": true}
+{"name": "round", "args": [{"type": "bigint"}, {"type": "int"}, {"type": "int"}], "returns": "bigint", "nullable": true}
+{"name": "round", "args": [{"type": "int"}, {"type": "int"}, {"type": "int"}], "returns": "int", "nullable": true}
+{"name": "round", "args": [{"type": "smallint"}, {"type": "int"}, {"type": "int"}], "returns": "int", "nullable": true}
+{"name": "round", "args": [{"type": "tinyint"}, {"type": "int"}, {"type": "int"}], "returns": "int", "nullable": true}
+{"name": "round", "args": [{"type": "decimal"}, {"type": "int"}, {"type": "int"}], "returns": "$1", "nullable": true}
+{"name": "round", "args": [{"type": "money"}, {"type": "int"}, {"type": "int"}], "returns": "money", "nullable": true}
+{"name": "round", "args": [{"type": "smallmoney"}, {"type": "int"}, {"type": "int"}], "returns": "money", "nullable": true}
+{"name": "round", "args": [{"type": "float"}, {"type": "int"}, {"type": "int"}], "returns": "float", "nullable": true}
+{"name": "round", "args": [{"type": "real"}, {"type": "int"}, {"type": "int"}], "returns": "float", "nullable": true}
 {"name": "power", "args": [{"type": "bigint"}, {"type": "any"}], "returns": "bigint", "nullable": true}
 {"name": "power", "args": [{"type": "int"}, {"type": "any"}], "returns": "int", "nullable": true}
 {"name": "power", "args": [{"type": "smallint"}, {"type": "any"}], "returns": "int", "nullable": true}
