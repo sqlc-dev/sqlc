@@ -1,6 +1,7 @@
 package mssql
 
 import (
+	"math"
 	"strconv"
 	"strings"
 	"unicode/utf16"
@@ -780,16 +781,16 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 	case *tsql.VariableReference:
 		return c.convertVariableReference(e)
 	case *tsql.IntegerLiteral:
-		ival, _ := strconv.ParseInt(e.Value, 10, 64)
+		ival, err := strconv.ParseInt(e.Value, 10, 64)
+		if err != nil || ival > math.MaxInt32 {
+			return c.numericLiteral(e.Value, e)
+		}
 		return &ast.A_Const{
 			Val:      &ast.Integer{Ival: ival},
 			Location: c.loc(e),
 		}
 	case *tsql.NumericLiteral:
-		return &ast.A_Const{
-			Val:      &ast.Float{Str: e.Value},
-			Location: c.loc(e),
-		}
+		return c.numericLiteral(e.Value, e)
 	case *tsql.RealLiteral:
 		return &ast.A_Const{
 			Val:      &ast.Float{Str: e.Value},
@@ -1591,6 +1592,22 @@ func (c *cc) convertCreateFunctionStatement(n *tsql.CreateFunctionStatement) ast
 		Params:     params,
 		ReturnType: returns,
 		Options:    options,
+	}
+}
+
+// numericLiteral is a number written with a decimal point, or too large
+// for an int, which SQL Server types as the decimal holding its digits:
+// 1.50 is a decimal(3,2), 2147483648 a decimal(10,0).
+func (c *cc) numericLiteral(value string, n tsql.Node) ast.Node {
+	whole, frac, _ := strings.Cut(value, ".")
+	whole = strings.TrimLeft(whole, "0")
+	scale := int64(len(frac))
+	precision := max(int64(len(whole))+scale, 1)
+	return &ast.TypeCast{
+		Arg: &ast.A_Const{Val: &ast.Float{Str: value}, Location: c.loc(n)},
+		TypeName: &ast.TypeName{Name: "decimal", Typmods: appendTypmod(appendTypmod(nil,
+			&ast.A_Const{Val: &ast.Integer{Ival: precision}}), &ast.A_Const{Val: &ast.Integer{Ival: scale}})},
+		Location: c.loc(n),
 	}
 }
 
