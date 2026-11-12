@@ -107,9 +107,12 @@ func (c *cc) convertWithClause(n *tsql.WithCtesAndXmlNamespaces) *ast.WithClause
 	if n == nil || len(n.CommonTableExpressions) == 0 {
 		return nil
 	}
+	// T-SQL has no RECURSIVE keyword: a common table expression that names
+	// itself is recursive.
 	with := &ast.WithClause{
-		Ctes:     &ast.List{},
-		Location: c.loc(n),
+		Ctes:      &ast.List{},
+		Recursive: true,
+		Location:  c.loc(n),
 	}
 	for _, cte := range n.CommonTableExpressions {
 		name := identifierValue(cte.ExpressionName)

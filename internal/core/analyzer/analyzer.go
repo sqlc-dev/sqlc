@@ -5,6 +5,7 @@ import (
 
 	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 )
 
 func Prepare(cat *core.Catalog, stmt ast.Node) (core.PrepareResult, error) {
@@ -300,18 +301,51 @@ func (a *analyzer) bindCTEs(with *ast.WithClause) error {
 		if !ok {
 			continue
 		}
+		if a.ctes == nil {
+			a.ctes = map[string]scopeRel{}
+		}
+		// A recursive CTE refers to itself in the branches after its first,
+		// which gives the columns, so the first is bound before the rest.
+		recursive := with.Recursive && sel.Larg != nil && refersTo(sel.Rarg, *cte.Ctename)
+		if recursive {
+			anchor := sel
+			for anchor.Larg != nil {
+				anchor = anchor.Larg
+			}
+			cols, err := a.subqueryColumns(anchor)
+			if err != nil {
+				return fmt.Errorf("with %s: %w", *cte.Ctename, err)
+			}
+			rel := derivedRel(*cte.Ctename, cols)
+			renameColumns(&rel, cte.Aliascolnames)
+			a.ctes[*cte.Ctename] = rel
+		}
 		cols, err := a.subqueryColumns(sel)
 		if err != nil {
 			return fmt.Errorf("with %s: %w", *cte.Ctename, err)
 		}
 		rel := derivedRel(*cte.Ctename, cols)
 		renameColumns(&rel, cte.Aliascolnames)
-		if a.ctes == nil {
-			a.ctes = map[string]scopeRel{}
+		// What a recursive CTE yields is the union of every round of it, so
+		// no column stands for a single table column and any may be NULL.
+		if recursive {
+			for i := range rel.cols {
+				rel.cols[i].AttOID = 0
+				rel.cols[i].NotNull = false
+			}
 		}
 		a.ctes[*cte.Ctename] = rel
 	}
 	return nil
+}
+
+// refersTo reports whether a query reads the relation named name.
+func refersTo(n ast.Node, name string) bool {
+	found := astutils.Search(n, func(n ast.Node) bool {
+		rv, ok := n.(*ast.RangeVar)
+		return ok && rv.Relname != nil && *rv.Relname == name && (rv.Schemaname == nil || *rv.Schemaname == "")
+	})
+	return len(found.Items) > 0
 }
 
 // bindAliases records the output names the target list assigns, so a later

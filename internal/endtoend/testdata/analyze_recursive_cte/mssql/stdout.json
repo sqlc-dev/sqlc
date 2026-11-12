@@ -1,0 +1,77 @@
+[
+  {
+    "name": "Subtree",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint",
+          "nullable": true
+        }
+      },
+      {
+        "name": "parent_id",
+        "type": {
+          "name": "bigint",
+          "nullable": true
+        }
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 100
+            }
+          ]
+        }
+      },
+      {
+        "name": "depth",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "root",
+          "type": {
+            "name": "bigint"
+          },
+          "table": "nodes"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Numbers",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "i",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "max",
+          "type": {
+            "name": "int"
+          }
+        }
+      }
+    ]
+  }
+]
