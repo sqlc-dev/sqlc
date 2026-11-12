@@ -20,4 +20,5 @@ type Shelf struct {
 	ID     int32
 	Titles []string
 	Label  string
+	Note   pgtype.Text
 }

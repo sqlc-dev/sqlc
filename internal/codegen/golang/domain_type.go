@@ -1,6 +1,7 @@
 package golang
 
 import (
+	"slices"
 	"strings"
 
 	"google.golang.org/protobuf/proto"
@@ -22,7 +23,7 @@ func domainColumn(req *plugin.GenerateRequest, col *plugin.Column) *plugin.Colum
 		return out
 	}
 	d := findDomain(req, col.Type.GetSchema(), col.Type.GetName())
-	if d == nil || d.Base == nil {
+	if baseless(req, d) {
 		return nil
 	}
 	out := proto.Clone(col).(*plugin.Column)
@@ -33,7 +34,7 @@ func domainColumn(req *plugin.GenerateRequest, col *plugin.Column) *plugin.Colum
 // resolveDomains replaces each domain in t with its base, keeping the
 // nullability t says each position has.
 func resolveDomains(req *plugin.GenerateRequest, t *plugin.TypeExpr) (*plugin.TypeExpr, bool) {
-	if d := findDomain(req, "", t.GetName()); d != nil && d.Base != nil {
+	if d := findDomain(req, "", t.GetName()); !baseless(req, d) {
 		base := proto.Clone(d.Base).(*plugin.TypeExpr)
 		base.Nullable = t.Nullable
 		if resolved, ok := resolveDomains(req, base); ok {
@@ -55,9 +56,17 @@ func resolveDomains(req *plugin.GenerateRequest, t *plugin.TypeExpr) (*plugin.Ty
 	return out, out != nil
 }
 
+// baseless reports whether d is missing or has no other type to resolve to:
+// public.text over text reports its base as text, which a bare lookup
+// finds as the domain again rather than the built-in it is.
+func baseless(req *plugin.GenerateRequest, d *plugin.Domain) bool {
+	return d == nil || d.Base == nil || findDomain(req, "", d.Base.GetName()) == d
+}
+
 // findDomain looks a domain up by the name a column's type reports: a
-// qualified name in its schema, and a bare one in the default schema
-// first, as the type would resolve.
+// qualified name in its schema, and a bare one only in the namespaces a
+// type is reported from unqualified, since one elsewhere is reported
+// qualified and so is a different type.
 func findDomain(req *plugin.GenerateRequest, schema, name string) *plugin.Domain {
 	if name == "" {
 		return nil
@@ -67,21 +76,27 @@ func findDomain(req *plugin.GenerateRequest, schema, name string) *plugin.Domain
 			schema, name = name[:i], name[i+1:]
 		}
 	}
-	var fallback *plugin.Domain
+	schemas := []string{schema}
+	if schema == "" {
+		schemas = []string{req.GetCatalog().GetDefaultSchema(), "pg_catalog", engineDefaultSchema[req.GetSettings().GetEngine()]}
+	}
 	for _, s := range req.GetCatalog().GetSchemas() {
+		if !slices.Contains(schemas, s.Name) {
+			continue
+		}
 		for _, d := range s.GetDomains() {
-			if d.Name != name {
-				continue
-			}
-			switch {
-			case schema != "" && s.Name == schema:
+			if d.Name == name {
 				return d
-			case schema == "" && s.Name == req.Catalog.DefaultSchema:
-				return d
-			case schema == "" && fallback == nil:
-				fallback = d
 			}
 		}
 	}
-	return fallback
+	return nil
+}
+
+// engineDefaultSchema is the schema an engine puts an unqualified object
+// in when it is not the catalog's default, as its dialect seed names it.
+var engineDefaultSchema = map[string]string{
+	engineClickHouse: "default",
+	engineDuckDB:     "main",
+	engineMSSQL:      "dbo",
 }
