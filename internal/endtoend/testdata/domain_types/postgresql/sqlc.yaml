@@ -1,0 +1,14 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "schema.sql"
+    queries: "query.sql"
+    gen:
+      go:
+        package: "querytest"
+        out: "go"
+        sql_package: "pgx/v5"
+        overrides:
+          - db_type: "billing.ksuid"
+            go_type: "github.com/google/uuid.NullUUID"
+            nullable: true

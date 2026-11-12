@@ -10,9 +10,8 @@ import (
 // come back as their decimal text, so they map to string the way
 // PostgreSQL's numeric does under database/sql. A uniqueidentifier maps to
 // the driver's own type, which keeps SQL Server's byte order straight. An
-// alias type created with CREATE TYPE ... FROM is reported by its own name,
-// which the catalog does not yet resolve to its base, so it maps to any
-// until it does.
+// alias type created with CREATE TYPE ... FROM never reaches here: it is
+// mapped as its base.
 func mssqlType(req *plugin.GenerateRequest, options *opts.Options, col *plugin.Column) string {
 	t, nullable := columnType(col)
 	null := func(typ, nullTyp string) string {

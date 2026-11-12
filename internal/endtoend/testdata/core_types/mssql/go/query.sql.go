@@ -141,7 +141,7 @@ WHERE price = @price AND body = @body AND phone = @phone AND offset_at = @offset
 type ParamsParams struct {
 	Price    string
 	Body     sql.NullString
-	Phone    any
+	Phone    string
 	OffsetAt sql.NullTime
 }
 

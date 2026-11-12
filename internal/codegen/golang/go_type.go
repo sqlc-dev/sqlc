@@ -95,6 +95,12 @@ func goInnerType(req *plugin.GenerateRequest, options *opts.Options, col *plugin
 		}
 	}
 
+	// A domain is generated as the type it stands on, unless an override
+	// above named the domain itself.
+	if base := domainColumn(req, col); base != nil {
+		return goInnerType(req, options, base, param)
+	}
+
 	// TODO: Extend the engine interface to handle types
 	switch req.Settings.Engine {
 	case engineMySQL:

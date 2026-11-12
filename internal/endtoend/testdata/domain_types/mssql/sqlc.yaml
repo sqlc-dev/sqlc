@@ -1,0 +1,14 @@
+version: "2"
+sql:
+  - engine: "mssql"
+    schema: "schema.sql"
+    queries: "query.sql"
+    gen:
+      go:
+        package: "querytest"
+        out: "go"
+        sql_package: "database/sql"
+        overrides:
+          - db_type: "code"
+            go_type: "github.com/google/uuid.NullUUID"
+            nullable: true
