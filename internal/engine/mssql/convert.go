@@ -764,6 +764,15 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 			Subselect:   c.convertQueryExpression(e.QueryExpression),
 			Location:    c.loc(e),
 		}
+	case *tsql.GlobalVariableExpression:
+		// @@ROWCOUNT and its relatives are typed as the functions the
+		// dialect seeds under their names.
+		return &ast.FuncCall{
+			Funcname: &ast.List{
+				Items: []ast.Node{&ast.String{Str: identifier(e.Name)}},
+			},
+			Location: c.loc(e),
+		}
 	case *tsql.ParameterlessCall:
 		return &ast.FuncCall{
 			Funcname: &ast.List{

@@ -87,3 +87,22 @@
 {"name": "generate_series", "args": [{"type": "bigint"}, {"type": "bigint"}, {"type": "bigint"}], "returns": "$1"}
 {"name": "generate_series", "args": [{"type": "decimal"}, {"type": "decimal"}, {"type": "decimal"}], "returns": "$1"}
 {"name": "parse", "args": [{"type": "nvarchar"}, {"type": "nvarchar"}], "returns": "nvarchar"}
+{"name": "@@rowcount", "returns": "int"}
+{"name": "@@identity", "returns": "numeric(38, 0)", "nullable": true}
+{"name": "@@spid", "returns": "smallint"}
+{"name": "@@version", "returns": "nvarchar(300)", "nullable": true}
+{"name": "@@trancount", "returns": "int"}
+{"name": "@@error", "returns": "int"}
+{"name": "@@fetch_status", "returns": "int"}
+{"name": "@@servername", "returns": "nvarchar(128)", "nullable": true}
+{"name": "@@servicename", "returns": "nvarchar(128)", "nullable": true}
+{"name": "@@language", "returns": "nvarchar(128)", "nullable": true}
+{"name": "@@datefirst", "returns": "tinyint", "nullable": true}
+{"name": "@@max_precision", "returns": "tinyint"}
+{"name": "@@nestlevel", "returns": "int"}
+{"name": "@@procid", "returns": "int"}
+{"name": "@@dbts", "returns": "varbinary(8)"}
+{"name": "@@lock_timeout", "returns": "int"}
+{"name": "@@options", "returns": "int"}
+{"name": "@@textsize", "returns": "int"}
+{"name": "@@cursor_rows", "returns": "int"}
