@@ -65,6 +65,7 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 	for _, s := range c.Schemas {
 		var enums []*plugin.Enum
 		var cts []*plugin.CompositeType
+		var domains []*plugin.Domain
 		for _, typ := range s.Types {
 			switch typ := typ.(type) {
 			case *catalog.Enum:
@@ -76,6 +77,13 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 			case *catalog.CompositeType:
 				cts = append(cts, &plugin.CompositeType{
 					Name:    typ.Name,
+					Comment: typ.Comment,
+				})
+			case *catalog.Domain:
+				domains = append(domains, &plugin.Domain{
+					Name:    typ.Name,
+					Base:    pluginTypeExpr(typ.Base),
+					NotNull: typ.NotNull,
 					Comment: typ.Comment,
 				})
 			}
@@ -125,6 +133,7 @@ func pluginCatalog(c *catalog.Catalog) *plugin.Catalog {
 			Tables:         tables,
 			Enums:          enums,
 			CompositeTypes: cts,
+			Domains:        domains,
 		})
 	}
 	return &plugin.Catalog{

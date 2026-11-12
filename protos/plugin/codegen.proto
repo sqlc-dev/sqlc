@@ -56,6 +56,18 @@ message Schema {
   repeated Table tables = 3;
   repeated Enum enums = 4;
   repeated CompositeType composite_types = 5;
+  repeated Domain domains = 6;
+}
+
+// Domain is a type that stands on another: a PostgreSQL CREATE DOMAIN or a
+// SQL Server alias type from CREATE TYPE ... FROM. A column of it reports
+// the domain's name; base is the type it resolves through, and not_null
+// says whether the domain forbids NULL.
+message Domain {
+  string name = 1;
+  TypeExpr base = 2;
+  bool not_null = 3;
+  string comment = 4;
 }
 
 message CompositeType {

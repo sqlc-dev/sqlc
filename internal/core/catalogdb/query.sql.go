@@ -728,6 +728,35 @@ func (q *Queries) ListClassColumns(ctx context.Context, classOid int64) ([]ListC
 	return items, nil
 }
 
+const listDomainsInNamespace = `-- name: ListDomainsInNamespace :many
+SELECT oid FROM sql_type
+WHERE namespace_oid = ? AND typtype = 'd'
+ORDER BY oid
+`
+
+func (q *Queries) ListDomainsInNamespace(ctx context.Context, namespaceOid int64) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, listDomainsInNamespace, namespaceOid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var oid int64
+		if err := rows.Scan(&oid); err != nil {
+			return nil, err
+		}
+		items = append(items, oid)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listNamespaces = `-- name: ListNamespaces :many
 SELECT oid, name FROM sql_namespace ORDER BY oid
 `

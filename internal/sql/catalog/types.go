@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
@@ -37,6 +38,22 @@ func (ct *CompositeType) isType() {
 
 func (ct *CompositeType) SetComment(c string) {
 	ct.Comment = c
+}
+
+// Domain is a type standing on a base: a PostgreSQL domain or a SQL Server
+// alias type.
+type Domain struct {
+	Name    string
+	Base    *core.TypeExpr
+	NotNull bool
+	Comment string
+}
+
+func (d *Domain) isType() {
+}
+
+func (d *Domain) SetComment(c string) {
+	d.Comment = c
 }
 
 func sameType(a, b *ast.TypeName) bool {

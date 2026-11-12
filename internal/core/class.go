@@ -60,6 +60,23 @@ func (c *Catalog) RenameClass(classOID int64, name string) error {
 	return nil
 }
 
+// DomainsInNamespace lists the domains and alias types a namespace holds.
+func (c *Catalog) DomainsInNamespace(namespaceOID int64) ([]TypeInfo, error) {
+	oids, err := c.q.ListDomainsInNamespace(context.Background(), namespaceOID)
+	if err != nil {
+		return nil, fmt.Errorf("list domains in namespace %d: %w", namespaceOID, err)
+	}
+	out := make([]TypeInfo, 0, len(oids))
+	for _, oid := range oids {
+		info, err := c.LookupType(oid)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, info)
+	}
+	return out, nil
+}
+
 type ClassInfo struct {
 	OID  int64
 	Name string
