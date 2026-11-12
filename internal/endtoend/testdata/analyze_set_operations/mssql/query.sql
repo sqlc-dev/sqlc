@@ -20,3 +20,10 @@ SELECT id, score FROM people
 EXCEPT
 SELECT id, budget FROM orgs;
 
+
+-- name: Amounts :many
+SELECT qty AS v FROM ledger
+UNION ALL
+SELECT amount FROM ledger
+UNION ALL
+SELECT flag FROM ledger;

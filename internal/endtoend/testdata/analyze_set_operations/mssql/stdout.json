@@ -145,5 +145,26 @@
       }
     ],
     "params": []
+  },
+  {
+    "name": "Amounts",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "v",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 12
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      }
+    ],
+    "params": []
   }
 ]

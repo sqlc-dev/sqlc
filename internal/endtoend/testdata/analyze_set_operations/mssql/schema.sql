@@ -14,3 +14,9 @@ CREATE TABLE orgs (
     budget MONEY NOT NULL,
     founded DATE NOT NULL
 );
+
+CREATE TABLE ledger (
+    qty INT NOT NULL,
+    flag BIT NOT NULL,
+    amount DECIMAL(5,2) NOT NULL
+);
