@@ -83,10 +83,16 @@ func (a *analyzer) recordStar(s core.StarExpansion) {
 // placeholder inside the subquery is reported with the rest, and it sees this
 // query's scope, so a correlated reference resolves.
 func (a *analyzer) subquery(s *ast.SelectStmt) (*analyzer, error) {
+	// A set operation binds no scope of its own, so its branches see the
+	// query it is nested in.
+	outer := a.scope
+	if outer == nil {
+		outer = a.outer
+	}
 	sub := &analyzer{
 		cat:    a.cat,
 		params: a.params,
-		outer:  a.scope,
+		outer:  outer,
 		ctes:   a.ctes,
 		stars:  a.stars,
 	}
