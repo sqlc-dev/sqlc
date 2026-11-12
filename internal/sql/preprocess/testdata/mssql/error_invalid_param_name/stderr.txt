@@ -1,0 +1,1 @@
+2:34: parameter name "user-id" passed to sqlc.arg is not a valid @name; use letters, digits and underscores
