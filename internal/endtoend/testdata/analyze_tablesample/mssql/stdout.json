@@ -1,0 +1,69 @@
+[
+  {
+    "name": "Sampled",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "int"
+        },
+        "table": "t"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "pct",
+          "type": {
+            "name": "float"
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "min",
+          "type": {
+            "name": "int"
+          },
+          "table": "t"
+        }
+      }
+    ]
+  },
+  {
+    "name": "SampledRows",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "int"
+        },
+        "table": "t"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "n",
+          "type": {
+            "name": "bigint"
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "seed",
+          "type": {
+            "name": "bigint"
+          }
+        }
+      }
+    ]
+  }
+]

@@ -406,6 +406,22 @@ func (c *cc) convertTableReference(ref tsql.TableReference) ast.Node {
 				}
 			}
 		}
+		// TABLESAMPLE takes a percentage as a float and a count of rows
+		// or a REPEATABLE seed as a bigint.
+		if ts := t.TableSampleClause; ts != nil {
+			size := "float"
+			if ts.TableSampleClauseOption == "Rows" {
+				size = "bigint"
+			}
+			for _, e := range []struct {
+				expr tsql.ScalarExpression
+				typ  string
+			}{{ts.SampleNumber, size}, {ts.RepeatSeed, "bigint"}} {
+				if e.expr != nil {
+					c.fromExprs = append(c.fromExprs, &ast.TypeCast{Arg: c.convertScalarExpression(e.expr), TypeName: &ast.TypeName{Name: e.typ}})
+				}
+			}
+		}
 		return rv
 	case *tsql.QueryDerivedTable:
 		sub := &ast.RangeSubselect{
