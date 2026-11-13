@@ -33,11 +33,12 @@ func (l *lexer) scan(start, end int) []occurrence {
 			}
 			i = j
 
-		// @@name is a system function, such as SQL Server's @@ROWCOUNT.
+		// A parameter starts with @ followed by an identifier. The second @
+		// in a T-SQL system variable such as @@ROWCOUNT must not start one.
 		case c == '@' && l.d.AtSign && isIdentStart(l.at(i+1)) && l.at(i-1) != '@':
 			j := l.identEnd(i + 1)
-			// A SQL Server name goes on through #, $ and @, so @a and @a#b
-			// are two parameters.
+			// T-SQL parameter names may also contain #, $, and @ after the
+			// first identifier character.
 			for l.d.Style == StyleAt && j < len(l.src) && (isIdentPart(l.src[j]) || strings.IndexByte("#$@", l.src[j]) >= 0) {
 				j++
 			}
