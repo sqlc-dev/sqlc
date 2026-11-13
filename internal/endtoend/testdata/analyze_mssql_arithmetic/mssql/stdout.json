@@ -1,0 +1,128 @@
+[
+  {
+    "name": "Numeric",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "doubled",
+        "type": {
+          "name": "decimal",
+          "nullable": true
+        }
+      },
+      {
+        "name": "per_unit",
+        "type": {
+          "name": "decimal",
+          "nullable": true
+        }
+      },
+      {
+        "name": "weighted",
+        "type": {
+          "name": "float",
+          "nullable": true
+        }
+      },
+      {
+        "name": "ratio_units",
+        "type": {
+          "name": "real",
+          "nullable": true
+        }
+      },
+      {
+        "name": "ratio_weight",
+        "type": {
+          "name": "float",
+          "nullable": true
+        }
+      },
+      {
+        "name": "units_total",
+        "type": {
+          "name": "bigint",
+          "nullable": true
+        }
+      },
+      {
+        "name": "net_refunds",
+        "type": {
+          "name": "smallint",
+          "nullable": true
+        }
+      },
+      {
+        "name": "fee_units",
+        "type": {
+          "name": "money",
+          "nullable": true
+        }
+      },
+      {
+        "name": "small_fee_units",
+        "type": {
+          "name": "smallmoney",
+          "nullable": true
+        }
+      },
+      {
+        "name": "fees",
+        "type": {
+          "name": "money",
+          "nullable": true
+        }
+      },
+      {
+        "name": "remainder",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Concatenation",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "codes",
+        "type": {
+          "name": "char",
+          "nullable": true
+        }
+      },
+      {
+        "name": "code_title",
+        "type": {
+          "name": "varchar",
+          "nullable": true
+        }
+      },
+      {
+        "name": "ncode_title",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true
+        }
+      },
+      {
+        "name": "title_name",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true
+        }
+      },
+      {
+        "name": "code_ncode",
+        "type": {
+          "name": "nchar",
+          "nullable": true
+        }
+      }
+    ],
+    "params": []
+  }
+]

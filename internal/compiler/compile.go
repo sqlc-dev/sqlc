@@ -143,6 +143,23 @@ func (c *Compiler) parseCatalogCore(files []schemaFile, merr *multierr.Error) er
 	// Whatever apply reported is already in merr, which the caller returns.
 	c.coreCatalog = cat
 
+	// Runtime behavior is wired after both seed and restore paths. Installing
+	// it through a seed option would miss cache hits.
+	if c.newCoreTypeCombiner != nil {
+		c.coreTypeCombiner, err = c.newCoreTypeCombiner(cat)
+		if err != nil {
+			return err
+		}
+	} else {
+		data, err := cat.TypeCombinationData()
+		if err != nil {
+			return err
+		}
+		if len(data) > 0 {
+			return fmt.Errorf("type-combination data requires an engine-supplied combiner")
+		}
+	}
+
 	// Codegen consumes the catalog through the Result, in the legacy shape.
 	legacy, err := coreResultCatalog(cat)
 	if err != nil {

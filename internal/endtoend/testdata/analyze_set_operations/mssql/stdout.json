@@ -1,0 +1,183 @@
+[
+  {
+    "name": "Everyone",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        }
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "int": 100
+            }
+          ]
+        }
+      },
+      {
+        "name": "code",
+        "type": {
+          "name": "varchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 5
+            }
+          ]
+        }
+      },
+      {
+        "name": "score",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 19
+            },
+            {
+              "int": 4
+            }
+          ]
+        }
+      },
+      {
+        "name": "joined",
+        "type": {
+          "name": "datetime2",
+          "args": [
+            {
+              "int": 3
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "skip",
+          "type": {
+            "name": "varchar",
+            "args": [
+              {
+                "int": 50
+              }
+            ]
+          },
+          "table": "people"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Names",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "name",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 50
+            }
+          ]
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "SharedNicknames",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "nickname",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "int": 100
+            }
+          ]
+        }
+      },
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "OnlyPeople",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        }
+      },
+      {
+        "name": "score",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 19
+            },
+            {
+              "int": 4
+            }
+          ]
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Amounts",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "v",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 12
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "LiteralUnion",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "status",
+        "type": {
+          "name": "varchar"
+        }
+      }
+    ],
+    "params": []
+  }
+]

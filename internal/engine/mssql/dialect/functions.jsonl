@@ -50,6 +50,28 @@
 {"name": "max", "kind": "a", "args": [{"type": "nvarchar"}], "returns": "nvarchar", "nullable": true}
 {"name": "max", "kind": "a", "args": [{"type": "char"}], "returns": "char", "nullable": true}
 {"name": "max", "kind": "a", "args": [{"type": "nchar"}], "returns": "nchar", "nullable": true}
+{"name": "string_agg", "kind": "a", "args": [{"type": "varchar"}, {"type": "varchar"}], "returns": "varchar(8000)", "nullable": true}
+{"name": "string_agg", "kind": "a", "args": [{"type": "char"}, {"type": "varchar"}], "returns": "varchar(8000)", "nullable": true}
+{"name": "string_agg", "kind": "a", "args": [{"type": "nvarchar"}, {"type": "varchar"}], "returns": "nvarchar(4000)", "nullable": true}
+{"name": "string_agg", "kind": "a", "args": [{"type": "nchar"}, {"type": "varchar"}], "returns": "nvarchar(4000)", "nullable": true}
+{"name": "stdev", "kind": "a", "args": [{"type": "any"}], "returns": "float", "nullable": true}
+{"name": "stdevp", "kind": "a", "args": [{"type": "any"}], "returns": "float", "nullable": true}
+{"name": "var", "kind": "a", "args": [{"type": "any"}], "returns": "float", "nullable": true}
+{"name": "varp", "kind": "a", "args": [{"type": "any"}], "returns": "float", "nullable": true}
+{"name": "row_number", "kind": "w", "returns": "bigint"}
+{"name": "rank", "kind": "w", "returns": "bigint"}
+{"name": "dense_rank", "kind": "w", "returns": "bigint"}
+{"name": "ntile", "kind": "w", "args": [{"type": "bigint"}], "returns": "bigint"}
+{"name": "percent_rank", "kind": "w", "returns": "float", "nullable": true}
+{"name": "cume_dist", "kind": "w", "returns": "float", "nullable": true}
+{"name": "lag", "kind": "w", "args": [{"type": "any"}], "returns": "$1", "nullable": true}
+{"name": "lag", "kind": "w", "args": [{"type": "any"}, {"type": "bigint"}], "returns": "$1", "nullable": true}
+{"name": "lag", "kind": "w", "args": [{"type": "any"}, {"type": "bigint"}, {"type": "any"}], "returns": "$1", "nullable": true}
+{"name": "lead", "kind": "w", "args": [{"type": "any"}], "returns": "$1", "nullable": true}
+{"name": "lead", "kind": "w", "args": [{"type": "any"}, {"type": "bigint"}], "returns": "$1", "nullable": true}
+{"name": "lead", "kind": "w", "args": [{"type": "any"}, {"type": "bigint"}, {"type": "any"}], "returns": "$1", "nullable": true}
+{"name": "first_value", "kind": "w", "args": [{"type": "any"}], "returns": "$1", "nullable": true}
+{"name": "last_value", "kind": "w", "args": [{"type": "any"}], "returns": "$1", "nullable": true}
 {"name": "getdate", "returns": "datetime"}
 {"name": "getutcdate", "returns": "datetime"}
 {"name": "sysdatetime", "returns": "datetime2"}
@@ -74,3 +96,290 @@
 {"name": "rtrim", "args": [{"type": "nvarchar"}], "returns": "nvarchar"}
 {"name": "trim", "args": [{"type": "varchar"}], "returns": "varchar"}
 {"name": "trim", "args": [{"type": "nvarchar"}], "returns": "nvarchar"}
+{"name": "nullif", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1", "nullable": true}
+{"name": "concat", "args": [{"type": "any"}, {"type": "any"}], "returns": "varchar"}
+{"name": "concat", "args": [{"type": "nvarchar"}, {"type": "any"}], "returns": "nvarchar"}
+{"name": "concat", "args": [{"type": "any"}, {"type": "nvarchar"}], "returns": "nvarchar"}
+{"name": "concat_ws", "args": [{"type": "any"}, {"type": "any"}, {"type": "any"}], "returns": "varchar"}
+{"name": "concat_ws", "args": [{"type": "nvarchar"}, {"type": "any"}, {"type": "any"}], "returns": "nvarchar"}
+{"name": "concat_ws", "args": [{"type": "any"}, {"type": "nvarchar"}, {"type": "any"}], "returns": "nvarchar"}
+{"name": "concat_ws", "args": [{"type": "any"}, {"type": "any"}, {"type": "nvarchar"}], "returns": "nvarchar"}
+{"name": "substring", "args": [{"type": "varchar"}, {"type": "bigint"}, {"type": "bigint"}], "returns": "varchar", "nullable": true}
+{"name": "substring", "args": [{"type": "char"}, {"type": "bigint"}, {"type": "bigint"}], "returns": "varchar", "nullable": true}
+{"name": "substring", "args": [{"type": "nvarchar"}, {"type": "bigint"}, {"type": "bigint"}], "returns": "nvarchar", "nullable": true}
+{"name": "substring", "args": [{"type": "nchar"}, {"type": "bigint"}, {"type": "bigint"}], "returns": "nvarchar", "nullable": true}
+{"name": "substring", "args": [{"type": "varbinary"}, {"type": "bigint"}, {"type": "bigint"}], "returns": "varbinary", "nullable": true}
+{"name": "substring", "args": [{"type": "binary"}, {"type": "bigint"}, {"type": "bigint"}], "returns": "varbinary", "nullable": true}
+{"name": "left", "args": [{"type": "varchar"}, {"type": "int"}], "returns": "varchar", "nullable": true}
+{"name": "left", "args": [{"type": "char"}, {"type": "int"}], "returns": "varchar", "nullable": true}
+{"name": "left", "args": [{"type": "nvarchar"}, {"type": "int"}], "returns": "nvarchar", "nullable": true}
+{"name": "left", "args": [{"type": "nchar"}, {"type": "int"}], "returns": "nvarchar", "nullable": true}
+{"name": "right", "args": [{"type": "varchar"}, {"type": "int"}], "returns": "varchar", "nullable": true}
+{"name": "right", "args": [{"type": "char"}, {"type": "int"}], "returns": "varchar", "nullable": true}
+{"name": "right", "args": [{"type": "nvarchar"}, {"type": "int"}], "returns": "nvarchar", "nullable": true}
+{"name": "right", "args": [{"type": "nchar"}, {"type": "int"}], "returns": "nvarchar", "nullable": true}
+{"name": "replace", "args": [{"type": "varchar"}, {"type": "any"}, {"type": "any"}], "returns": "varchar(8000)", "nullable": true}
+{"name": "replace", "args": [{"type": "char"}, {"type": "any"}, {"type": "any"}], "returns": "varchar(8000)", "nullable": true}
+{"name": "replace", "args": [{"type": "nvarchar"}, {"type": "any"}, {"type": "any"}], "returns": "nvarchar(4000)", "nullable": true}
+{"name": "replace", "args": [{"type": "nchar"}, {"type": "any"}, {"type": "any"}], "returns": "nvarchar(4000)", "nullable": true}
+{"name": "translate", "args": [{"type": "varchar"}, {"type": "any"}, {"type": "any"}], "returns": "varchar(8000)", "nullable": true}
+{"name": "translate", "args": [{"type": "nvarchar"}, {"type": "any"}, {"type": "any"}], "returns": "nvarchar(4000)", "nullable": true}
+{"name": "replicate", "args": [{"type": "varchar"}, {"type": "int"}], "returns": "varchar", "nullable": true}
+{"name": "replicate", "args": [{"type": "char"}, {"type": "int"}], "returns": "varchar", "nullable": true}
+{"name": "replicate", "args": [{"type": "nvarchar"}, {"type": "int"}], "returns": "nvarchar", "nullable": true}
+{"name": "replicate", "args": [{"type": "nchar"}, {"type": "int"}], "returns": "nvarchar", "nullable": true}
+{"name": "reverse", "args": [{"type": "varchar"}], "returns": "$1", "nullable": true}
+{"name": "reverse", "args": [{"type": "char"}], "returns": "varchar", "nullable": true}
+{"name": "reverse", "args": [{"type": "nvarchar"}], "returns": "$1", "nullable": true}
+{"name": "reverse", "args": [{"type": "nchar"}], "returns": "nvarchar", "nullable": true}
+{"name": "stuff", "args": [{"type": "varchar"}, {"type": "bigint"}, {"type": "bigint"}, {"type": "any"}], "returns": "varchar", "nullable": true}
+{"name": "stuff", "args": [{"type": "char"}, {"type": "bigint"}, {"type": "bigint"}, {"type": "any"}], "returns": "varchar", "nullable": true}
+{"name": "stuff", "args": [{"type": "nvarchar"}, {"type": "bigint"}, {"type": "bigint"}, {"type": "any"}], "returns": "nvarchar", "nullable": true}
+{"name": "stuff", "args": [{"type": "nchar"}, {"type": "bigint"}, {"type": "bigint"}, {"type": "any"}], "returns": "nvarchar", "nullable": true}
+{"name": "space", "args": [{"type": "int"}], "returns": "varchar(8000)", "nullable": true}
+{"name": "charindex", "args": [{"type": "any"}, {"type": "any"}], "returns": "int", "nullable": true}
+{"name": "charindex", "args": [{"type": "any"}, {"type": "any"}, {"type": "int"}], "returns": "int", "nullable": true}
+{"name": "patindex", "args": [{"type": "any"}, {"type": "any"}], "returns": "int", "nullable": true}
+{"name": "ascii", "args": [{"type": "varchar"}], "returns": "int", "nullable": true}
+{"name": "unicode", "args": [{"type": "nvarchar"}], "returns": "int", "nullable": true}
+{"name": "format", "args": [{"type": "any"}, {"type": "nvarchar"}], "returns": "nvarchar(4000)", "nullable": true}
+{"name": "format", "args": [{"type": "any"}, {"type": "nvarchar"}, {"type": "nvarchar"}], "returns": "nvarchar(4000)", "nullable": true}
+{"name": "quotename", "args": [{"type": "nvarchar"}], "returns": "nvarchar(258)", "nullable": true}
+{"name": "quotename", "args": [{"type": "nvarchar"}, {"type": "nvarchar"}], "returns": "nvarchar(258)", "nullable": true}
+{"name": "str", "args": [{"type": "float"}], "returns": "varchar(10)", "nullable": true}
+{"name": "str", "args": [{"type": "float"}, {"type": "int"}], "returns": "varchar($2)", "nullable": true}
+{"name": "str", "args": [{"type": "float"}, {"type": "int"}, {"type": "int"}], "returns": "varchar($2)", "nullable": true}
+{"name": "abs", "args": [{"type": "bigint"}], "returns": "bigint", "nullable": true}
+{"name": "abs", "args": [{"type": "int"}], "returns": "int", "nullable": true}
+{"name": "abs", "args": [{"type": "smallint"}], "returns": "int", "nullable": true}
+{"name": "abs", "args": [{"type": "tinyint"}], "returns": "int", "nullable": true}
+{"name": "abs", "args": [{"type": "decimal"}], "returns": "$1", "nullable": true}
+{"name": "abs", "args": [{"type": "money"}], "returns": "money", "nullable": true}
+{"name": "abs", "args": [{"type": "smallmoney"}], "returns": "money", "nullable": true}
+{"name": "abs", "args": [{"type": "float"}], "returns": "float", "nullable": true}
+{"name": "abs", "args": [{"type": "real"}], "returns": "float", "nullable": true}
+{"name": "sign", "args": [{"type": "bigint"}], "returns": "bigint", "nullable": true}
+{"name": "sign", "args": [{"type": "int"}], "returns": "int", "nullable": true}
+{"name": "sign", "args": [{"type": "smallint"}], "returns": "int", "nullable": true}
+{"name": "sign", "args": [{"type": "tinyint"}], "returns": "int", "nullable": true}
+{"name": "sign", "args": [{"type": "decimal"}], "returns": "$1", "nullable": true}
+{"name": "sign", "args": [{"type": "money"}], "returns": "money", "nullable": true}
+{"name": "sign", "args": [{"type": "smallmoney"}], "returns": "money", "nullable": true}
+{"name": "sign", "args": [{"type": "float"}], "returns": "float", "nullable": true}
+{"name": "sign", "args": [{"type": "real"}], "returns": "float", "nullable": true}
+{"name": "ceiling", "args": [{"type": "bigint"}], "returns": "bigint", "nullable": true}
+{"name": "ceiling", "args": [{"type": "int"}], "returns": "int", "nullable": true}
+{"name": "ceiling", "args": [{"type": "smallint"}], "returns": "int", "nullable": true}
+{"name": "ceiling", "args": [{"type": "tinyint"}], "returns": "int", "nullable": true}
+{"name": "ceiling", "args": [{"type": "decimal"}], "returns": "decimal", "nullable": true}
+{"name": "ceiling", "args": [{"type": "money"}], "returns": "money", "nullable": true}
+{"name": "ceiling", "args": [{"type": "smallmoney"}], "returns": "money", "nullable": true}
+{"name": "ceiling", "args": [{"type": "float"}], "returns": "float", "nullable": true}
+{"name": "ceiling", "args": [{"type": "real"}], "returns": "float", "nullable": true}
+{"name": "floor", "args": [{"type": "bigint"}], "returns": "bigint", "nullable": true}
+{"name": "floor", "args": [{"type": "int"}], "returns": "int", "nullable": true}
+{"name": "floor", "args": [{"type": "smallint"}], "returns": "int", "nullable": true}
+{"name": "floor", "args": [{"type": "tinyint"}], "returns": "int", "nullable": true}
+{"name": "floor", "args": [{"type": "decimal"}], "returns": "decimal", "nullable": true}
+{"name": "floor", "args": [{"type": "money"}], "returns": "money", "nullable": true}
+{"name": "floor", "args": [{"type": "smallmoney"}], "returns": "money", "nullable": true}
+{"name": "floor", "args": [{"type": "float"}], "returns": "float", "nullable": true}
+{"name": "floor", "args": [{"type": "real"}], "returns": "float", "nullable": true}
+{"name": "round", "args": [{"type": "bigint"}, {"type": "int"}], "returns": "bigint", "nullable": true}
+{"name": "round", "args": [{"type": "int"}, {"type": "int"}], "returns": "int", "nullable": true}
+{"name": "round", "args": [{"type": "smallint"}, {"type": "int"}], "returns": "int", "nullable": true}
+{"name": "round", "args": [{"type": "tinyint"}, {"type": "int"}], "returns": "int", "nullable": true}
+{"name": "round", "args": [{"type": "decimal"}, {"type": "int"}], "returns": "$1", "nullable": true}
+{"name": "round", "args": [{"type": "money"}, {"type": "int"}], "returns": "money", "nullable": true}
+{"name": "round", "args": [{"type": "smallmoney"}, {"type": "int"}], "returns": "money", "nullable": true}
+{"name": "round", "args": [{"type": "float"}, {"type": "int"}], "returns": "float", "nullable": true}
+{"name": "round", "args": [{"type": "real"}, {"type": "int"}], "returns": "float", "nullable": true}
+{"name": "round", "args": [{"type": "bigint"}, {"type": "int"}, {"type": "int"}], "returns": "bigint", "nullable": true}
+{"name": "round", "args": [{"type": "int"}, {"type": "int"}, {"type": "int"}], "returns": "int", "nullable": true}
+{"name": "round", "args": [{"type": "smallint"}, {"type": "int"}, {"type": "int"}], "returns": "int", "nullable": true}
+{"name": "round", "args": [{"type": "tinyint"}, {"type": "int"}, {"type": "int"}], "returns": "int", "nullable": true}
+{"name": "round", "args": [{"type": "decimal"}, {"type": "int"}, {"type": "int"}], "returns": "$1", "nullable": true}
+{"name": "round", "args": [{"type": "money"}, {"type": "int"}, {"type": "int"}], "returns": "money", "nullable": true}
+{"name": "round", "args": [{"type": "smallmoney"}, {"type": "int"}, {"type": "int"}], "returns": "money", "nullable": true}
+{"name": "round", "args": [{"type": "float"}, {"type": "int"}, {"type": "int"}], "returns": "float", "nullable": true}
+{"name": "round", "args": [{"type": "real"}, {"type": "int"}, {"type": "int"}], "returns": "float", "nullable": true}
+{"name": "power", "args": [{"type": "bigint"}, {"type": "any"}], "returns": "bigint", "nullable": true}
+{"name": "power", "args": [{"type": "int"}, {"type": "any"}], "returns": "int", "nullable": true}
+{"name": "power", "args": [{"type": "smallint"}, {"type": "any"}], "returns": "int", "nullable": true}
+{"name": "power", "args": [{"type": "tinyint"}, {"type": "any"}], "returns": "int", "nullable": true}
+{"name": "power", "args": [{"type": "decimal"}, {"type": "any"}], "returns": "decimal", "nullable": true}
+{"name": "power", "args": [{"type": "money"}, {"type": "any"}], "returns": "money", "nullable": true}
+{"name": "power", "args": [{"type": "smallmoney"}, {"type": "any"}], "returns": "money", "nullable": true}
+{"name": "power", "args": [{"type": "float"}, {"type": "any"}], "returns": "float", "nullable": true}
+{"name": "power", "args": [{"type": "real"}, {"type": "any"}], "returns": "float", "nullable": true}
+{"name": "sqrt", "args": [{"type": "float"}], "returns": "float", "nullable": true}
+{"name": "square", "args": [{"type": "float"}], "returns": "float", "nullable": true}
+{"name": "exp", "args": [{"type": "float"}], "returns": "float", "nullable": true}
+{"name": "log", "args": [{"type": "float"}], "returns": "float", "nullable": true}
+{"name": "log", "args": [{"type": "float"}, {"type": "float"}], "returns": "float", "nullable": true}
+{"name": "log10", "args": [{"type": "float"}], "returns": "float", "nullable": true}
+{"name": "pi", "returns": "float"}
+{"name": "rand", "returns": "float", "nullable": true}
+{"name": "rand", "args": [{"type": "int"}], "returns": "float", "nullable": true}
+{"name": "year", "args": [{"type": "any"}], "returns": "int", "nullable": true}
+{"name": "month", "args": [{"type": "any"}], "returns": "int", "nullable": true}
+{"name": "day", "args": [{"type": "any"}], "returns": "int", "nullable": true}
+{"name": "isdate", "args": [{"type": "any"}], "returns": "int", "nullable": true}
+{"name": "eomonth", "args": [{"type": "any"}], "returns": "date", "nullable": true}
+{"name": "eomonth", "args": [{"type": "any"}, {"type": "int"}], "returns": "date", "nullable": true}
+{"name": "datefromparts", "args": [{"type": "int"}, {"type": "int"}, {"type": "int"}], "returns": "date", "nullable": true}
+{"name": "datetimefromparts", "args": [{"type": "int"}, {"type": "int"}, {"type": "int"}, {"type": "int"}, {"type": "int"}, {"type": "int"}, {"type": "int"}], "returns": "datetime", "nullable": true}
+{"name": "datetime2fromparts", "args": [{"type": "int"}, {"type": "int"}, {"type": "int"}, {"type": "int"}, {"type": "int"}, {"type": "int"}, {"type": "int"}, {"type": "int"}], "returns": "datetime2($8)", "nullable": true}
+{"name": "datetimeoffsetfromparts", "args": [{"type": "int"}, {"type": "int"}, {"type": "int"}, {"type": "int"}, {"type": "int"}, {"type": "int"}, {"type": "int"}, {"type": "int"}, {"type": "int"}, {"type": "int"}], "returns": "datetimeoffset($10)", "nullable": true}
+{"name": "timefromparts", "args": [{"type": "int"}, {"type": "int"}, {"type": "int"}, {"type": "int"}, {"type": "int"}], "returns": "time($5)", "nullable": true}
+{"name": "switchoffset", "args": [{"type": "datetimeoffset"}, {"type": "any"}], "returns": "$1", "nullable": true}
+{"name": "todatetimeoffset", "args": [{"type": "any"}, {"type": "any"}], "returns": "datetimeoffset", "nullable": true}
+{"name": "dateadd", "args": [{"type": "varchar"}, {"type": "int"}, {"type": "any"}], "returns": "$3", "nullable": true}
+{"name": "dateadd", "args": [{"type": "varchar"}, {"type": "int"}, {"type": "varchar"}], "returns": "datetime", "nullable": true}
+{"name": "dateadd", "args": [{"type": "varchar"}, {"type": "int"}, {"type": "nvarchar"}], "returns": "datetime", "nullable": true}
+{"name": "datediff", "args": [{"type": "varchar"}, {"type": "any"}, {"type": "any"}], "returns": "int", "nullable": true}
+{"name": "datediff_big", "args": [{"type": "varchar"}, {"type": "any"}, {"type": "any"}], "returns": "bigint", "nullable": true}
+{"name": "datepart", "args": [{"type": "varchar"}, {"type": "any"}], "returns": "int", "nullable": true}
+{"name": "datename", "args": [{"type": "varchar"}, {"type": "any"}], "returns": "nvarchar(30)", "nullable": true}
+{"name": "datetrunc", "args": [{"type": "varchar"}, {"type": "any"}], "returns": "$2", "nullable": true}
+{"name": "datetrunc", "args": [{"type": "varchar"}, {"type": "varchar"}], "returns": "datetime2(7)", "nullable": true}
+{"name": "datetrunc", "args": [{"type": "varchar"}, {"type": "nvarchar"}], "returns": "datetime2(7)", "nullable": true}
+{"name": "isjson", "args": [{"type": "any"}], "returns": "int", "nullable": true}
+{"name": "isjson", "args": [{"type": "any"}, {"type": "varchar"}], "returns": "int", "nullable": true}
+{"name": "json_value", "args": [{"type": "any"}, {"type": "nvarchar"}], "returns": "nvarchar(4000)", "nullable": true}
+{"name": "json_query", "args": [{"type": "any"}], "returns": "nvarchar(max)", "nullable": true}
+{"name": "json_query", "args": [{"type": "any"}, {"type": "nvarchar"}], "returns": "nvarchar(max)", "nullable": true}
+{"name": "json_modify", "args": [{"type": "any"}, {"type": "nvarchar"}, {"type": "any"}], "returns": "nvarchar(max)", "nullable": true}
+{"name": "json_object", "returns": "nvarchar(max)", "nullable": true}
+{"name": "json_array", "returns": "nvarchar(max)", "nullable": true}
+{"name": "hashbytes", "args": [{"type": "varchar"}, {"type": "any"}], "returns": "varbinary(8000)", "nullable": true}
+{"name": "checksum", "args": [{"type": "any"}], "returns": "int", "nullable": true}
+{"name": "binary_checksum", "args": [{"type": "any"}], "returns": "int", "nullable": true}
+{"name": "at time zone", "args": [{"type": "datetimeoffset"}, {"type": "nvarchar(4000)"}], "returns": "datetimeoffset(7)", "nullable": true}
+{"name": "at time zone", "args": [{"type": "datetime2"}, {"type": "nvarchar(4000)"}], "returns": "datetimeoffset(7)", "nullable": true}
+{"name": "at time zone", "args": [{"type": "datetime"}, {"type": "nvarchar(4000)"}], "returns": "datetimeoffset(3)", "nullable": true}
+{"name": "at time zone", "args": [{"type": "smalldatetime"}, {"type": "nvarchar(4000)"}], "returns": "datetimeoffset(0)", "nullable": true}
+{"name": ".exist", "args": [{"type": "xml"}, {"type": "nvarchar(4000)"}], "returns": "bit", "nullable": true}
+{"name": ".getlevel", "args": [{"type": "hierarchyid"}], "returns": "smallint", "nullable": true}
+{"name": ".tostring", "args": [{"type": "hierarchyid"}], "returns": "nvarchar(4000)", "nullable": true}
+{"name": ".getancestor", "args": [{"type": "hierarchyid"}, {"type": "int"}], "returns": "hierarchyid", "nullable": true}
+{"name": ".getdescendant", "args": [{"type": "hierarchyid"}, {"type": "hierarchyid"}, {"type": "hierarchyid"}], "returns": "hierarchyid", "nullable": true}
+{"name": ".isdescendantof", "args": [{"type": "hierarchyid"}, {"type": "hierarchyid"}], "returns": "bit", "nullable": true}
+{"name": ".getreparentedvalue", "args": [{"type": "hierarchyid"}, {"type": "hierarchyid"}, {"type": "hierarchyid"}], "returns": "hierarchyid", "nullable": true}
+{"name": "hierarchyid::getroot", "args": [], "returns": "hierarchyid", "nullable": true}
+{"name": "hierarchyid::parse", "args": [{"type": "nvarchar(4000)"}], "returns": "hierarchyid", "nullable": true}
+{"name": ".tostring", "args": [{"type": "geography"}], "returns": "nvarchar(max)", "nullable": true}
+{"name": ".stastext", "args": [{"type": "geography"}], "returns": "nvarchar(max)", "nullable": true}
+{"name": ".stasbinary", "args": [{"type": "geography"}], "returns": "varbinary(max)", "nullable": true}
+{"name": ".starea", "args": [{"type": "geography"}], "returns": "float", "nullable": true}
+{"name": ".stlength", "args": [{"type": "geography"}], "returns": "float", "nullable": true}
+{"name": ".stdistance", "args": [{"type": "geography"}, {"type": "geography"}], "returns": "float", "nullable": true}
+{"name": ".stintersects", "args": [{"type": "geography"}, {"type": "geography"}], "returns": "bit", "nullable": true}
+{"name": ".stcontains", "args": [{"type": "geography"}, {"type": "geography"}], "returns": "bit", "nullable": true}
+{"name": ".stwithin", "args": [{"type": "geography"}, {"type": "geography"}], "returns": "bit", "nullable": true}
+{"name": ".stequals", "args": [{"type": "geography"}, {"type": "geography"}], "returns": "bit", "nullable": true}
+{"name": ".stisvalid", "args": [{"type": "geography"}], "returns": "bit", "nullable": true}
+{"name": ".stbuffer", "args": [{"type": "geography"}, {"type": "float"}], "returns": "geography", "nullable": true}
+{"name": ".stunion", "args": [{"type": "geography"}, {"type": "geography"}], "returns": "geography", "nullable": true}
+{"name": ".stintersection", "args": [{"type": "geography"}, {"type": "geography"}], "returns": "geography", "nullable": true}
+{"name": ".stnumpoints", "args": [{"type": "geography"}], "returns": "int", "nullable": true}
+{"name": ".stdimension", "args": [{"type": "geography"}], "returns": "int", "nullable": true}
+{"name": ".stgeometrytype", "args": [{"type": "geography"}], "returns": "nvarchar(4000)", "nullable": true}
+{"name": ".stpointn", "args": [{"type": "geography"}, {"type": "int"}], "returns": "geography", "nullable": true}
+{"name": "geography::stgeomfromtext", "args": [{"type": "nvarchar(max)"}, {"type": "int"}], "returns": "geography", "nullable": true}
+{"name": "geography::stpointfromtext", "args": [{"type": "nvarchar(max)"}, {"type": "int"}], "returns": "geography", "nullable": true}
+{"name": ".tostring", "args": [{"type": "geometry"}], "returns": "nvarchar(max)", "nullable": true}
+{"name": ".stastext", "args": [{"type": "geometry"}], "returns": "nvarchar(max)", "nullable": true}
+{"name": ".stasbinary", "args": [{"type": "geometry"}], "returns": "varbinary(max)", "nullable": true}
+{"name": ".starea", "args": [{"type": "geometry"}], "returns": "float", "nullable": true}
+{"name": ".stlength", "args": [{"type": "geometry"}], "returns": "float", "nullable": true}
+{"name": ".stdistance", "args": [{"type": "geometry"}, {"type": "geometry"}], "returns": "float", "nullable": true}
+{"name": ".stintersects", "args": [{"type": "geometry"}, {"type": "geometry"}], "returns": "bit", "nullable": true}
+{"name": ".stcontains", "args": [{"type": "geometry"}, {"type": "geometry"}], "returns": "bit", "nullable": true}
+{"name": ".stwithin", "args": [{"type": "geometry"}, {"type": "geometry"}], "returns": "bit", "nullable": true}
+{"name": ".stequals", "args": [{"type": "geometry"}, {"type": "geometry"}], "returns": "bit", "nullable": true}
+{"name": ".stisvalid", "args": [{"type": "geometry"}], "returns": "bit", "nullable": true}
+{"name": ".stbuffer", "args": [{"type": "geometry"}, {"type": "float"}], "returns": "geometry", "nullable": true}
+{"name": ".stunion", "args": [{"type": "geometry"}, {"type": "geometry"}], "returns": "geometry", "nullable": true}
+{"name": ".stintersection", "args": [{"type": "geometry"}, {"type": "geometry"}], "returns": "geometry", "nullable": true}
+{"name": ".stnumpoints", "args": [{"type": "geometry"}], "returns": "int", "nullable": true}
+{"name": ".stdimension", "args": [{"type": "geometry"}], "returns": "int", "nullable": true}
+{"name": ".stgeometrytype", "args": [{"type": "geometry"}], "returns": "nvarchar(4000)", "nullable": true}
+{"name": ".stpointn", "args": [{"type": "geometry"}, {"type": "int"}], "returns": "geometry", "nullable": true}
+{"name": "geometry::stgeomfromtext", "args": [{"type": "nvarchar(max)"}, {"type": "int"}], "returns": "geometry", "nullable": true}
+{"name": "geometry::stpointfromtext", "args": [{"type": "nvarchar(max)"}, {"type": "int"}], "returns": "geometry", "nullable": true}
+{"name": "geography::point", "args": [{"type": "float"}, {"type": "float"}, {"type": "int"}], "returns": "geography", "nullable": true}
+{"name": "grouping", "kind": "a", "args": [{"type": "any"}], "returns": "tinyint", "never_null": true}
+{"name": "grouping_id", "kind": "a", "args": [{"type": "any"}, {"type": "any", "mode": "v"}], "returns": "int", "never_null": true}
+{"name": "approx_count_distinct", "kind": "a", "args": [{"type": "any"}], "returns": "bigint", "nullable": true}
+{"name": "checksum_agg", "kind": "a", "args": [{"type": "int"}], "returns": "int", "nullable": true}
+{"name": "percentile_cont", "kind": "w", "args": [{"type": "float"}], "returns": "float", "nullable": true}
+{"name": "ident_current", "args": [{"type": "nvarchar"}], "returns": "decimal(38,0)", "nullable": true}
+{"name": "ident_seed", "args": [{"type": "nvarchar"}], "returns": "decimal(38,0)", "nullable": true}
+{"name": "ident_incr", "args": [{"type": "nvarchar"}], "returns": "decimal(38,0)", "nullable": true}
+{"name": "rowcount_big", "returns": "bigint", "never_null": true}
+{"name": "db_name", "returns": "nvarchar(128)", "nullable": true}
+{"name": "suser_sname", "returns": "nvarchar(128)", "nullable": true}
+{"name": "schema_name", "returns": "nvarchar(128)", "nullable": true}
+{"name": "user_name", "returns": "nvarchar(128)", "nullable": true}
+{"name": "db_name", "args": [{"type": "int"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "suser_sname", "args": [{"type": "varbinary"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "schema_name", "args": [{"type": "int"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "user_name", "args": [{"type": "int"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "host_name", "returns": "nvarchar(128)", "nullable": true}
+{"name": "app_name", "returns": "nvarchar(128)", "nullable": true}
+{"name": "suser_name", "returns": "nvarchar(128)", "nullable": true}
+{"name": "current_timezone", "returns": "nvarchar(128)", "nullable": true}
+{"name": "current_timezone_id", "returns": "nvarchar(128)", "nullable": true}
+{"name": "error_procedure", "returns": "nvarchar(128)", "nullable": true}
+{"name": "original_login", "returns": "nvarchar(4000)", "nullable": true}
+{"name": "object_id", "args": [{"type": "nvarchar"}], "returns": "int", "nullable": true}
+{"name": "object_id", "args": [{"type": "nvarchar"}, {"type": "nvarchar"}], "returns": "int", "nullable": true}
+{"name": "object_name", "args": [{"type": "int"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "object_name", "args": [{"type": "int"}, {"type": "int"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "object_schema_name", "args": [{"type": "int"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "object_schema_name", "args": [{"type": "int"}, {"type": "int"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "object_definition", "args": [{"type": "int"}], "returns": "nvarchar(max)", "nullable": true}
+{"name": "db_id", "returns": "smallint", "nullable": true}
+{"name": "db_id", "args": [{"type": "nvarchar"}], "returns": "smallint", "nullable": true}
+{"name": "user_id", "returns": "smallint", "nullable": true}
+{"name": "user_id", "args": [{"type": "nvarchar"}], "returns": "smallint", "nullable": true}
+{"name": "suser_id", "returns": "int", "nullable": true}
+{"name": "suser_id", "args": [{"type": "nvarchar"}], "returns": "int", "nullable": true}
+{"name": "schema_id", "returns": "int", "nullable": true}
+{"name": "schema_id", "args": [{"type": "nvarchar"}], "returns": "int", "nullable": true}
+{"name": "suser_sid", "returns": "varbinary(85)", "nullable": true}
+{"name": "col_length", "args": [{"type": "nvarchar"}, {"type": "nvarchar"}], "returns": "smallint", "nullable": true}
+{"name": "col_name", "args": [{"type": "int"}, {"type": "int"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "type_name", "args": [{"type": "int"}], "returns": "nvarchar(128)", "nullable": true}
+{"name": "error_number", "returns": "int", "nullable": true}
+{"name": "error_severity", "returns": "int", "nullable": true}
+{"name": "error_state", "returns": "int", "nullable": true}
+{"name": "error_line", "returns": "int", "nullable": true}
+{"name": "error_message", "returns": "nvarchar(4000)", "nullable": true}
+{"name": "xact_state", "returns": "smallint", "nullable": true}
+{"name": "session_context", "args": [{"type": "nvarchar"}], "returns": "sql_variant", "nullable": true}
+{"name": "context_info", "returns": "varbinary(128)", "nullable": true}
+{"name": "sql_variant_property", "args": [{"type": "any"}, {"type": "varchar"}], "returns": "sql_variant", "nullable": true}
+{"name": "string_escape", "args": [{"type": "nvarchar"}, {"type": "varchar"}], "returns": "nvarchar(max)", "nullable": true}
+{"name": "soundex", "args": [{"type": "varchar"}], "returns": "varchar(5)", "nullable": true}
+{"name": "difference", "args": [{"type": "varchar"}, {"type": "varchar"}], "returns": "int", "nullable": true}
+{"name": "formatmessage", "args": [{"type": "any"}, {"type": "any", "mode": "v"}], "returns": "nvarchar(4000)", "nullable": true}
+{"name": "ltrim", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1", "nullable": true}
+{"name": "rtrim", "args": [{"type": "any"}, {"type": "any"}], "returns": "$1", "nullable": true}
+{"name": "compress", "args": [{"type": "any"}], "returns": "varbinary(max)", "nullable": true}
+{"name": "decompress", "args": [{"type": "any"}], "returns": "varbinary(max)", "nullable": true}
+{"name": "bit_count", "args": [{"type": "any"}], "returns": "bigint", "nullable": true}
+{"name": "left_shift", "args": [{"type": "any"}, {"type": "int"}], "returns": "$1", "nullable": true}
+{"name": "right_shift", "args": [{"type": "any"}, {"type": "int"}], "returns": "$1", "nullable": true}
+{"name": "get_bit", "args": [{"type": "any"}, {"type": "int"}], "returns": "bit", "nullable": true}
+{"name": "set_bit", "args": [{"type": "any"}, {"type": "int"}], "returns": "$1", "nullable": true}
+{"name": "set_bit", "args": [{"type": "any"}, {"type": "int"}, {"type": "int"}], "returns": "$1", "nullable": true}
+{"name": "date_bucket", "args": [{"type": "varchar"}, {"type": "int"}, {"type": "any"}], "returns": "$3", "nullable": true}
+{"name": "date_bucket", "args": [{"type": "varchar"}, {"type": "int"}, {"type": "any"}, {"type": "any"}], "returns": "$3", "nullable": true}
+{"name": "regexp_replace", "args": [{"type": "any"}, {"type": "any"}, {"type": "any", "mode": "v"}], "returns": "nvarchar(4000)", "nullable": true}
+{"name": "regexp_substr", "args": [{"type": "any"}, {"type": "any"}, {"type": "any", "mode": "v"}], "returns": "$1", "nullable": true}
+{"name": "regexp_instr", "args": [{"type": "any"}, {"type": "any"}, {"type": "any", "mode": "v"}], "returns": "int", "nullable": true}
+{"name": "regexp_count", "args": [{"type": "any"}, {"type": "any"}, {"type": "any", "mode": "v"}], "returns": "int", "nullable": true}
+{"name": "vector_distance", "args": [{"type": "varchar"}, {"type": "vector"}, {"type": "vector"}], "returns": "float", "nullable": true}
+{"name": "trim", "args": [{"type": "any"}, {"type": "any"}], "returns": "$2"}

@@ -571,6 +571,9 @@ func Walk(f Visitor, node ast.Node) {
 		}
 
 	case *ast.CoalesceExpr:
+		if n.Func != nil {
+			Walk(f, n.Func)
+		}
 		if n.Xpr != nil {
 			Walk(f, n.Xpr)
 		}

@@ -74,7 +74,11 @@ func (a *analyzer) typeExpr(n ast.Node) (exprType, error) {
 		return a.typeCoalesce(e)
 
 	case *ast.MinMaxExpr:
-		return a.typeFirstOf(listItems(e.Args), false)
+		context := core.CombineGreatest
+		if e.Op != 0 {
+			context = core.CombineLeast
+		}
+		return a.typeFirstOf(context, listItems(e.Args), false)
 
 	case *ast.A_ArrayExpr:
 		return a.typeArrayExpr(e)
@@ -462,6 +466,13 @@ func (a *analyzer) typeCase(e *ast.CaseExpr) (exprType, error) {
 			continue
 		}
 		// "CASE x WHEN y" compares y against x; "CASE WHEN y" is a predicate.
+		// A placeholder for x takes the type of what it is compared with.
+		if pr, ok := e.Arg.(*ast.ParamRef); ok && argT.typeOID == 0 && argT.expr == nil {
+			if argT, err = a.typeExpr(when.Expr); err != nil {
+				return exprType{}, err
+			}
+			a.inferParam(pr, argT)
+		}
 		if e.Arg != nil {
 			if err := a.typeOperands(when.Expr, argT); err != nil {
 				return exprType{}, err
@@ -474,59 +485,84 @@ func (a *analyzer) typeCase(e *ast.CaseExpr) (exprType, error) {
 	if e.Defresult != nil {
 		results = append(results, e.Defresult)
 	}
-	t, err := a.typeFirstOf(results, e.Defresult == nil)
+	t, err := a.typeFirstOf(core.CombineCase, results, e.Defresult == nil)
 	if err != nil {
 		return exprType{}, err
 	}
 	return t, nil
 }
 
-// typeCoalesce types COALESCE, which is its first typed argument's type and
-// is null only when every argument is.
+// typeCoalesce types COALESCE-like expressions, which are null only when
+// every argument is. Function-specific type selection belongs to the dialect.
 func (a *analyzer) typeCoalesce(e *ast.CoalesceExpr) (exprType, error) {
-	var out exprType
-	found := false
+	types := make([]exprType, 0, len(listItems(e.Args)))
 	nullable := true
 	for _, n := range listItems(e.Args) {
 		t, err := a.typeExpr(n)
 		if err != nil {
 			return exprType{}, err
 		}
-		if !found && (t.typeOID != 0 || t.expr != nil) {
-			// The result is an expression's, not the column's it came from.
-			out = exprType{typeOID: t.typeOID, expr: t.expr}
-			found = true
-		}
+		types = append(types, t)
 		nullable = nullable && t.nullable
 	}
-	out.nullable = nullable
-	return out, nil
+	req := core.TypeCombinationRequest{Context: core.CombineCoalesce}
+	if e.Func != nil {
+		if e.Func.Catalog != "" {
+			req.FunctionName = append(req.FunctionName, e.Func.Catalog, e.Func.Schema)
+		} else if e.Func.Schema != "" {
+			req.FunctionName = append(req.FunctionName, e.Func.Schema)
+		}
+		req.FunctionName = append(req.FunctionName, e.Func.Name)
+	}
+	t, err := a.commonType(req, types)
+	if err != nil {
+		return exprType{}, err
+	}
+	// A placeholder there is one that may be NULL.
+	a.inferAlternatives(listItems(e.Args), t, true)
+	// The result is an expression's, not the column's it came from.
+	return exprType{typeOID: t.typeOID, expr: t.expr, nullable: nullable}, nil
 }
 
-// typeFirstOf types a set of alternative results, taking the first one that has
-// a type. The result is nullable when any alternative is, or when the caller
-// says the set is not exhaustive.
-func (a *analyzer) typeFirstOf(nodes []ast.Node, nullable bool) (exprType, error) {
-	var out exprType
-	found := false
+// typeFirstOf types a set of alternative results, as the type they combine
+// to, which without a dialect's rules is the first typed one's. The result
+// is nullable when any alternative is, or when the caller says the set is
+// not exhaustive.
+func (a *analyzer) typeFirstOf(context core.TypeCombinationContext, nodes []ast.Node, nullable bool) (exprType, error) {
+	types := make([]exprType, 0, len(nodes))
 	for _, n := range nodes {
 		t, err := a.typeExpr(n)
 		if err != nil {
 			return exprType{}, err
 		}
-		if !found && (t.typeOID != 0 || t.expr != nil) {
-			out = t
-			found = true
-		}
+		types = append(types, t)
 		nullable = nullable || t.nullable
 	}
+	out, err := a.commonType(core.TypeCombinationRequest{Context: context}, types)
+	if err != nil {
+		return exprType{}, err
+	}
+	a.inferAlternatives(nodes, out, false)
 	out.nullable = nullable
 	return out, nil
 }
 
+// inferAlternatives types a placeholder among alternatives as the type the
+// others combine to, as GREATEST(1, @n) takes @n as an integer.
+func (a *analyzer) inferAlternatives(nodes []ast.Node, t exprType, nullable bool) {
+	if t.typeOID == 0 && t.expr == nil {
+		return
+	}
+	for _, n := range nodes {
+		if p, ok := n.(*ast.ParamRef); ok {
+			a.inferParam(p, exprType{typeOID: t.typeOID, expr: t.expr, nullable: nullable})
+		}
+	}
+}
+
 // typeArrayExpr types ARRAY[...], whose type is an array of its elements'.
 func (a *analyzer) typeArrayExpr(e *ast.A_ArrayExpr) (exprType, error) {
-	elemT, err := a.typeFirstOf(listItems(e.Elements), false)
+	elemT, err := a.typeFirstOf(core.CombineArray, listItems(e.Elements), false)
 	if err != nil {
 		return exprType{}, err
 	}

@@ -547,6 +547,18 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 	case *tsql.ParenthesisExpression:
 		return c.convertScalarExpression(e.Expression)
 	case *tsql.FunctionCall:
+		// Methods need receiver/type syntax lowered before signature lookup;
+		// alternatives need candidate-dependent typing and nullability.
+		// Keep window calls on the ordinary path so an alternative rewrite
+		// cannot discard their OVER clause.
+		if out := c.convertMethodCall(e); out != nil {
+			return out
+		}
+		if e.OverClause == nil {
+			if out := c.convertAlternatives(e); out != nil {
+				return out
+			}
+		}
 		return c.convertFunctionCall(e)
 	case *tsql.CastCall:
 		return &ast.TypeCast{
@@ -644,6 +656,25 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 			Subselect:   c.convertQueryExpression(e.QueryExpression),
 			Location:    c.loc(e),
 		}
+	case *tsql.AtTimeZoneCall:
+		// x AT TIME ZONE tz is typed as the call the dialect seeds under a
+		// name no function can have.
+		return &ast.FuncCall{
+			Funcname: &ast.List{
+				Items: []ast.Node{&ast.String{Str: "at time zone"}},
+			},
+			Args: &ast.List{
+				Items: []ast.Node{
+					c.convertScalarExpression(e.DateValue),
+					c.convertScalarExpression(e.TimeZone),
+				},
+			},
+			Location: c.loc(e),
+		}
+	case *tsql.LeftFunctionCall:
+		return c.namedCall("left", e.Parameters, e)
+	case *tsql.RightFunctionCall:
+		return c.namedCall("right", e.Parameters, e)
 	case *tsql.ParameterlessCall:
 		return &ast.FuncCall{
 			Funcname: &ast.List{
@@ -654,6 +685,41 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 	default:
 		return todo(expr)
 	}
+}
+
+// convertAlternatives converts the functions that yield one of their
+// arguments: GREATEST/LEAST combine their candidate types, and CHOOSE becomes
+// the CASE over its index. ISNULL keeps its first typed argument's type and
+// is NULL only when both arguments are. Fixed JSONL function signatures do
+// not describe these AST rewrites or the candidates' combined nullability.
+func (c *cc) convertAlternatives(e *tsql.FunctionCall) ast.Node {
+	args := &ast.List{}
+	for _, p := range e.Parameters {
+		args.Items = append(args.Items, c.convertScalarExpression(p))
+	}
+	switch identifierValue(e.FunctionName) {
+	case "isnull":
+		if len(args.Items) == 2 {
+			return &ast.CoalesceExpr{Args: args, Func: &ast.FuncName{Name: "isnull"}, Location: c.loc(e)}
+		}
+	case "greatest":
+		return &ast.MinMaxExpr{Op: 0, Args: args, Location: c.loc(e)}
+	case "least":
+		return &ast.MinMaxExpr{Op: 1, Args: args, Location: c.loc(e)}
+	case "choose":
+		if len(args.Items) < 2 {
+			return nil
+		}
+		choose := &ast.CaseExpr{Arg: args.Items[0], Args: &ast.List{}, Location: c.loc(e)}
+		for i, item := range args.Items[1:] {
+			choose.Args.Items = append(choose.Args.Items, &ast.CaseWhen{
+				Expr:   &ast.A_Const{Val: &ast.Integer{Ival: int64(i + 1)}},
+				Result: item,
+			})
+		}
+		return choose
+	}
+	return nil
 }
 
 func binaryOperator(binaryExpressionType string) string {
@@ -725,6 +791,70 @@ type namedParam struct {
 	name   string
 }
 
+// typeMethods are the methods of xml, geography, geometry and hierarchyid
+// a query calls on a value, as doc.exist('/a') or node.GetLevel() do. A
+// call to one is seeded as ".name" taking the value first, which tells it
+// from a function in a schema, as dbo.f(), the parser sees alike. This map
+// recognizes receiver syntax before catalog lookup and must stay in sync
+// with the leading-dot JSONL signatures.
+var typeMethods = map[string]bool{
+	"exist":    true,
+	"getlevel": true, "tostring": true, "getancestor": true, "getdescendant": true,
+	"isdescendantof": true, "getreparentedvalue": true,
+	"stastext": true, "stasbinary": true, "starea": true, "stlength": true,
+	"stdistance": true, "stintersects": true, "stcontains": true, "stwithin": true,
+	"stequals": true, "stbuffer": true, "stunion": true, "stintersection": true,
+	"stnumpoints": true, "stgeometrytype": true, "stdimension": true,
+	"stisvalid": true, "stpointn": true,
+}
+
+// convertMethodCall converts a call of a method on a value, or of a static
+// one on a type, as geography::Point(...) is, seeded as "geography::point".
+// xml's value(path, 'type') returns the type it names, or NULL when the
+// path finds nothing.
+func (c *cc) convertMethodCall(n *tsql.FunctionCall) ast.Node {
+	method := identifierValue(n.FunctionName)
+	var receiver ast.Node
+	switch t := n.CallTarget.(type) {
+	case *tsql.UserDefinedTypeCallTarget:
+		if t.SchemaObjectName == nil || t.SchemaObjectName.BaseIdentifier == nil {
+			return nil
+		}
+		fc := c.convertFunctionCall(n)
+		fc.Funcname = &ast.List{Items: []ast.Node{&ast.String{Str: identifierValue(t.SchemaObjectName.BaseIdentifier) + "::" + method}}}
+		return fc
+	case *tsql.MultiPartIdentifierCallTarget:
+		if t.MultiPartIdentifier == nil {
+			return nil
+		}
+		receiver = c.convertColumnReference(&tsql.ColumnReferenceExpression{MultiPartIdentifier: t.MultiPartIdentifier})
+	case *tsql.ExpressionCallTarget:
+		receiver = c.convertScalarExpression(t.Expression)
+	default:
+		return nil
+	}
+	if method == "value" && len(n.Parameters) == 2 {
+		if lit, ok := n.Parameters[1].(*tsql.StringLiteral); ok {
+			return &ast.TypeCast{
+				Arg:      receiver,
+				TypeName: &ast.TypeName{Spelling: "Nullable(" + strings.ToLower(lit.Value) + ")"},
+				Location: c.loc(n),
+			}
+		}
+	}
+	if !typeMethods[method] {
+		return nil
+	}
+	fc := c.convertFunctionCall(n)
+	fc.Funcname = &ast.List{Items: []ast.Node{&ast.String{Str: "." + method}}}
+	args := []ast.Node{receiver}
+	if fc.Args != nil {
+		args = append(args, fc.Args.Items...)
+	}
+	fc.Args = &ast.List{Items: args}
+	return fc
+}
+
 func (c *cc) convertFunctionCall(n *tsql.FunctionCall) *ast.FuncCall {
 	fc := &ast.FuncCall{
 		Funcname: &ast.List{
@@ -734,7 +864,15 @@ func (c *cc) convertFunctionCall(n *tsql.FunctionCall) *ast.FuncCall {
 		AggDistinct: n.UniqueRowFilter == "Distinct",
 	}
 
-	for _, param := range n.Parameters {
+	for i, param := range n.Parameters {
+		// The datepart DATEADD and its relatives take first is a keyword,
+		// not a column: it is passed on as the string it names.
+		if i == 0 && datepartFunctions[identifierValue(n.FunctionName)] {
+			if part := datepart(param); part != "" {
+				fc.Args = &ast.List{Items: []ast.Node{&ast.A_Const{Val: &ast.String{Str: part}, Location: c.loc(param)}}}
+				continue
+			}
+		}
 		// COUNT(*) and friends carry the star as a wildcard column reference.
 		if col, ok := param.(*tsql.ColumnReferenceExpression); ok && col.ColumnType == "Wildcard" && col.MultiPartIdentifier == nil {
 			fc.AggStar = true
@@ -760,6 +898,29 @@ func (c *cc) convertFunctionCall(n *tsql.FunctionCall) *ast.FuncCall {
 	}
 
 	return fc
+}
+
+// datepartFunctions take a bare keyword which the parser sees as a column.
+// JSONL signatures describe its string type, not this syntax; dialect
+// ident_args describes type arguments, not function arguments.
+var datepartFunctions = map[string]bool{
+	"dateadd":      true,
+	"datediff":     true,
+	"datediff_big": true,
+	"datename":     true,
+	"datepart":     true,
+	"datetrunc":    true,
+	"date_bucket":  true,
+}
+
+// datepart returns the datepart keyword an argument spells, as in
+// DATEADD(day, ...), or "" when it is not a bare name.
+func datepart(n tsql.ScalarExpression) string {
+	col, ok := n.(*tsql.ColumnReferenceExpression)
+	if !ok || col.MultiPartIdentifier == nil || len(col.MultiPartIdentifier.Identifiers) != 1 {
+		return ""
+	}
+	return identifierValue(col.MultiPartIdentifier.Identifiers[0])
 }
 
 // convertOutputClause converts an OUTPUT clause to a returning list. The
@@ -1182,6 +1343,20 @@ func (c *cc) convertAlterTableAddTableElementStatement(n *tsql.AlterTableAddTabl
 		})
 	}
 	return stmt
+}
+
+// namedCall is a call of name with args, for a function the parser gives a
+// node of its own, as LEFT and RIGHT, which are keywords too.
+func (c *cc) namedCall(name string, args []tsql.ScalarExpression, n tsql.Node) *ast.FuncCall {
+	call := &ast.FuncCall{
+		Funcname: &ast.List{Items: []ast.Node{&ast.String{Str: name}}},
+		Args:     &ast.List{},
+		Location: c.loc(n),
+	}
+	for _, arg := range args {
+		call.Args.Items = append(call.Args.Items, c.convertScalarExpression(arg))
+	}
+	return call
 }
 
 func (c *cc) convertAlterTableDropTableElementStatement(n *tsql.AlterTableDropTableElementStatement) ast.Node {

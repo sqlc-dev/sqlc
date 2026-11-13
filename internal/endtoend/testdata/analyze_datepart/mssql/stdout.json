@@ -1,0 +1,97 @@
+[
+  {
+    "name": "Recent",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "authors"
+      },
+      {
+        "name": "due",
+        "type": {
+          "name": "datetime2",
+          "nullable": true,
+          "args": [
+            {
+              "int": 7
+            }
+          ]
+        }
+      },
+      {
+        "name": "age",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "month_of",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "weekday_of",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 30
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "days",
+          "type": {
+            "name": "int"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "FromStrings",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "next_day",
+        "type": {
+          "name": "datetime",
+          "nullable": true
+        }
+      },
+      {
+        "name": "next_day_n",
+        "type": {
+          "name": "datetime",
+          "nullable": true
+        }
+      },
+      {
+        "name": "month_start",
+        "type": {
+          "name": "datetime2",
+          "nullable": true,
+          "args": [
+            {
+              "int": 7
+            }
+          ]
+        }
+      }
+    ],
+    "params": []
+  }
+]

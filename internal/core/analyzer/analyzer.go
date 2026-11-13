@@ -7,7 +7,13 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
-func Prepare(cat *core.Catalog, stmt ast.Node) (core.PrepareResult, error) {
+type Option func(*analyzer)
+
+func WithTypeCombiner(combiner core.TypeCombiner) Option {
+	return func(a *analyzer) { a.combiner = combiner }
+}
+
+func Prepare(cat *core.Catalog, stmt ast.Node, options ...Option) (core.PrepareResult, error) {
 	if rs, ok := stmt.(*ast.RawStmt); ok {
 		stmt = rs.Stmt
 	}
@@ -15,6 +21,9 @@ func Prepare(cat *core.Catalog, stmt ast.Node) (core.PrepareResult, error) {
 		cat:    cat,
 		params: map[int]core.Parameter{},
 		stars:  &[]core.StarExpansion{},
+	}
+	for _, option := range options {
+		option(a)
 	}
 	switch s := stmt.(type) {
 	case *ast.SelectStmt:
@@ -44,11 +53,12 @@ func Prepare(cat *core.Catalog, stmt ast.Node) (core.PrepareResult, error) {
 }
 
 type analyzer struct {
-	cat     *core.Catalog
-	scope   *scope
-	columns []core.Column
-	params  map[int]core.Parameter
-	command core.Command
+	cat      *core.Catalog
+	combiner core.TypeCombiner
+	scope    *scope
+	columns  []core.Column
+	params   map[int]core.Parameter
+	command  core.Command
 
 	// outer is the scope of the query this one is nested in, which a
 	// correlated subquery refers to.
@@ -83,11 +93,12 @@ func (a *analyzer) recordStar(s core.StarExpansion) {
 // query's scope, so a correlated reference resolves.
 func (a *analyzer) subquery(s *ast.SelectStmt) (*analyzer, error) {
 	sub := &analyzer{
-		cat:    a.cat,
-		params: a.params,
-		outer:  a.scope,
-		ctes:   a.ctes,
-		stars:  a.stars,
+		cat:      a.cat,
+		combiner: a.combiner,
+		params:   a.params,
+		outer:    a.scope,
+		ctes:     a.ctes,
+		stars:    a.stars,
 	}
 	if err := sub.analyzeSelect(s); err != nil {
 		return nil, err
@@ -277,11 +288,18 @@ func (a *analyzer) analyzeSetOperation(s *ast.SelectStmt) error {
 	if err != nil {
 		return err
 	}
-	if _, err := a.subquery(s.Rarg); err != nil {
+	right, err := a.subquery(s.Rarg)
+	if err != nil {
 		return err
 	}
 	a.columns = left.columns
 	a.scope = left.scope
+	if a.combiner != nil {
+		a.columns, err = a.combineColumns(s.Op, left.columns, right.columns)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

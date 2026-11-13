@@ -1,0 +1,122 @@
+[
+  {
+    "name": "Alternatives",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "g",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "l",
+        "type": {
+          "name": "bigint",
+          "nullable": true
+        },
+        "table": "t"
+      },
+      {
+        "name": "c",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 50
+            }
+          ]
+        }
+      },
+      {
+        "name": "k",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 50
+            }
+          ]
+        }
+      },
+      {
+        "name": "i",
+        "type": {
+          "name": "datetime2",
+          "nullable": true,
+          "args": [
+            {
+              "int": 3
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "n",
+          "type": {
+            "name": "int"
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "cap",
+          "type": {
+            "name": "bigint"
+          }
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "x",
+          "type": {
+            "name": "nvarchar",
+            "nullable": true,
+            "args": [
+              {
+                "int": 50
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "label",
+          "type": {
+            "name": "nvarchar",
+            "args": [
+              {
+                "int": 50
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 5,
+        "column": {
+          "name": "alt",
+          "type": {
+            "name": "datetime2",
+            "args": [
+              {
+                "int": 3
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+]

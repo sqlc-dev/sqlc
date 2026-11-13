@@ -1,0 +1,95 @@
+[
+  {
+    "name": "Trimmed",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "lf",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true
+        }
+      },
+      {
+        "name": "rt",
+        "type": {
+          "name": "varchar",
+          "nullable": true
+        }
+      },
+      {
+        "name": "tr",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        }
+      },
+      {
+        "name": "tl",
+        "type": {
+          "name": "varchar",
+          "args": [
+            {
+              "int": 5
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "n",
+          "type": {
+            "name": "int"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "Repeated",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "r",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true
+        }
+      },
+      {
+        "name": "ci",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "r",
+          "type": {
+            "name": "int"
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "ci",
+          "type": {
+            "name": "int"
+          }
+        }
+      }
+    ]
+  }
+]

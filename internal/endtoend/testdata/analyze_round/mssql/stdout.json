@@ -1,0 +1,60 @@
+[
+  {
+    "name": "Rounded",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "rounded",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "truncated",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "ratio_truncated",
+        "type": {
+          "name": "float",
+          "nullable": true
+        }
+      },
+      {
+        "name": "qty_truncated",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "fee_truncated",
+        "type": {
+          "name": "money",
+          "nullable": true
+        }
+      }
+    ],
+    "params": []
+  }
+]

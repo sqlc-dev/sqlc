@@ -1,0 +1,196 @@
+[
+  {
+    "name": "Methods",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "v",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "s",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 20
+            }
+          ]
+        }
+      },
+      {
+        "name": "e",
+        "type": {
+          "name": "bit",
+          "nullable": true
+        }
+      },
+      {
+        "name": "dist",
+        "type": {
+          "name": "float",
+          "nullable": true
+        }
+      },
+      {
+        "name": "txt",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
+        }
+      },
+      {
+        "name": "shape_text",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
+        }
+      },
+      {
+        "name": "path",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 4000
+            }
+          ]
+        }
+      },
+      {
+        "name": "lvl",
+        "type": {
+          "name": "smallint",
+          "nullable": true
+        }
+      },
+      {
+        "name": "anc",
+        "type": {
+          "name": "hierarchyid",
+          "nullable": true
+        }
+      },
+      {
+        "name": "root",
+        "type": {
+          "name": "hierarchyid",
+          "nullable": true
+        }
+      },
+      {
+        "name": "pt",
+        "type": {
+          "name": "geography",
+          "nullable": true
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "up",
+          "type": {
+            "name": "int"
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "lat",
+          "type": {
+            "name": "float"
+          }
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "long",
+          "type": {
+            "name": "float"
+          }
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "int"
+          },
+          "table": "m"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Nearby",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "int"
+        },
+        "table": "m"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "lat",
+          "type": {
+            "name": "float"
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "long",
+          "type": {
+            "name": "float"
+          }
+        }
+      },
+      {
+        "number": 3,
+        "column": {
+          "name": "meters",
+          "type": {
+            "name": "float",
+            "nullable": true
+          }
+        }
+      },
+      {
+        "number": 4,
+        "column": {
+          "name": "ancestor",
+          "type": {
+            "name": "hierarchyid"
+          }
+        }
+      }
+    ]
+  }
+]

@@ -449,6 +449,7 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Relation", nil, n.Relation)
 
 	case *ast.CoalesceExpr:
+		a.apply(n, "Func", nil, n.Func)
 		a.apply(n, "Xpr", nil, n.Xpr)
 		a.apply(n, "Args", nil, n.Args)
 

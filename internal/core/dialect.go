@@ -2,6 +2,9 @@ package core
 
 import (
 	"context"
+	"database/sql"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"slices"
 	"strings"
@@ -76,6 +79,10 @@ const FlagPropagateNullable = "functions.propagate_nullable"
 // relation has the same name, as ClickHouse names the second id of a join
 // e.id.
 const FlagQualifyDuplicateColumns = "columns.qualify_duplicates"
+
+// FlagSetOperations holds opaque JSON interpreted by the dialect's type
+// combiner. Shared catalog/seeding code does not define its schema.
+const FlagSetOperations = "set_operations"
 
 // FlagDefaultSchema holds the schema the dialect puts an unqualified object
 // in, when that is not the catalog's own default: a type in it is reported
@@ -194,6 +201,25 @@ func (c *Catalog) QualifiesDuplicateColumns() bool {
 	}
 	v, _ := c.DialectFlag(c.dialectOID, FlagQualifyDuplicateColumns)
 	return v == "true"
+}
+
+// TypeCombinationData returns the dialect-owned configuration, or nil when
+// the dialect has none. It is persisted with the catalog, not runtime behavior.
+func (c *Catalog) TypeCombinationData() (json.RawMessage, error) {
+	if c.dialectOID == 0 {
+		return nil, nil
+	}
+	v, err := c.q.DialectFlag(context.Background(), catalogdb.DialectFlagParams{
+		DialectOid: c.dialectOID,
+		Key:        FlagSetOperations,
+	})
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("read type-combination data: %w", err)
+	}
+	return json.RawMessage(v), nil
 }
 
 // DefaultNamespaces lists the namespaces a type is reported from without

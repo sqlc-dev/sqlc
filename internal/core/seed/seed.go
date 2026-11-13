@@ -84,6 +84,10 @@ type Settings struct {
 	// ClickHouse names the second id of a join e.id.
 	QualifyDuplicateColumns bool `json:"qualify_duplicate_columns,omitempty"`
 
+	// SetOperations is opaque configuration for an engine-owned type
+	// combiner. Only that engine interprets and validates its contents.
+	SetOperations json.RawMessage `json:"set_operations,omitempty"`
+
 	// Comparison operators are registered as (T, T) -> Bool for every type in
 	// ComparisonCategories.
 	Comparison           []string `json:"comparison,omitempty"`
@@ -657,6 +661,11 @@ func (b *builder) consts() error {
 	}
 	if b.settings.QualifyDuplicateColumns {
 		if err := b.cat.SetDialectFlag(b.dialectOID, core.FlagQualifyDuplicateColumns, "true"); err != nil {
+			return err
+		}
+	}
+	if len(b.settings.SetOperations) > 0 {
+		if err := b.cat.SetDialectFlag(b.dialectOID, core.FlagSetOperations, string(b.settings.SetOperations)); err != nil {
 			return err
 		}
 	}
