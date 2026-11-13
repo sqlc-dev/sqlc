@@ -22,12 +22,12 @@ case.
 ## Common-type inference
 
 The shared core does not give every database the same coercion rules. SQL
-Server explicitly enables its type-combination policy for set operations and
+Server supplies its own type combiner for set operations and
 alternative-valued expressions such as `CASE`, `COALESCE`, `GREATEST`, `LEAST`
 and `CHOOSE`. `ISNULL` instead keeps its first typed argument's type; both
 arguments must be nullable for its result to be nullable.
 
-Other dialects currently keep the existing core fallback: a set-operation
+Dialects without a combiner keep the existing core fallback: a set-operation
 column takes its type from the left branch, and an alternative-valued
 expression takes the first typed candidate. **This is incomplete static
 inference, not those databases' common-type semantics.** It does not change

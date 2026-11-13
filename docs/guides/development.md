@@ -21,22 +21,33 @@ nullability propagation. Database-specific common-type algorithms belong to
 the engine: SQL Server's precedence, length and decimal rules live in
 `internal/engine/mssql/typepolicy`, independent of its parser.
 
-`set_operations.strategy` in a dialect's `dialect.json` explicitly selects an
-implemented policy (currently only `"mssql"`). The remaining fields configure
-that SQL Server policy; they are not a universal coercion language. Seeds
-reject missing or unsupported strategies rather than accidentally applying
-SQL Server's formula to another engine. The selector is serialized in the
-catalog, so cache restores use the same policy as freshly seeded catalogs.
-Omitting `set_operations` preserves the old inference fallback.
+`core.TypeCombiner` receives an operation context and the entire ordered list
+of candidate types, retaining nil entries for untyped values. It returns a
+type and an explicit `Handled` flag; declining a context preserves the old
+inference fallback, while an error is propagated. Engines without a combiner
+keep their existing behavior. `Prepare` accepts the combiner through an
+optional analyzer option, inherited by nested queries.
 
-To support another dialect, add its engine-owned policy and explicit
-dispatch/seed validation, then opt in its dialect settings and add end-to-end
-cases. Do not copy SQL Server's settings into other seeds. Some engines need
-the entire candidate list, cast context, domain information or recursive
-structured types; extend the policy inputs/orchestration for those semantics
-rather than forcing them through pairwise precedence. Set operations and
-`CASE`-like expressions need not share one algorithm. The current cross-engine
-gaps and database references are in
+The compiler's existing engine assembly selects an optional combiner factory.
+It calls that factory after `core.NewCached` returns, on both fresh and
+restored catalogs, and passes the instance to analysis. No engine names,
+imports or strategy registry are needed in shared core analysis or seeding.
+Combiners must allow concurrent analysis and must not mutate candidate types.
+
+`set_operations` in `dialect.json` is opaque JSON to shared seeding. Its schema
+and validation belong to the engine implementation; SQL Server's precedence
+and decimal settings are not a universal coercion language. Only the data is
+cached; runtime behavior is constructed afresh. Malformed configuration fails
+in the engine factory, and configuration without a provider is a setup error.
+
+To support another dialect, implement its combiner and wire its factory at
+the compiler's engine assembly, without editing shared policy dispatch or
+validation. Add end-to-end cases rather than copying SQL Server's settings.
+Some engines additionally need literal/domain metadata or recursive structured
+types; extend the inputs for actual implementations rather than forcing those
+semantics through pairwise precedence. Set operations and `CASE`-like
+expressions need not share an algorithm. The current cross-engine gaps and
+database references are in
 [`analyze`](../howto/analyze.md#common-type-inference).
 
 SQL Server's converter also performs syntax/semantic lowering before seeded
