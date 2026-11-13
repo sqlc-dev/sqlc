@@ -340,12 +340,14 @@ func (a *analyzer) bindCTEs(with *ast.WithClause) error {
 		}
 		rel := derivedRel(*cte.Ctename, cols)
 		renameColumns(&rel, cte.Aliascolnames)
-		// What a recursive CTE yields is the union of every round of it, so
-		// no column stands for a single table column and any may be NULL.
+		// A recursive CTE's output no longer has one source column. SQL
+		// Server also reports all of its columns as nullable.
 		if recursive {
 			for i := range rel.cols {
 				rel.cols[i].AttOID = 0
-				rel.cols[i].NotNull = false
+				if a.cat.RecursiveCTEsNullable() {
+					rel.cols[i].NotNull = false
+				}
 			}
 		}
 		a.ctes[*cte.Ctename] = rel

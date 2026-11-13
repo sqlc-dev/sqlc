@@ -82,6 +82,10 @@ const FlagQualifyDuplicateColumns = "columns.qualify_duplicates"
 // fill them with the type's default instead.
 const FlagOuterJoinNullable = "joins.outer_nullable"
 
+// FlagRecursiveCTENullable marks a dialect whose recursive CTE columns are
+// nullable regardless of the nullability of their anchor and recursive terms.
+const FlagRecursiveCTENullable = "ctes.recursive_nullable"
+
 // FlagReturningAliases holds, comma separated, the names a RETURNING list
 // may use for the statement's target.
 const FlagReturningAliases = "returning.aliases"
@@ -212,6 +216,16 @@ func (c *Catalog) OuterJoinsNullable() bool {
 		return false
 	}
 	v, _ := c.DialectFlag(c.dialectOID, FlagOuterJoinNullable)
+	return v == "true"
+}
+
+// RecursiveCTEsNullable reports whether the dialect treats every column of a
+// recursive CTE as nullable, regardless of its terms' nullability.
+func (c *Catalog) RecursiveCTEsNullable() bool {
+	if c.dialectOID == 0 {
+		return false
+	}
+	v, _ := c.DialectFlag(c.dialectOID, FlagRecursiveCTENullable)
 	return v == "true"
 }
 

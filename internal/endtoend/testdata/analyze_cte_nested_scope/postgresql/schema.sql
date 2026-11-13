@@ -1,0 +1,1 @@
+-- This query uses only CTEs and does not require table definitions.

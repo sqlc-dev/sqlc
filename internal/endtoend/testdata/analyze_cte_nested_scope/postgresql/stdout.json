@@ -1,0 +1,21 @@
+[
+  {
+    "name": "NestedCTEScope",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "outer_value",
+        "type": {
+          "name": "integer"
+        }
+      },
+      {
+        "name": "nested_value",
+        "type": {
+          "name": "text"
+        }
+      }
+    ],
+    "params": []
+  }
+]
