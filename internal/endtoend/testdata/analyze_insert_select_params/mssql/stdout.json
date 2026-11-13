@@ -93,5 +93,18 @@
         }
       }
     ]
+  },
+  {
+    "name": "CopyWithStar",
+    "cmd": ":exec",
+    "columns": [],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "n"
+        }
+      }
+    ]
   }
 ]
