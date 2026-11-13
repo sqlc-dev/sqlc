@@ -106,6 +106,8 @@ func (c *Compiler) starOldFunc(parts []string) func(string) int {
 			if hasSeparator := i > 0; hasSeparator {
 				length++
 			}
+			// Use the original identifier below: o may already be quoted by
+			// quoteIdent, and quoting it again would measure a different name.
 			if strings.HasPrefix(s[length:], o) {
 				length += len(o)
 			} else if quoted := c.quote(parts[i]); strings.HasPrefix(s[length:], quoted) {

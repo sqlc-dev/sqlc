@@ -6,3 +6,6 @@ SELECT "x]y".* FROM authors AS "x]y";
 
 -- name: C :many
 SELECT [x]]y].* FROM authors AS [x]]y];
+
+-- name: D :many
+SELECT "select".* FROM authors AS "select";
