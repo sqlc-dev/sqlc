@@ -201,10 +201,15 @@ func (c *Catalog) QualifiesDuplicateColumns() bool {
 	return v == "true"
 }
 
-// SetOperationRules say how a dialect types a column of UNION, INTERSECT or
-// EXCEPT from its branches, as SQL Server does by data type precedence. A
-// dialect without them types the column from the first branch.
+// SetOperationRules select a dialect's type-combination policy. A dialect
+// without one keeps the analyzer's first-branch/first-typed-value behavior;
+// that fallback is not a model of the database's coercion rules.
 type SetOperationRules struct {
+	// Strategy selects an implemented policy, currently "mssql". Other
+	// engines need their own policy, not just another precedence list.
+	Strategy string `json:"strategy"`
+
+	// The remaining settings parameterize the MSSQL policy.
 	// Precedence lists type families, highest first: the column takes the
 	// highest of its branches'.
 	Precedence []string `json:"precedence"`

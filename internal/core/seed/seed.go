@@ -370,6 +370,9 @@ func loadSettings(fsys fs.FS) (Settings, error) {
 	if settings.Dialect == "" {
 		return Settings{}, fmt.Errorf("seed: %s: dialect has no name", SettingsFile)
 	}
+	if rules := settings.SetOperations; rules != nil && rules.Strategy != "mssql" {
+		return Settings{}, fmt.Errorf("seed: %s: unsupported type-combination strategy %q", SettingsFile, rules.Strategy)
+	}
 	settings.fsys = fsys
 	return settings, nil
 }

@@ -1,9 +1,10 @@
 package analyzer
 
 import (
-	"slices"
+	"fmt"
 
 	"github.com/sqlc-dev/sqlc/internal/core"
+	mssqltypes "github.com/sqlc-dev/sqlc/internal/engine/mssql/typepolicy"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
@@ -12,7 +13,7 @@ import (
 // and is read from no one table. It may be NULL in a UNION when either
 // branch's may, in an INTERSECT when both may, and in an EXCEPT when the
 // first branch's may, since every row it returns is one of those.
-func (a *analyzer) combineColumns(rules *core.SetOperationRules, op ast.SetOperation, left, right []core.Column) []core.Column {
+func (a *analyzer) combineColumns(rules *core.SetOperationRules, op ast.SetOperation, left, right []core.Column) ([]core.Column, error) {
 	out := make([]core.Column, len(left))
 	for i, l := range left {
 		if i >= len(right) {
@@ -27,60 +28,56 @@ func (a *analyzer) combineColumns(rules *core.SetOperationRules, op ast.SetOpera
 		case ast.Except:
 			col.NotNull = l.NotNull
 		}
-		t := a.combineTypes(rules, columnExprType(l), columnExprType(r))
+		t, err := a.combineTypes(rules, columnExprType(l), columnExprType(r))
+		if err != nil {
+			return nil, err
+		}
 		t.nullable = !col.NotNull
 		col.TypeOID = t.typeOID
 		col.DataType, col.IsArray = a.typeNameOf(t)
 		col.Type = a.typeExprOf(t)
 		out[i] = col
 	}
-	return out
+	return out, nil
 }
 
-// combineTypes is the type a column takes from two branches: the one of
-// higher precedence, varying when either branch varies, with the length or
-// precision that holds both.
-func (a *analyzer) combineTypes(rules *core.SetOperationRules, l, r exprType) exprType {
+// combineTypes delegates type selection and modifiers to the selected policy,
+// then resolves its result against the catalog. No policy is enabled merely
+// by listing a dialect's types.
+func (a *analyzer) combineTypes(rules *core.SetOperationRules, l, r exprType) (exprType, error) {
 	lt, rt := a.exprOf(l), a.exprOf(r)
 	switch {
 	case lt == nil:
-		return r
+		return r, nil
 	case rt == nil:
-		return l
+		return l, nil
 	}
-	li, ri := slices.Index(rules.Precedence, lt.Name), slices.Index(rules.Precedence, rt.Name)
-	if li < 0 || ri < 0 {
-		return l
+	var out *core.TypeExpr
+	var ok bool
+	switch rules.Strategy {
+	case "mssql":
+		out, ok = mssqltypes.Combine(rules, lt, rt, a.sameCategory(lt.Name, rt.Name))
+	default:
+		return exprType{}, fmt.Errorf("unsupported type-combination strategy %q", rules.Strategy)
 	}
-	winner, loser := lt, rt
-	if ri < li {
-		winner, loser = rt, lt
-	}
-	out := winner.WithNullable(false)
-	if varying, ok := rules.Varying[out.Name]; ok && slices.Contains(mapValues(rules.Varying), loser.Name) {
-		out.Name = varying
-	}
-	switch {
-	case out.Name == rules.Decimal && rules.Decimal != "":
-		combineDecimal(rules, out, loser)
-	case len(out.Args) == 1 && len(loser.Args) == 1 && a.sameCategory(lt.Name, rt.Name):
-		out.Args[0] = widerArg(out.Args[0], loser.Args[0])
+	if !ok {
+		return l, nil
 	}
 	// A type with no arguments is its family. Looked up as a declaration
 	// it would take the dialect's defaults, as varchar is varchar(1).
 	if len(out.Args) == 0 {
 		if oid, err := a.cat.TypeOID(out.Name); err == nil {
-			return exprType{typeOID: oid}
+			return exprType{typeOID: oid}, nil
 		}
 	}
-	return a.lookupType(out)
+	return a.lookupType(out), nil
 }
 
-// commonType is the type a dialect gives an expression that yields one of
-// several values, as CASE, COALESCE and GREATEST do, by the rules it
-// combines a set operation's branches by; a dialect without them takes the
-// first typed value's. The result is no one column's.
-func (a *analyzer) commonType(types []exprType) exprType {
+// commonType uses the enabled policy for alternative-valued expressions.
+// Currently only MSSQL combines these with its set-operation rules. Other
+// dialects retain the first typed value; this is a compatibility fallback,
+// not a claim that their databases use the same rules.
+func (a *analyzer) commonType(types []exprType) (exprType, error) {
 	var out exprType
 	rules := a.cat.SetOperations()
 	for i, t := range types {
@@ -91,65 +88,19 @@ func (a *analyzer) commonType(types []exprType) exprType {
 		case out.typeOID == 0 && out.expr == nil:
 			out = t
 		case rules == nil:
-			return out
+			return out, nil
 		default:
-			out = a.combineTypes(rules, out, t)
+			var err error
+			out, err = a.combineTypes(rules, out, t)
+			if err != nil {
+				return exprType{}, err
+			}
 		}
 		if i > 0 {
 			out.sourceClassOID, out.sourceAttributeOID, out.sourceTableAlias = 0, 0, ""
 		}
 	}
-	return out
-}
-
-func mapValues(m map[string]string) []string {
-	out := make([]string, 0, len(m))
-	for _, v := range m {
-		out = append(out, v)
-	}
-	return out
-}
-
-// widerArg is the larger of two lengths or precisions, MAX above any.
-func widerArg(a, b core.TypeArg) core.TypeArg {
-	switch {
-	case a.Ident != nil:
-		return a
-	case b.Ident != nil:
-		return b
-	case a.Int != nil && b.Int != nil && *b.Int > *a.Int:
-		return b
-	}
-	return a
-}
-
-// combineDecimal gives the exact numeric out the precision and scale that
-// hold both it and the other branch's type: the larger scale, and the
-// larger count of integer digits, with scale giving way past the maximum
-// precision. A family with no decimal form leaves out as it is.
-func combineDecimal(rules *core.SetOperationRules, out, other *core.TypeExpr) {
-	p1, s1, ok1 := decimalForm(rules, out)
-	p2, s2, ok2 := decimalForm(rules, other)
-	if !ok1 || !ok2 {
-		return
-	}
-	scale := max(s1, s2)
-	precision := max(p1-s1, p2-s2) + scale
-	if limit := rules.DecimalMaxPrecision; limit > 0 && precision > limit {
-		scale = max(scale-(precision-limit), 0)
-		precision = limit
-	}
-	out.Args = []core.TypeArg{{Int: &precision}, {Int: &scale}}
-}
-
-func decimalForm(rules *core.SetOperationRules, t *core.TypeExpr) (int64, int64, bool) {
-	if t.Name == rules.Decimal && len(t.Args) == 2 && t.Args[0].Int != nil && t.Args[1].Int != nil {
-		return *t.Args[0].Int, *t.Args[1].Int, true
-	}
-	if form, ok := rules.AsDecimal[t.Name]; ok {
-		return form[0], form[1], true
-	}
-	return 0, 0, false
+	return out, nil
 }
 
 // sameCategory reports whether two types are of one category, so that the

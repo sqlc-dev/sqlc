@@ -502,7 +502,12 @@ func (a *analyzer) typeCoalesce(e *ast.CoalesceExpr) (exprType, error) {
 		types = append(types, t)
 		nullable = nullable && t.nullable
 	}
-	t := a.commonType(types)
+	t, err := a.commonType(types)
+	if err != nil {
+		return exprType{}, err
+	}
+	// Only ISNULL's converter sets FirstArgType. Ordinary COALESCE keeps
+	// the common type selected above, rather than its first argument's.
 	if e.FirstArgType {
 		for _, first := range types {
 			if first.typeOID != 0 || first.expr != nil {
@@ -531,7 +536,10 @@ func (a *analyzer) typeFirstOf(nodes []ast.Node, nullable bool) (exprType, error
 		types = append(types, t)
 		nullable = nullable || t.nullable
 	}
-	out := a.commonType(types)
+	out, err := a.commonType(types)
+	if err != nil {
+		return exprType{}, err
+	}
 	a.inferAlternatives(nodes, out, false)
 	out.nullable = nullable
 	return out, nil

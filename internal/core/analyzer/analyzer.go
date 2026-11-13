@@ -284,7 +284,10 @@ func (a *analyzer) analyzeSetOperation(s *ast.SelectStmt) error {
 	a.columns = left.columns
 	a.scope = left.scope
 	if rules := a.cat.SetOperations(); rules != nil {
-		a.columns = a.combineColumns(rules, s.Op, left.columns, right.columns)
+		a.columns, err = a.combineColumns(rules, s.Op, left.columns, right.columns)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
