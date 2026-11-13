@@ -64,6 +64,14 @@ type Book struct {
 	Amount  decimal.Decimal
 }
 
+type Note struct {
+	Body pgtype.Text
+}
+
+type PinnedNote struct {
+	Body string
+}
+
 type Shelf struct {
 	ID          int32
 	Titles      []string

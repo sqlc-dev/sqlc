@@ -286,6 +286,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 	tbl := Table{Rel: stmt.Name, Comment: stmt.Comment}
 	coltype := make(map[string]ast.TypeName) // used to check for duplicate column names
 	seen := make(map[string]bool)            // used to check for duplicate column names
+	explicit := make(map[string]bool)        // merged columns NOT NULL by their own constraint
 	for _, inheritTable := range stmt.Inherits {
 		t, _, err := schema.getTable(inheritTable)
 		if err != nil {
@@ -293,6 +294,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 		}
 		// check and ignore duplicate columns
 		for _, col := range t.Columns {
+			explicit[col.Name] = explicit[col.Name] || (col.IsNotNull && !col.domainNotNull)
 			if notNull, ok := seen[col.Name]; ok {
 				seen[col.Name] = notNull || col.IsNotNull
 				if a, ok := coltype[col.Name]; ok {
@@ -305,7 +307,8 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 
 			seen[col.Name] = col.IsNotNull
 			coltype[col.Name] = col.Type
-			tbl.Columns = append(tbl.Columns, col)
+			newCol := *col
+			tbl.Columns = append(tbl.Columns, &newCol)
 		}
 	}
 
@@ -328,6 +331,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 		}
 		if notNull, ok := seen[col.Colname]; ok {
 			seen[col.Colname] = notNull || col.IsNotNull
+			explicit[col.Colname] = explicit[col.Colname] || col.IsNotNull
 			if a, ok := coltype[col.Colname]; ok {
 				if !sameType(&a, col.TypeName) {
 					return fmt.Errorf("column %q has a type conflict", col.Colname)
@@ -346,6 +350,9 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 	for i := range tbl.Columns {
 		if notNull, ok := seen[tbl.Columns[i].Name]; ok {
 			tbl.Columns[i].IsNotNull = notNull
+			if explicit[tbl.Columns[i].Name] {
+				tbl.Columns[i].domainNotNull = false
+			}
 		}
 	}
 

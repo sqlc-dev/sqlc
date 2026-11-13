@@ -78,6 +78,35 @@ func (q *Queries) ListBooks(ctx context.Context, price pgtype.Numeric) ([]ListBo
 	return items, nil
 }
 
+const listNotes = `-- name: ListNotes :many
+SELECT n.body, p.body AS pinned FROM notes n, pinned_notes p
+`
+
+type ListNotesRow struct {
+	Body   pgtype.Text
+	Pinned string
+}
+
+func (q *Queries) ListNotes(ctx context.Context) ([]ListNotesRow, error) {
+	rows, err := q.db.Query(ctx, listNotes)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListNotesRow
+	for rows.Next() {
+		var i ListNotesRow
+		if err := rows.Scan(&i.Body, &i.Pinned); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listShelves = `-- name: ListShelves :many
 SELECT id, titles, tags, tag_sets, label, note, retyped, strict, relaxed, tightened, derived, derived_list FROM shelves
 `

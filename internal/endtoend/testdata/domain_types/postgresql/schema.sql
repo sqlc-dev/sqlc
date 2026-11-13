@@ -43,6 +43,10 @@ CREATE TABLE shelves (
   derived_list derived_list
 );
 
+-- A child's own NOT NULL outlasts the domain's.
+CREATE TABLE notes (body relaxed);
+CREATE TABLE pinned_notes (body relaxed NOT NULL) INHERITS (notes);
+
 -- The domain's NOT NULL leaves with it, and outlasts the column's own.
 ALTER TABLE shelves ALTER COLUMN retyped TYPE text;
 ALTER TABLE shelves ALTER COLUMN strict DROP NOT NULL;
