@@ -11,3 +11,4 @@ CREATE TABLE books (
   price price,
   ref billing.ksuid
 );
+COMMENT ON DOMAIN title IS 'A book''s title';

@@ -161,7 +161,7 @@
               ]
             },
             "not_null": true,
-            "comment": ""
+            "comment": "A book's title"
           },
           {
             "name": "price",
