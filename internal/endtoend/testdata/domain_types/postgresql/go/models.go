@@ -61,7 +61,7 @@ type Book struct {
 	Price   pgtype.Numeric
 	Ref     uuid.NullUUID
 	Feeling Mood
-	Amount  decimal.Decimal
+	Amount  decimal.Decimal `money:"true"`
 }
 
 type Note struct {

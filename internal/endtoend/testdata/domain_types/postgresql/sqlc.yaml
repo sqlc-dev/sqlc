@@ -14,3 +14,4 @@ sql:
             nullable: true
           - db_type: "pg_catalog.numeric"
             go_type: "github.com/shopspring/decimal.Decimal"
+            go_struct_tag: 'money:"true"'
