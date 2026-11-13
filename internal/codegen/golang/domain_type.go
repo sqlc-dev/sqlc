@@ -54,11 +54,9 @@ func flatType(t *plugin.TypeExpr) (string, int32) {
 // nullability t says each position has.
 func resolveDomains(req *plugin.GenerateRequest, t *plugin.TypeExpr) (*plugin.TypeExpr, bool) {
 	if d := findDomain(req, "", t.GetName()); !baseless(req, d) {
+		// One domain at a time, so an override on a domain under it applies.
 		base := proto.Clone(d.Base).(*plugin.TypeExpr)
 		base.Nullable = t.Nullable
-		if resolved, ok := resolveDomains(req, base); ok {
-			return resolved, true
-		}
 		return base, true
 	}
 	var out *plugin.TypeExpr

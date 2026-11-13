@@ -8,3 +8,6 @@ sql:
         package: "querytest"
         out: "go"
         sql_package: "pgx/v5"
+        overrides:
+          - db_type: "id"
+            go_type: "github.com/google/uuid.UUID"

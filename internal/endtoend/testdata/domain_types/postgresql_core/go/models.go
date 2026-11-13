@@ -4,9 +4,18 @@
 
 package querytest
 
+import (
+	"github.com/google/uuid"
+)
+
 type Shelf struct {
 	ID      int32
 	Titles  []string
 	Tags    []string
 	TagSets [][]string
+}
+
+type Thing struct {
+	Ref  uuid.UUID
+	Refs []uuid.UUID
 }
