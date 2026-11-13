@@ -36,6 +36,17 @@
         "type": {
           "name": "nvarchar"
         }
+      },
+      {
+        "name": "a5",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "int": 2
+            }
+          ]
+        }
       }
     ],
     "params": [

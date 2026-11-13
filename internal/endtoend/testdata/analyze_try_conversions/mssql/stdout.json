@@ -33,6 +33,18 @@
         }
       },
       {
+        "name": "as_datetime",
+        "type": {
+          "name": "datetime2",
+          "nullable": true,
+          "args": [
+            {
+              "int": 3
+            }
+          ]
+        }
+      },
+      {
         "name": "as_text",
         "type": {
           "name": "nvarchar",

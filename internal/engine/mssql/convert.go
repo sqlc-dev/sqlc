@@ -982,9 +982,10 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 	}
 }
 
-// tryCast converts TRY_CAST and TRY_CONVERT, which yield NULL for a value
-// they cannot convert, so their result is nullable whatever the operand is.
-// A placeholder cast this way is typed by the cast as it is by CAST.
+// tryCast models the result type of TRY_CAST and TRY_CONVERT. The source SQL
+// is unchanged; a TRY_CONVERT style affects parsing, not the result type.
+// Failed conversions can yield NULL, so results from non-parameter operands
+// are nullable. A placeholder is typed by the cast as it is by CAST.
 func (c *cc) tryCast(arg tsql.ScalarExpression, dataType tsql.DataTypeReference, n tsql.Node) ast.Node {
 	return &ast.TypeCast{
 		Arg:      c.convertScalarExpression(arg),
