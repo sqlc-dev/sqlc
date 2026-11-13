@@ -108,9 +108,9 @@ func (c *Compiler) starOldFunc(parts []string) func(string) int {
 			}
 			if strings.HasPrefix(s[length:], o) {
 				length += len(o)
-			} else if quoted := c.quote(o); strings.HasPrefix(s[length:], quoted) {
+			} else if quoted := c.quote(parts[i]); strings.HasPrefix(s[length:], quoted) {
 				length += len(quoted)
-			} else if quoted := `"` + o + `"`; strings.HasPrefix(s[length:], quoted) {
+			} else if quoted := `"` + strings.ReplaceAll(parts[i], `"`, `""`) + `"`; strings.HasPrefix(s[length:], quoted) {
 				// SQL Server quotes with brackets, but reads double quotes
 				// as an identifier too.
 				length += len(quoted)
