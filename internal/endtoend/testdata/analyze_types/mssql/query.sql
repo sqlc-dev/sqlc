@@ -22,3 +22,6 @@ WHERE CAST(@a AS DECIMAL(5,2)) > 0
 -- name: Params :one
 SELECT id FROM things
 WHERE price = @price AND body = @body AND phone = @phone AND offset_at = @offset_at;
+
+-- name: NumericLiterals :one
+SELECT 2147483648 AS over_int, 9223372036854775808 AS over_bigint;

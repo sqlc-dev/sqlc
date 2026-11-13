@@ -77,6 +77,19 @@ const FlagPropagateNullable = "functions.propagate_nullable"
 // e.id.
 const FlagQualifyDuplicateColumns = "columns.qualify_duplicates"
 
+// FlagOuterJoinNullable is set for a dialect whose outer joins fill the
+// columns of an unmatched side with NULL, as SQL Server's do. ClickHouse's
+// fill them with the type's default instead.
+const FlagOuterJoinNullable = "joins.outer_nullable"
+
+// FlagRecursiveCTENullable marks a dialect whose recursive CTE columns are
+// nullable regardless of the nullability of their anchor and recursive terms.
+const FlagRecursiveCTENullable = "ctes.recursive_nullable"
+
+// FlagReturningAliases holds, comma separated, the names a RETURNING list
+// may use for the statement's target.
+const FlagReturningAliases = "returning.aliases"
+
 // FlagDefaultSchema holds the schema the dialect puts an unqualified object
 // in, when that is not the catalog's own default: a type in it is reported
 // without its schema.
@@ -194,6 +207,40 @@ func (c *Catalog) QualifiesDuplicateColumns() bool {
 	}
 	v, _ := c.DialectFlag(c.dialectOID, FlagQualifyDuplicateColumns)
 	return v == "true"
+}
+
+// OuterJoinsNullable reports whether the columns of an outer join's
+// optional side are nullable.
+func (c *Catalog) OuterJoinsNullable() bool {
+	if c.dialectOID == 0 {
+		return false
+	}
+	v, _ := c.DialectFlag(c.dialectOID, FlagOuterJoinNullable)
+	return v == "true"
+}
+
+// RecursiveCTEsNullable reports whether the dialect treats every column of a
+// recursive CTE as nullable, regardless of its terms' nullability.
+func (c *Catalog) RecursiveCTEsNullable() bool {
+	if c.dialectOID == 0 {
+		return false
+	}
+	v, _ := c.DialectFlag(c.dialectOID, FlagRecursiveCTENullable)
+	return v == "true"
+}
+
+// ReturningAliases lists the names a RETURNING list may qualify a column of
+// the statement's target with, as SQL Server's OUTPUT clause reads
+// INSERTED.id and DELETED.id.
+func (c *Catalog) ReturningAliases() []string {
+	if c.dialectOID == 0 {
+		return nil
+	}
+	v, _ := c.DialectFlag(c.dialectOID, FlagReturningAliases)
+	if v == "" {
+		return nil
+	}
+	return strings.Split(v, ",")
 }
 
 // DefaultNamespaces lists the namespaces a type is reported from without

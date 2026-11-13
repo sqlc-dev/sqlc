@@ -2,9 +2,11 @@ package analyzer
 
 import (
 	"fmt"
+	"maps"
 
 	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
+	"github.com/sqlc-dev/sqlc/internal/sql/astutils"
 )
 
 func Prepare(cat *core.Catalog, stmt ast.Node) (core.PrepareResult, error) {
@@ -65,6 +67,10 @@ type analyzer struct {
 	// resolving guards against an alias that refers to itself.
 	resolving map[string]bool
 
+	// returning maps the names a RETURNING list may give the statement's
+	// target to the target's own, while that list is analyzed.
+	returning map[string]string
+
 	// stars are the expansions every star in the statement asked for, shared
 	// with the analyzers of the queries nested in it so one statement reports
 	// all of them.
@@ -82,10 +88,16 @@ func (a *analyzer) recordStar(s core.StarExpansion) {
 // placeholder inside the subquery is reported with the rest, and it sees this
 // query's scope, so a correlated reference resolves.
 func (a *analyzer) subquery(s *ast.SelectStmt) (*analyzer, error) {
+	// A set operation, or a query with no FROM, binds no relations of its
+	// own, so what is nested in it sees the query it is nested in.
+	outer := a.scope
+	if outer == nil || len(outer.rels) == 0 {
+		outer = a.outer
+	}
 	sub := &analyzer{
 		cat:    a.cat,
 		params: a.params,
-		outer:  a.scope,
+		outer:  outer,
 		ctes:   a.ctes,
 		stars:  a.stars,
 	}
@@ -291,6 +303,12 @@ func (a *analyzer) bindCTEs(with *ast.WithClause) error {
 	if with == nil {
 		return nil
 	}
+	// The analyzers of nested queries share the map they inherit, so a WITH
+	// clause binds its names in a copy, out of sight of the enclosing query.
+	a.ctes = maps.Clone(a.ctes)
+	if a.ctes == nil {
+		a.ctes = map[string]scopeRel{}
+	}
 	for _, item := range listItems(with.Ctes) {
 		cte, ok := item.(*ast.CommonTableExpr)
 		if !ok || cte.Ctename == nil {
@@ -300,18 +318,50 @@ func (a *analyzer) bindCTEs(with *ast.WithClause) error {
 		if !ok {
 			continue
 		}
+		// A recursive CTE refers to itself in the branches after its first,
+		// which gives the columns, so the first is bound before the rest.
+		recursive := with.Recursive && sel.Larg != nil && refersTo(sel.Rarg, *cte.Ctename)
+		if recursive {
+			anchor := sel
+			for anchor.Larg != nil {
+				anchor = anchor.Larg
+			}
+			cols, err := a.subqueryColumns(anchor)
+			if err != nil {
+				return fmt.Errorf("with %s: %w", *cte.Ctename, err)
+			}
+			rel := derivedRel(*cte.Ctename, cols)
+			renameColumns(&rel, cte.Aliascolnames)
+			a.ctes[*cte.Ctename] = rel
+		}
 		cols, err := a.subqueryColumns(sel)
 		if err != nil {
 			return fmt.Errorf("with %s: %w", *cte.Ctename, err)
 		}
 		rel := derivedRel(*cte.Ctename, cols)
 		renameColumns(&rel, cte.Aliascolnames)
-		if a.ctes == nil {
-			a.ctes = map[string]scopeRel{}
+		// A recursive CTE's output no longer has one source column. SQL
+		// Server also reports all of its columns as nullable.
+		if recursive {
+			for i := range rel.cols {
+				rel.cols[i].AttOID = 0
+				if a.cat.RecursiveCTEsNullable() {
+					rel.cols[i].NotNull = false
+				}
+			}
 		}
 		a.ctes[*cte.Ctename] = rel
 	}
 	return nil
+}
+
+// refersTo reports whether a query reads the relation named name.
+func refersTo(n ast.Node, name string) bool {
+	found := astutils.Search(n, func(n ast.Node) bool {
+		rv, ok := n.(*ast.RangeVar)
+		return ok && rv.Relname != nil && *rv.Relname == name && (rv.Schemaname == nil || *rv.Schemaname == "")
+	})
+	return len(found.Items) > 0
 }
 
 // bindAliases records the output names the target list assigns, so a later

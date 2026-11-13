@@ -1,11 +1,14 @@
 package mssql
 
 import (
+	"math"
 	"strconv"
 	"strings"
+	"unicode/utf16"
 
 	tsql "github.com/sqlc-dev/teesql/ast"
 
+	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 )
 
@@ -17,6 +20,10 @@ type cc struct {
 	// toByte maps a teesql UTF-16 code-unit offset to a byte offset in the
 	// source, so Location fields agree with StmtLocation/StmtLen.
 	toByte func(int) int
+	// fromExprs are expressions a FROM item holds that the AST has no place
+	// for, as FOR SYSTEM_TIME AS OF @t does, analyzed with the query's WHERE
+	// clause so a placeholder in them is still a parameter.
+	fromExprs []ast.Node
 }
 
 // loc returns a node's start offset in bytes, for the Location fields of the
@@ -63,6 +70,8 @@ func (c *cc) convert(node tsql.Node) ast.Node {
 		return c.convertAlterTableAddTableElementStatement(n)
 	case *tsql.AlterTableDropTableElementStatement:
 		return c.convertAlterTableDropTableElementStatement(n)
+	case *tsql.CreateFunctionStatement:
+		return c.convertCreateFunctionStatement(n)
 	case *tsql.CreateTypeUddtStatement:
 		return c.convertCreateTypeUddtStatement(n)
 	default:
@@ -97,6 +106,17 @@ func (c *cc) convertSelectStatement(n *tsql.SelectStatement) ast.Node {
 	if !ok {
 		return stmt
 	}
+	// A query's own FOR JSON or FOR XML result is a column with the name
+	// SQL Server gives it, and FOR XML is ntext there.
+	if qs, ok := n.QueryExpression.(*tsql.QuerySpecification); ok {
+		if tn := forClauseType(qs.ForClause, true); tn != nil {
+			res := sel.TargetList.Items[0].(*ast.ResTarget)
+			res.Val.(*ast.TypeCast).TypeName = nullableTypeName(tn)
+			if name := forClauseColumn(qs.ForClause, tn); name != "" {
+				res.Name = &name
+			}
+		}
+	}
 	if with := c.convertWithClause(n.WithCtesAndXmlNamespaces); with != nil {
 		sel.WithClause = with
 	}
@@ -107,9 +127,12 @@ func (c *cc) convertWithClause(n *tsql.WithCtesAndXmlNamespaces) *ast.WithClause
 	if n == nil || len(n.CommonTableExpressions) == 0 {
 		return nil
 	}
+	// T-SQL has no RECURSIVE keyword: a common table expression that names
+	// itself is recursive.
 	with := &ast.WithClause{
-		Ctes:     &ast.List{},
-		Location: c.loc(n),
+		Ctes:      &ast.List{},
+		Recursive: true,
+		Location:  c.loc(n),
 	}
 	for _, cte := range n.CommonTableExpressions {
 		name := identifierValue(cte.ExpressionName)
@@ -186,15 +209,25 @@ func (c *cc) convertQuerySpecification(n *tsql.QuerySpecification) *ast.SelectSt
 		}
 	}
 
+	outerFromExprs := c.fromExprs
+	c.fromExprs = nil
 	if n.FromClause != nil {
 		stmt.FromClause = &ast.List{}
 		for _, ref := range n.FromClause.TableReferences {
 			stmt.FromClause.Items = append(stmt.FromClause.Items, c.convertTableReference(ref))
 		}
 	}
+	fromExprs := c.fromExprs
+	c.fromExprs = outerFromExprs
 
 	if n.WhereClause != nil {
 		stmt.WhereClause = c.convertBooleanExpression(n.WhereClause.SearchCondition)
+	}
+	if len(fromExprs) > 0 {
+		if stmt.WhereClause != nil {
+			fromExprs = append([]ast.Node{stmt.WhereClause}, fromExprs...)
+		}
+		stmt.WhereClause = &ast.BoolExpr{Boolop: ast.BoolExprTypeAnd, Args: &ast.List{Items: fromExprs}}
 	}
 
 	if n.GroupByClause != nil {
@@ -233,7 +266,61 @@ func (c *cc) convertQuerySpecification(n *tsql.QuerySpecification) *ast.SelectSt
 		stmt.DistinctClause = &ast.List{}
 	}
 
+	if tn := forClauseType(n.ForClause, false); tn != nil {
+		return forClauseResult(stmt, tn, c.loc(n))
+	}
 	return stmt
+}
+
+// forClauseResult is a query with FOR JSON or FOR XML as what it returns: a
+// single nullable column of the document its rows make. The query itself is
+// kept as a subquery, so its placeholders and stars are still analyzed.
+func forClauseResult(query *ast.SelectStmt, tn *ast.TypeName, loc int) *ast.SelectStmt {
+	return &ast.SelectStmt{TargetList: &ast.List{Items: []ast.Node{&ast.ResTarget{
+		Val: &ast.TypeCast{
+			Arg:      &ast.SubLink{SubLinkType: ast.EXPR_SUBLINK, Subselect: query, Location: loc},
+			TypeName: nullableTypeName(tn),
+			Location: loc,
+		},
+		Location: loc,
+	}}}}
+}
+
+// forClauseType is the type of the document FOR JSON or FOR XML makes, or
+// nil for any other FOR clause. FOR XML without TYPE is ntext as a query's
+// result but nvarchar(max) as a subquery's.
+func forClauseType(fc tsql.ForClause, topLevel bool) *ast.TypeName {
+	maxText := &ast.TypeName{Name: "nvarchar", Typmods: appendTypmod(nil, &ast.String{Str: "max"})}
+	switch f := fc.(type) {
+	case *tsql.JsonForClause:
+		return maxText
+	case *tsql.XmlForClause:
+		for _, o := range f.Options {
+			if o.OptionKind == "Type" {
+				return &ast.TypeName{Name: "xml"}
+			}
+		}
+		if topLevel {
+			return &ast.TypeName{Name: "ntext"}
+		}
+		return maxText
+	}
+	return nil
+}
+
+// forClauseColumn is the name SQL Server gives the column FOR JSON or FOR
+// XML returns, which XML with TYPE leaves unnamed.
+func forClauseColumn(fc tsql.ForClause, tn *ast.TypeName) string {
+	switch {
+	case tn.Name == "xml":
+		return ""
+	case fc != nil:
+		if _, ok := fc.(*tsql.JsonForClause); ok {
+			return identifier("JSON_F52E2B61-18A1-11d1-B105-00805F49916B")
+		}
+		return identifier("XML_F52E2B61-18A1-11d1-B105-00805F49916B")
+	}
+	return ""
 }
 
 func (c *cc) convertSelectElement(elem tsql.SelectElement) ast.Node {
@@ -311,6 +398,30 @@ func (c *cc) convertTableReference(ref tsql.TableReference) ast.Node {
 			alias := identifierValue(t.Alias)
 			rv.Alias = &ast.Alias{Aliasname: &alias}
 		}
+		// The times of FOR SYSTEM_TIME are the datetime2 SQL Server takes.
+		if tc := t.TemporalClause; tc != nil {
+			for _, e := range []tsql.ScalarExpression{tc.StartTime, tc.EndTime} {
+				if e != nil {
+					c.fromExprs = append(c.fromExprs, &ast.TypeCast{Arg: c.convertScalarExpression(e), TypeName: typeName("datetime2", 7)})
+				}
+			}
+		}
+		// TABLESAMPLE takes a percentage as a float and a count of rows
+		// or a REPEATABLE seed as a bigint.
+		if ts := t.TableSampleClause; ts != nil {
+			size := "float"
+			if ts.TableSampleClauseOption == "Rows" {
+				size = "bigint"
+			}
+			for _, e := range []struct {
+				expr tsql.ScalarExpression
+				typ  string
+			}{{ts.SampleNumber, size}, {ts.RepeatSeed, "bigint"}} {
+				if e.expr != nil {
+					c.fromExprs = append(c.fromExprs, &ast.TypeCast{Arg: c.convertScalarExpression(e.expr), TypeName: &ast.TypeName{Name: e.typ}})
+				}
+			}
+		}
 		return rv
 	case *tsql.QueryDerivedTable:
 		sub := &ast.RangeSubselect{
@@ -321,6 +432,8 @@ func (c *cc) convertTableReference(ref tsql.TableReference) ast.Node {
 			sub.Alias = &ast.Alias{Aliasname: &alias}
 		}
 		return sub
+	case *tsql.InlineDerivedTable:
+		return c.convertInlineDerivedTable(t)
 	case *tsql.QualifiedJoin:
 		join := &ast.JoinExpr{
 			Larg: c.convertTableReference(t.FirstTableReference),
@@ -341,17 +454,208 @@ func (c *cc) convertTableReference(ref tsql.TableReference) ast.Node {
 		}
 		return join
 	case *tsql.UnqualifiedJoin:
-		if t.UnqualifiedJoinType != "CrossJoin" {
+		// APPLY is a lateral join: its right side may refer to the left,
+		// which the analyzer allows for every FROM item bound after another.
+		// OUTER APPLY keeps unmatched left rows, as a left join does.
+		join := &ast.JoinExpr{
+			Larg: c.convertTableReference(t.FirstTableReference),
+			Rarg: c.convertTableReference(t.SecondTableReference),
+		}
+		switch t.UnqualifiedJoinType {
+		case "CrossJoin", "CrossApply":
+			join.Jointype = ast.JoinTypeInner
+		case "OuterApply":
+			join.Jointype = ast.JoinTypeLeft
+		default:
 			return todo(ref)
 		}
-		return &ast.JoinExpr{
-			Jointype: ast.JoinTypeInner,
-			Larg:     c.convertTableReference(t.FirstTableReference),
-			Rarg:     c.convertTableReference(t.SecondTableReference),
+		return join
+	case *tsql.OpenJsonTableReference:
+		return c.convertOpenJson(t)
+	case *tsql.GlobalFunctionTableReference:
+		return c.convertGlobalFunctionTableReference(t)
+	case *tsql.SchemaObjectFunctionTableReference:
+		if t.SchemaObject == nil || t.SchemaObject.BaseIdentifier == nil {
+			return todo(t)
 		}
+		return c.rangeFunction(t, identifierValue(t.SchemaObject.BaseIdentifier), t.Parameters, t.Alias, nil)
+	case *tsql.PivotedTableReference:
+		return c.convertPivot(t)
+	case *tsql.UnpivotedTableReference:
+		return c.convertUnpivot(t)
 	default:
 		return todo(ref)
 	}
+}
+
+// convertPivot converts PIVOT. Its columns depend on those of its source,
+// which only the analyzer knows, so it is passed on rather than rewritten
+// as the grouped query it stands for.
+func (c *cc) convertPivot(n *tsql.PivotedTableReference) ast.Node {
+	if n.AggregateFunctionIdentifier == nil || len(n.AggregateFunctionIdentifier.Identifiers) == 0 || n.PivotColumn == nil {
+		return todo(n)
+	}
+	ids := n.AggregateFunctionIdentifier.Identifiers
+	agg := &ast.FuncCall{
+		Funcname: &ast.List{Items: []ast.Node{&ast.String{Str: identifierValue(ids[len(ids)-1])}}},
+		Args:     &ast.List{},
+		Location: c.loc(n),
+	}
+	for _, col := range n.ValueColumns {
+		agg.Args.Items = append(agg.Args.Items, c.convertColumnReference(col))
+	}
+	p := &ast.RangePivot{
+		Source:    c.convertTableReference(n.TableReference),
+		Aggregate: agg,
+		ForColumn: columnName(n.PivotColumn),
+		InList:    &ast.List{},
+	}
+	for _, id := range n.InColumns {
+		p.InList.Items = append(p.InList.Items, NewIdentifier(id.Value))
+	}
+	if n.Alias != nil {
+		alias := identifierValue(n.Alias)
+		p.Alias = &ast.Alias{Aliasname: &alias}
+	}
+	return p
+}
+
+// convertUnpivot converts UNPIVOT, which, as PIVOT, keeps the columns of
+// its source the analyzer knows.
+func (c *cc) convertUnpivot(n *tsql.UnpivotedTableReference) ast.Node {
+	p := &ast.RangePivot{
+		Source:      c.convertTableReference(n.TableReference),
+		Unpivot:     true,
+		ValueColumn: identifierValue(n.ValueColumn),
+		ForColumn:   identifierValue(n.PivotColumn),
+		ForType:     typeName("nvarchar", 128),
+		InList:      &ast.List{},
+	}
+	for _, col := range n.InColumns {
+		p.InList.Items = append(p.InList.Items, &ast.String{Str: columnName(col)})
+	}
+	if n.Alias != nil {
+		alias := identifierValue(n.Alias)
+		p.Alias = &ast.Alias{Aliasname: &alias}
+	}
+	return p
+}
+
+// columnName is the name a column reference ends in.
+func columnName(n *tsql.ColumnReferenceExpression) string {
+	if n == nil || n.MultiPartIdentifier == nil || len(n.MultiPartIdentifier.Identifiers) == 0 {
+		return ""
+	}
+	ids := n.MultiPartIdentifier.Identifiers
+	return identifierValue(ids[len(ids)-1])
+}
+
+// convertInlineDerivedTable converts (VALUES ...) AS v(a, b) to the
+// subquery it stands for, its rows selected one after another with UNION
+// ALL, so the relation's columns are typed from its first row.
+func (c *cc) convertInlineDerivedTable(n *tsql.InlineDerivedTable) ast.Node {
+	var query *ast.SelectStmt
+	for _, row := range n.RowValues {
+		sel := &ast.SelectStmt{TargetList: &ast.List{}}
+		for _, val := range row.ColumnValues {
+			sel.TargetList.Items = append(sel.TargetList.Items, &ast.ResTarget{
+				Val:      c.convertScalarExpression(val),
+				Location: c.loc(val),
+			})
+		}
+		if query == nil {
+			query = sel
+			continue
+		}
+		query = &ast.SelectStmt{Op: ast.Union, All: true, Larg: query, Rarg: sel}
+	}
+	if query == nil {
+		return todo(n)
+	}
+	sub := &ast.RangeSubselect{Subquery: query}
+	if n.Alias != nil {
+		alias := identifierValue(n.Alias)
+		sub.Alias = &ast.Alias{Aliasname: &alias, Colnames: &ast.List{}}
+		for _, col := range n.Columns {
+			sub.Alias.Colnames.Items = append(sub.Alias.Colnames.Items, NewIdentifier(col.Value))
+		}
+	}
+	return sub
+}
+
+// rangeFunction is a call in FROM to a function returning rows of the
+// columns defs declares, or of its own columns when there are none.
+func (c *cc) rangeFunction(n tsql.Node, name string, args []tsql.ScalarExpression, alias *tsql.Identifier, defs []ast.Node) *ast.RangeFunction {
+	call := &ast.FuncCall{
+		Funcname: &ast.List{Items: []ast.Node{&ast.String{Str: name}}},
+		Location: c.loc(n),
+	}
+	for _, arg := range args {
+		if call.Args == nil {
+			call.Args = &ast.List{}
+		}
+		call.Args.Items = append(call.Args.Items, c.convertScalarExpression(arg))
+	}
+	rf := &ast.RangeFunction{
+		Functions: &ast.List{Items: []ast.Node{&ast.List{Items: []ast.Node{call}}}},
+	}
+	if len(defs) > 0 {
+		rf.Coldeflist = &ast.List{Items: defs}
+	}
+	if alias != nil {
+		name := identifierValue(alias)
+		rf.Alias = &ast.Alias{Aliasname: &name}
+	}
+	return rf
+}
+
+// convertOpenJson converts OPENJSON, whose rows are the key, value and type
+// of each JSON element, or the columns its WITH clause declares.
+func (c *cc) convertOpenJson(n *tsql.OpenJsonTableReference) ast.Node {
+	args := []tsql.ScalarExpression{n.Variable}
+	if n.RowPattern != nil {
+		args = append(args, n.RowPattern)
+	}
+	var defs []ast.Node
+	if len(n.SchemaDeclarationItems) == 0 {
+		defs = []ast.Node{
+			&ast.ColumnDef{Colname: "key", TypeName: typeName("nvarchar", 4000), IsNotNull: true},
+			&ast.ColumnDef{Colname: "value", TypeName: &ast.TypeName{Name: "nvarchar", Typmods: appendTypmod(nil, &ast.String{Str: "max"})}},
+			&ast.ColumnDef{Colname: "type", TypeName: &ast.TypeName{Name: "tinyint"}, IsNotNull: true},
+		}
+	}
+	for _, item := range n.SchemaDeclarationItems {
+		if item.ColumnDefinition == nil {
+			continue
+		}
+		defs = append(defs, &ast.ColumnDef{
+			Colname:  identifierValue(item.ColumnDefinition.ColumnIdentifier),
+			TypeName: dataTypeName(item.ColumnDefinition.DataType),
+		})
+	}
+	return c.rangeFunction(n, "openjson", args, n.Alias, defs)
+}
+
+// convertGlobalFunctionTableReference converts STRING_SPLIT and
+// GENERATE_SERIES. Each returns a value of its seeded result type, and
+// STRING_SPLIT with enable_ordinal set adds the ordinal of each.
+func (c *cc) convertGlobalFunctionTableReference(n *tsql.GlobalFunctionTableReference) ast.Node {
+	name := identifierValue(n.Name)
+	defs := []ast.Node{&ast.ColumnDef{Colname: "value"}}
+	switch name {
+	case "string_split":
+		if len(n.Parameters) == 3 {
+			defs = append(defs, &ast.ColumnDef{Colname: "ordinal", TypeName: &ast.TypeName{Name: "bigint"}, IsNotNull: true})
+		}
+	case "generate_series":
+	default:
+		return todo(n)
+	}
+	return c.rangeFunction(n, name, n.Parameters, n.Alias, defs)
+}
+
+func typeName(name string, length int64) *ast.TypeName {
+	return &ast.TypeName{Name: name, Typmods: appendTypmod(nil, &ast.A_Const{Val: &ast.Integer{Ival: length}})}
 }
 
 func (c *cc) convertBooleanExpression(expr tsql.BooleanExpression) ast.Node {
@@ -447,6 +751,18 @@ func (c *cc) convertBooleanExpression(expr tsql.BooleanExpression) ast.Node {
 		}
 	case *tsql.BooleanScalarPlaceholder:
 		return c.convertScalarExpression(e.Scalar)
+	case *tsql.FullTextPredicate:
+		// CONTAINS and FREETEXT are the predicates the dialect seeds under
+		// their names, over their search condition and language term.
+		call := &ast.FuncCall{
+			Funcname: &ast.List{Items: []ast.Node{&ast.String{Str: identifier(e.FullTextFunctionType)}}},
+			Args:     &ast.List{Items: []ast.Node{c.convertScalarExpression(e.Value)}},
+			Location: c.loc(e),
+		}
+		if e.LanguageTerm != nil {
+			call.Args.Items = append(call.Args.Items, c.convertScalarExpression(e.LanguageTerm))
+		}
+		return call
 	default:
 		return todo(expr)
 	}
@@ -481,16 +797,16 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 	case *tsql.VariableReference:
 		return c.convertVariableReference(e)
 	case *tsql.IntegerLiteral:
-		ival, _ := strconv.ParseInt(e.Value, 10, 64)
+		ival, err := strconv.ParseInt(e.Value, 10, 64)
+		if err != nil || ival > math.MaxInt32 {
+			return c.numericLiteral(e.Value, e)
+		}
 		return &ast.A_Const{
 			Val:      &ast.Integer{Ival: ival},
 			Location: c.loc(e),
 		}
 	case *tsql.NumericLiteral:
-		return &ast.A_Const{
-			Val:      &ast.Float{Str: e.Value},
-			Location: c.loc(e),
-		}
+		return c.numericLiteral(e.Value, e)
 	case *tsql.RealLiteral:
 		return &ast.A_Const{
 			Val:      &ast.Float{Str: e.Value},
@@ -502,10 +818,15 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 			Location: c.loc(e),
 		}
 	case *tsql.StringLiteral:
-		return &ast.A_Const{
+		lit := &ast.A_Const{
 			Val:      &ast.String{Str: e.Value},
 			Location: c.loc(e),
 		}
+		// N'...' is an nvarchar as long as the string, and at least 1.
+		if e.IsNational {
+			return &ast.TypeCast{Arg: lit, TypeName: typeName("nvarchar", max(1, int64(len(utf16.Encode([]rune(e.Value)))))), Location: c.loc(e)}
+		}
+		return lit
 	case *tsql.NullLiteral:
 		return &ast.A_Const{
 			Val:      &ast.Null{},
@@ -555,11 +876,11 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 			Location: c.loc(e),
 		}
 	case *tsql.TryCastCall:
-		return &ast.TypeCast{
-			Arg:      c.convertScalarExpression(e.Parameter),
-			TypeName: dataTypeName(e.DataType),
-			Location: c.loc(e),
-		}
+		return c.tryCast(e.Parameter, e.DataType, e)
+	case *tsql.ParseCall:
+		return c.parseCall(e.StringValue, e.Culture, e.DataType, false, e)
+	case *tsql.TryParseCall:
+		return c.parseCall(e.StringValue, e.Culture, e.DataType, true, e)
 	case *tsql.ConvertCall:
 		return &ast.TypeCast{
 			Arg:      c.convertScalarExpression(e.Parameter),
@@ -567,11 +888,7 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 			Location: c.loc(e),
 		}
 	case *tsql.TryConvertCall:
-		return &ast.TypeCast{
-			Arg:      c.convertScalarExpression(e.Parameter),
-			TypeName: dataTypeName(e.DataType),
-			Location: c.loc(e),
-		}
+		return c.tryCast(e.Parameter, e.DataType, e)
 	case *tsql.CoalesceExpression:
 		coalesce := &ast.CoalesceExpr{
 			Args:     &ast.List{},
@@ -644,6 +961,15 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 			Subselect:   c.convertQueryExpression(e.QueryExpression),
 			Location:    c.loc(e),
 		}
+	case *tsql.GlobalVariableExpression:
+		// @@ROWCOUNT and its relatives are typed as the functions the
+		// dialect seeds under their names.
+		return &ast.FuncCall{
+			Funcname: &ast.List{
+				Items: []ast.Node{&ast.String{Str: identifier(e.Name)}},
+			},
+			Location: c.loc(e),
+		}
 	case *tsql.ParameterlessCall:
 		return &ast.FuncCall{
 			Funcname: &ast.List{
@@ -654,6 +980,57 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 	default:
 		return todo(expr)
 	}
+}
+
+// tryCast models the result type of TRY_CAST and TRY_CONVERT. The source SQL
+// is unchanged; a TRY_CONVERT style affects parsing, not the result type.
+// Failed conversions can yield NULL, so results from non-parameter operands
+// are nullable. A placeholder is typed by the cast as it is by CAST.
+func (c *cc) tryCast(arg tsql.ScalarExpression, dataType tsql.DataTypeReference, n tsql.Node) ast.Node {
+	return &ast.TypeCast{
+		Arg:      c.convertScalarExpression(arg),
+		TypeName: tryTypeName(arg, dataType),
+		Location: c.loc(n),
+	}
+}
+
+// tryTypeName is the type a TRY_ conversion of arg yields: nullable, unless
+// arg is a placeholder, which the conversion types as CAST does.
+func tryTypeName(arg tsql.ScalarExpression, dataType tsql.DataTypeReference) *ast.TypeName {
+	if _, ok := arg.(*tsql.VariableReference); ok {
+		return dataTypeName(dataType)
+	}
+	return nullableTypeName(dataTypeName(dataType))
+}
+
+func nullableTypeName(tn *ast.TypeName) *ast.TypeName {
+	if t := core.TypeExprOfTypeName(tn); t != nil {
+		return &ast.TypeName{Spelling: "Nullable(" + t.String() + ")"}
+	}
+	return tn
+}
+
+// parseCall converts PARSE and TRY_PARSE, which convert a string as CAST
+// and TRY_CAST do. What they convert is a string, so a placeholder there is
+// the nvarchar(4000) SQL Server takes it as. A culture is passed through a
+// call, so a placeholder given for it is still a parameter of the query.
+func (c *cc) parseCall(value, culture tsql.ScalarExpression, dataType tsql.DataTypeReference, try bool, n tsql.Node) ast.Node {
+	tn := dataTypeName(dataType)
+	if try {
+		tn = nullableTypeName(tn)
+	}
+	arg := c.convertScalarExpression(value)
+	if _, ok := value.(*tsql.VariableReference); ok {
+		arg = &ast.TypeCast{Arg: arg, TypeName: typeName("nvarchar", 4000), Location: c.loc(value)}
+	}
+	if culture != nil {
+		arg = &ast.FuncCall{
+			Funcname: &ast.List{Items: []ast.Node{&ast.String{Str: "parse"}}},
+			Args:     &ast.List{Items: []ast.Node{arg, c.convertScalarExpression(culture)}},
+			Location: c.loc(n),
+		}
+	}
+	return &ast.TypeCast{Arg: arg, TypeName: tn, Location: c.loc(n)}
 }
 
 func binaryOperator(binaryExpressionType string) string {
@@ -763,34 +1140,18 @@ func (c *cc) convertFunctionCall(n *tsql.FunctionCall) *ast.FuncCall {
 }
 
 // convertOutputClause converts an OUTPUT clause to a returning list. The
-// INSERTED and DELETED pseudo-table qualifiers are stripped so the columns
-// resolve against the statement's target table.
+// dialect names INSERTED and DELETED as the target's aliases there, so the
+// qualifiers are kept, and a star they qualify expands to columns they
+// qualify too.
 func (c *cc) convertOutputClause(n *tsql.OutputClause) *ast.List {
 	if n == nil || len(n.SelectColumns) == 0 {
 		return nil
 	}
 	list := &ast.List{}
 	for _, elem := range n.SelectColumns {
-		target := c.convertSelectElement(elem)
-		if res, ok := target.(*ast.ResTarget); ok {
-			stripOutputQualifier(res.Val)
-		}
-		list.Items = append(list.Items, target)
+		list.Items = append(list.Items, c.convertSelectElement(elem))
 	}
 	return list
-}
-
-func stripOutputQualifier(node ast.Node) {
-	ref, ok := node.(*ast.ColumnRef)
-	if !ok || ref.Fields == nil || len(ref.Fields.Items) < 2 {
-		return
-	}
-	if first, ok := ref.Fields.Items[0].(*ast.String); ok {
-		switch first.Str {
-		case "inserted", "deleted":
-			ref.Fields.Items = ref.Fields.Items[1:]
-		}
-	}
 }
 
 func (c *cc) convertInsertStatement(n *tsql.InsertStatement) ast.Node {
@@ -805,7 +1166,8 @@ func (c *cc) convertInsertStatement(n *tsql.InsertStatement) ast.Node {
 	}
 
 	stmt := &ast.InsertStmt{
-		Relation: c.parseRangeVar(target.SchemaObject),
+		Relation:   c.parseRangeVar(target.SchemaObject),
+		WithClause: c.convertWithClause(n.WithCtesAndXmlNamespaces),
 	}
 
 	if len(spec.Columns) > 0 {
@@ -1182,6 +1544,97 @@ func (c *cc) convertAlterTableAddTableElementStatement(n *tsql.AlterTableAddTabl
 		})
 	}
 	return stmt
+}
+
+// convertCreateFunctionStatement records a function. A scalar function's
+// result SQL Server reports nullable whatever its arguments are. A
+// table-valued function returns rows of table(col type, ...), the columns
+// it declares; an inline one's are those its query selects, which the
+// schema works out from the query, passed as the "query" option.
+func (c *cc) convertCreateFunctionStatement(n *tsql.CreateFunctionStatement) ast.Node {
+	if n.Name == nil || n.Name.BaseIdentifier == nil {
+		return todo(n)
+	}
+	var returns *ast.TypeName
+	var options *ast.List
+	switch ret := n.ReturnType.(type) {
+	case *tsql.ScalarFunctionReturnType:
+		if ret.DataType == nil {
+			return todo(n)
+		}
+		returns = nullableTypeName(dataTypeName(ret.DataType))
+	case *tsql.TableValuedFunctionReturnType:
+		if ret.DeclareTableVariableBody == nil || ret.DeclareTableVariableBody.Definition == nil {
+			return todo(n)
+		}
+		var cols []string
+		for _, col := range ret.DeclareTableVariableBody.Definition.ColumnDefinitions {
+			def := c.convertColumnDefinition(col, nil)
+			t := def.TypeName
+			if !def.IsNotNull {
+				t = nullableTypeName(t)
+			}
+			spelled := core.TypeExprOfTypeName(t)
+			if spelled == nil {
+				return todo(n)
+			}
+			cols = append(cols, def.Colname+" "+typeSpelling(t, spelled))
+		}
+		returns = &ast.TypeName{Spelling: "table(" + strings.Join(cols, ", ") + ")", Setof: true}
+	case *tsql.SelectFunctionReturnType:
+		if ret.SelectStatement == nil {
+			return todo(n)
+		}
+		returns = &ast.TypeName{Name: "table", Setof: true}
+		query := "query"
+		options = &ast.List{Items: []ast.Node{&ast.DefElem{Defname: &query, Arg: c.convertSelectStatement(ret.SelectStatement)}}}
+	default:
+		return todo(n)
+	}
+	tn := parseTableName(n.Name)
+	params := &ast.List{}
+	for _, p := range n.Parameters {
+		if p.VariableName == nil || p.DataType == nil {
+			continue
+		}
+		name := strings.TrimPrefix(p.VariableName.Value, "@")
+		param := &ast.FuncParam{Name: &name, Type: dataTypeName(p.DataType)}
+		if p.Value != nil {
+			param.DefExpr = c.convertScalarExpression(p.Value)
+		}
+		params.Items = append(params.Items, param)
+	}
+	return &ast.CreateFunctionStmt{
+		Func:       &ast.FuncName{Schema: tn.Schema, Name: tn.Name},
+		Params:     params,
+		ReturnType: returns,
+		Options:    options,
+	}
+}
+
+// numericLiteral is a number written with a decimal point, or too large
+// for an int, which SQL Server types as the decimal holding its digits:
+// 1.50 is a decimal(3,2), 2147483648 a decimal(10,0).
+func (c *cc) numericLiteral(value string, n tsql.Node) ast.Node {
+	whole, frac, _ := strings.Cut(value, ".")
+	whole = strings.TrimLeft(whole, "0")
+	scale := int64(len(frac))
+	precision := max(int64(len(whole))+scale, 1)
+	return &ast.TypeCast{
+		Arg: &ast.A_Const{Val: &ast.Float{Str: value}, Location: c.loc(n)},
+		TypeName: &ast.TypeName{Name: "decimal", Typmods: appendTypmod(appendTypmod(nil,
+			&ast.A_Const{Val: &ast.Integer{Ival: precision}}), &ast.A_Const{Val: &ast.Integer{Ival: scale}})},
+		Location: c.loc(n),
+	}
+}
+
+// typeSpelling spells a type so that it parses back as the same type, which
+// for a nullable one is the Nullable(T) it was spelled as.
+func typeSpelling(tn *ast.TypeName, t *core.TypeExpr) string {
+	if tn.Spelling != "" {
+		return tn.Spelling
+	}
+	return t.String()
 }
 
 func (c *cc) convertAlterTableDropTableElementStatement(n *tsql.AlterTableDropTableElementStatement) ast.Node {

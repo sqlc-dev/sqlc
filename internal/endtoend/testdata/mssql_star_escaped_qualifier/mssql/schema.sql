@@ -1,0 +1,1 @@
+CREATE TABLE authors (id INT NOT NULL, name NVARCHAR(10) NULL);

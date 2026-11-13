@@ -1,0 +1,128 @@
+[
+  {
+    "name": "Converted",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "readings"
+      },
+      {
+        "name": "as_int",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "as_decimal",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 5
+            },
+            {
+              "int": 1
+            }
+          ]
+        }
+      },
+      {
+        "name": "as_datetime",
+        "type": {
+          "name": "datetime2",
+          "nullable": true,
+          "args": [
+            {
+              "int": 3
+            }
+          ]
+        }
+      },
+      {
+        "name": "as_text",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "min",
+          "type": {
+            "name": "int"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "Parsed",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "readings"
+      },
+      {
+        "name": "try_parsed",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "try_parsed_date",
+        "type": {
+          "name": "datetime2",
+          "nullable": true,
+          "args": [
+            {
+              "int": 7
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "limit",
+          "type": {
+            "name": "nvarchar",
+            "args": [
+              {
+                "int": 4000
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+]

@@ -1,0 +1,11 @@
+CREATE TABLE authors (
+  id BIGINT PRIMARY KEY,
+  name NVARCHAR(50) NOT NULL,
+  bio NVARCHAR(MAX)
+);
+
+CREATE TABLE books (
+  id BIGINT PRIMARY KEY,
+  author_id BIGINT NOT NULL,
+  title NVARCHAR(100) NOT NULL
+);

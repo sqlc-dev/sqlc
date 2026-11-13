@@ -1,0 +1,123 @@
+[
+  {
+    "name": "SessionInfo",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "row_count",
+        "type": {
+          "name": "int"
+        }
+      },
+      {
+        "name": "last_identity",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 38
+            },
+            {
+              "int": 0
+            }
+          ]
+        }
+      },
+      {
+        "name": "session_id",
+        "type": {
+          "name": "smallint"
+        }
+      },
+      {
+        "name": "version",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 300
+            }
+          ]
+        }
+      },
+      {
+        "name": "tran_count",
+        "type": {
+          "name": "int"
+        }
+      },
+      {
+        "name": "error",
+        "type": {
+          "name": "int"
+        }
+      },
+      {
+        "name": "server_name",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 128
+            }
+          ]
+        }
+      },
+      {
+        "name": "date_first",
+        "type": {
+          "name": "tinyint",
+          "nullable": true
+        }
+      },
+      {
+        "name": "dbts",
+        "type": {
+          "name": "varbinary",
+          "args": [
+            {
+              "int": 8
+            }
+          ]
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "TouchInTransaction",
+    "cmd": ":exec",
+    "columns": [],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "note",
+          "type": {
+            "name": "varchar",
+            "nullable": true,
+            "args": [
+              {
+                "int": 10
+              }
+            ]
+          },
+          "table": "readings"
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "bigint"
+          },
+          "table": "readings"
+        }
+      }
+    ]
+  }
+]

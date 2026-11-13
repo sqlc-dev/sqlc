@@ -1,0 +1,215 @@
+[
+  {
+    "name": "PivotDerived",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "author_id",
+        "type": {
+          "name": "int"
+        },
+        "table": "sales"
+      },
+      {
+        "name": "2023",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "2024",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "min_author",
+          "type": {
+            "name": "int"
+          },
+          "table": "sales"
+        }
+      }
+    ]
+  },
+  {
+    "name": "PivotTable",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "int"
+        },
+        "table": "sales"
+      },
+      {
+        "name": "author_id",
+        "type": {
+          "name": "int"
+        },
+        "table": "sales"
+      },
+      {
+        "name": "note",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 50
+            }
+          ]
+        },
+        "table": "sales"
+      },
+      {
+        "name": "2023",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "2024",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "PivotColumns",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "author_id",
+        "type": {
+          "name": "int"
+        },
+        "table": "sales"
+      },
+      {
+        "name": "2023",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "int"
+          },
+          "table": "sales"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Unpivot",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "int"
+        },
+        "table": "stats"
+      },
+      {
+        "name": "metric",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 128
+            }
+          ]
+        }
+      },
+      {
+        "name": "value",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "UnpivotStar",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "int"
+        },
+        "table": "stats"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "varchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 20
+            }
+          ]
+        },
+        "table": "stats"
+      },
+      {
+        "name": "q2",
+        "type": {
+          "name": "int",
+          "nullable": true
+        },
+        "table": "stats"
+      },
+      {
+        "name": "q3",
+        "type": {
+          "name": "int",
+          "nullable": true
+        },
+        "table": "stats"
+      },
+      {
+        "name": "value",
+        "type": {
+          "name": "int"
+        }
+      },
+      {
+        "name": "metric",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 128
+            }
+          ]
+        }
+      }
+    ],
+    "params": []
+  }
+]

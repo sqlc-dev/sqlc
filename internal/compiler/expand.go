@@ -66,6 +66,11 @@ func (c *Compiler) quoteIdent(ident string) string {
 			return c.quote(ident)
 		}
 	}
+	// A column PIVOT names after a value, as [2023], is no regular
+	// identifier.
+	if c.conf.Engine == config.EngineMSSQL && !validPostgresIdent.MatchString(strings.ToLower(ident)) {
+		return c.quote(ident)
+	}
 	return ident
 }
 
@@ -73,6 +78,9 @@ func (c *Compiler) quote(x string) string {
 	switch c.conf.Engine {
 	case config.EngineMySQL:
 		return "`" + x + "`"
+	case config.EngineMSSQL:
+		// Brackets quote whatever QUOTED_IDENTIFIER is set to.
+		return "[" + strings.ReplaceAll(x, "]", "]]") + "]"
 	default:
 		return "\"" + x + "\""
 	}
@@ -98,9 +106,15 @@ func (c *Compiler) starOldFunc(parts []string) func(string) int {
 			if hasSeparator := i > 0; hasSeparator {
 				length++
 			}
+			// Use the original identifier below: o may already be quoted by
+			// quoteIdent, and quoting it again would measure a different name.
 			if strings.HasPrefix(s[length:], o) {
 				length += len(o)
-			} else if quoted := c.quote(o); strings.HasPrefix(s[length:], quoted) {
+			} else if quoted := c.quote(parts[i]); strings.HasPrefix(s[length:], quoted) {
+				length += len(quoted)
+			} else if quoted := `"` + strings.ReplaceAll(parts[i], `"`, `""`) + `"`; strings.HasPrefix(s[length:], quoted) {
+				// SQL Server quotes with brackets, but reads double quotes
+				// as an identifier too.
 				length += len(quoted)
 			} else {
 				length += len(o)

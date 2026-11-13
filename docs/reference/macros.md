@@ -115,5 +115,8 @@ WHERE age IN (/*SLICE:ages*/?)
 Since the `/*SLICE:ages*/` placeholder is dynamically replaced on a per-query
 basis, this macro can't be used with prepared statements.
 
+On SQL Server the placeholder is `/*SLICE:ages*/@ages`, and each value is bound
+to its own `@p<n>` parameter, the name go-mssqldb gives an unnamed argument.
+
 See a full example in [Passing a slice as a parameter to a
 query](../howto/select.md#mysql-and-sqlite).

@@ -1,0 +1,9 @@
+[
+  {
+    "start": 0,
+    "end": 76,
+    "dollar": true,
+    "error": "parameter name \"user-id\" passed to sqlc.arg is not a valid @name; use letters, digits and underscores",
+    "error_at": 52
+  }
+]

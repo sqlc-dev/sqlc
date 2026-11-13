@@ -1,0 +1,5 @@
+CREATE TABLE documents (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    title NVARCHAR(100) NOT NULL,
+    body NVARCHAR(MAX)
+);

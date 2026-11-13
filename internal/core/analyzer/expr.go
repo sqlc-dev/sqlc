@@ -160,6 +160,9 @@ func (a *analyzer) typeColumnRef(c *ast.ColumnRef) (exprType, error) {
 		relation = parts[0]
 		column = parts[1]
 	}
+	if target, ok := a.returning[relation]; ok {
+		relation = target
+	}
 	rel, col, ok, err := a.resolveColumn(relation, column)
 	if err != nil {
 		return exprType{}, err
@@ -984,6 +987,11 @@ func (a *analyzer) returnType(p core.ProcOverload, argTypes []exprType) exprType
 	}
 	if n, ok := argIndex(name); ok {
 		if n < len(argTypes) {
+			// A placeholder passed there takes the parameter's type, and so
+			// does the result.
+			if argTypes[n].typeOID == 0 && argTypes[n].expr == nil && n < len(p.ArgTypes) && !a.isPolymorphicOID(p.ArgTypes[n]) {
+				return exprType{typeOID: p.ArgTypes[n]}
+			}
 			return exprType{typeOID: argTypes[n].typeOID, expr: argTypes[n].expr}
 		}
 		return exprType{}

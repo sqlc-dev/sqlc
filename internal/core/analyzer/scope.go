@@ -52,10 +52,25 @@ func (a *analyzer) appendFromItem(sc *scope, item ast.Node) error {
 		sc.rels = append(sc.rels, rel)
 		return nil
 	case *ast.JoinExpr:
+		start := len(sc.rels)
 		if err := a.appendFromItem(sc, v.Larg); err != nil {
 			return err
 		}
-		return a.appendFromItem(sc, v.Rarg)
+		mid := len(sc.rels)
+		if err := a.appendFromItem(sc, v.Rarg); err != nil {
+			return err
+		}
+		if a.cat.OuterJoinsNullable() {
+			switch v.Jointype {
+			case ast.JoinTypeLeft:
+				nullableRels(sc.rels[mid:])
+			case ast.JoinTypeRight:
+				nullableRels(sc.rels[start:mid])
+			case ast.JoinTypeFull:
+				nullableRels(sc.rels[start:])
+			}
+		}
+		return nil
 	case *ast.RangeFunction:
 		rel, err := a.bindRangeFunction(v)
 		if err != nil {
@@ -65,6 +80,13 @@ func (a *analyzer) appendFromItem(sc *scope, item ast.Node) error {
 		return nil
 	case *ast.RangeSubselect:
 		rel, err := a.bindRangeSubselect(v)
+		if err != nil {
+			return err
+		}
+		sc.rels = append(sc.rels, rel)
+		return nil
+	case *ast.RangePivot:
+		rel, err := a.bindRangePivot(v)
 		if err != nil {
 			return err
 		}
@@ -80,6 +102,20 @@ func (a *analyzer) appendFromItem(sc *scope, item ast.Node) error {
 		return nil
 	default:
 		return fmt.Errorf("scope: unsupported FROM item %T", item)
+	}
+}
+
+// nullableRels makes every column of rels nullable, as the optional side of
+// an outer join is. The columns are copied: a relation's column list is the
+// catalog's own.
+func nullableRels(rels []scopeRel) {
+	for i := range rels {
+		cols := make([]core.ClassColumn, len(rels[i].cols))
+		for j, c := range rels[i].cols {
+			c.NotNull = false
+			cols[j] = c
+		}
+		rels[i].cols = cols
 	}
 }
 
@@ -122,7 +158,53 @@ func (a *analyzer) bindRangeFunction(rf *ast.RangeFunction) (scopeRel, error) {
 		col.TypeOID, col.NotNull = p.ReturnTypeOID, !p.ReturnNullable
 	}
 	rel.cols = []core.ClassColumn{col}
+	if cols := a.rowColumns(overloads[0]); cols != nil {
+		rel.cols = cols
+	}
+	if rf.Coldeflist != nil {
+		rel.cols = a.coldefColumns(rf.Coldeflist, col)
+	}
 	return rel, nil
+}
+
+// rowColumns are the columns of a function returning rows of
+// table(col type, ...), as a SQL Server table-valued function does.
+func (a *analyzer) rowColumns(p core.ProcOverload) []core.ClassColumn {
+	row, err := a.cat.TypeExprOf(p.ReturnTypeOID)
+	if err != nil || row.Name != "table" || len(row.Args) == 0 {
+		return nil
+	}
+	var cols []core.ClassColumn
+	for _, arg := range row.Args {
+		if arg.Label == "" || arg.Type == nil {
+			return nil
+		}
+		t := a.lookupType(arg.Type.WithNullable(false))
+		cols = append(cols, core.ClassColumn{Name: arg.Label, TypeOID: t.typeOID, Type: t.expr, NotNull: !arg.Type.Nullable})
+	}
+	return cols
+}
+
+// coldefColumns are the columns a function's column definition list
+// declares, for a function returning rows of more than one column. A
+// definition with no type is the function's own result.
+func (a *analyzer) coldefColumns(defs *ast.List, result core.ClassColumn) []core.ClassColumn {
+	var cols []core.ClassColumn
+	for _, item := range listItems(defs) {
+		def, ok := item.(*ast.ColumnDef)
+		if !ok {
+			continue
+		}
+		if def.TypeName == nil {
+			col := result
+			col.Name = def.Colname
+			cols = append(cols, col)
+			continue
+		}
+		t := a.lookupType(core.TypeExprOfTypeName(def.TypeName))
+		cols = append(cols, core.ClassColumn{Name: def.Colname, TypeOID: t.typeOID, Type: t.expr, NotNull: def.IsNotNull})
+	}
+	return cols
 }
 
 func findFuncCall(l *ast.List) *ast.FuncCall {
@@ -137,6 +219,67 @@ func findFuncCall(l *ast.List) *ast.FuncCall {
 		}
 	}
 	return nil
+}
+
+// bindRangePivot binds PIVOT and UNPIVOT. The columns of the source that
+// are not rotated pass through, followed by those the rotation makes, typed
+// against the source.
+func (a *analyzer) bindRangePivot(p *ast.RangePivot) (scopeRel, error) {
+	src := &scope{}
+	if err := a.appendFromItem(src, p.Source); err != nil {
+		return scopeRel{}, err
+	}
+	defer a.binding(src)()
+	rotated := map[string]bool{}
+	var made []core.ClassColumn
+	if p.Unpivot {
+		// The value column has the type the rotated columns share, and is
+		// nullable when any of them is.
+		value := core.ClassColumn{Name: p.ValueColumn, NotNull: true}
+		for i, item := range listItems(p.InList) {
+			t, err := a.typeExpr(&ast.ColumnRef{Fields: &ast.List{Items: []ast.Node{item}}})
+			if err != nil {
+				return scopeRel{}, err
+			}
+			if i == 0 {
+				value.TypeOID, value.Type = t.typeOID, t.expr
+			}
+			value.NotNull = value.NotNull && !t.nullable
+			rotated[item.(*ast.String).Str] = true
+		}
+		name := a.lookupType(core.TypeExprOfTypeName(p.ForType))
+		made = []core.ClassColumn{value, {Name: p.ForColumn, TypeOID: name.typeOID, Type: name.expr}}
+	} else {
+		// Each value in the list names a column of the aggregate over the
+		// rows with that value, null when there are none.
+		t, err := a.typeExpr(p.Aggregate)
+		if err != nil {
+			return scopeRel{}, err
+		}
+		rotated[p.ForColumn] = true
+		for _, arg := range listItems(p.Aggregate.Args) {
+			if cr, ok := arg.(*ast.ColumnRef); ok {
+				fields := flattenFields(cr.Fields)
+				rotated[fields[len(fields)-1]] = true
+			}
+		}
+		for _, item := range listItems(p.InList) {
+			made = append(made, core.ClassColumn{Name: item.(*ast.String).Str, TypeOID: t.typeOID, Type: t.expr})
+		}
+	}
+	var rel scopeRel
+	if p.Alias != nil && p.Alias.Aliasname != nil {
+		rel.alias = *p.Alias.Aliasname
+	}
+	for _, r := range src.rels {
+		for _, c := range r.cols {
+			if !rotated[c.Name] {
+				rel.cols = append(rel.cols, c)
+			}
+		}
+	}
+	rel.cols = append(rel.cols, made...)
+	return rel, nil
 }
 
 // bindRangeSubselect binds a subquery used as a relation in FROM.

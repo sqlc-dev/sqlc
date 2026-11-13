@@ -1,0 +1,145 @@
+[
+  {
+    "name": "Elements",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "documents"
+      },
+      {
+        "name": "key",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "int": 4000
+            }
+          ]
+        }
+      },
+      {
+        "name": "value",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
+        }
+      },
+      {
+        "name": "type",
+        "type": {
+          "name": "tinyint"
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "id",
+          "type": {
+            "name": "bigint"
+          },
+          "table": "documents"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Items",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "documents"
+      },
+      {
+        "name": "name",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 50
+            }
+          ]
+        }
+      },
+      {
+        "name": "qty",
+        "type": {
+          "name": "int",
+          "nullable": true
+        }
+      },
+      {
+        "name": "extra",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Words",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "documents"
+      },
+      {
+        "name": "value",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "int": 100
+            }
+          ]
+        }
+      },
+      {
+        "name": "ordinal",
+        "type": {
+          "name": "bigint"
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "Series",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "value",
+        "type": {
+          "name": "int"
+        }
+      }
+    ],
+    "params": []
+  }
+]

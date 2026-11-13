@@ -53,6 +53,11 @@ func (l *lexer) skip(i int) int {
 			return -1
 		}
 		return l.skipQuoted(i, '`', false)
+	case '[':
+		if !l.d.Bracket {
+			return -1
+		}
+		return l.skipQuoted(i, ']', false)
 	case '-':
 		if l.at(i+1) == '-' {
 			return l.skipLine(i)

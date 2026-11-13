@@ -1,0 +1,24 @@
+[
+  {
+    "start": 0,
+    "end": 61,
+    "dollar": true,
+    "params": [
+      {
+        "number": 1,
+        "location": 57,
+        "origin": 67,
+        "name": "id",
+        "named": true
+      }
+    ],
+    "embeds": [
+      {
+        "table": "order details",
+        "location": 7,
+        "origin": 7,
+        "orig": "sqlc.embed(\"order details\")"
+      }
+    ]
+  }
+]

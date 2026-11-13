@@ -129,6 +129,9 @@ func (a *analyzer) emitStar(rt *ast.ResTarget, fields []string) {
 	if len(fields) > 1 {
 		relName = fields[0]
 	}
+	if target, ok := a.returning[relName]; ok {
+		relName = target
+	}
 	// The star is reported along with the columns it covers, so the query text
 	// can be rewritten to name them.
 	star := core.StarExpansion{Location: rt.Location, Fields: fields}

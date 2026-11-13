@@ -33,8 +33,15 @@ func (l *lexer) scan(start, end int) []occurrence {
 			}
 			i = j
 
-		case c == '@' && l.d.AtSign && isIdentStart(l.at(i+1)):
+		// A parameter starts with @ followed by an identifier. The second @
+		// in a T-SQL system variable such as @@ROWCOUNT must not start one.
+		case c == '@' && l.d.AtSign && isIdentStart(l.at(i+1)) && l.at(i-1) != '@':
 			j := l.identEnd(i + 1)
+			// T-SQL parameter names may also contain #, $, and @ after the
+			// first identifier character.
+			for l.d.Style == StyleAt && j < len(l.src) && (isIdentPart(l.src[j]) || strings.IndexByte("#$@", l.src[j]) >= 0) {
+				j++
+			}
 			out = append(out, occurrence{
 				kind:  kindArg,
 				start: i,
@@ -138,9 +145,31 @@ func (l *lexer) sqlcCall(start, afterSqlc int) (occurrence, int, bool) {
 		}
 		return occ, occ.end, true
 	}
+	// A dialect that binds @name writes the name into the query, so it has
+	// to read back as one parameter: @user-id would be a subtraction. An
+	// embed names a table, not a parameter.
+	if l.d.Style == StyleAt && fn != "embed" && !isParamName(name) {
+		occ.err = &sqlerr.Error{
+			Message:  fmt.Sprintf("parameter name %q passed to sqlc.%s is not a valid @name; use letters, digits and underscores", name, fn),
+			Location: start,
+		}
+		return occ, occ.end, true
+	}
 	occ.name = name
 	occ.ident = ident
 	return occ, occ.end, true
+}
+
+func isParamName(name string) bool {
+	if name == "" || !isIdentStart(name[0]) {
+		return false
+	}
+	for i := 1; i < len(name); i++ {
+		if !isIdentPart(name[i]) {
+			return false
+		}
+	}
+	return true
 }
 
 // argument interprets the single argument to a sqlc function. It returns the

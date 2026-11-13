@@ -347,10 +347,21 @@ func number(d Dialect, occs []occurrence) *named.ParamSet {
 		numbs[occ.number] = true
 	}
 	ps := named.NewParamSet(numbs, d.hasNamedSupport())
+	// SQL Server compares parameter names without regard to case, so @Name
+	// and @name are one parameter, named by its first spelling.
+	spelling := map[string]string{}
 	for i := range occs {
 		occ := &occs[i]
 		if occ.kind == kindEmbed || occ.kind == kindNative {
 			continue
+		}
+		if d.Style == StyleAt {
+			key := strings.ToLower(occ.name)
+			if first, ok := spelling[key]; ok {
+				occ.name = first
+			} else {
+				spelling[key] = occ.name
+			}
 		}
 		occ.number = ps.Add(param(occ))
 	}
@@ -389,6 +400,15 @@ func (d Dialect) replacement(occ *occurrence) string {
 			return fmt.Sprintf("/*SLICE:%s*/?", occ.name)
 		}
 		return fmt.Sprintf("?%d", occ.number)
+	case StyleAt:
+		if occ.kind == kindSlice {
+			return fmt.Sprintf("/*SLICE:%s*/@%s", occ.name, occ.name)
+		}
+		// A bare @name is already native; keep the spelling the user wrote.
+		if strings.HasPrefix(occ.ident, "@") {
+			return occ.ident
+		}
+		return "@" + occ.name
 	default:
 		if occ.kind == kindSlice {
 			return fmt.Sprintf("/*SLICE:%s*/?", occ.name)

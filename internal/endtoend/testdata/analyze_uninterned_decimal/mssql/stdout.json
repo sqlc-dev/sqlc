@@ -1,0 +1,21 @@
+[
+  {
+    "name": "Negated",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "nd",
+        "type": {
+          "name": "decimal"
+        }
+      },
+      {
+        "name": "product",
+        "type": {
+          "name": "decimal"
+        }
+      }
+    ],
+    "params": []
+  }
+]

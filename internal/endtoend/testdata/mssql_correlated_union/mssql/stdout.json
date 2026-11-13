@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Related",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "authors"
+      },
+      {
+        "name": "n",
+        "type": {
+          "name": "int"
+        }
+      }
+    ],
+    "params": []
+  }
+]

@@ -439,9 +439,16 @@ func (i *importer) queryImports(filename string) fileImports {
 		return false
 	}
 
-	// A query bound by name passes sql.Named arguments.
+	// A query bound by name passes sql.Named arguments, except for its
+	// slices, whose values it binds to numbered placeholders.
 	for _, q := range gq {
-		if q.Arg.NamedArgs && !q.Arg.isEmpty() {
+		if !q.Arg.NamedArgs || q.Arg.isEmpty() {
+			continue
+		}
+		if q.Arg.HasSqlcSlices() {
+			std["strconv"] = struct{}{}
+		}
+		if q.Arg.hasNamedArg() {
 			std["database/sql"] = struct{}{}
 		}
 	}
@@ -454,6 +461,7 @@ func (i *importer) queryImports(filename string) fileImports {
 	if sqlcSliceScan() && !sqlpkg.IsPGX() {
 		std["strings"] = struct{}{}
 	}
+
 	if sliceScan() && usesPqArrays(i.Engine, sqlpkg) {
 		pkg[ImportSpec{Path: "github.com/lib/pq"}] = struct{}{}
 	}

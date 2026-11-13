@@ -596,5 +596,40 @@
         }
       }
     ]
+  },
+  {
+    "name": "NumericLiterals",
+    "cmd": ":one",
+    "columns": [
+      {
+        "name": "over_int",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 0
+            }
+          ]
+        }
+      },
+      {
+        "name": "over_bigint",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 19
+            },
+            {
+              "int": 0
+            }
+          ]
+        }
+      }
+    ],
+    "params": []
   }
 ]

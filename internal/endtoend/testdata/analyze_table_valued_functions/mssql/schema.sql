@@ -1,0 +1,11 @@
+CREATE TABLE items (id INT NOT NULL, name NVARCHAR(20) NULL, price DECIMAL(10,2) NOT NULL);
+GO
+CREATE FUNCTION dbo.items_over(@min DECIMAL(10,2)) RETURNS TABLE
+AS RETURN SELECT id, name, price FROM items WHERE price > @min;
+GO
+CREATE FUNCTION ms_items(@n INT) RETURNS @t TABLE (id INT NOT NULL, label NVARCHAR(30))
+AS BEGIN
+    INSERT @t SELECT id, name FROM items WHERE id > @n;
+    RETURN;
+END;
+GO

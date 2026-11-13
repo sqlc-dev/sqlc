@@ -1,0 +1,107 @@
+[
+  {
+    "name": "AuthorsJSON",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "json_f52e2b61-18a1-11d1-b105-00805f49916b",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "min_id",
+          "type": {
+            "name": "bigint"
+          },
+          "table": "authors"
+        }
+      }
+    ]
+  },
+  {
+    "name": "AuthorsXML",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "xml_f52e2b61-18a1-11d1-b105-00805f49916b",
+        "type": {
+          "name": "ntext",
+          "nullable": true
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "AuthorsWithBooks",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "bigint"
+        },
+        "table": "authors"
+      },
+      {
+        "name": "books",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
+        }
+      },
+      {
+        "name": "titles",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "ident": "max"
+            }
+          ]
+        }
+      },
+      {
+        "name": "books_xml",
+        "type": {
+          "name": "xml",
+          "nullable": true
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "name",
+          "type": {
+            "name": "nvarchar",
+            "args": [
+              {
+                "int": 100
+              }
+            ]
+          },
+          "table": "authors"
+        }
+      }
+    ]
+  }
+]

@@ -1,0 +1,111 @@
+[
+  {
+    "name": "Literals",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "a",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 2
+            },
+            {
+              "int": 1
+            }
+          ]
+        }
+      },
+      {
+        "name": "b",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 1
+            },
+            {
+              "int": 1
+            }
+          ]
+        }
+      },
+      {
+        "name": "c",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 4
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "d",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 3
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "e",
+        "type": {
+          "name": "int"
+        }
+      },
+      {
+        "name": "f",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 10
+            },
+            {
+              "int": 0
+            }
+          ]
+        }
+      },
+      {
+        "name": "g",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 11
+            },
+            {
+              "int": 0
+            }
+          ]
+        }
+      },
+      {
+        "name": "h",
+        "type": {
+          "name": "decimal"
+        }
+      },
+      {
+        "name": "i",
+        "type": {
+          "name": "float"
+        }
+      }
+    ],
+    "params": []
+  }
+]

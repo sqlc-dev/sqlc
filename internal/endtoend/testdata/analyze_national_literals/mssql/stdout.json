@@ -1,0 +1,70 @@
+[
+  {
+    "name": "Literals",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "a1",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "int": 5
+            }
+          ]
+        }
+      },
+      {
+        "name": "a2",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "int": 1
+            }
+          ]
+        }
+      },
+      {
+        "name": "a3",
+        "type": {
+          "name": "varchar"
+        }
+      },
+      {
+        "name": "a4",
+        "type": {
+          "name": "nvarchar"
+        }
+      },
+      {
+        "name": "a5",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "int": 2
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "b",
+          "type": {
+            "name": "nvarchar",
+            "args": [
+              {
+                "int": 20
+              }
+            ]
+          },
+          "table": "p"
+        }
+      }
+    ]
+  }
+]

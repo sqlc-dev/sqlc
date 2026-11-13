@@ -413,6 +413,37 @@ func applyCreateDomain(cat *core.Catalog, stmt *ast.CreateDomainStmt) error {
 	return err
 }
 
+// functionQuery is the query a function returns the rows of, which a
+// converter passes as the "query" option when the function's columns are
+// whatever it selects, as a SQL Server inline table-valued function's are.
+func functionQuery(stmt *ast.CreateFunctionStmt) ast.Node {
+	for _, item := range listItems(stmt.Options) {
+		if def, ok := item.(*ast.DefElem); ok && def.Defname != nil && *def.Defname == "query" {
+			return def.Arg
+		}
+	}
+	return nil
+}
+
+// queryRow is the row type of a query's results, table(col type, ...).
+func queryRow(cat *core.Catalog, query ast.Node) (*core.TypeExpr, error) {
+	res, err := analyzer.Prepare(cat, query)
+	if err != nil {
+		return nil, err
+	}
+	row := &core.TypeExpr{Name: "table"}
+	for _, col := range res.Columns {
+		t := col.Type
+		if t == nil {
+			if t, err = cat.TypeExprOf(col.TypeOID); err != nil {
+				return nil, err
+			}
+		}
+		row.Args = append(row.Args, core.TypeArg{Label: col.Name, Type: t.WithNullable(!col.NotNull)})
+	}
+	return row, nil
+}
+
 // applyCompositeType records a composite type as a type whose arguments are
 // its fields, labelled by name.
 func applyCompositeType(cat *core.Catalog, stmt *ast.CompositeTypeStmt) error {
@@ -491,7 +522,19 @@ func applyCreateFunction(cat *core.Catalog, stmt *ast.CreateFunctionStmt) error 
 	if stmt.Func == nil || stmt.Func.Name == "" || stmt.ReturnType == nil {
 		return nil
 	}
-	returnOID, err := cat.ResolveType(stmt.ReturnType)
+	// A Nullable(T) result is a T the function may return NULL for.
+	ret := core.TypeExprOfTypeName(stmt.ReturnType)
+	if ret == nil {
+		return fmt.Errorf("function %q: missing type name", stmt.Func.Name)
+	}
+	if query := functionQuery(stmt); query != nil {
+		row, err := queryRow(cat, query)
+		if err != nil {
+			return fmt.Errorf("function %q: %w", stmt.Func.Name, err)
+		}
+		ret = row
+	}
+	returnOID, err := cat.ResolveTypeExpr(ret.WithNullable(false))
 	if err != nil {
 		return fmt.Errorf("function %q: %w", stmt.Func.Name, err)
 	}
@@ -518,10 +561,11 @@ func applyCreateFunction(cat *core.Catalog, stmt *ast.CreateFunctionStmt) error 
 		}
 	}
 	_, err = cat.CreateProc(core.ProcSpec{
-		Name:          stmt.Func.Name,
-		ReturnTypeOID: returnOID,
-		ReturnSet:     stmt.ReturnType != nil && stmt.ReturnType.Setof,
-		Args:          args,
+		Name:           stmt.Func.Name,
+		ReturnTypeOID:  returnOID,
+		ReturnSet:      stmt.ReturnType != nil && stmt.ReturnType.Setof,
+		ReturnNullable: ret.Nullable,
+		Args:           args,
 	})
 	return err
 }

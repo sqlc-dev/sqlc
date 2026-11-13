@@ -1,0 +1,82 @@
+[
+  {
+    "name": "ItemTotals",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "int"
+        },
+        "table": "items"
+      },
+      {
+        "name": "total",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 12
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "d",
+        "type": {
+          "name": "decimal",
+          "nullable": true,
+          "args": [
+            {
+              "int": 12
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "l",
+        "type": {
+          "name": "nvarchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 30
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "n",
+          "type": {
+            "name": "int"
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "s",
+          "type": {
+            "name": "nvarchar",
+            "args": [
+              {
+                "int": 20
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+]

@@ -1,0 +1,5 @@
+CREATE TABLE nodes (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    parent_id BIGINT,
+    name NVARCHAR(100) NOT NULL
+);
