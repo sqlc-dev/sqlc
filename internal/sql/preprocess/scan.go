@@ -140,8 +140,9 @@ func (l *lexer) sqlcCall(start, afterSqlc int) (occurrence, int, bool) {
 		return occ, occ.end, true
 	}
 	// A dialect that binds @name writes the name into the query, so it has
-	// to read back as one parameter: @user-id would be a subtraction.
-	if l.d.Style == StyleAt && !isParamName(name) {
+	// to read back as one parameter: @user-id would be a subtraction. An
+	// embed names a table, not a parameter.
+	if l.d.Style == StyleAt && fn != "embed" && !isParamName(name) {
 		occ.err = &sqlerr.Error{
 			Message:  fmt.Sprintf("parameter name %q passed to sqlc.%s is not a valid @name; use letters, digits and underscores", name, fn),
 			Location: start,
