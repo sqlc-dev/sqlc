@@ -9,7 +9,6 @@
   },
   "bool": "bit",
   "set_operations": {
-    "strategy": "mssql",
     "precedence": [
       "sql_variant", "xml", "datetimeoffset", "datetime2", "datetime",
       "smalldatetime", "date", "time", "float", "real", "decimal", "money",

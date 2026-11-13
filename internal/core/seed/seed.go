@@ -84,9 +84,9 @@ type Settings struct {
 	// ClickHouse names the second id of a join e.id.
 	QualifyDuplicateColumns bool `json:"qualify_duplicate_columns,omitempty"`
 
-	// SetOperations types a column of a set operation from every branch,
-	// rather than from the first.
-	SetOperations *core.SetOperationRules `json:"set_operations,omitempty"`
+	// SetOperations is opaque configuration for an engine-owned type
+	// combiner. Only that engine interprets and validates its contents.
+	SetOperations json.RawMessage `json:"set_operations,omitempty"`
 
 	// Comparison operators are registered as (T, T) -> Bool for every type in
 	// ComparisonCategories.
@@ -369,9 +369,6 @@ func loadSettings(fsys fs.FS) (Settings, error) {
 	}
 	if settings.Dialect == "" {
 		return Settings{}, fmt.Errorf("seed: %s: dialect has no name", SettingsFile)
-	}
-	if rules := settings.SetOperations; rules != nil && rules.Strategy != "mssql" {
-		return Settings{}, fmt.Errorf("seed: %s: unsupported type-combination strategy %q", SettingsFile, rules.Strategy)
 	}
 	settings.fsys = fsys
 	return settings, nil
@@ -667,12 +664,8 @@ func (b *builder) consts() error {
 			return err
 		}
 	}
-	if b.settings.SetOperations != nil {
-		rules, err := json.Marshal(b.settings.SetOperations)
-		if err != nil {
-			return err
-		}
-		if err := b.cat.SetDialectFlag(b.dialectOID, core.FlagSetOperations, string(rules)); err != nil {
+	if len(b.settings.SetOperations) > 0 {
+		if err := b.cat.SetDialectFlag(b.dialectOID, core.FlagSetOperations, string(b.settings.SetOperations)); err != nil {
 			return err
 		}
 	}

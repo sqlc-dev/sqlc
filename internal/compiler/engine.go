@@ -13,6 +13,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/engine/duckdb"
 	"github.com/sqlc-dev/sqlc/internal/engine/googlesql"
 	"github.com/sqlc-dev/sqlc/internal/engine/mssql"
+	mssqltypes "github.com/sqlc-dev/sqlc/internal/engine/mssql/typepolicy"
 	"github.com/sqlc-dev/sqlc/internal/engine/postgresql"
 	pganalyze "github.com/sqlc-dev/sqlc/internal/engine/postgresql/analyzer"
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
@@ -37,8 +38,10 @@ type Compiler struct {
 	// and coreDialect seeds the catalog it does so with. The catalog itself is
 	// not built until the schema is loaded, because the two are cached
 	// together.
-	coreAnalysis bool
-	coreDialect  core.Option
+	coreAnalysis        bool
+	coreDialect         core.Option
+	coreTypeCombiner    core.TypeCombiner
+	newCoreTypeCombiner func(*core.Catalog) (core.TypeCombiner, error)
 
 	// newParser builds a parser for the configured engine, and is set for
 	// every engine either path supports. The core path analyzes statements
@@ -153,6 +156,7 @@ func (c *Compiler) initCore() error {
 		c.newParser = func() Parser { return mssql.NewParser() }
 		c.selector = newDefaultSelector()
 		dialect = mssql.Dialect()
+		c.newCoreTypeCombiner = mssqltypes.New
 	case config.EngineDuckDB:
 		c.newParser = func() Parser { return duckdb.NewParser() }
 		c.selector = newDefaultSelector()

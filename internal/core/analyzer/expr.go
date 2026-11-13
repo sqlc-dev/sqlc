@@ -74,7 +74,11 @@ func (a *analyzer) typeExpr(n ast.Node) (exprType, error) {
 		return a.typeCoalesce(e)
 
 	case *ast.MinMaxExpr:
-		return a.typeFirstOf(listItems(e.Args), false)
+		context := core.CombineGreatest
+		if e.Op != 0 {
+			context = core.CombineLeast
+		}
+		return a.typeFirstOf(context, listItems(e.Args), false)
 
 	case *ast.A_ArrayExpr:
 		return a.typeArrayExpr(e)
@@ -481,7 +485,7 @@ func (a *analyzer) typeCase(e *ast.CaseExpr) (exprType, error) {
 	if e.Defresult != nil {
 		results = append(results, e.Defresult)
 	}
-	t, err := a.typeFirstOf(results, e.Defresult == nil)
+	t, err := a.typeFirstOf(core.CombineCase, results, e.Defresult == nil)
 	if err != nil {
 		return exprType{}, err
 	}
@@ -489,8 +493,7 @@ func (a *analyzer) typeCase(e *ast.CaseExpr) (exprType, error) {
 }
 
 // typeCoalesce types COALESCE, which is null only when every argument is,
-// and of the type its arguments combine to, or its first typed argument's
-// for SQL Server's ISNULL.
+// and uses a common type unless the AST requests the first typed argument.
 func (a *analyzer) typeCoalesce(e *ast.CoalesceExpr) (exprType, error) {
 	types := make([]exprType, 0, len(listItems(e.Args)))
 	nullable := true
@@ -502,18 +505,14 @@ func (a *analyzer) typeCoalesce(e *ast.CoalesceExpr) (exprType, error) {
 		types = append(types, t)
 		nullable = nullable && t.nullable
 	}
-	t, err := a.commonType(types)
-	if err != nil {
-		return exprType{}, err
-	}
-	// Only ISNULL's converter sets FirstArgType. Ordinary COALESCE keeps
-	// the common type selected above, rather than its first argument's.
+	var t exprType
 	if e.FirstArgType {
-		for _, first := range types {
-			if first.typeOID != 0 || first.expr != nil {
-				t = first
-				break
-			}
+		t = firstTyped(types)
+	} else {
+		var err error
+		t, err = a.commonType(core.CombineCoalesce, types)
+		if err != nil {
+			return exprType{}, err
 		}
 	}
 	// A placeholder there is one that may be NULL.
@@ -526,7 +525,7 @@ func (a *analyzer) typeCoalesce(e *ast.CoalesceExpr) (exprType, error) {
 // to, which without a dialect's rules is the first typed one's. The result
 // is nullable when any alternative is, or when the caller says the set is
 // not exhaustive.
-func (a *analyzer) typeFirstOf(nodes []ast.Node, nullable bool) (exprType, error) {
+func (a *analyzer) typeFirstOf(context core.TypeCombinationContext, nodes []ast.Node, nullable bool) (exprType, error) {
 	types := make([]exprType, 0, len(nodes))
 	for _, n := range nodes {
 		t, err := a.typeExpr(n)
@@ -536,7 +535,7 @@ func (a *analyzer) typeFirstOf(nodes []ast.Node, nullable bool) (exprType, error
 		types = append(types, t)
 		nullable = nullable || t.nullable
 	}
-	out, err := a.commonType(types)
+	out, err := a.commonType(context, types)
 	if err != nil {
 		return exprType{}, err
 	}
@@ -560,7 +559,7 @@ func (a *analyzer) inferAlternatives(nodes []ast.Node, t exprType, nullable bool
 
 // typeArrayExpr types ARRAY[...], whose type is an array of its elements'.
 func (a *analyzer) typeArrayExpr(e *ast.A_ArrayExpr) (exprType, error) {
-	elemT, err := a.typeFirstOf(listItems(e.Elements), false)
+	elemT, err := a.typeFirstOf(core.CombineArray, listItems(e.Elements), false)
 	if err != nil {
 		return exprType{}, err
 	}

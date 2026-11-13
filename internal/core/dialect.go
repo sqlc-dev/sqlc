@@ -2,7 +2,9 @@ package core
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"slices"
 	"strings"
@@ -78,8 +80,8 @@ const FlagPropagateNullable = "functions.propagate_nullable"
 // e.id.
 const FlagQualifyDuplicateColumns = "columns.qualify_duplicates"
 
-// FlagSetOperations holds, as JSON, the SetOperationRules a dialect types
-// the columns of a set operation by.
+// FlagSetOperations holds opaque JSON interpreted by the dialect's type
+// combiner. Shared catalog/seeding code does not define its schema.
 const FlagSetOperations = "set_operations"
 
 // FlagDefaultSchema holds the schema the dialect puts an unqualified object
@@ -201,45 +203,23 @@ func (c *Catalog) QualifiesDuplicateColumns() bool {
 	return v == "true"
 }
 
-// SetOperationRules select a dialect's type-combination policy. A dialect
-// without one keeps the analyzer's first-branch/first-typed-value behavior;
-// that fallback is not a model of the database's coercion rules.
-type SetOperationRules struct {
-	// Strategy selects an implemented policy, currently "mssql". Other
-	// engines need their own policy, not just another precedence list.
-	Strategy string `json:"strategy"`
-
-	// The remaining settings parameterize the MSSQL policy.
-	// Precedence lists type families, highest first: the column takes the
-	// highest of its branches'.
-	Precedence []string `json:"precedence"`
-	// Varying maps a fixed-length family to its varying one, which the
-	// column takes when another branch varies: char and varchar make
-	// varchar.
-	Varying map[string]string `json:"varying,omitempty"`
-	// Decimal names the exact numeric family, whose precision and scale
-	// cover every branch's, up to DecimalMaxPrecision, which scale gives
-	// way to. AsDecimal is the precision and scale another family counts
-	// as.
-	Decimal             string              `json:"decimal,omitempty"`
-	DecimalMaxPrecision int64               `json:"decimal_max_precision,omitempty"`
-	AsDecimal           map[string][2]int64 `json:"as_decimal,omitempty"`
-}
-
-// SetOperations returns the dialect's set operation rules, or nil.
-func (c *Catalog) SetOperations() *SetOperationRules {
+// TypeCombinationData returns the dialect-owned configuration, or nil when
+// the dialect has none. It is persisted with the catalog, not runtime behavior.
+func (c *Catalog) TypeCombinationData() (json.RawMessage, error) {
 	if c.dialectOID == 0 {
-		return nil
+		return nil, nil
 	}
-	v, _ := c.DialectFlag(c.dialectOID, FlagSetOperations)
-	if v == "" {
-		return nil
+	v, err := c.q.DialectFlag(context.Background(), catalogdb.DialectFlagParams{
+		DialectOid: c.dialectOID,
+		Key:        FlagSetOperations,
+	})
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
 	}
-	var rules SetOperationRules
-	if err := json.Unmarshal([]byte(v), &rules); err != nil {
-		return nil
+	if err != nil {
+		return nil, fmt.Errorf("read type-combination data: %w", err)
 	}
-	return &rules
+	return json.RawMessage(v), nil
 }
 
 // DefaultNamespaces lists the namespaces a type is reported from without

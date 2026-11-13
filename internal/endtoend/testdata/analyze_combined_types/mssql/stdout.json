@@ -118,5 +118,47 @@
         }
       }
     ]
+  },
+  {
+    "name": "NestedCombined",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "value",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 12
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      }
+    ],
+    "params": []
+  },
+  {
+    "name": "CTECombined",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "value",
+        "type": {
+          "name": "decimal",
+          "args": [
+            {
+              "int": 12
+            },
+            {
+              "int": 2
+            }
+          ]
+        }
+      }
+    ],
+    "params": []
   }
 ]

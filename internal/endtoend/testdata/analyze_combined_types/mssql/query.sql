@@ -8,3 +8,15 @@ SELECT GREATEST(i, d52) AS greatest_of,
     ISNULL(i, d52) AS isnull_int,
     ISNULL(n10, c3) AS isnull_text
 FROM t;
+
+-- name: NestedCombined :many
+SELECT n.value
+FROM (SELECT GREATEST(i, d52) AS value FROM t) AS n;
+
+-- name: CTECombined :many
+WITH combined AS (
+    SELECT d52 AS value FROM t
+    UNION ALL
+    SELECT i FROM t
+)
+SELECT value FROM combined;
