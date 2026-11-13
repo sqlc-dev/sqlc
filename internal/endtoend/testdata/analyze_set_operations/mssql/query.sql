@@ -27,3 +27,6 @@ UNION ALL
 SELECT amount FROM ledger
 UNION ALL
 SELECT flag FROM ledger;
+
+-- name: LiteralUnion :many
+SELECT 'active' AS status UNION ALL SELECT 'inactive';

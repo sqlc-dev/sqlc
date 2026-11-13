@@ -66,6 +66,13 @@ func (a *analyzer) combineTypes(rules *core.SetOperationRules, l, r exprType) ex
 	case len(out.Args) == 1 && len(loser.Args) == 1 && a.sameCategory(lt.Name, rt.Name):
 		out.Args[0] = widerArg(out.Args[0], loser.Args[0])
 	}
+	// A type with no arguments is its family. Looked up as a declaration
+	// it would take the dialect's defaults, as varchar is varchar(1).
+	if len(out.Args) == 0 {
+		if oid, err := a.cat.TypeOID(out.Name); err == nil {
+			return exprType{typeOID: oid}
+		}
+	}
 	return a.lookupType(out)
 }
 

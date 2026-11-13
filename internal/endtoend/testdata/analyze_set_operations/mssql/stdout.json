@@ -166,5 +166,18 @@
       }
     ],
     "params": []
+  },
+  {
+    "name": "LiteralUnion",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "status",
+        "type": {
+          "name": "varchar"
+        }
+      }
+    ],
+    "params": []
   }
 ]
