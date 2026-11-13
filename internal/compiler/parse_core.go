@@ -148,7 +148,8 @@ func embedColumns(raw *ast.RawStmt, cols []*Column, stars []core.StarExpansion, 
 }
 
 // isWholeTable reports whether cols are every column of one table, in the
-// table's order.
+// table's order, each as nullable as the table's: the optional side of an
+// outer join is not, and the table's model could not hold its NULLs.
 func isWholeTable(cat *core.Catalog, cols []*Column) bool {
 	table := cols[0].Table
 	if table == nil {
@@ -175,7 +176,7 @@ func isWholeTable(cat *core.Catalog, cols []*Column) bool {
 		if tc.Hidden {
 			continue
 		}
-		if i >= len(cols) || cols[i].Table == nil || *cols[i].Table != *table || cols[i].OriginalName != tc.Name {
+		if i >= len(cols) || cols[i].Table == nil || *cols[i].Table != *table || cols[i].OriginalName != tc.Name || cols[i].NotNull != tc.NotNull {
 			return false
 		}
 		i++
