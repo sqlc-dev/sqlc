@@ -106,11 +106,11 @@ func (c *Compiler) parseQueryCore(raw *ast.RawStmt, src string, pre *preprocess.
 	}, nil
 }
 
-// embedColumns folds the columns each sqlc.embed() star expanded to into
-// the one column codegen embeds the table's struct for. The table is the
-// columns' source, so an embed of an alias names the table behind it. The
-// struct scans every column of the table in order, so only an expansion
-// that is exactly those columns is folded; any other stays flat.
+// embedColumns restores sqlc.embed() grouping after the preprocessor rewrites
+// each macro to table.* and core analysis expands that star into columns. The
+// table is the columns' source, so an embed of an alias names the table behind
+// it. The struct scans every column of the table in order, so only an
+// expansion that is exactly those columns is folded; any other stays flat.
 func embedColumns(raw *ast.RawStmt, cols []*Column, stars []core.StarExpansion, embeds preprocess.EmbedSet, cat *core.Catalog) []*Column {
 	sel, ok := raw.Stmt.(*ast.SelectStmt)
 	if !ok || len(embeds) == 0 || sel.TargetList == nil {
