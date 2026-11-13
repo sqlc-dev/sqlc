@@ -32,7 +32,7 @@ func (a *analyzer) combineColumns(op ast.SetOperation, left, right []core.Column
 		case ast.Except:
 			col.NotNull = l.NotNull
 		}
-		t, handled, err := a.combineTypes(context, []exprType{columnExprType(l), columnExprType(r)})
+		t, handled, err := a.combineTypes(core.TypeCombinationRequest{Context: context}, []exprType{columnExprType(l), columnExprType(r)})
 		if err != nil {
 			return nil, err
 		}
@@ -51,7 +51,7 @@ func (a *analyzer) combineColumns(op ast.SetOperation, left, right []core.Column
 
 // combineTypes delegates selection and modifiers to engine-supplied behavior.
 // The whole list is passed without discarding untyped candidate positions.
-func (a *analyzer) combineTypes(context core.TypeCombinationContext, types []exprType) (exprType, bool, error) {
+func (a *analyzer) combineTypes(req core.TypeCombinationRequest, types []exprType) (exprType, bool, error) {
 	if a.combiner == nil {
 		return exprType{}, false, nil
 	}
@@ -63,7 +63,8 @@ func (a *analyzer) combineTypes(context core.TypeCombinationContext, types []exp
 			typed++
 		}
 	}
-	result, err := a.combiner.Combine(core.TypeCombinationRequest{Context: context, Candidates: candidates})
+	req.Candidates = candidates
+	result, err := a.combiner.Combine(req)
 	if err != nil {
 		return exprType{}, false, err
 	}
@@ -91,8 +92,8 @@ func (a *analyzer) combineTypes(context core.TypeCombinationContext, types []exp
 
 // commonType retains first-typed-value inference when no combiner handles
 // the context. This compatibility fallback is not database coercion semantics.
-func (a *analyzer) commonType(context core.TypeCombinationContext, types []exprType) (exprType, error) {
-	out, handled, err := a.combineTypes(context, types)
+func (a *analyzer) commonType(req core.TypeCombinationRequest, types []exprType) (exprType, error) {
+	out, handled, err := a.combineTypes(req, types)
 	if err != nil || handled {
 		return out, err
 	}

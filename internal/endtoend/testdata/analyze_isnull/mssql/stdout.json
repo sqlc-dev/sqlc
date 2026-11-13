@@ -64,5 +64,99 @@
         }
       }
     ]
+  },
+  {
+    "name": "FirstArgumentTypes",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "first_text",
+        "type": {
+          "name": "varchar",
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        }
+      },
+      {
+        "name": "combined_text",
+        "type": {
+          "name": "nvarchar",
+          "args": [
+            {
+              "int": 40
+            }
+          ]
+        }
+      },
+      {
+        "name": "literal_null",
+        "type": {
+          "name": "varchar",
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        }
+      },
+      {
+        "name": "placeholder_first",
+        "type": {
+          "name": "varchar",
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        }
+      },
+      {
+        "name": "placeholder_second",
+        "type": {
+          "name": "varchar",
+          "nullable": true,
+          "args": [
+            {
+              "int": 10
+            }
+          ]
+        }
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "fallback",
+          "type": {
+            "name": "varchar",
+            "nullable": true,
+            "args": [
+              {
+                "int": 10
+              }
+            ]
+          }
+        }
+      },
+      {
+        "number": 2,
+        "column": {
+          "name": "replacement",
+          "type": {
+            "name": "varchar",
+            "nullable": true,
+            "args": [
+              {
+                "int": 10
+              }
+            ]
+          }
+        }
+      }
+    ]
   }
 ]

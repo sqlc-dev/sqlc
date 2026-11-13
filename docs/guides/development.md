@@ -28,6 +28,14 @@ inference fallback, while an error is propagated. Engines without a combiner
 keep their existing behavior. `Prepare` accepts the combiner through an
 optional analyzer option, inherited by nested queries.
 
+When a converter lowers a function to a shared expression, it can retain the
+source function name rather than encoding a result-type instruction in the
+AST. `TypeCombinationRequest.FunctionName` passes that qualified identity to
+the engine. For example, SQL Server's policy, not shared analysis, selects
+ISNULL's first typed argument; ordinary COALESCE still combines its candidates.
+The shared first-typed-value helper is only the compatibility fallback for
+engines without a policy or for contexts a policy declines.
+
 The compiler's existing engine assembly selects an optional combiner factory.
 It calls that factory after `core.NewCached` returns, on both fresh and
 restored catalogs, and passes the instance to analysis. No engine names,

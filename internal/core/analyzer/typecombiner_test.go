@@ -22,7 +22,9 @@ func TestTypeCombinerContract(t *testing.T) {
 			a := &analyzer{}
 			if name != "absent" {
 				a.combiner = combinerFunc(func(req core.TypeCombinationRequest) (core.TypeCombinationResult, error) {
-					if req.Context != core.CombineCase || len(req.Candidates) != 3 ||
+					if req.Context != core.CombineCoalesce || len(req.FunctionName) != 2 ||
+						req.FunctionName[0] != "schema" || req.FunctionName[1] != "fn" ||
+						len(req.Candidates) != 3 ||
 						req.Candidates[0] != nil || req.Candidates[1].Name != "integer" ||
 						req.Candidates[2].Name != "text" {
 						t.Fatalf("candidate context/order not preserved: %+v", req)
@@ -37,7 +39,9 @@ func TestTypeCombinerContract(t *testing.T) {
 					}
 				})
 			}
-			got, err := a.commonType(core.CombineCase, types)
+			got, err := a.commonType(core.TypeCombinationRequest{
+				Context: core.CombineCoalesce, FunctionName: []string{"schema", "fn"},
+			}, types)
 			if name == "error" {
 				if !errors.Is(err, failure) {
 					t.Fatalf("got %v, want policy failure", err)

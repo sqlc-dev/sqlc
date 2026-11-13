@@ -700,7 +700,7 @@ func (c *cc) convertAlternatives(e *tsql.FunctionCall) ast.Node {
 	switch identifierValue(e.FunctionName) {
 	case "isnull":
 		if len(args.Items) == 2 {
-			return &ast.CoalesceExpr{Args: args, FirstArgType: true, Location: c.loc(e)}
+			return &ast.CoalesceExpr{Args: args, Func: &ast.FuncName{Name: "isnull"}, Location: c.loc(e)}
 		}
 	case "greatest":
 		return &ast.MinMaxExpr{Op: 0, Args: args, Location: c.loc(e)}

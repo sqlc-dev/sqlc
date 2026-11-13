@@ -17,6 +17,10 @@ const (
 
 type TypeCombinationRequest struct {
 	Context TypeCombinationContext
+	// FunctionName preserves a lowered function's identity as qualified name
+	// components, not a result-type instruction. Nil means the ordinary
+	// construct identified by Context.
+	FunctionName []string
 	// Candidates are in expression order, with nil for an untyped value.
 	// Top-level result nullability is handled by the analyzer.
 	Candidates []*TypeExpr

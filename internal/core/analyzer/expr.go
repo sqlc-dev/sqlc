@@ -492,8 +492,8 @@ func (a *analyzer) typeCase(e *ast.CaseExpr) (exprType, error) {
 	return t, nil
 }
 
-// typeCoalesce types COALESCE, which is null only when every argument is,
-// and uses a common type unless the AST requests the first typed argument.
+// typeCoalesce types COALESCE-like expressions, which are null only when
+// every argument is. Function-specific type selection belongs to the dialect.
 func (a *analyzer) typeCoalesce(e *ast.CoalesceExpr) (exprType, error) {
 	types := make([]exprType, 0, len(listItems(e.Args)))
 	nullable := true
@@ -505,15 +505,18 @@ func (a *analyzer) typeCoalesce(e *ast.CoalesceExpr) (exprType, error) {
 		types = append(types, t)
 		nullable = nullable && t.nullable
 	}
-	var t exprType
-	if e.FirstArgType {
-		t = firstTyped(types)
-	} else {
-		var err error
-		t, err = a.commonType(core.CombineCoalesce, types)
-		if err != nil {
-			return exprType{}, err
+	req := core.TypeCombinationRequest{Context: core.CombineCoalesce}
+	if e.Func != nil {
+		if e.Func.Catalog != "" {
+			req.FunctionName = append(req.FunctionName, e.Func.Catalog, e.Func.Schema)
+		} else if e.Func.Schema != "" {
+			req.FunctionName = append(req.FunctionName, e.Func.Schema)
 		}
+		req.FunctionName = append(req.FunctionName, e.Func.Name)
+	}
+	t, err := a.commonType(req, types)
+	if err != nil {
+		return exprType{}, err
 	}
 	// A placeholder there is one that may be NULL.
 	a.inferAlternatives(listItems(e.Args), t, true)
@@ -535,7 +538,7 @@ func (a *analyzer) typeFirstOf(context core.TypeCombinationContext, nodes []ast.
 		types = append(types, t)
 		nullable = nullable || t.nullable
 	}
-	out, err := a.commonType(context, types)
+	out, err := a.commonType(core.TypeCombinationRequest{Context: context}, types)
 	if err != nil {
 		return exprType{}, err
 	}

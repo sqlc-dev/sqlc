@@ -51,6 +51,19 @@ func decodeRules(data []byte) (rules, error) {
 }
 
 func (p *combiner) Combine(req core.TypeCombinationRequest) (core.TypeCombinationResult, error) {
+	if req.Context == core.CombineCoalesce && len(req.FunctionName) > 0 {
+		if len(req.FunctionName) != 1 || req.FunctionName[0] != "isnull" {
+			return core.TypeCombinationResult{}, nil
+		}
+		// ISNULL retains the first typed argument, including when a literal
+		// NULL or an unconstrained placeholder comes before it.
+		for _, candidate := range req.Candidates {
+			if candidate != nil {
+				return core.TypeCombinationResult{Handled: true, Type: candidate.WithNullable(false)}, nil
+			}
+		}
+		return core.TypeCombinationResult{Handled: true}, nil
+	}
 	switch req.Context {
 	case core.CombineUnion, core.CombineIntersect, core.CombineExcept,
 		core.CombineCase, core.CombineCoalesce, core.CombineGreatest, core.CombineLeast:
