@@ -1,0 +1,17 @@
+{
+  "version": "2",
+  "sql": [
+    {
+      "schema": "mssql/schema.sql",
+      "queries": "mssql/query.sql",
+      "engine": "mssql",
+      "gen": {
+        "json": {
+          "out": "gen",
+          "indent": "  ",
+          "filename": "codegen.json"
+        }
+      }
+    }
+  ]
+}

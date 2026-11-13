@@ -27,7 +27,8 @@
         "name": "public",
         "tables": [],
         "enums": [],
-        "composite_types": []
+        "composite_types": [],
+        "domains": []
       },
       {
         "comment": "",
@@ -376,7 +377,8 @@
           }
         ],
         "enums": [],
-        "composite_types": []
+        "composite_types": [],
+        "domains": []
       }
     ]
   },

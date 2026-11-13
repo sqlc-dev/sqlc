@@ -58,6 +58,9 @@ func (c *Catalog) Update(stmt ast.Statement, colGen columnGenerator) error {
 	case *ast.AlterTypeAddValueStmt:
 		err = c.alterTypeAddValue(n)
 
+	case *ast.AlterDomainStmt:
+		err = c.alterDomain(n)
+
 	case *ast.AlterTypeRenameValueStmt:
 		err = c.alterTypeRenameValue(n)
 
@@ -81,6 +84,9 @@ func (c *Catalog) Update(stmt ast.Statement, colGen columnGenerator) error {
 
 	case *ast.CompositeTypeStmt:
 		err = c.createCompositeType(n)
+
+	case *ast.CreateDomainStmt:
+		err = c.createDomain(n)
 
 	case *ast.CreateEnumStmt:
 		err = c.createEnum(n)

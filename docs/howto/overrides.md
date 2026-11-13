@@ -38,6 +38,12 @@ sql:
           go_type: "time.Time"
 ```
 
+A column typed with a domain (PostgreSQL's `CREATE DOMAIN`, SQL Server's
+`CREATE TYPE ... FROM`) is generated as the domain's base type. A `db_type`
+override naming the domain itself, qualified by its schema when it is not in
+the default one (`billing.ksuid`), takes precedence and applies to every
+column of the domain.
+
 > [!TIP]
 > A single `db_type` override configuration applies to either nullable or non-nullable
 > columns, but not both. If you want the same Go type to override regardless of

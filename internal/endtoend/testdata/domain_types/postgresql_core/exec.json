@@ -1,0 +1,6 @@
+{
+  "contexts": ["base"],
+  "env": {
+    "SQLCEXPERIMENT": "coreanalyzer"
+  }
+}

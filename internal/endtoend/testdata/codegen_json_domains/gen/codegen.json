@@ -1,0 +1,437 @@
+{
+  "settings": {
+    "version": "2",
+    "engine": "mssql",
+    "schema": [
+      "mssql/schema.sql"
+    ],
+    "queries": [
+      "mssql/query.sql"
+    ],
+    "codegen": {
+      "out": "",
+      "plugin": "",
+      "options": "",
+      "env": [],
+      "process": null,
+      "wasm": null
+    }
+  },
+  "catalog": {
+    "comment": "",
+    "default_schema": "public",
+    "name": "",
+    "schemas": [
+      {
+        "comment": "",
+        "name": "public",
+        "tables": [],
+        "enums": [],
+        "composite_types": [],
+        "domains": []
+      },
+      {
+        "comment": "",
+        "name": "public",
+        "tables": [
+          {
+            "rel": {
+              "catalog": "",
+              "schema": "public",
+              "name": "contacts"
+            },
+            "columns": [
+              {
+                "name": "id",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "",
+                  "schema": "public",
+                  "name": "contacts"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "bigint"
+                },
+                "is_sqlc_slice": false,
+                "embed_table": null,
+                "original_name": "",
+                "unsigned": false,
+                "array_dims": 0,
+                "type_expr": {
+                  "name": "bigint",
+                  "nullable": false,
+                  "args": []
+                }
+              },
+              {
+                "name": "phone",
+                "not_null": true,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "",
+                  "schema": "public",
+                  "name": "contacts"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "phonenumber"
+                },
+                "is_sqlc_slice": false,
+                "embed_table": null,
+                "original_name": "",
+                "unsigned": false,
+                "array_dims": 0,
+                "type_expr": {
+                  "name": "phonenumber",
+                  "nullable": false,
+                  "args": []
+                }
+              },
+              {
+                "name": "code",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "",
+                  "schema": "public",
+                  "name": "contacts"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "code"
+                },
+                "is_sqlc_slice": false,
+                "embed_table": null,
+                "original_name": "",
+                "unsigned": false,
+                "array_dims": 0,
+                "type_expr": {
+                  "name": "code",
+                  "nullable": true,
+                  "args": []
+                }
+              },
+              {
+                "name": "total",
+                "not_null": false,
+                "is_array": false,
+                "comment": "",
+                "length": -1,
+                "is_named_param": false,
+                "is_func_call": false,
+                "scope": "",
+                "table": {
+                  "catalog": "",
+                  "schema": "public",
+                  "name": "contacts"
+                },
+                "table_alias": "",
+                "type": {
+                  "catalog": "",
+                  "schema": "",
+                  "name": "sales.amount"
+                },
+                "is_sqlc_slice": false,
+                "embed_table": null,
+                "original_name": "",
+                "unsigned": false,
+                "array_dims": 0,
+                "type_expr": {
+                  "name": "sales.amount",
+                  "nullable": true,
+                  "args": []
+                }
+              }
+            ],
+            "comment": ""
+          }
+        ],
+        "enums": [],
+        "composite_types": [],
+        "domains": []
+      },
+      {
+        "comment": "",
+        "name": "sys",
+        "tables": [],
+        "enums": [],
+        "composite_types": [],
+        "domains": []
+      },
+      {
+        "comment": "",
+        "name": "information_schema",
+        "tables": [],
+        "enums": [],
+        "composite_types": [],
+        "domains": []
+      },
+      {
+        "comment": "",
+        "name": "dbo",
+        "tables": [],
+        "enums": [],
+        "composite_types": [],
+        "domains": [
+          {
+            "name": "phonenumber",
+            "base": {
+              "name": "varchar",
+              "nullable": false,
+              "args": [
+                {
+                  "label": "",
+                  "int_value": "20"
+                }
+              ]
+            },
+            "not_null": true,
+            "comment": ""
+          },
+          {
+            "name": "code",
+            "base": {
+              "name": "char",
+              "nullable": false,
+              "args": [
+                {
+                  "label": "",
+                  "int_value": "3"
+                }
+              ]
+            },
+            "not_null": false,
+            "comment": ""
+          }
+        ]
+      },
+      {
+        "comment": "",
+        "name": "sales",
+        "tables": [],
+        "enums": [],
+        "composite_types": [],
+        "domains": [
+          {
+            "name": "amount",
+            "base": {
+              "name": "decimal",
+              "nullable": false,
+              "args": [
+                {
+                  "label": "",
+                  "int_value": "10"
+                },
+                {
+                  "label": "",
+                  "int_value": "2"
+                }
+              ]
+            },
+            "not_null": false,
+            "comment": ""
+          }
+        ]
+      }
+    ]
+  },
+  "queries": [
+    {
+      "text": "SELECT id, phone, code, total FROM contacts WHERE phone = @phone;",
+      "name": "ListContacts",
+      "cmd": ":many",
+      "columns": [
+        {
+          "name": "id",
+          "not_null": true,
+          "is_array": false,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "public",
+            "name": "contacts"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "bigint"
+          },
+          "is_sqlc_slice": false,
+          "embed_table": null,
+          "original_name": "id",
+          "unsigned": false,
+          "array_dims": 0,
+          "type_expr": {
+            "name": "bigint",
+            "nullable": false,
+            "args": []
+          }
+        },
+        {
+          "name": "phone",
+          "not_null": true,
+          "is_array": false,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "public",
+            "name": "contacts"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "phonenumber"
+          },
+          "is_sqlc_slice": false,
+          "embed_table": null,
+          "original_name": "phone",
+          "unsigned": false,
+          "array_dims": 0,
+          "type_expr": {
+            "name": "phonenumber",
+            "nullable": false,
+            "args": []
+          }
+        },
+        {
+          "name": "code",
+          "not_null": false,
+          "is_array": false,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "public",
+            "name": "contacts"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "code"
+          },
+          "is_sqlc_slice": false,
+          "embed_table": null,
+          "original_name": "code",
+          "unsigned": false,
+          "array_dims": 0,
+          "type_expr": {
+            "name": "code",
+            "nullable": true,
+            "args": []
+          }
+        },
+        {
+          "name": "total",
+          "not_null": false,
+          "is_array": false,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": {
+            "catalog": "",
+            "schema": "public",
+            "name": "contacts"
+          },
+          "table_alias": "",
+          "type": {
+            "catalog": "",
+            "schema": "",
+            "name": "sales.amount"
+          },
+          "is_sqlc_slice": false,
+          "embed_table": null,
+          "original_name": "total",
+          "unsigned": false,
+          "array_dims": 0,
+          "type_expr": {
+            "name": "sales.amount",
+            "nullable": true,
+            "args": []
+          }
+        }
+      ],
+      "params": [
+        {
+          "number": 1,
+          "column": {
+            "name": "phone",
+            "not_null": true,
+            "is_array": false,
+            "comment": "",
+            "length": -1,
+            "is_named_param": false,
+            "is_func_call": false,
+            "scope": "",
+            "table": {
+              "catalog": "",
+              "schema": "public",
+              "name": "contacts"
+            },
+            "table_alias": "",
+            "type": {
+              "catalog": "",
+              "schema": "",
+              "name": "phonenumber"
+            },
+            "is_sqlc_slice": false,
+            "embed_table": null,
+            "original_name": "phone",
+            "unsigned": false,
+            "array_dims": 0,
+            "type_expr": {
+              "name": "phonenumber",
+              "nullable": false,
+              "args": []
+            }
+          },
+          "name": "phone"
+        }
+      ],
+      "comments": [],
+      "filename": "query.sql",
+      "insert_into_table": null
+    }
+  ],
+  "sqlc_version": "v1.31.1",
+  "plugin_options": "eyJvdXQiOiJnZW4iLCJpbmRlbnQiOiIgICIsImZpbGVuYW1lIjoiY29kZWdlbi5qc29uIn0=",
+  "global_options": ""
+}

@@ -59,7 +59,7 @@ func (c *Catalog) addColumn(table *Table, cmd *ast.AlterTableCmd) error {
 	return nil
 }
 
-func (table *Table) alterColumnType(cmd *ast.AlterTableCmd) error {
+func (c *Catalog) alterColumnType(table *Table, cmd *ast.AlterTableCmd) error {
 	index, err := table.isExistColumn(cmd)
 	if err != nil {
 		return err
@@ -68,6 +68,7 @@ func (table *Table) alterColumnType(cmd *ast.AlterTableCmd) error {
 		table.Columns[index].Type = *cmd.Def.TypeName
 		table.Columns[index].IsArray = cmd.Def.IsArray
 		table.Columns[index].ArrayDims = cmd.Def.ArrayDims
+		c.setDomainNotNull(table.Columns[index])
 	}
 	return nil
 }
@@ -95,13 +96,15 @@ func (c *Catalog) dropColumn(table *Table, cmd *ast.AlterTableCmd) error {
 	return nil
 }
 
-func (table *Table) dropNotNull(cmd *ast.AlterTableCmd) error {
+func (c *Catalog) dropNotNull(table *Table, cmd *ast.AlterTableCmd) error {
 	index, err := table.isExistColumn(cmd)
 	if err != nil {
 		return err
 	}
 	if index >= 0 {
 		table.Columns[index].IsNotNull = false
+		table.Columns[index].domainNotNull = false
+		c.setDomainNotNull(table.Columns[index])
 	}
 	return nil
 }
@@ -113,6 +116,7 @@ func (table *Table) setNotNull(cmd *ast.AlterTableCmd) error {
 	}
 	if index >= 0 {
 		table.Columns[index].IsNotNull = true
+		table.Columns[index].domainNotNull = false
 	}
 	return nil
 }
@@ -136,6 +140,9 @@ type Column struct {
 	TypeExpr *core.TypeExpr
 
 	linkedType bool
+	// domainNotNull says IsNotNull comes from the column's domain alone,
+	// so a change to the type or the domain takes it back.
+	domainNotNull bool
 }
 
 // An interface is used to resolve a circular import between the catalog and compiler packages.
@@ -206,7 +213,7 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 					return err
 				}
 			case ast.AT_AlterColumnType:
-				if err := table.alterColumnType(cmd); err != nil {
+				if err := c.alterColumnType(table, cmd); err != nil {
 					return err
 				}
 			case ast.AT_DropColumn:
@@ -214,7 +221,7 @@ func (c *Catalog) alterTable(stmt *ast.AlterTableStmt) error {
 					return err
 				}
 			case ast.AT_DropNotNull:
-				if err := table.dropNotNull(cmd); err != nil {
+				if err := c.dropNotNull(table, cmd); err != nil {
 					return err
 				}
 			case ast.AT_SetNotNull:
@@ -279,6 +286,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 	tbl := Table{Rel: stmt.Name, Comment: stmt.Comment}
 	coltype := make(map[string]ast.TypeName) // used to check for duplicate column names
 	seen := make(map[string]bool)            // used to check for duplicate column names
+	explicit := make(map[string]bool)        // merged columns NOT NULL by their own constraint
 	for _, inheritTable := range stmt.Inherits {
 		t, _, err := schema.getTable(inheritTable)
 		if err != nil {
@@ -286,6 +294,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 		}
 		// check and ignore duplicate columns
 		for _, col := range t.Columns {
+			explicit[col.Name] = explicit[col.Name] || (col.IsNotNull && !col.domainNotNull)
 			if notNull, ok := seen[col.Name]; ok {
 				seen[col.Name] = notNull || col.IsNotNull
 				if a, ok := coltype[col.Name]; ok {
@@ -298,7 +307,8 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 
 			seen[col.Name] = col.IsNotNull
 			coltype[col.Name] = col.Type
-			tbl.Columns = append(tbl.Columns, col)
+			newCol := *col
+			tbl.Columns = append(tbl.Columns, &newCol)
 		}
 	}
 
@@ -321,6 +331,7 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 		}
 		if notNull, ok := seen[col.Colname]; ok {
 			seen[col.Colname] = notNull || col.IsNotNull
+			explicit[col.Colname] = explicit[col.Colname] || col.IsNotNull
 			if a, ok := coltype[col.Colname]; ok {
 				if !sameType(&a, col.TypeName) {
 					return fmt.Errorf("column %q has a type conflict", col.Colname)
@@ -339,6 +350,9 @@ func (c *Catalog) createTable(stmt *ast.CreateTableStmt) error {
 	for i := range tbl.Columns {
 		if notNull, ok := seen[tbl.Columns[i].Name]; ok {
 			tbl.Columns[i].IsNotNull = notNull
+			if explicit[tbl.Columns[i].Name] {
+				tbl.Columns[i].domainNotNull = false
+			}
 		}
 	}
 
@@ -357,6 +371,7 @@ func (c *Catalog) defineColumn(table *ast.TableName, col *ast.ColumnDef) (*Colum
 		Comment:    col.Comment,
 		Length:     col.Length,
 	}
+	c.setDomainNotNull(tc)
 	if col.Vals != nil {
 		typeName := ast.TypeName{
 			Name: fmt.Sprintf("%s_%s", table.Name, col.Colname),
@@ -369,6 +384,21 @@ func (c *Catalog) defineColumn(table *ast.TableName, col *ast.ColumnDef) (*Colum
 		tc.linkedType = true
 	}
 	return tc, nil
+}
+
+// setDomainNotNull makes col NOT NULL when its type is a NOT NULL domain,
+// which forbids NULL in every column of it, and drops what an
+// earlier type gave it. An array of one may still be NULL itself.
+func (c *Catalog) setDomainNotNull(col *Column) {
+	if col.domainNotNull {
+		col.IsNotNull, col.domainNotNull = false, false
+	}
+	if col.IsNotNull || col.IsArray {
+		return
+	}
+	if c.domainNotNull(&col.Type) {
+		col.IsNotNull, col.domainNotNull = true, true
+	}
 }
 
 func (c *Catalog) dropTable(stmt *ast.DropTableStmt) error {

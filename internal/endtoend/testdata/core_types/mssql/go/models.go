@@ -39,8 +39,8 @@ type Thing struct {
 	H        []byte
 	Vec      []byte
 	Sn       string
-	Phone    any
-	Code2    any
-	Code3    any
+	Phone    string
+	Code2    sql.NullString
+	Code3    sql.NullString
 	Bare     sql.NullString
 }

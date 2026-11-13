@@ -10,6 +10,10 @@ import (
 )
 
 func addExtraGoStructTags(tags map[string]string, req *plugin.GenerateRequest, options *opts.Options, col *plugin.Column) {
+	// A domain generated as its base takes the base's tags, under its own.
+	if base := domainColumn(req, col); base != nil && !typeOverridden(options, col) {
+		addExtraGoStructTags(tags, req, options, base)
+	}
 	for _, override := range options.Overrides {
 		oride := override.ShimOverride
 		if oride.GoType.StructTags == nil {
@@ -34,6 +38,17 @@ func addExtraGoStructTags(tags map[string]string, req *plugin.GenerateRequest, o
 		// Add the extra tags.
 		maps.Copy(tags, oride.GoType.StructTags)
 	}
+}
+
+// typeOverridden reports whether an override names col's type, which
+// goInnerType then generates it as.
+func typeOverridden(options *opts.Options, col *plugin.Column) bool {
+	for _, override := range options.Overrides {
+		if override.ShimOverride.GoType.TypeName != "" && override.MatchesColumn(col) {
+			return true
+		}
+	}
+	return false
 }
 
 // goType is the Go type of a column's value: what a query's row scans
@@ -93,6 +108,17 @@ func goInnerType(req *plugin.GenerateRequest, options *opts.Options, col *plugin
 		if override.MatchesColumn(col) {
 			return oride.GoType.TypeName, false
 		}
+	}
+
+	// A domain is generated as the type it stands on, unless an override
+	// above named the domain itself. The base says how many dimensions the
+	// column has, since a domain may stand on an array.
+	if base := domainColumn(req, col); base != nil {
+		typ, complete := goInnerType(req, options, base, param)
+		if base.IsArray && !complete {
+			typ = strings.Repeat("[]", int(base.ArrayDims)) + typ
+		}
+		return typ, true
 	}
 
 	// TODO: Extend the engine interface to handle types

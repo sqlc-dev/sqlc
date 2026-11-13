@@ -143,6 +143,11 @@ SELECT oid, name FROM sql_class
 WHERE namespace_oid = ? AND kind = 'r'
 ORDER BY oid;
 
+-- name: ListDomainsInNamespace :many
+SELECT oid FROM sql_type
+WHERE namespace_oid = ? AND typtype = 'd'
+ORDER BY oid;
+
 -- name: DeleteClass :exec
 DELETE FROM sql_class WHERE oid = ?;
 

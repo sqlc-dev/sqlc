@@ -3,7 +3,9 @@ package catalog
 import (
 	"errors"
 	"fmt"
+	"strings"
 
+	"github.com/sqlc-dev/sqlc/internal/core"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlerr"
 )
@@ -37,6 +39,26 @@ func (ct *CompositeType) isType() {
 
 func (ct *CompositeType) SetComment(c string) {
 	ct.Comment = c
+}
+
+// Domain is a type standing on a base: a PostgreSQL domain or a SQL Server
+// alias type.
+type Domain struct {
+	Name    string
+	Base    *core.TypeExpr
+	NotNull bool
+	Comment string
+
+	// base names the type the domain stands on, unless it is an array,
+	// so a domain over a NOT NULL domain is NOT NULL too.
+	base *ast.TypeName
+}
+
+func (d *Domain) isType() {
+}
+
+func (d *Domain) SetComment(c string) {
+	d.Comment = c
 }
 
 func sameType(a, b *ast.TypeName) bool {
@@ -88,6 +110,111 @@ func (c *Catalog) createEnum(stmt *ast.CreateEnumStmt) error {
 		Name: stmt.TypeName.Name,
 		Vals: stringSlice(stmt.Vals),
 	})
+	return nil
+}
+
+func (c *Catalog) createDomain(stmt *ast.CreateDomainStmt) error {
+	name := domainName(stmt.Domainname)
+	if name == nil || stmt.TypeName == nil {
+		return fmt.Errorf("create domain: missing name or type")
+	}
+	ns := name.Schema
+	if ns == "" {
+		ns = c.DefaultSchema
+	}
+	schema, err := c.getSchema(ns)
+	if err != nil {
+		return err
+	}
+	if _, _, err := schema.getType(name); err == nil {
+		return sqlerr.TypeExists(name.Name)
+	}
+	domain := &Domain{
+		Name: name.Name,
+		Base: core.TypeExprOfTypeName(stmt.TypeName),
+	}
+	// The base keeps the name the parser gave it, a quoted name's case and
+	// pg_catalog included, as a column of the type does, so the two map to
+	// Go and match overrides alike.
+	if domain.Base != nil && stmt.TypeName.Names != nil {
+		domain.Base.Innermost().Name = strings.Join(stringSlice(stmt.TypeName.Names), ".")
+	}
+	if !isArrayTypeName(stmt.TypeName) {
+		domain.base = domainName(stmt.TypeName.Names)
+	}
+	if stmt.Constraints != nil {
+		for _, item := range stmt.Constraints.Items {
+			if con, ok := item.(*ast.Constraint); ok && con.Contype == ast.ConstrTypeNotNull {
+				domain.NotNull = true
+			}
+		}
+	}
+	schema.Types = append(schema.Types, domain)
+	return nil
+}
+
+func isArrayTypeName(tn *ast.TypeName) bool {
+	return tn.ArrayBounds != nil && len(tn.ArrayBounds.Items) > 0
+}
+
+// domainNotNull reports whether tn is a domain that is NOT NULL, declared
+// so or standing on one that is.
+func (c *Catalog) domainNotNull(tn *ast.TypeName) bool {
+	seen := map[*Domain]bool{}
+	for tn != nil {
+		typ, _, err := c.getType(tn)
+		d, ok := typ.(*Domain)
+		if err != nil || !ok || seen[d] {
+			return false
+		}
+		if d.NotNull {
+			return true
+		}
+		seen[d] = true
+		tn = d.base
+	}
+	return false
+}
+
+func domainName(list *ast.List) *ast.TypeName {
+	names := stringSlice(list)
+	if len(names) == 0 {
+		return nil
+	}
+	name := &ast.TypeName{Name: names[len(names)-1]}
+	if len(names) > 1 {
+		name.Schema = names[len(names)-2]
+	}
+	return name
+}
+
+// alterDomain applies the one change to a domain codegen sees, its NOT
+// NULL, to the domain and every column of it.
+func (c *Catalog) alterDomain(stmt *ast.AlterDomainStmt) error {
+	// PostgreSQL's subtypes: O sets NOT NULL, N drops it.
+	if stmt.Subtype != 'O' && stmt.Subtype != 'N' {
+		return nil
+	}
+	name := domainName(stmt.TypeName)
+	if name == nil {
+		return fmt.Errorf("alter domain: missing name")
+	}
+	typ, _, err := c.getType(name)
+	if err != nil {
+		return err
+	}
+	d, ok := typ.(*Domain)
+	if !ok {
+		return fmt.Errorf("%q is not a domain", name.Name)
+	}
+	d.NotNull = stmt.Subtype == 'O'
+	for _, schema := range c.Schemas {
+		for _, table := range schema.Tables {
+			for _, col := range table.Columns {
+				c.setDomainNotNull(col)
+			}
+		}
+	}
 	return nil
 }
 

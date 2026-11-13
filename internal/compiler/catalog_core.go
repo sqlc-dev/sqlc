@@ -10,9 +10,9 @@ import (
 
 // coreResultCatalog dumps the core catalog into the legacy catalog shape a
 // Result carries, so codegen sees the same table models either way a query
-// set was analyzed. Only relations make the trip: codegen reads tables and
-// their columns to build models, and none of the types, functions or
-// operators the core catalog also holds.
+// set was analyzed. Codegen reads tables and their columns to build models,
+// and the domains those columns may be typed with; none of the other types,
+// functions or operators the core catalog also holds.
 func coreResultCatalog(c *core.Catalog) (*catalog.Catalog, error) {
 	cat := catalog.New("public")
 	namespaces, err := c.Namespaces()
@@ -59,6 +59,17 @@ func coreResultCatalog(c *core.Catalog) (*catalog.Catalog, error) {
 				t.Columns = append(t.Columns, column)
 			}
 			schema.Tables = append(schema.Tables, t)
+		}
+		domains, err := c.DomainsInNamespace(ns.OID)
+		if err != nil {
+			return nil, err
+		}
+		for _, d := range domains {
+			base, err := c.TypeExprOf(d.BaseOID)
+			if err != nil {
+				return nil, err
+			}
+			schema.Types = append(schema.Types, &catalog.Domain{Name: d.Name, Base: base, NotNull: d.NotNull})
 		}
 		cat.Schemas = append(cat.Schemas, schema)
 	}

@@ -431,7 +431,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 				Comment: makeString(n.Comment),
 			}, nil
 
-		case nodes.ObjectType_OBJECT_TYPE:
+		case nodes.ObjectType_OBJECT_TYPE, nodes.ObjectType_OBJECT_DOMAIN:
 			rel, err := parseRelation(n.Object)
 			if err != nil {
 				return nil, err
@@ -672,7 +672,7 @@ func translate(node *nodes.Node) (ast.Node, error) {
 			}
 			return drop, nil
 
-		case nodes.ObjectType_OBJECT_TYPE:
+		case nodes.ObjectType_OBJECT_TYPE, nodes.ObjectType_OBJECT_DOMAIN:
 			drop := &ast.DropTypeStmt{
 				IfExists: n.MissingOk,
 			}
