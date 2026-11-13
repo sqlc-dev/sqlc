@@ -19,6 +19,45 @@ engine's own analysis path, so the two can report a type differently — most
 visibly, `analyze` reports type names as the catalog stores them, in lower
 case.
 
+## Common-type inference
+
+The shared core does not give every database the same coercion rules. SQL
+Server explicitly enables its type-combination policy for set operations and
+alternative-valued expressions such as `CASE`, `COALESCE`, `GREATEST`, `LEAST`
+and `CHOOSE`. `ISNULL` instead keeps its first typed argument's type; both
+arguments must be nullable for its result to be nullable.
+
+Other dialects currently keep the existing core fallback: a set-operation
+column takes its type from the left branch, and an alternative-valued
+expression takes the first typed candidate. **This is incomplete static
+inference, not those databases' common-type semantics.** It does not change
+their normal `generate` paths.
+
+The database rules differ in ways that need separate policies:
+
+| Dialect | Database behavior and current core gap |
+| --- | --- |
+| SQL Server | Uses type precedence and combines decimal scale/integer digits with a precision limit of 38. The enabled policy models these rules, but is not a general implicit-cast validator. |
+| PostgreSQL | Selects common types using categories, implicit casts, preferred types, unknown literals and domains. Modifiers survive only when the candidates have the same type and modifier: `numeric(5,2) UNION numeric(8,4)` has unconstrained `numeric`, not SQL Server-style decimal widening. |
+| SQLite | Values are dynamically typed; compound-view/subquery affinity can come from any constituent `SELECT`. Declared decimal precision and string length do not impose SQL Server-style limits. |
+| MySQL | Aggregates types and lengths across set-operation branches; alternative expressions also need signed/unsigned, numeric, binary/string, temporal and NULL-literal rules. |
+| DuckDB | Uses combination casting for set operations, including casts not allowed by ordinary implicit casting. Integer widths and nested types need more than a precedence list. |
+| ClickHouse | Computes compatible supertypes, including `Nullable`, signed/unsigned widths and nested types; decimal precision can reach 76. Some combinations have no compatible supertype. |
+| GoogleSQL (Spanner) | Intersects supertype sets, distinguishes exact from inexact numeric inputs, and has separate literal and structured-type rules. Its type inventory is not identical to BigQuery's. |
+
+These are reviewed database semantics, not a claim that sqlc has implemented
+or live-tested the missing policies. See the upstream references:
+[SQL Server](https://learn.microsoft.com/en-us/sql/t-sql/data-types/precision-scale-and-length-transact-sql),
+[PostgreSQL common types](https://www.postgresql.org/docs/18/typeconv-union-case.html)
+and [modifiers](https://github.com/postgres/postgres/blob/REL_18_STABLE/src/backend/parser/parse_coerce.c),
+[SQLite](https://www.sqlite.org/datatype3.html#column_affinity_for_compound_views),
+[MySQL set operations](https://docs.oracle.com/cd/E17952_01/mysql-8.0-en/set-operations.html)
+and [alternative expressions](https://docs.oracle.com/cd/E17952_01/mysql-8.0-en/flow-control-functions.html),
+[DuckDB](https://duckdb.org/docs/2.0/sql/data_types/typecasting),
+[ClickHouse UNION](https://clickhouse.com/docs/reference/statements/select/union)
+and [decimals](https://clickhouse.com/docs/reference/data-types/decimal),
+and [Spanner](https://docs.cloud.google.com/spanner/docs/reference/standard-sql/conversion_rules).
+
 ## Usage
 
 ```sh

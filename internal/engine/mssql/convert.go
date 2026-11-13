@@ -547,6 +547,10 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 	case *tsql.ParenthesisExpression:
 		return c.convertScalarExpression(e.Expression)
 	case *tsql.FunctionCall:
+		// Methods need receiver/type syntax lowered before signature lookup;
+		// alternatives need candidate-dependent typing and nullability.
+		// Keep window calls on the ordinary path so an alternative rewrite
+		// cannot discard their OVER clause.
 		if out := c.convertMethodCall(e); out != nil {
 			return out
 		}
@@ -684,10 +688,10 @@ func (c *cc) convertScalarExpression(expr tsql.ScalarExpression) ast.Node {
 }
 
 // convertAlternatives converts the functions that yield one of their
-// arguments, which SQL Server types as the type their candidates combine
-// to, as it does CASE: GREATEST and LEAST, and CHOOSE, which is the CASE
-// over its index it is defined as. ISNULL, NULL only when both arguments
-// are, as COALESCE is, keeps its first argument's type.
+// arguments: GREATEST/LEAST combine their candidate types, and CHOOSE becomes
+// the CASE over its index. ISNULL keeps its first typed argument's type and
+// is NULL only when both arguments are. Fixed JSONL function signatures do
+// not describe these AST rewrites or the candidates' combined nullability.
 func (c *cc) convertAlternatives(e *tsql.FunctionCall) ast.Node {
 	args := &ast.List{}
 	for _, p := range e.Parameters {
@@ -790,7 +794,9 @@ type namedParam struct {
 // typeMethods are the methods of xml, geography, geometry and hierarchyid
 // a query calls on a value, as doc.exist('/a') or node.GetLevel() do. A
 // call to one is seeded as ".name" taking the value first, which tells it
-// from a function in a schema, as dbo.f(), the parser sees alike.
+// from a function in a schema, as dbo.f(), the parser sees alike. This map
+// recognizes receiver syntax before catalog lookup and must stay in sync
+// with the leading-dot JSONL signatures.
 var typeMethods = map[string]bool{
 	"exist":    true,
 	"getlevel": true, "tostring": true, "getancestor": true, "getdescendant": true,
@@ -894,7 +900,9 @@ func (c *cc) convertFunctionCall(n *tsql.FunctionCall) *ast.FuncCall {
 	return fc
 }
 
-// datepartFunctions are the functions whose first argument is a datepart.
+// datepartFunctions take a bare keyword which the parser sees as a column.
+// JSONL signatures describe its string type, not this syntax; dialect
+// ident_args describes type arguments, not function arguments.
 var datepartFunctions = map[string]bool{
 	"dateadd":      true,
 	"datediff":     true,
