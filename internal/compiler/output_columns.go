@@ -826,8 +826,9 @@ var aggregates = map[string]bool{
 }
 
 // yieldsOneRow reports whether a scalar subquery always yields exactly one row:
-// a SELECT with no FROM or WHERE, or one whose every column is an aggregate,
-// with no GROUP BY, HAVING, LIMIT, OFFSET or set operation.
+// a SELECT with no FROM or WHERE, or one whose every column holds an aggregate,
+// bare or inside an expression such as a cast, with no GROUP BY, HAVING, LIMIT,
+// OFFSET or set operation.
 func yieldsOneRow(node ast.Node) bool {
 	sel, ok := node.(*ast.SelectStmt)
 	if !ok || sel.Op != ast.None || given(sel.LimitCount) || given(sel.LimitOffset) || given(sel.HavingClause) {
@@ -847,12 +848,32 @@ func yieldsOneRow(node ast.Node) bool {
 		if !ok {
 			return false
 		}
-		call, ok := res.Val.(*ast.FuncCall)
-		if !ok || call.Func == nil || call.Over != nil || !aggregates[strings.ToLower(call.Func.Name)] {
+		var find aggregateFinder
+		astutils.Walk(&find, res.Val)
+		if !find.found {
 			return false
 		}
 	}
 	return true
+}
+
+// aggregateFinder looks for an aggregate call in an expression. It doesn't look
+// inside subqueries, which are query levels of their own, and a window function
+// is not an aggregate.
+type aggregateFinder struct {
+	found bool
+}
+
+func (f *aggregateFinder) Visit(n ast.Node) astutils.Visitor {
+	switch n := n.(type) {
+	case *ast.SubLink, *ast.SelectStmt:
+		return nil
+	case *ast.FuncCall:
+		if n.Func != nil && n.Over == nil && aggregates[strings.ToLower(n.Func.Name)] {
+			f.found = true
+		}
+	}
+	return f
 }
 
 // given reports whether a clause was written: the parser leaves one that wasn't
