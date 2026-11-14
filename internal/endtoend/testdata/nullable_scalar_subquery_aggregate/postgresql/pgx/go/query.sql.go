@@ -101,6 +101,36 @@ func (q *Queries) AggregateUnderCast(ctx context.Context) ([]AggregateUnderCastR
 	return items, nil
 }
 
+const countWithAnotherAggregate = `-- name: CountWithAnotherAggregate :many
+SELECT t.id, (SELECT count(*)::int + max(k.id)::int FROM trackers k WHERE k.truck_id = t.id) AS n
+FROM trucks t
+`
+
+type CountWithAnotherAggregateRow struct {
+	ID int64
+	N  pgtype.Int4
+}
+
+func (q *Queries) CountWithAnotherAggregate(ctx context.Context) ([]CountWithAnotherAggregateRow, error) {
+	rows, err := q.db.Query(ctx, countWithAnotherAggregate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CountWithAnotherAggregateRow
+	for rows.Next() {
+		var i CountWithAnotherAggregateRow
+		if err := rows.Scan(&i.ID, &i.N); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const groupedAggregate = `-- name: GroupedAggregate :many
 SELECT t.id, (SELECT count(*) FROM trackers k WHERE k.truck_id = t.id GROUP BY k.active LIMIT 1) AS trackers
 FROM trucks t
@@ -121,6 +151,36 @@ func (q *Queries) GroupedAggregate(ctx context.Context) ([]GroupedAggregateRow, 
 	for rows.Next() {
 		var i GroupedAggregateRow
 		if err := rows.Scan(&i.ID, &i.Trackers); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const otherAggregateUnderCast = `-- name: OtherAggregateUnderCast :many
+SELECT t.id, (SELECT max(k.id)::int FROM trackers k WHERE k.truck_id = t.id) AS newest
+FROM trucks t
+`
+
+type OtherAggregateUnderCastRow struct {
+	ID     int64
+	Newest pgtype.Int4
+}
+
+func (q *Queries) OtherAggregateUnderCast(ctx context.Context) ([]OtherAggregateUnderCastRow, error) {
+	rows, err := q.db.Query(ctx, otherAggregateUnderCast)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []OtherAggregateUnderCastRow
+	for rows.Next() {
+		var i OtherAggregateUnderCastRow
+		if err := rows.Scan(&i.ID, &i.Newest); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

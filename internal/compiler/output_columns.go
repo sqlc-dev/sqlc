@@ -826,9 +826,9 @@ var aggregates = map[string]bool{
 }
 
 // yieldsOneRow reports whether a scalar subquery always yields exactly one row:
-// a SELECT with no FROM or WHERE, or one whose every column holds an aggregate,
-// bare or inside an expression such as a cast, with no GROUP BY, HAVING, LIMIT,
-// OFFSET or set operation.
+// a SELECT with no FROM or WHERE, or one whose every column is an aggregate, or
+// an expression over count such as a cast of it, with no GROUP BY, HAVING,
+// LIMIT, OFFSET or set operation.
 func yieldsOneRow(node ast.Node) bool {
 	sel, ok := node.(*ast.SelectStmt)
 	if !ok || sel.Op != ast.None || given(sel.LimitCount) || given(sel.LimitOffset) || given(sel.HavingClause) {
@@ -848,20 +848,31 @@ func yieldsOneRow(node ast.Node) bool {
 		if !ok {
 			return false
 		}
+		if call, ok := res.Val.(*ast.FuncCall); ok {
+			if call.Func == nil || call.Over != nil || !aggregates[strings.ToLower(call.Func.Name)] {
+				return false
+			}
+			continue
+		}
+		// An expression over count, such as count(*)::int, is an aggregate
+		// too and can't be NULL. One over any other aggregate yields a row
+		// as well, but that row is NULL when nothing matched, and the
+		// expression's own column doesn't say so.
 		var find aggregateFinder
 		astutils.Walk(&find, res.Val)
-		if !find.found {
+		if !find.count || find.other {
 			return false
 		}
 	}
 	return true
 }
 
-// aggregateFinder looks for an aggregate call in an expression. It doesn't look
+// aggregateFinder looks for aggregate calls in an expression. It doesn't look
 // inside subqueries, which are query levels of their own, and a window function
 // is not an aggregate.
 type aggregateFinder struct {
-	found bool
+	count bool
+	other bool
 }
 
 func (f *aggregateFinder) Visit(n ast.Node) astutils.Visitor {
@@ -869,8 +880,14 @@ func (f *aggregateFinder) Visit(n ast.Node) astutils.Visitor {
 	case *ast.SubLink, *ast.SelectStmt:
 		return nil
 	case *ast.FuncCall:
-		if n.Func != nil && n.Over == nil && aggregates[strings.ToLower(n.Func.Name)] {
-			f.found = true
+		if n.Func == nil || n.Over != nil {
+			return f
+		}
+		name := strings.ToLower(n.Func.Name)
+		if name == "count" {
+			f.count = true
+		} else if aggregates[name] {
+			f.other = true
 		}
 	}
 	return f

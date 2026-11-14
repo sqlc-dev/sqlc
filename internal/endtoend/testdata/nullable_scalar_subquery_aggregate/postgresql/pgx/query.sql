@@ -21,3 +21,11 @@ FROM trucks t;
 -- name: WindowFunction :many
 SELECT t.id, (SELECT count(*) OVER () FROM depots d WHERE d.id = t.depot_id) AS n
 FROM trucks t;
+
+-- name: OtherAggregateUnderCast :many
+SELECT t.id, (SELECT max(k.id)::int FROM trackers k WHERE k.truck_id = t.id) AS newest
+FROM trucks t;
+
+-- name: CountWithAnotherAggregate :many
+SELECT t.id, (SELECT count(*)::int + max(k.id)::int FROM trackers k WHERE k.truck_id = t.id) AS n
+FROM trucks t;
