@@ -41,7 +41,12 @@ func InsertStmt(c *catalog.Catalog, fqn *ast.TableName, stmt *ast.InsertStmt) er
 		}
 	}
 
-	return onConflictClause(c, fqn, stmt)
+	for _, clause := range stmt.OnConflictClauses {
+		if err := onConflictClause(c, fqn, clause); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // onConflictClause validates an ON CONFLICT DO UPDATE clause against the target
@@ -49,8 +54,8 @@ func InsertStmt(c *catalog.Catalog, fqn *ast.TableName, stmt *ast.InsertStmt) er
 //   - ON CONFLICT (col, ...) conflict target columns exist
 //   - DO UPDATE SET col = ... assignment target columns exist
 //   - EXCLUDED.col references exist
-func onConflictClause(c *catalog.Catalog, fqn *ast.TableName, n *ast.InsertStmt) error {
-	if fqn == nil || n.OnConflictClause == nil || n.OnConflictClause.Action != ast.OnConflictActionUpdate {
+func onConflictClause(c *catalog.Catalog, fqn *ast.TableName, n *ast.OnConflictClause) error {
+	if fqn == nil || n == nil || n.Action != ast.OnConflictActionUpdate {
 		return nil
 	}
 
@@ -66,7 +71,7 @@ func onConflictClause(c *catalog.Catalog, fqn *ast.TableName, n *ast.InsertStmt)
 	}
 
 	// DO UPDATE requires a conflict target: ON CONFLICT (col) or ON CONFLICT ON CONSTRAINT name.
-	if n.OnConflictClause.Infer == nil {
+	if n.Infer == nil {
 		return &sqlerr.Error{
 			Code:    "42601",
 			Message: "ON CONFLICT DO UPDATE requires inference specification or constraint name",
@@ -74,8 +79,8 @@ func onConflictClause(c *catalog.Catalog, fqn *ast.TableName, n *ast.InsertStmt)
 	}
 
 	// Validate ON CONFLICT (col, ...) conflict target columns.
-	if n.OnConflictClause.Infer.IndexElems != nil {
-		for _, item := range n.OnConflictClause.Infer.IndexElems.Items {
+	if n.Infer.IndexElems != nil {
+		for _, item := range n.Infer.IndexElems.Items {
 			elem, ok := item.(*ast.IndexElem)
 			if !ok || elem.Name == nil {
 				continue
@@ -83,18 +88,18 @@ func onConflictClause(c *catalog.Catalog, fqn *ast.TableName, n *ast.InsertStmt)
 
 			if _, exists := colNames[*elem.Name]; !exists {
 				e := sqlerr.ColumnNotFound(table.Rel.Name, *elem.Name)
-				e.Location = n.OnConflictClause.Infer.Location
+				e.Location = n.Infer.Location
 				return e
 			}
 		}
 	}
 
 	// Validate DO UPDATE SET col = ... assignment target columns and EXCLUDED.col references.
-	if n.OnConflictClause.TargetList == nil {
+	if n.TargetList == nil {
 		return nil
 	}
 
-	for _, item := range n.OnConflictClause.TargetList.Items {
+	for _, item := range n.TargetList.Items {
 		target, ok := item.(*ast.ResTarget)
 		if !ok || target.Name == nil {
 			continue

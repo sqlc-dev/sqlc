@@ -1827,7 +1827,7 @@ func convertInsertStmt(n *pg.InsertStmt) *ast.InsertStmt {
 		Relation:          convertRangeVar(n.Relation),
 		Cols:              convertSlice(n.Cols),
 		SelectStmt:        convertNode(n.SelectStmt),
-		OnConflictClause:  convertOnConflictClause(n.OnConflictClause),
+		OnConflictClauses: convertOnConflictClauses(n.OnConflictClause),
 		ReturningList:     convertSlice(n.ReturningClause.GetExprs()),
 		ReturningOldAlias: oldAlias,
 		ReturningNewAlias: newAlias,
@@ -2026,6 +2026,15 @@ func convertObjectWithArgs(n *pg.ObjectWithArgs) *ast.ObjectWithArgs {
 		Objargs:         convertSlice(n.Objargs),
 		ArgsUnspecified: n.ArgsUnspecified,
 	}
+}
+
+// convertOnConflictClauses wraps PostgreSQL's single ON CONFLICT clause in the
+// slice ast.InsertStmt keeps for SQLite's sake.
+func convertOnConflictClauses(n *pg.OnConflictClause) []*ast.OnConflictClause {
+	if n == nil {
+		return nil
+	}
+	return []*ast.OnConflictClause{convertOnConflictClause(n)}
 }
 
 func convertOnConflictClause(n *pg.OnConflictClause) *ast.OnConflictClause {

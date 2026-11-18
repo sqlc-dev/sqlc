@@ -910,7 +910,7 @@ func (c *cc) convertInsertStatement(n *dw.InsertStatement) ast.Node {
 	}
 
 	if n.OnConflict != nil {
-		stmt.OnConflictClause = c.convertOnConflict(n.OnConflict)
+		stmt.OnConflictClauses = []*ast.OnConflictClause{c.convertOnConflict(n.OnConflict)}
 	}
 
 	stmt.ReturningList = c.convertReturning(n.Returning)

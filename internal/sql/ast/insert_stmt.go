@@ -5,10 +5,14 @@ import "github.com/sqlc-dev/sqlc/internal/sql/format"
 type InsertStmt struct {
 	Tag NodeTag[InsertStmt] `json:"tag"`
 
-	Relation             *RangeVar             `json:"relation,omitempty"`
-	Cols                 *List                 `json:"cols,omitempty"`
-	SelectStmt           Node                  `json:"select_stmt,omitempty"`
-	OnConflictClause     *OnConflictClause     `json:"on_conflict_clause,omitempty"`
+	Relation   *RangeVar `json:"relation,omitempty"`
+	Cols       *List     `json:"cols,omitempty"`
+	SelectStmt Node      `json:"select_stmt,omitempty"`
+	// OnConflictClauses holds the upsert clauses in the order they appear.
+	// SQLite (3.35+) allows several ON CONFLICT clauses on one INSERT; every
+	// other engine allows at most one, so for them the slice has zero or one
+	// element.
+	OnConflictClauses    []*OnConflictClause   `json:"on_conflict_clauses,omitempty"`
 	OnDuplicateKeyUpdate *OnDuplicateKeyUpdate `json:"on_duplicate_key_update,omitempty"` // MySQL-specific
 	ReturningList        *List                 `json:"returning_list,omitempty"`
 	WithClause           *WithClause           `json:"with_clause,omitempty"`
@@ -66,9 +70,9 @@ func (n *InsertStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 		buf.astFormat(n.SelectStmt, d)
 	}
 
-	if n.OnConflictClause != nil {
+	for _, clause := range n.OnConflictClauses {
 		buf.Line()
-		buf.astFormat(n.OnConflictClause, d)
+		buf.astFormat(clause, d)
 	}
 
 	if n.OnDuplicateKeyUpdate != nil {
