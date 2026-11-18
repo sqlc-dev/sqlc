@@ -463,8 +463,8 @@ func (c *cc) convertInsertStmt(n *meyer.InsertStmt) ast.Node {
 			insert.SelectStmt = sel
 		}
 	}
-	if len(n.Upserts) > 0 {
-		insert.OnConflictClause = c.convertUpsert(n.Upserts[0])
+	for _, u := range n.Upserts {
+		insert.OnConflictClauses = append(insert.OnConflictClauses, c.convertUpsert(u))
 	}
 	return insert
 }

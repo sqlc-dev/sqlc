@@ -813,7 +813,7 @@ func (a *application) apply(parent ast.Node, name string, iter *iterator, n ast.
 		a.apply(n, "Relation", nil, n.Relation)
 		a.apply(n, "Cols", nil, n.Cols)
 		a.apply(n, "SelectStmt", nil, n.SelectStmt)
-		a.apply(n, "OnConflictClause", nil, n.OnConflictClause)
+		a.applyList(n, "OnConflictClauses")
 		a.apply(n, "OnDuplicateKeyUpdate", nil, n.OnDuplicateKeyUpdate)
 		a.apply(n, "ReturningList", nil, n.ReturningList)
 		a.apply(n, "WithClause", nil, n.WithClause)

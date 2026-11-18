@@ -14,6 +14,10 @@ type scope struct {
 type scopeRel struct {
 	alias    string
 	classOID int64
+	// qualifiedOnly hides the relation from unqualified column references.
+	// The EXCLUDED row of an ON CONFLICT DO UPDATE shares every column name
+	// with the target table, and a bare name there means the target's.
+	qualifiedOnly bool
 	// cols is the catalog's column list, held as-is rather than copied into a
 	// scope-local column type.
 	cols []core.ClassColumn
@@ -232,6 +236,9 @@ func (s *scope) resolveColumn(relation, column string) (rel scopeRel, col core.C
 	found := 0
 	for _, r := range s.rels {
 		if relation != "" && r.alias != relation {
+			continue
+		}
+		if relation == "" && r.qualifiedOnly {
 			continue
 		}
 		for _, c := range r.cols {

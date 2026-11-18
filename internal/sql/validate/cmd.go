@@ -14,7 +14,7 @@ func validateCopyfrom(n ast.Node) error {
 	if !ok {
 		return errors.New(":copyfrom requires an INSERT INTO statement")
 	}
-	if stmt.OnConflictClause != nil {
+	if len(stmt.OnConflictClauses) > 0 {
 		return errors.New(":copyfrom is not compatible with ON CONFLICT")
 	}
 	if stmt.WithClause != nil {

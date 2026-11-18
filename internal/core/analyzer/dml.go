@@ -24,7 +24,54 @@ func (a *analyzer) analyzeInsert(s *ast.InsertStmt) error {
 	if err := a.bindInsertValues(s.SelectStmt, rel, targets); err != nil {
 		return err
 	}
+	for _, clause := range s.OnConflictClauses {
+		if err := a.bindOnConflict(rel, clause); err != nil {
+			return err
+		}
+	}
+	a.scope = &scope{rels: []scopeRel{rel}}
 	return a.projectReturning(s.ReturningList)
+}
+
+// bindOnConflict binds the placeholders of an ON CONFLICT clause: those in the
+// WHERE of its conflict target, and those in the SET and WHERE of a DO UPDATE.
+// Inside the clause the row that failed to insert is visible as EXCLUDED.
+func (a *analyzer) bindOnConflict(target scopeRel, clause *ast.OnConflictClause) error {
+	if clause == nil {
+		return nil
+	}
+	excluded := target
+	excluded.alias = "excluded"
+	excluded.qualifiedOnly = true
+	a.scope = &scope{rels: []scopeRel{target, excluded}}
+
+	if clause.Infer != nil && clause.Infer.WhereClause != nil {
+		if _, err := a.typeExpr(clause.Infer.WhereClause); err != nil {
+			return fmt.Errorf("on conflict where: %w", err)
+		}
+	}
+	if clause.Action != ast.OnConflictActionUpdate {
+		return nil
+	}
+	for _, item := range listItems(clause.TargetList) {
+		rt, ok := item.(*ast.ResTarget)
+		if !ok || rt.Name == nil {
+			continue
+		}
+		col, ok := findColumn(target, *rt.Name)
+		if !ok {
+			return fmt.Errorf("unknown column %q", *rt.Name)
+		}
+		if err := a.bindValue(target, &col, rt.Val); err != nil {
+			return fmt.Errorf("on conflict set %s: %w", *rt.Name, err)
+		}
+	}
+	if clause.WhereClause != nil {
+		if _, err := a.typeExpr(clause.WhereClause); err != nil {
+			return fmt.Errorf("on conflict where: %w", err)
+		}
+	}
+	return nil
 }
 
 func (a *analyzer) analyzeUpdate(s *ast.UpdateStmt) error {

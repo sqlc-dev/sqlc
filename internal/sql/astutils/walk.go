@@ -1315,8 +1315,10 @@ func Walk(f Visitor, node ast.Node) {
 		if n.SelectStmt != nil {
 			Walk(f, n.SelectStmt)
 		}
-		if n.OnConflictClause != nil {
-			Walk(f, n.OnConflictClause)
+		for _, clause := range n.OnConflictClauses {
+			if clause != nil {
+				Walk(f, clause)
+			}
 		}
 		if n.OnDuplicateKeyUpdate != nil {
 			Walk(f, n.OnDuplicateKeyUpdate)
