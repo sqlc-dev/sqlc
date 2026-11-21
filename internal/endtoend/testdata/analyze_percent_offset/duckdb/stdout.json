@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Page",
+    "cmd": ":many",
+    "columns": [
+      {
+        "name": "id",
+        "type": {
+          "name": "integer"
+        },
+        "table": "readings"
+      }
+    ],
+    "params": [
+      {
+        "number": 1,
+        "column": {
+          "name": "",
+          "type": {
+            "name": "integer"
+          }
+        }
+      }
+    ]
+  }
+]

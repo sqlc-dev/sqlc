@@ -75,11 +75,8 @@ func (c *cc) applyModifiers(stmt *ast.SelectStmt, mods []dw.ResultModifier) {
 		case *dw.OrderModifier:
 			stmt.SortClause = c.convertOrderBys(m.Orders)
 		case *dw.LimitModifier:
-			// LIMIT n% has no row-count equivalent.
-			if m.LimitType == dw.LimitPercentage {
-				continue
-			}
-			if m.Limit != nil {
+			// LIMIT n% has no row-count equivalent, but its OFFSET counts rows.
+			if m.Limit != nil && m.LimitType != dw.LimitPercentage {
 				stmt.LimitCount = c.convertExpr(m.Limit)
 			}
 			if m.Offset != nil {
