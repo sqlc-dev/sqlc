@@ -1,0 +1,1 @@
+Error: error parsing queries: query.sql:1:1: DuckDB star expression with modifiers or COLUMNS is not supported; query.sql:5:1: DuckDB star expression with modifiers or COLUMNS is not supported

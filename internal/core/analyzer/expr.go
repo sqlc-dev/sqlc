@@ -32,6 +32,9 @@ func (a *analyzer) typeExpr(n ast.Node) (exprType, error) {
 		return exprType{}, nil
 
 	case *ast.TODO:
+		if e.UnsupportedFeature != "" {
+			return exprType{}, fmt.Errorf("%s is not supported", e.UnsupportedFeature)
+		}
 		return exprType{}, nil
 
 	case *ast.A_Const:

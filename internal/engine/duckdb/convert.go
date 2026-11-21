@@ -770,7 +770,7 @@ func (c *cc) convertStar(e *dw.StarExpression) ast.Node {
 	// COLUMNS(...) and EXCLUDE/REPLACE/RENAME modifiers have no equivalent.
 	if e.Columns || e.Expr != nil || len(e.ExcludeList) > 0 ||
 		len(e.QualifiedExcludeList) > 0 || len(e.ReplaceList) > 0 || len(e.RenameList) > 0 {
-		return todo(e)
+		return &ast.TODO{UnsupportedFeature: "DuckDB star expression with modifiers or COLUMNS"}
 	}
 	fields := &ast.List{}
 	if e.RelationName != "" {
