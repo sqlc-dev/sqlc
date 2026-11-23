@@ -1,0 +1,16 @@
+[
+  {
+    "start": 0,
+    "end": 251,
+    "dollar": true,
+    "error": "in macro \"Note\": a string or quoted name that spans lines cannot be expanded by a macro",
+    "error_at": 233
+  },
+  {
+    "start": 251,
+    "end": 336,
+    "dollar": true,
+    "error": "a string or quoted name that spans lines cannot be expanded by a macro",
+    "error_at": 319
+  }
+]

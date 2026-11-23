@@ -1,0 +1,24 @@
+[
+  {
+    "start": 0,
+    "end": 233,
+    "dollar": true,
+    "params": [
+      {
+        "number": 1,
+        "location": 230,
+        "origin": 211,
+        "name": "after",
+        "named": true
+      }
+    ],
+    "embeds": [
+      {
+        "table": "b",
+        "location": 163,
+        "origin": 134,
+        "orig": "sqlc.embed(b)"
+      }
+    ]
+  }
+]

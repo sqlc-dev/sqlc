@@ -1,0 +1,4 @@
+5:1: macro "Dup" is already defined
+11:1: macro "Params" declares the parameter "ID" twice
+11:1: macro "Params" has a @param without a name
+15:1: macro "Empty" has no body

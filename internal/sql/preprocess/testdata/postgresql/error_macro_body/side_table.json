@@ -1,0 +1,30 @@
+[
+  {
+    "start": 0,
+    "end": 486,
+    "dollar": true,
+    "error": "in macro \"Positional\": positional placeholder \"$1\" is not allowed in a macro; use sqlc.arg()",
+    "error_at": 460
+  },
+  {
+    "start": 486,
+    "end": 554,
+    "dollar": true,
+    "error": "in macro \"Nullable\": the macro parameter \"id\" can only be referenced with sqlc.arg()",
+    "error_at": 529
+  },
+  {
+    "start": 554,
+    "end": 630,
+    "dollar": true,
+    "error": "in macro \"Sliced\": the macro parameter \"ids\" can only be referenced with sqlc.arg()",
+    "error_at": 595
+  },
+  {
+    "start": 630,
+    "end": 777,
+    "dollar": true,
+    "error": "macro \"Nowhere\" is not defined",
+    "error_at": 753
+  }
+]

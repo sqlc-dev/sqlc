@@ -1,0 +1,4 @@
+# package querytest
+query.sql:6:15: macro "Missing" is not defined
+query.sql:9:15: macro "ByID" takes 1 argument; got 2
+query.sql:15:15: in macro "Positional": positional placeholder "?" is not allowed in a macro; use sqlc.arg()

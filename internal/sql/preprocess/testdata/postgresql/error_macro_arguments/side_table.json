@@ -1,0 +1,37 @@
+[
+  {
+    "start": 0,
+    "end": 135,
+    "dollar": true,
+    "error": "macro \"Pair\" takes 2 arguments; got 1",
+    "error_at": 114
+  },
+  {
+    "start": 135,
+    "end": 200,
+    "dollar": true,
+    "error": "macro \"Pair\" takes 2 arguments; got 3",
+    "error_at": 173
+  },
+  {
+    "start": 200,
+    "end": 261,
+    "dollar": true,
+    "error": "macro \"Pair\" is missing argument 2",
+    "error_at": 238
+  },
+  {
+    "start": 261,
+    "end": 316,
+    "dollar": true,
+    "error": "sqlc.macro.Pair must be called with an argument list",
+    "error_at": 298
+  },
+  {
+    "start": 316,
+    "end": 378,
+    "dollar": true,
+    "error": "sqlc.macro.Pair is missing its closing parenthesis",
+    "error_at": 355
+  }
+]

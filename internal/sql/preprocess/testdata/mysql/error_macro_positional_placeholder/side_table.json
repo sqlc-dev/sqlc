@@ -1,0 +1,9 @@
+[
+  {
+    "start": 0,
+    "end": 107,
+    "dollar": true,
+    "error": "in macro \"ByID\": positional placeholder \"?\" is not allowed in a macro; use sqlc.arg()",
+    "error_at": 87
+  }
+]

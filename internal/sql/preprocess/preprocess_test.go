@@ -29,6 +29,8 @@ var update = flag.Bool("update", false, "update the testdata golden files")
 //	testdata/<engine>/<case>/side_table.json  what the preprocessor recorded
 //	testdata/<engine>/<case>/stderr.txt       reported errors (only when invalid)
 //
+// The macros a case can call are the ones its input.sql defines.
+//
 // Regenerate the golden files with `go test ./internal/sql/preprocess -update`.
 func TestRewrite(t *testing.T) {
 	for _, dir := range cases(t) {
@@ -37,11 +39,13 @@ func TestRewrite(t *testing.T) {
 			engine := config.Engine(filepath.Dir(dir))
 
 			input := readFile(t, filepath.Join(path, "input.sql"))
-			res := preprocess.File(engine, input)
+			macros := preprocess.NewMacros(engine)
+			defErrs := macros.Collect("input.sql", input)
+			res := macros.File(input)
 
 			compare(t, filepath.Join(path, "output.sql"), res.Text)
 			compare(t, filepath.Join(path, "side_table.json"), sideTable(res))
-			compare(t, filepath.Join(path, "stderr.txt"), errors(input, res))
+			compare(t, filepath.Join(path, "stderr.txt"), errors(input, defErrs, res))
 
 			// A rewrite only ever replaces text with something shorter or
 			// equal in lines, so a line number taken from the rewritten text is
@@ -146,9 +150,14 @@ func sideTable(res *preprocess.Result) string {
 }
 
 // errors renders every validation error the preprocessor recorded, one per
-// line, as "line:column: message" against the original source.
-func errors(input string, res *preprocess.Result) string {
+// line, as "line:column: message" against the original source: the errors in
+// the macro definitions first, then the ones in each statement.
+func errors(input string, defErrs []*sqlerr.Error, res *preprocess.Result) string {
 	var out []string
+	for _, err := range defErrs {
+		line, column := source.LineNumber(input, err.Location)
+		out = append(out, fmt.Sprintf("%d:%d: %s", line, column, err))
+	}
 	for _, stmt := range res.Statements() {
 		for _, err := range []error{stmt.Err, stmt.ParamErr} {
 			if err == nil {

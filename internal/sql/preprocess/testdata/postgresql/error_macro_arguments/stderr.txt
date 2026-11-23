@@ -1,0 +1,5 @@
+7:15: macro "Pair" takes 2 arguments; got 1
+10:15: macro "Pair" takes 2 arguments; got 3
+13:15: macro "Pair" is missing argument 2
+16:15: sqlc.macro.Pair must be called with an argument list
+19:15: sqlc.macro.Pair is missing its closing parenthesis

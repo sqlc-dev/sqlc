@@ -1,0 +1,6 @@
+{
+  "contexts": ["base", "core"],
+  "meta": {
+    "invalid_schema": true
+  }
+}

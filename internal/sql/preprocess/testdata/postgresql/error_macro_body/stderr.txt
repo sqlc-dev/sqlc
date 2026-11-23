@@ -1,0 +1,4 @@
+18:15: in macro "Positional": positional placeholder "$1" is not allowed in a macro; use sqlc.arg()
+21:15: in macro "Nullable": the macro parameter "id" can only be referenced with sqlc.arg()
+24:15: in macro "Sliced": the macro parameter "ids" can only be referenced with sqlc.arg()
+28:39: macro "Nowhere" is not defined

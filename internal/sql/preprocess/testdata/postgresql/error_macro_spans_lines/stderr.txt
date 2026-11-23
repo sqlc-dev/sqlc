@@ -1,0 +1,2 @@
+12:8: in macro "Note": a string or quoted name that spans lines cannot be expanded by a macro
+15:44: a string or quoted name that spans lines cannot be expanded by a macro

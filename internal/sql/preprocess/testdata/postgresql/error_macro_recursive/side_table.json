@@ -1,0 +1,16 @@
+[
+  {
+    "start": 0,
+    "end": 227,
+    "dollar": true,
+    "error": "in macro \"Self\": macro \"Self\" expands itself: Self -\u003e Self",
+    "error_at": 207
+  },
+  {
+    "start": 227,
+    "end": 285,
+    "dollar": true,
+    "error": "in macro \"Ping\": in macro \"Pong\": macro \"Ping\" expands itself: Ping -\u003e Pong -\u003e Ping",
+    "error_at": 265
+  }
+]

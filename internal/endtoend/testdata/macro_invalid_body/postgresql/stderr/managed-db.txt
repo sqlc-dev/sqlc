@@ -1,0 +1,2 @@
+# package querytest
+query.sql:13:31: relation "foo_archive" does not exist

@@ -33,6 +33,9 @@ func (c *Compiler) parseQueryCore(raw *ast.RawStmt, src string, pre *preprocess.
 	if name == "" {
 		return nil, nil
 	}
+	if cmd == metadata.CmdMacro {
+		return nil, c.macroUnsupported(name)
+	}
 	if err := validate.Cmd(raw.Stmt, name, cmd); err != nil {
 		return nil, err
 	}
