@@ -92,12 +92,22 @@ type Statement struct {
 
 // Result is the outcome of preprocessing a SQL file.
 type Result struct {
-	// Text is the rewritten SQL. It has the same number of statements and the
-	// same line structure as the input.
+	// Text is the rewritten SQL. It has the same line structure as the input,
+	// and the same statements less the macro definitions, which are blanked.
 	Text string
 
 	stmts []*Statement
-	edits []edit
+
+	// The rewrite happens in two steps, each with its own record of what it
+	// replaced: macro calls are expanded first, and sqlc syntax is rewritten
+	// in the text that leaves. edits maps Text back to the expanded text and
+	// macroEdits maps that back to the source.
+	edits      []edit
+	macroEdits []edit
+
+	// blanks are the spans of the source that held a macro definition, in
+	// source order. Text has only whitespace there.
+	blanks [][2]int
 }
 
 // edit records one rewritten span, in both coordinate systems.
@@ -124,9 +134,24 @@ func (r *Result) Statement(location int) *Statement {
 
 // Origin maps an offset in the rewritten text back to the offset in the
 // original source, so errors can be reported against what the user wrote.
+//
+// Everything a macro call expanded to maps to the call. An offset in the gap a
+// macro definition left maps past the definition, to the statement after it:
+// a parser places the start of a statement right after the one before, and
+// what sits there in the source is the macro, not the query.
 func (r *Result) Origin(location int) int {
+	location = origin(r.macroEdits, origin(r.edits, location))
+	for _, b := range r.blanks {
+		if location >= b[0] && location < b[1] {
+			location = b[1]
+		}
+	}
+	return location
+}
+
+func origin(edits []edit, location int) int {
 	delta := 0
-	for _, e := range r.edits {
+	for _, e := range edits {
 		if location < e.newStart {
 			break
 		}
@@ -170,16 +195,26 @@ type occurrence struct {
 // parameter syntax — gets the source back unchanged, with an empty side
 // table. sqlc.arg() and friends are not rewritten for it, so they reach the
 // parser as the function calls they look like.
+//
+// The only macros a query in src can call are the ones src defines. Queries
+// spread over several files share theirs through a Macros set.
 func File(engine config.Engine, src string) *Result {
-	d, ok := DialectFor(engine)
-	if !ok {
-		return &Result{Text: src}
-	}
-	return Dialected(d, src)
+	m := NewMacros(engine)
+	m.Collect("", src)
+	return m.File(src)
 }
 
 // Dialected rewrites src using an explicit dialect.
 func Dialected(d Dialect, src string) *Result {
+	m := newMacros(d, true)
+	m.Collect("", src)
+	return m.File(src)
+}
+
+// rewrite replaces the sqlc syntax in src, which has already had its macros
+// expanded. failed holds an error, located in src, for each statement the
+// expansion could not complete.
+func rewrite(d Dialect, src string, failed []*sqlerr.Error) *Result {
 	l := &lexer{d: d, src: src}
 	res := &Result{}
 
@@ -204,7 +239,14 @@ func Dialected(d Dialect, src string) *Result {
 		// A statement that fails validation is copied through unchanged so the
 		// engine parses what the user actually wrote and the error keeps its
 		// original shape.
-		if err := firstError(occs); err != nil {
+		err := firstError(occs)
+		for _, f := range failed {
+			if f.Location >= start && f.Location < end {
+				err = f
+				break
+			}
+		}
+		if err != nil {
 			b.WriteString(src[start:end])
 			stmt.End = b.Len()
 			err.Location = stmt.Start + (err.Location - start)

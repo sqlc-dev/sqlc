@@ -16,6 +16,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/format"
+	"github.com/sqlc-dev/sqlc/internal/sql/preprocess"
 )
 
 // sqlParser is an interface for SQL parsers
@@ -157,6 +158,13 @@ func TestFormat(t *testing.T) {
 							length = len(contents) - start
 						}
 						query := strings.TrimSpace(string(contents[start : start+length]))
+
+						// sqlc fmt keeps a statement that calls a macro as it
+						// was written: the call is not SQL until it is
+						// expanded, and the formatter has no rendering of it.
+						if preprocess.CallsMacro(engine, query) {
+							t.Skip("statement calls a macro")
+						}
 
 						expected, err := fingerprint(query)
 						if err != nil {

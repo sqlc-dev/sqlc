@@ -1,0 +1,23 @@
+[
+  {
+    "start": 0,
+    "end": 307,
+    "dollar": true,
+    "params": [
+      {
+        "number": 1,
+        "location": 289,
+        "origin": 283,
+        "name": "amount",
+        "named": true
+      },
+      {
+        "number": 2,
+        "location": 295,
+        "origin": 283,
+        "name": "amount",
+        "named": true
+      }
+    ]
+  }
+]

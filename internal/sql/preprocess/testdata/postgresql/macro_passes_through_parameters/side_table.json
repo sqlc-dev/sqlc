@@ -1,0 +1,39 @@
+[
+  {
+    "start": 0,
+    "end": 318,
+    "dollar": true,
+    "params": [
+      {
+        "number": 1,
+        "location": 248,
+        "origin": 234,
+        "name": "tenant",
+        "named": true
+      },
+      {
+        "number": 2,
+        "location": 254,
+        "origin": 234,
+        "name": "admin",
+        "named": true,
+        "nullable": true
+      },
+      {
+        "number": 3,
+        "location": 291,
+        "origin": 284,
+        "name": "kinds",
+        "named": true,
+        "slice": true
+      },
+      {
+        "number": 1,
+        "location": 315,
+        "origin": 323,
+        "name": "tenant",
+        "named": true
+      }
+    ]
+  }
+]

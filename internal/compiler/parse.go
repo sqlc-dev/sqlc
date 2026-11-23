@@ -62,6 +62,9 @@ func (c *Compiler) parseQuery(stmt ast.Node, pp *preprocess.Result, o opts.Parse
 	if name == "" {
 		return nil, nil
 	}
+	if cmd == metadata.CmdMacro {
+		return nil, c.macroUnsupported(name)
+	}
 
 	if err := validate.Cmd(raw.Stmt, name, cmd); err != nil {
 		return nil, err
@@ -143,6 +146,14 @@ func (c *Compiler) parseQuery(stmt ast.Node, pp *preprocess.Result, o opts.Parse
 		SQL:             trimmed,
 		InsertIntoTable: anlys.Table,
 	}, nil
+}
+
+// macroUnsupported is the error for a macro definition that reached the
+// compiler. The preprocessor removes every definition it understands, so one
+// that is still here belongs to an engine that is not preprocessed, and has no
+// sqlc syntax to call it with.
+func (c *Compiler) macroUnsupported(name string) error {
+	return fmt.Errorf("macro %q: the :macro annotation is not supported by the %s engine", name, c.conf.Engine)
 }
 
 // renumberParams applies the parameter numbers the preprocessor assigned,

@@ -1,0 +1,1 @@
+CREATE TABLE foo (id BIGINT NOT NULL, name TEXT);

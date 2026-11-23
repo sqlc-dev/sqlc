@@ -1,0 +1,2 @@
+11:15: in macro "Self": macro "Self" expands itself: Self -> Self
+14:15: in macro "Ping": in macro "Pong": macro "Ping" expands itself: Ping -> Pong -> Ping

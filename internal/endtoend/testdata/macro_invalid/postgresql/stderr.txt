@@ -1,0 +1,12 @@
+# package querytest
+query.sql:27:1: macro "ByID" is already defined
+query.sql:46:1: macro "Twice" declares the parameter "ID" twice
+query.sql:46:1: macro "Twice" has a @param without a name
+query.sql:49:1: macro "Empty" has no body
+query.sql:6:15: macro "Missing" is not defined
+query.sql:9:15: macro "ByID" takes 1 argument; got 0
+query.sql:12:15: macro "ByID" takes 1 argument; got 2
+query.sql:15:15: sqlc.macro.ByID must be called with an argument list
+query.sql:24:15: in macro "Ping": in macro "Pong": macro "Ping" expands itself: Ping -> Pong -> Ping
+query.sql:34:15: in macro "Nullable": the macro parameter "id" can only be referenced with sqlc.arg()
+query.sql:40:15: in macro "Positional": positional placeholder "$1" is not allowed in a macro; use sqlc.arg()

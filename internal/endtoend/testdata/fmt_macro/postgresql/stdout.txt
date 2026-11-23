@@ -1,0 +1,24 @@
+--- a/query.sql
++++ b/query.sql
+@@ -1,8 +1,9 @@
+ -- A macro's own body is SQL, and is formatted like any other statement.
+ -- name: ActiveAuthors :macro
+ -- @param org bigint
++SELECT *
++FROM authors
++WHERE org_id = sqlc.arg(org) AND deleted_at IS NULL;
+-select  *  from authors
+-where org_id = sqlc.arg(org) and deleted_at is null;
+ 
+ -- A statement that calls a macro is kept as it was written: the name of a
+ -- macro is matched exactly, and the call is not SQL until it is expanded.
+@@ -12,6 +13,6 @@
+ order by a.name;
+ 
+ -- name: GetAuthor :one
++SELECT id, name
++FROM authors
++WHERE id = $1;
+-select  id,name
+-from   authors
+-where id =  $1;

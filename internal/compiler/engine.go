@@ -33,6 +33,10 @@ type Compiler struct {
 
 	coreCatalog *core.Catalog
 
+	// queries is the query files, read once and shared by the schema and the
+	// query passes. See loadQueries.
+	queries *querySet
+
 	// coreAnalysis routes every engine through the core catalog and analyzer,
 	// and coreDialect seeds the catalog it does so with. The catalog itself is
 	// not built until the schema is loaded, because the two are cached

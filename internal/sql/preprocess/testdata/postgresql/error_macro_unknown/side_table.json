@@ -1,0 +1,30 @@
+[
+  {
+    "start": 0,
+    "end": 100,
+    "dollar": true,
+    "error": "macro \"Unknown\" is not defined",
+    "error_at": 65
+  },
+  {
+    "start": 100,
+    "end": 162,
+    "dollar": true,
+    "params": [
+      {
+        "number": 1,
+        "location": 159,
+        "origin": 167,
+        "name": "id",
+        "named": true
+      }
+    ]
+  },
+  {
+    "start": 162,
+    "end": 266,
+    "dollar": true,
+    "error": "macro \"known\" is not defined",
+    "error_at": 245
+  }
+]

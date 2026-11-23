@@ -38,11 +38,68 @@ type schemaFile struct {
 	contents string
 }
 
+// queryFile is a query file as it was read.
+type queryFile struct {
+	name string
+	src  string
+}
+
+// querySet is the query files and the macros they define. A macro can be
+// called from any file, so every file is read, and its macros collected,
+// before the first one is rewritten.
+type querySet struct {
+	files  []queryFile
+	macros *preprocess.Macros
+
+	// globErr is why the files could not be listed, and errs is what went
+	// wrong reading them or collecting their macros.
+	globErr error
+	errs    *multierr.Error
+}
+
+// loadQueries reads the query files, once. The schema is parsed before the
+// queries are, and it needs their macros: a schema file is often a query file
+// too.
+func (c *Compiler) loadQueries() *querySet {
+	if c.queries != nil {
+		return c.queries
+	}
+	set := &querySet{
+		macros: preprocess.NewMacros(c.conf.Engine),
+		errs:   multierr.New(),
+	}
+	c.queries = set
+
+	files, err := sqlpath.Glob(c.conf.Queries)
+	if err != nil {
+		set.globErr = err
+		return set
+	}
+	for _, filename := range files {
+		blob, err := os.ReadFile(filename)
+		if err != nil {
+			set.errs.Add(filename, "", 0, err)
+			continue
+		}
+		src := string(blob)
+		for _, err := range set.macros.Collect(filename, src) {
+			set.errs.Add(filename, src, err.Location, err)
+		}
+		set.files = append(set.files, queryFile{name: filename, src: src})
+	}
+	return set
+}
+
 func (c *Compiler) parseCatalog(schemas []string) error {
 	paths, err := sqlpath.Glob(schemas)
 	if err != nil {
 		return err
 	}
+
+	// A macro is not SQL, and a schema file that is a query file too may
+	// define or call one. Whatever is wrong with the queries themselves is
+	// reported when they are parsed.
+	macros := c.loadQueries().macros
 
 	merr := multierr.New()
 	files := make([]schemaFile, 0, len(paths))
@@ -54,6 +111,7 @@ func (c *Compiler) parseCatalog(schemas []string) error {
 		}
 		contents := migrations.RemoveRollbackStatements(string(blob))
 		contents = migrations.RemovePsqlMetaCommands(contents)
+		contents = macros.Expand(contents)
 		files = append(files, schemaFile{name: path, contents: contents})
 		c.schema = append(c.schema, contents)
 	}
@@ -85,7 +143,7 @@ func (c *Compiler) parseCatalogLegacy(files []schemaFile, merr *multierr.Error) 
 			// A schema file and a query file are often the same file, so a
 			// query's sqlc syntax can fail here. Look for an explanation
 			// before reporting the syntax error it caused.
-			if reported := addSyntaxErrors(merr, file.name, file.contents, preprocess.File(c.conf.Engine, file.contents)); !reported {
+			if reported := addSyntaxErrors(merr, file.name, file.contents, c.loadQueries().macros.File(file.contents)); !reported {
 				merr.Add(file.name, file.contents, 0, err)
 			}
 			continue
@@ -117,7 +175,7 @@ func (c *Compiler) parseCatalogCore(files []schemaFile, merr *multierr.Error) er
 				// A schema file and a query file are often the same file, so a
 				// query's sqlc syntax can fail here. Look for an explanation
 				// before reporting the syntax error it caused.
-				if reported := addSyntaxErrors(merr, file.name, file.contents, preprocess.File(c.conf.Engine, file.contents)); !reported {
+				if reported := addSyntaxErrors(merr, file.name, file.contents, c.loadQueries().macros.File(file.contents)); !reported {
 					merr.Add(file.name, file.contents, 0, err)
 				}
 				continue
@@ -162,24 +220,21 @@ type statement struct {
 }
 
 func (c *Compiler) parseQueries(o opts.Parser) (*Result, error) {
-	merr := multierr.New()
-	files, err := sqlpath.Glob(c.conf.Queries)
-	if err != nil {
-		return nil, err
+	loaded := c.loadQueries()
+	if loaded.globErr != nil {
+		return nil, loaded.globErr
 	}
+	merr := loaded.errs
+	macros := loaded.macros
 
 	var stmts []statement
-	for _, filename := range files {
-		blob, err := os.ReadFile(filename)
-		if err != nil {
-			merr.Add(filename, "", 0, err)
-			continue
-		}
-		src := string(blob)
+	for _, file := range loaded.files {
+		filename, src := file.name, file.src
 
-		// sqlc syntax is not SQL. Rewrite it to native placeholders before the
-		// engine parser ever sees the query, so parsers only handle SQL.
-		pp := preprocess.File(c.conf.Engine, src)
+		// sqlc syntax is not SQL. Expand the macros and rewrite the rest to
+		// native placeholders before the engine parser ever sees the query,
+		// so parsers only handle SQL.
+		pp := macros.File(src)
 
 		parsed, err := c.parser.Parse(strings.NewReader(pp.Text))
 		if err != nil {

@@ -19,6 +19,7 @@ import (
 	"github.com/sqlc-dev/sqlc/internal/engine/sqlite"
 	"github.com/sqlc-dev/sqlc/internal/sql/ast"
 	"github.com/sqlc-dev/sqlc/internal/sql/format"
+	"github.com/sqlc-dev/sqlc/internal/sql/preprocess"
 	"github.com/sqlc-dev/sqlc/internal/sql/sqlpath"
 )
 
@@ -184,7 +185,7 @@ func Format(ctx context.Context, dir, filename string, o *Options) (map[string]s
 			fmt.Fprintf(stderr, "%s: skipped: %s\n", rel, err)
 			continue
 		}
-		formatted, err := formatQueries(f, string(contents))
+		formatted, err := formatQueries(f, engines[file], string(contents))
 		if err != nil {
 			// Not every query file parses without the compiler's help — for
 			// example, some engines only accept sqlc.slice() after
@@ -210,7 +211,11 @@ func Format(ctx context.Context, dir, filename string, o *Options) (map[string]s
 // every statement (that's where the "-- name:" annotation lives) are kept
 // as written; comments inside a statement are threaded through the printer
 // by position.
-func formatQueries(f queryFormatter, src string) (string, error) {
+//
+// A statement that calls a macro is kept as written. sqlc.macro.Name() reads
+// as a function call to the parser, which is free to fold the name, and the
+// name of a macro is matched exactly.
+func formatQueries(f queryFormatter, engine config.Engine, src string) (string, error) {
 	// The parser hands over statements and comments from one lexer pass;
 	// statement bodies slice the comment list by span.
 	file, err := f.ParseFile(strings.NewReader(src))
@@ -272,7 +277,11 @@ func formatQueries(f queryFormatter, src string) (string, error) {
 			}
 		}
 		block := append([]string{}, header...)
-		block = append(block, formatStmt(f, stmt.Raw, rest, interior, src))
+		if preprocess.CallsMacro(engine, rest) {
+			block = append(block, asWritten(rest))
+		} else {
+			block = append(block, formatStmt(f, stmt.Raw, rest, interior, src))
+		}
 		blocks = append(blocks, strings.Join(block, "\n"))
 	}
 	// Everything after the last statement is its terminator, whitespace and
@@ -400,7 +409,7 @@ type fingerprinter interface {
 // formatStmt returns the canonical form of a single statement, or the
 // original text when formatting cannot be proven to preserve the query.
 func formatStmt(f queryFormatter, raw *ast.RawStmt, orig string, interior []ast.Comment, src string) string {
-	fallback := strings.TrimSuffix(strings.TrimSpace(orig), ";") + ";"
+	fallback := asWritten(orig)
 	if out, ok := formatWithComments(f, raw, interior, src); ok {
 		if fp, ok := f.(fingerprinter); ok && !sameFingerprint(fp, orig, out) {
 			return fallback
@@ -408,6 +417,11 @@ func formatStmt(f queryFormatter, raw *ast.RawStmt, orig string, interior []ast.
 		return out
 	}
 	return fallback
+}
+
+// asWritten returns a statement as its author wrote it, with its terminator.
+func asWritten(orig string) string {
+	return strings.TrimSuffix(strings.TrimSpace(orig), ";") + ";"
 }
 
 // sameFingerprint reports that both texts fingerprint successfully to the

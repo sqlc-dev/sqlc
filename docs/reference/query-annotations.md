@@ -228,3 +228,30 @@ func (b *CreateBookBatchResults) Close() error {
 __NOTE: This command is driver and package specific, see [how to insert](../howto/insert.md#using-copyfrom)
 
 This command is used to insert rows a lot faster than sequential inserts.
+
+## `:macro`
+
+The statement is not a query, and no method is generated for it. It defines a
+macro: a piece of SQL that other queries include by calling
+`sqlc.macro.<name>()`. Parameters are declared with `-- @param name [type]`
+comments and passed in that order.
+
+```sql
+-- name: ActiveAuthors :macro
+-- @param org bigint
+SELECT * FROM authors
+WHERE org_id = sqlc.arg(org) AND deleted_at IS NULL;
+
+-- name: ListActiveAuthors :many
+SELECT a.id, a.name
+FROM sqlc.macro.ActiveAuthors(sqlc.arg(org_id)) a
+ORDER BY a.name;
+```
+
+```go
+func (q *Queries) ListActiveAuthors(ctx context.Context, orgID int64) ([]ListActiveAuthorsRow, error) {
+	// ...
+}
+```
+
+See [`sqlc.macro`](macros.md#sqlcmacro) for how a macro is expanded.

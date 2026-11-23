@@ -12,6 +12,8 @@ parsers, converters and `astutils` traversals only ever deal with SQL.
 | `sqlc.slice(name)` | the placeholder wrapped in `/*SLICE:name*/` |
 | `sqlc.embed(table)` | `table.*` |
 | `@name` | the native placeholder, on dialects where `@` is sqlc syntax |
+| `sqlc.macro.Name(args)` | the body of the `:macro` named `Name`, in parentheses |
+| a statement annotated `:macro` | whitespace |
 
 Native placeholders by dialect:
 
@@ -46,6 +48,62 @@ top-level semicolons and, for each statement:
 3. The statement is rewritten into the output buffer and a `Statement` records
    what changed.
 
+## Macros
+
+A statement annotated `-- name: Name :macro` is a macro, not a query. macro.go
+expands macros in a pass of its own, **before** the rewrite above, so the
+rewrite only ever sees the queries macros expanded into:
+
+```sql
+-- name: ActiveAuthors :macro
+-- @param org bigint
+SELECT * FROM authors WHERE org_id = sqlc.arg(org) AND deleted_at IS NULL;
+
+-- name: ListActiveAuthors :many
+SELECT a.id FROM sqlc.macro.ActiveAuthors(sqlc.arg(org_id)) a;
+-- after the macro pass:
+--   SELECT a.id FROM (SELECT * FROM authors WHERE org_id = CAST(sqlc.arg(org_id) AS bigint) AND deleted_at IS NULL) a;
+-- after the rewrite:
+--   SELECT a.id FROM (SELECT * FROM authors WHERE org_id = CAST($1 AS bigint) AND deleted_at IS NULL) a;
+```
+
+`Macros` is the set of definitions a group of query files shares. `Collect`
+records the macros a file defines and returns the errors in the definitions
+themselves; `File` rewrites a file against the set. The package-level `File`
+is the same thing for a single file on its own. `Expand` runs the macro pass
+alone, for the schema parser: a schema file is often a query file too, and
+takes `sqlc.arg()` as the function call it looks like but cannot take a macro.
+
+- **Parameters** are declared with `-- @param name [type]`, in call order. In
+  the body `sqlc.arg(name)` and `@name` refer to them. A typed parameter becomes
+  `CAST(arg AS type)`; an untyped one is the argument as written, in
+  parentheses unless it is a single term (`atomic`).
+- **Anything else passes through.** A `sqlc.arg()` that is not a parameter of
+  the macro is left for the rewrite, so it becomes a parameter of the calling
+  query.
+- **Expansion is lazy.** A body is only looked at when a call reaches it, so
+  an error in one is reported at the call, and a macro nothing calls never
+  fails. Definition order and file order do not matter. Recursion is an error.
+- **Arguments belong to the caller.** They are expanded where they are
+  written and never rescanned inside the body, so `F(F(x))` is not recursion
+  and an argument can never be captured by a parameter name.
+- **A definition is blanked, not cut.** Every byte but the line breaks becomes
+  a space, so every other statement keeps its offset and its line. `Origin`
+  maps an offset inside the gap to the end of it: a parser places the start of
+  a statement right after the one before, which in the source is the macro.
+- **A body is flattened.** Comments are dropped (a comment pasted into a query
+  would be read as one of its annotations) and line breaks become spaces, which
+  is what keeps the "never adds a line" invariant below. A literal that spans
+  lines cannot be flattened and is an error. Optimizer hints (`/*+ */`) stay.
+- **No positional placeholders in a body.** `$1` or `?` would be numbered
+  against whichever query the macro lands in.
+
+A statement whose macros cannot be expanded is handled like any other invalid
+statement: copied through untouched, with the reason in `Statement.Err`.
+
+An engine without a dialect has no macros. A `:macro` definition reaches its
+compiler as a statement, and the compiler rejects it.
+
 ## The side table
 
 `Result.Statement(offset)` returns the `Statement` covering an offset in the
@@ -63,7 +121,8 @@ top-level semicolons and, for each statement:
   argument that is not an identifier or string)
 
 `Result.Origin(offset)` maps an offset in the rewritten text back to the
-original source, so errors point at what the user wrote.
+original source, so errors point at what the user wrote. Everything a macro
+call expanded to maps to the call.
 
 ## Invariants
 
@@ -87,7 +146,9 @@ original source, so errors point at what the user wrote.
 | `side_table.json` | everything the preprocessor recorded |
 | `stderr.txt` | reported errors, only when the input is invalid |
 
-`TestRewrite` runs one subtest per directory. `side_table.json` is rendered by
+`TestRewrite` runs one subtest per directory; the macros a case can call are
+the ones its `input.sql` defines, and errors in those definitions are listed
+first in `stderr.txt`. `side_table.json` is rendered by
 reading the result back through the same API the compiler uses, so it covers
 parameter names and nullability, embed and slice spans, placeholder numbering
 and the offset map — a parameter's `location` is its offset in the rewritten
