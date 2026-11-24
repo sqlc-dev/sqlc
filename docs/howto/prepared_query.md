@@ -45,7 +45,7 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
-	if q.getRecordStmt, err = db.PrepareContext(ctx, getRecord); err != nil {
+	if q.getRecordStmt, err = db.PrepareContext(ctx, getRecordSQL); err != nil {
 		return nil, fmt.Errorf("error preparing query GetRecord: %w", err)
 	}
 	return &q, nil
@@ -76,13 +76,13 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	}
 }
 
-const getRecord = `-- name: GetRecord :one
+const getRecordSQL = `-- name: GetRecord :one
 SELECT id FROM records
 WHERE id = $1
 `
 
 func (q *Queries) GetRecord(ctx context.Context, id int32) (int32, error) {
-	row := q.queryRow(ctx, q.getRecordStmt, getRecord, id)
+	row := q.queryRow(ctx, q.getRecordStmt, getRecordSQL, id)
 	err := row.Scan(&id)
 	return id, err
 }

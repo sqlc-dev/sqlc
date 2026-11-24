@@ -46,12 +46,12 @@ type Queries struct {
 	db DBTX
 }
 
-const updateAuthorBios = `-- name: UpdateAuthorBios :exec
+const updateAuthorBiosSQL = `-- name: UpdateAuthorBios :exec
 UPDATE authors SET bio = $1
 `
 
 func (q *Queries) UpdateAuthorBios(ctx context.Context, bio string) error {
-	_, err := q.db.ExecContext(ctx, updateAuthorBios, bio)
+	_, err := q.db.ExecContext(ctx, updateAuthorBiosSQL, bio)
 	return err
 }
 ```
@@ -97,7 +97,7 @@ type Queries struct {
 	db DBTX
 }
 
-const updateAuthor = `-- name: UpdateAuthor :exec
+const updateAuthorSQL = `-- name: UpdateAuthor :exec
 UPDATE authors SET bio = $2
 WHERE id = $1
 `
@@ -108,7 +108,7 @@ type UpdateAuthorParams struct {
 }
 
 func (q *Queries) UpdateAuthor(ctx context.Context, arg UpdateAuthorParams) error {
-	_, err := q.db.ExecContext(ctx, updateAuthor, arg.ID, arg.Bio)
+	_, err := q.db.ExecContext(ctx, updateAuthorSQL, arg.ID, arg.Bio)
 	return err
 }
 ```

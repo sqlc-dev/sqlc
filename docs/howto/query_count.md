@@ -36,18 +36,18 @@ type Queries struct {
 	db DBTX
 }
 
-const countAuthors = `-- name: CountAuthors :one
+const countAuthorsSQL = `-- name: CountAuthors :one
 SELECT count(*) FROM authors
 `
 
 func (q *Queries) CountAuthors(ctx context.Context) (int, error) {
-	row := q.db.QueryRowContext(ctx, countAuthors)
+	row := q.db.QueryRowContext(ctx, countAuthorsSQL)
 	var i int
 	err := row.Scan(&i)
 	return i, err
 }
 
-const countAuthorsByTown = `-- name: CountAuthorsByTown :many
+const countAuthorsByTownSQL = `-- name: CountAuthorsByTown :many
 SELECT hometown, count(*) FROM authors
 GROUP BY 1
 ORDER BY 1
@@ -59,7 +59,7 @@ type CountAuthorsByTownRow struct {
 }
 
 func (q *Queries) CountAuthorsByTown(ctx context.Context) ([]CountAuthorsByTownRow, error) {
-	rows, err := q.db.QueryContext(ctx, countAuthorsByTown)
+	rows, err := q.db.QueryContext(ctx, countAuthorsByTownSQL)
 	if err != nil {
 		return nil, err
 	}
