@@ -12,7 +12,7 @@ import (
 	"cloud.google.com/go/spanner"
 )
 
-const albumTitles = `-- name: AlbumTitles :one
+const albumTitlesSQL = `-- name: AlbumTitles :one
 SELECT singer_id, ARRAY(SELECT title FROM albums WHERE albums.singer_id = singers.singer_id) AS titles
 FROM singers WHERE singer_id = @singer_id
 `
@@ -23,13 +23,13 @@ type AlbumTitlesRow struct {
 }
 
 func (q *Queries) AlbumTitles(ctx context.Context, singerID int64) (AlbumTitlesRow, error) {
-	row := q.db.QueryRowContext(ctx, albumTitles, sql.Named("singer_id", singerID))
+	row := q.db.QueryRowContext(ctx, albumTitlesSQL, sql.Named("singer_id", singerID))
 	var i AlbumTitlesRow
 	err := row.Scan(&i.SingerID, &i.Titles)
 	return i, err
 }
 
-const firstTag = `-- name: FirstTag :one
+const firstTagSQL = `-- name: FirstTag :one
 SELECT tags[OFFSET(0)] AS first_tag, tags[SAFE_ORDINAL(@n)] AS nth_tag, scores[SAFE_OFFSET(0)] AS first_score
 FROM singers WHERE singer_id = @singer_id
 `
@@ -46,13 +46,13 @@ type FirstTagRow struct {
 }
 
 func (q *Queries) FirstTag(ctx context.Context, arg FirstTagParams) (FirstTagRow, error) {
-	row := q.db.QueryRowContext(ctx, firstTag, sql.Named("n", arg.N), sql.Named("singer_id", arg.SingerID))
+	row := q.db.QueryRowContext(ctx, firstTagSQL, sql.Named("n", arg.N), sql.Named("singer_id", arg.SingerID))
 	var i FirstTagRow
 	err := row.Scan(&i.FirstTag, &i.NthTag, &i.FirstScore)
 	return i, err
 }
 
-const singerTags = `-- name: SingerTags :many
+const singerTagsSQL = `-- name: SingerTags :many
 SELECT singer_id, tag FROM singers, UNNEST(tags) AS tag
 `
 
@@ -62,7 +62,7 @@ type SingerTagsRow struct {
 }
 
 func (q *Queries) SingerTags(ctx context.Context) ([]SingerTagsRow, error) {
-	rows, err := q.db.QueryContext(ctx, singerTags)
+	rows, err := q.db.QueryContext(ctx, singerTagsSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func (q *Queries) SingerTags(ctx context.Context) ([]SingerTagsRow, error) {
 	return items, nil
 }
 
-const singersByIDs = `-- name: SingersByIDs :many
+const singersByIDsSQL = `-- name: SingersByIDs :many
 SELECT singer_id, name FROM singers WHERE singer_id IN UNNEST(@ids)
 `
 
@@ -94,7 +94,7 @@ type SingersByIDsRow struct {
 }
 
 func (q *Queries) SingersByIDs(ctx context.Context, ids []spanner.NullInt64) ([]SingersByIDsRow, error) {
-	rows, err := q.db.QueryContext(ctx, singersByIDs, sql.Named("ids", ids))
+	rows, err := q.db.QueryContext(ctx, singersByIDsSQL, sql.Named("ids", ids))
 	if err != nil {
 		return nil, err
 	}
@@ -116,12 +116,12 @@ func (q *Queries) SingersByIDs(ctx context.Context, ids []spanner.NullInt64) ([]
 	return items, nil
 }
 
-const singersNotIn = `-- name: SingersNotIn :many
+const singersNotInSQL = `-- name: SingersNotIn :many
 SELECT singer_id FROM singers WHERE singer_id NOT IN UNNEST(@ids)
 `
 
 func (q *Queries) SingersNotIn(ctx context.Context, ids []spanner.NullInt64) ([]int64, error) {
-	rows, err := q.db.QueryContext(ctx, singersNotIn, sql.Named("ids", ids))
+	rows, err := q.db.QueryContext(ctx, singersNotInSQL, sql.Named("ids", ids))
 	if err != nil {
 		return nil, err
 	}

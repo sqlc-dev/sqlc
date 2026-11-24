@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const getBar = `-- name: GetBar :many
+const getBarSQL = `-- name: GetBar :many
 SELECT foo.id, COALESCE(bar.id, 0) AS bar_id
 FROM foo
 LEFT JOIN bar ON foo.id = bar.id
@@ -21,7 +21,7 @@ type GetBarRow struct {
 }
 
 func (q *Queries) GetBar(ctx context.Context) ([]GetBarRow, error) {
-	rows, err := q.db.QueryContext(ctx, getBar)
+	rows, err := q.db.QueryContext(ctx, getBarSQL)
 	if err != nil {
 		return nil, err
 	}

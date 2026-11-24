@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const complicated = `-- name: Complicated :many
+const complicatedSQL = `-- name: Complicated :many
 WITH names AS (SELECT name from foo WHERE foo.name = ?)
 SELECT name FROM names WHERE name IN (SELECT name FROM foo WHERE foo.name = ?)
 `
@@ -19,7 +19,7 @@ type ComplicatedParams struct {
 }
 
 func (q *Queries) Complicated(ctx context.Context, arg ComplicatedParams) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, complicated, arg.Slug, arg.Slug)
+	rows, err := q.db.QueryContext(ctx, complicatedSQL, arg.Slug, arg.Slug)
 	if err != nil {
 		return nil, err
 	}
@@ -41,12 +41,12 @@ func (q *Queries) Complicated(ctx context.Context, arg ComplicatedParams) ([]str
 	return items, nil
 }
 
-const funcParamIdent = `-- name: FuncParamIdent :many
+const funcParamIdentSQL = `-- name: FuncParamIdent :many
 SELECT name FROM foo WHERE name = ?
 `
 
 func (q *Queries) FuncParamIdent(ctx context.Context, slug string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, funcParamIdent, slug)
+	rows, err := q.db.QueryContext(ctx, funcParamIdentSQL, slug)
 	if err != nil {
 		return nil, err
 	}
@@ -68,12 +68,12 @@ func (q *Queries) FuncParamIdent(ctx context.Context, slug string) ([]string, er
 	return items, nil
 }
 
-const funcParamString = `-- name: FuncParamString :many
+const funcParamStringSQL = `-- name: FuncParamString :many
 SELECT name FROM foo WHERE name = ?
 `
 
 func (q *Queries) FuncParamString(ctx context.Context, slug string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, funcParamString, slug)
+	rows, err := q.db.QueryContext(ctx, funcParamStringSQL, slug)
 	if err != nil {
 		return nil, err
 	}

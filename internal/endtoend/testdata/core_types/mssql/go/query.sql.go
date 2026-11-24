@@ -11,12 +11,12 @@ import (
 	"time"
 )
 
-const allTypes = `-- name: AllTypes :many
+const allTypesSQL = `-- name: AllTypes :many
 SELECT id, price, amount, plain, body, title, code, ncode, blob, key16, created, updated, offset_at, tm, f, f53, r, m, b, u, x, j, sv, rv, g, h, vec, sn, phone, code2, code3, bare FROM things;
 `
 
 func (q *Queries) AllTypes(ctx context.Context) ([]Thing, error) {
-	rows, err := q.db.QueryContext(ctx, allTypes)
+	rows, err := q.db.QueryContext(ctx, allTypesSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func (q *Queries) AllTypes(ctx context.Context) ([]Thing, error) {
 	return items, nil
 }
 
-const casts = `-- name: Casts :one
+const castsSQL = `-- name: Casts :one
 SELECT
   CAST(amount AS DECIMAL(5,2)) AS a,
   CAST(title AS NVARCHAR(MAX)) AS b,
@@ -111,7 +111,7 @@ type CastsRow struct {
 }
 
 func (q *Queries) Casts(ctx context.Context, arg CastsParams) (CastsRow, error) {
-	row := q.db.QueryRowContext(ctx, casts,
+	row := q.db.QueryRowContext(ctx, castsSQL,
 		sql.Named("a", arg.A),
 		sql.Named("b", arg.B),
 		sql.Named("c", arg.C),
@@ -133,7 +133,7 @@ func (q *Queries) Casts(ctx context.Context, arg CastsParams) (CastsRow, error) 
 	return i, err
 }
 
-const params = `-- name: Params :one
+const paramsSQL = `-- name: Params :one
 SELECT id FROM things
 WHERE price = @price AND body = @body AND phone = @phone AND offset_at = @offset_at;
 `
@@ -146,7 +146,7 @@ type ParamsParams struct {
 }
 
 func (q *Queries) Params(ctx context.Context, arg ParamsParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, params,
+	row := q.db.QueryRowContext(ctx, paramsSQL,
 		sql.Named("price", arg.Price),
 		sql.Named("body", arg.Body),
 		sql.Named("phone", arg.Phone),

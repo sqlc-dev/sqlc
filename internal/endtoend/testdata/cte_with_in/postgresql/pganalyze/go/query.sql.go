@@ -11,12 +11,12 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getAll = `-- name: GetAll :many
+const getAllSQL = `-- name: GetAll :many
 SELECT id, parent_id FROM L
 `
 
 func (q *Queries) GetAll(ctx context.Context) ([]L, error) {
-	rows, err := q.db.Query(ctx, getAll)
+	rows, err := q.db.Query(ctx, getAllSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func (q *Queries) GetAll(ctx context.Context) ([]L, error) {
 	return items, nil
 }
 
-const getAll1 = `-- name: GetAll1 :many
+const getAll1SQL = `-- name: GetAll1 :many
 with recursive cte as (
   select id, L_ID, F from T
   union all
@@ -50,7 +50,7 @@ type GetAll1Row struct {
 }
 
 func (q *Queries) GetAll1(ctx context.Context, lID pgtype.Int4) ([]GetAll1Row, error) {
-	rows, err := q.db.Query(ctx, getAll1, lID)
+	rows, err := q.db.Query(ctx, getAll1SQL, lID)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (q *Queries) GetAll1(ctx context.Context, lID pgtype.Int4) ([]GetAll1Row, e
 	return items, nil
 }
 
-const getAll2 = `-- name: GetAll2 :many
+const getAll2SQL = `-- name: GetAll2 :many
 with recursive cte as (
   select id, L_ID, F from T where T.ID=2
   union all
@@ -84,7 +84,7 @@ type GetAll2Row struct {
 }
 
 func (q *Queries) GetAll2(ctx context.Context, lID pgtype.Int4) ([]GetAll2Row, error) {
-	rows, err := q.db.Query(ctx, getAll2, lID)
+	rows, err := q.db.Query(ctx, getAll2SQL, lID)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (q *Queries) GetAll2(ctx context.Context, lID pgtype.Int4) ([]GetAll2Row, e
 	return items, nil
 }
 
-const getAll3 = `-- name: GetAll3 :many
+const getAll3SQL = `-- name: GetAll3 :many
 select id from T where L_ID in(
   with recursive cte as (
     select id, L_ID, F from T where T.ID =2
@@ -114,7 +114,7 @@ select id from T where L_ID in(
 `
 
 func (q *Queries) GetAll3(ctx context.Context, dollar_1 pgtype.Int4) ([]int64, error) {
-	rows, err := q.db.Query(ctx, getAll3, dollar_1)
+	rows, err := q.db.Query(ctx, getAll3SQL, dollar_1)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func (q *Queries) GetAll3(ctx context.Context, dollar_1 pgtype.Int4) ([]int64, e
 	return items, nil
 }
 
-const getAll4 = `-- name: GetAll4 :many
+const getAll4SQL = `-- name: GetAll4 :many
 select id from T where L_ID in(
   with recursive L as (
     select id, L_ID, F from T where T.ID =2
@@ -144,7 +144,7 @@ select id from T where L_ID in(
 `
 
 func (q *Queries) GetAll4(ctx context.Context, lID pgtype.Int4) ([]int64, error) {
-	rows, err := q.db.Query(ctx, getAll4, lID)
+	rows, err := q.db.Query(ctx, getAll4SQL, lID)
 	if err != nil {
 		return nil, err
 	}

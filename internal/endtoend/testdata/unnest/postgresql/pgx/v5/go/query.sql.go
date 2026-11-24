@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createMemories = `-- name: CreateMemories :many
+const createMemoriesSQL = `-- name: CreateMemories :many
 INSERT INTO memories (vampire_id)
 SELECT
     unnest($1::uuid[]) AS vampire_id
@@ -20,7 +20,7 @@ RETURNING
 `
 
 func (q *Queries) CreateMemories(ctx context.Context, vampireID []pgtype.UUID) ([]Memory, error) {
-	rows, err := q.db.Query(ctx, createMemories, vampireID)
+	rows, err := q.db.Query(ctx, createMemoriesSQL, vampireID)
 	if err != nil {
 		return nil, err
 	}
@@ -44,12 +44,12 @@ func (q *Queries) CreateMemories(ctx context.Context, vampireID []pgtype.UUID) (
 	return items, nil
 }
 
-const getVampireIDs = `-- name: GetVampireIDs :many
+const getVampireIDsSQL = `-- name: GetVampireIDs :many
 SELECT vampires.id::uuid FROM unnest($1::uuid[]) AS vampires (id)
 `
 
 func (q *Queries) GetVampireIDs(ctx context.Context, vampireID []pgtype.UUID) ([]pgtype.UUID, error) {
-	rows, err := q.db.Query(ctx, getVampireIDs, vampireID)
+	rows, err := q.db.Query(ctx, getVampireIDsSQL, vampireID)
 	if err != nil {
 		return nil, err
 	}

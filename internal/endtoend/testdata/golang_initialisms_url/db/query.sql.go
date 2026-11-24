@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const selectFoo = `-- name: SelectFoo :many
+const selectFooSQL = `-- name: SelectFoo :many
 SELECT bar_id, site_url FROM foo
 `
 
 func (q *Queries) SelectFoo(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, selectFoo)
+	rows, err := q.db.QueryContext(ctx, selectFooSQL)
 	if err != nil {
 		return nil, err
 	}

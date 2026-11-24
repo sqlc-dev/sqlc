@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const countAlertReportBy = `-- name: CountAlertReportBy :many
+const countAlertReportBySQL = `-- name: CountAlertReportBy :many
 select DATE_TRUNC($1,ts)::text as datetime,coalesce(count,0) as count from 
 (
     SELECT  DATE_TRUNC($1,eventdate) as hr ,count(*)
@@ -36,7 +36,7 @@ type CountAlertReportByRow struct {
 }
 
 func (q *Queries) CountAlertReportBy(ctx context.Context, arg CountAlertReportByParams) ([]CountAlertReportByRow, error) {
-	rows, err := q.db.Query(ctx, countAlertReportBy, arg.DateTrunc, arg.Eventdate, arg.Eventdate_2)
+	rows, err := q.db.Query(ctx, countAlertReportBySQL, arg.DateTrunc, arg.Eventdate, arg.Eventdate_2)
 	if err != nil {
 		return nil, err
 	}

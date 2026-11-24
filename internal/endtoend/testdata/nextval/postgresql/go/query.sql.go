@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const getNextID = `-- name: GetNextID :one
+const getNextIDSQL = `-- name: GetNextID :one
 SELECT pk, pk FROM
  (SELECT nextval('authors_id_seq') as pk) AS alias
 `
@@ -20,7 +20,7 @@ type GetNextIDRow struct {
 }
 
 func (q *Queries) GetNextID(ctx context.Context) (GetNextIDRow, error) {
-	row := q.db.QueryRowContext(ctx, getNextID)
+	row := q.db.QueryRowContext(ctx, getNextIDSQL)
 	var i GetNextIDRow
 	err := row.Scan(&i.Pk, &i.Pk_2)
 	return i, err

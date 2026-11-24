@@ -10,7 +10,7 @@ import (
 	"encoding/json"
 )
 
-const bulkInsert = `-- name: BulkInsert :copyfrom
+const bulkInsertSQL = `-- name: BulkInsert :copyfrom
 INSERT INTO foo (a, b) VALUES (?, ?)
 `
 
@@ -19,11 +19,11 @@ type BulkInsertParams struct {
 	B json.RawMessage
 }
 
-const selectFoo = `-- name: SelectFoo :exec
+const selectFooSQL = `-- name: SelectFoo :exec
 SELECT a, b FROM foo
 `
 
 func (q *Queries) SelectFoo(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, selectFoo)
+	_, err := q.db.ExecContext(ctx, selectFooSQL)
 	return err
 }

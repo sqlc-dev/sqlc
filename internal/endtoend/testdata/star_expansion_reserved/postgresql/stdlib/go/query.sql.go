@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const starExpansionReserved = `-- name: StarExpansionReserved :many
+const starExpansionReservedSQL = `-- name: StarExpansionReserved :many
 SELECT "group", key FROM foo
 `
 
 func (q *Queries) StarExpansionReserved(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, starExpansionReserved)
+	rows, err := q.db.QueryContext(ctx, starExpansionReservedSQL)
 	if err != nil {
 		return nil, err
 	}

@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const insertCode = `-- name: InsertCode :one
+const insertCodeSQL = `-- name: InsertCode :one
 WITH cc AS (
             INSERT INTO td3.codes(created_by, updated_by, code, hash, is_private)
             VALUES ($1, $1, $2, $3, false)
@@ -32,7 +32,7 @@ type InsertCodeParams struct {
 }
 
 func (q *Queries) InsertCode(ctx context.Context, arg InsertCodeParams) (Td3TestCode, error) {
-	row := q.db.QueryRow(ctx, insertCode,
+	row := q.db.QueryRow(ctx, insertCodeSQL,
 		arg.CreatedBy,
 		arg.Code,
 		arg.Hash,

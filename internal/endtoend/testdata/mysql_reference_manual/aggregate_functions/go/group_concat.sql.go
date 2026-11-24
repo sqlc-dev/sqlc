@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const groupConcat = `-- name: GroupConcat :many
+const groupConcatSQL = `-- name: GroupConcat :many
 SELECT student_name, GROUP_CONCAT(test_score)
 FROM student
 GROUP BY student_name
@@ -22,7 +22,7 @@ type GroupConcatRow struct {
 }
 
 func (q *Queries) GroupConcat(ctx context.Context) ([]GroupConcatRow, error) {
-	rows, err := q.db.QueryContext(ctx, groupConcat)
+	rows, err := q.db.QueryContext(ctx, groupConcatSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func (q *Queries) GroupConcat(ctx context.Context) ([]GroupConcatRow, error) {
 	return items, nil
 }
 
-const groupConcatOrderBy = `-- name: GroupConcatOrderBy :many
+const groupConcatOrderBySQL = `-- name: GroupConcatOrderBy :many
 SELECT student_name,
     GROUP_CONCAT(DISTINCT test_score ORDER BY test_score DESC SEPARATOR ' ')
 FROM student
@@ -57,7 +57,7 @@ type GroupConcatOrderByRow struct {
 }
 
 func (q *Queries) GroupConcatOrderBy(ctx context.Context) ([]GroupConcatOrderByRow, error) {
-	rows, err := q.db.QueryContext(ctx, groupConcatOrderBy)
+	rows, err := q.db.QueryContext(ctx, groupConcatOrderBySQL)
 	if err != nil {
 		return nil, err
 	}

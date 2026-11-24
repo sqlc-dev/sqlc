@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createAuthor = `-- name: CreateAuthor :one
+const createAuthorSQL = `-- name: CreateAuthor :one
 INSERT INTO authors (
   name, bio, missing_column
 ) VALUES (
@@ -26,7 +26,7 @@ type CreateAuthorParams struct {
 }
 
 func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
-	row := q.db.QueryRow(ctx, createAuthor, arg.Name, arg.Bio)
+	row := q.db.QueryRow(ctx, createAuthorSQL, arg.Name, arg.Bio)
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err

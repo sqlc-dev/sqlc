@@ -9,25 +9,25 @@ import (
 	"context"
 )
 
-const test2 = `-- name: Test2 :one
+const test2SQL = `-- name: Test2 :one
 select txt from Demo
 where txt like '%' || $1::text || '%'
 `
 
 func (q *Queries) Test2(ctx context.Context, val string) (string, error) {
-	row := q.db.QueryRowContext(ctx, test2, val)
+	row := q.db.QueryRowContext(ctx, test2SQL, val)
 	var txt string
 	err := row.Scan(&txt)
 	return txt, err
 }
 
-const test3 = `-- name: Test3 :one
+const test3SQL = `-- name: Test3 :one
 select txt from Demo
 where txt like concat('%', $1::text, '%')
 `
 
 func (q *Queries) Test3(ctx context.Context, val string) (string, error) {
-	row := q.db.QueryRowContext(ctx, test3, val)
+	row := q.db.QueryRowContext(ctx, test3SQL, val)
 	var txt string
 	err := row.Scan(&txt)
 	return txt, err

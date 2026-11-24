@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const funcParamIdent = `-- name: FuncParamIdent :many
+const funcParamIdentSQL = `-- name: FuncParamIdent :many
 SELECT name FROM foo WHERE name = $1
   AND id IN ($2)
 `
@@ -20,7 +20,7 @@ type FuncParamIdentParams struct {
 }
 
 func (q *Queries) FuncParamIdent(ctx context.Context, arg FuncParamIdentParams) ([]string, error) {
-	rows, err := q.db.Query(ctx, funcParamIdent, arg.Slug, arg.Favourites)
+	rows, err := q.db.Query(ctx, funcParamIdentSQL, arg.Slug, arg.Favourites)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (q *Queries) FuncParamIdent(ctx context.Context, arg FuncParamIdentParams) 
 	return items, nil
 }
 
-const funcParamString = `-- name: FuncParamString :many
+const funcParamStringSQL = `-- name: FuncParamString :many
 SELECT name FROM foo WHERE name = $1
   AND id IN ($2)
 `
@@ -50,7 +50,7 @@ type FuncParamStringParams struct {
 }
 
 func (q *Queries) FuncParamString(ctx context.Context, arg FuncParamStringParams) ([]string, error) {
-	rows, err := q.db.Query(ctx, funcParamString, arg.Slug, arg.Favourites)
+	rows, err := q.db.Query(ctx, funcParamStringSQL, arg.Slug, arg.Favourites)
 	if err != nil {
 		return nil, err
 	}

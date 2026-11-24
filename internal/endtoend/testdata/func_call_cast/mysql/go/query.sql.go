@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const demo = `-- name: Demo :one
+const demoSQL = `-- name: Demo :one
 SELECT CAST(GREATEST(1,2,3,4,5) AS UNSIGNED) as col1
 `
 
 func (q *Queries) Demo(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, demo)
+	row := q.db.QueryRowContext(ctx, demoSQL)
 	var col1 int64
 	err := row.Scan(&col1)
 	return col1, err

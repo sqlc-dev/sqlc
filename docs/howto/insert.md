@@ -41,12 +41,12 @@ type Queries struct {
 	db DBTX
 }
 
-const createAuthor = `-- name: CreateAuthor :exec
+const createAuthorSQL = `-- name: CreateAuthor :exec
 INSERT INTO authors (bio) VALUES ($1)
 `
 
 func (q *Queries) CreateAuthor(ctx context.Context, bio string) error {
-	_, err := q.db.ExecContext(ctx, createAuthor, bio)
+	_, err := q.db.ExecContext(ctx, createAuthorSQL, bio)
 	return err
 }
 ```
@@ -112,7 +112,7 @@ import (
 	"database/sql"
 )
 
-const createAuthor = `-- name: CreateAuthor :one
+const createAuthorSQL = `-- name: CreateAuthor :one
 INSERT INTO authors (
   name, bio
 ) VALUES (
@@ -127,13 +127,13 @@ type CreateAuthorParams struct {
 }
 
 func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
-	row := q.db.QueryRowContext(ctx, createAuthor, arg.Name, arg.Bio)
+	row := q.db.QueryRowContext(ctx, createAuthorSQL, arg.Name, arg.Bio)
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
 }
 
-const createAuthorAndReturnId = `-- name: CreateAuthorAndReturnId :one
+const createAuthorAndReturnIdSQL = `-- name: CreateAuthorAndReturnId :one
 INSERT INTO authors (
   name, bio
 ) VALUES (
@@ -148,7 +148,7 @@ type CreateAuthorAndReturnIdParams struct {
 }
 
 func (q *Queries) CreateAuthorAndReturnId(ctx context.Context, arg CreateAuthorAndReturnIdParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, createAuthorAndReturnId, arg.Name, arg.Bio)
+	row := q.db.QueryRowContext(ctx, createAuthorAndReturnIdSQL, arg.Name, arg.Bio)
 	var id int64
 	err := row.Scan(&id)
 	return id, err

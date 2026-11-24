@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const placeholder = `-- name: Placeholder :many
+const placeholderSQL = `-- name: Placeholder :many
 SELECT name, location, size FROM venues
 `
 
 func (q *Queries) Placeholder(ctx context.Context) ([]Venue, error) {
-	rows, err := q.db.QueryContext(ctx, placeholder)
+	rows, err := q.db.QueryContext(ctx, placeholderSQL)
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const deleteReadyWithCTE = `-- name: DeleteReadyWithCTE :exec
+const deleteReadyWithCTESQL = `-- name: DeleteReadyWithCTE :exec
 WITH ready_ids AS (
 	SELECT id FROM bar WHERE ready
 )
@@ -17,6 +17,6 @@ DELETE FROM bar WHERE id IN (SELECT id FROM ready_ids)
 `
 
 func (q *Queries) DeleteReadyWithCTE(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, deleteReadyWithCTE)
+	_, err := q.db.ExecContext(ctx, deleteReadyWithCTESQL)
 	return err
 }

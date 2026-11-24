@@ -12,7 +12,7 @@ import (
 	models "github.com/sqlc-dev/sqlc/endtoend/output_models_path/postgresql/model"
 )
 
-const createAuthor = `-- name: CreateAuthor :one
+const createAuthorSQL = `-- name: CreateAuthor :one
 INSERT INTO authors (name, bio, status) VALUES ($1, $2, $3) RETURNING id, name, bio, status
 `
 
@@ -23,7 +23,7 @@ type CreateAuthorParams struct {
 }
 
 func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (models.Author, error) {
-	row := q.db.QueryRowContext(ctx, createAuthor, arg.Name, arg.Bio, arg.Status)
+	row := q.db.QueryRowContext(ctx, createAuthorSQL, arg.Name, arg.Bio, arg.Status)
 	var i models.Author
 	err := row.Scan(
 		&i.ID,
@@ -34,12 +34,12 @@ func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (mod
 	return i, err
 }
 
-const getAuthor = `-- name: GetAuthor :one
+const getAuthorSQL = `-- name: GetAuthor :one
 SELECT id, name, bio, status FROM authors WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, id int64) (models.Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, id)
+	row := q.db.QueryRowContext(ctx, getAuthorSQL, id)
 	var i models.Author
 	err := row.Scan(
 		&i.ID,
@@ -50,23 +50,23 @@ func (q *Queries) GetAuthor(ctx context.Context, id int64) (models.Author, error
 	return i, err
 }
 
-const getBook = `-- name: GetBook :one
+const getBookSQL = `-- name: GetBook :one
 SELECT id, author_id, title FROM books WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetBook(ctx context.Context, id int64) (models.Book, error) {
-	row := q.db.QueryRowContext(ctx, getBook, id)
+	row := q.db.QueryRowContext(ctx, getBookSQL, id)
 	var i models.Book
 	err := row.Scan(&i.ID, &i.AuthorID, &i.Title)
 	return i, err
 }
 
-const listAuthors = `-- name: ListAuthors :many
+const listAuthorsSQL = `-- name: ListAuthors :many
 SELECT id, name, bio, status FROM authors ORDER BY name
 `
 
 func (q *Queries) ListAuthors(ctx context.Context) ([]models.Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthors)
+	rows, err := q.db.QueryContext(ctx, listAuthorsSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -93,12 +93,12 @@ func (q *Queries) ListAuthors(ctx context.Context) ([]models.Author, error) {
 	return items, nil
 }
 
-const listAuthorsByStatus = `-- name: ListAuthorsByStatus :many
+const listAuthorsByStatusSQL = `-- name: ListAuthorsByStatus :many
 SELECT id, name, bio, status FROM authors WHERE status = $1 ORDER BY name
 `
 
 func (q *Queries) ListAuthorsByStatus(ctx context.Context, status models.Status) ([]models.Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthorsByStatus, status)
+	rows, err := q.db.QueryContext(ctx, listAuthorsByStatusSQL, status)
 	if err != nil {
 		return nil, err
 	}

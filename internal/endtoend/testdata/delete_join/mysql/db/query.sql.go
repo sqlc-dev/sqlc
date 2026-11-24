@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const deleteJoin = `-- name: DeleteJoin :exec
+const deleteJoinSQL = `-- name: DeleteJoin :exec
 DELETE jt.*,
 pt.*
 FROM
@@ -26,22 +26,22 @@ type DeleteJoinParams struct {
 }
 
 func (q *Queries) DeleteJoin(ctx context.Context, arg DeleteJoinParams) error {
-	_, err := q.db.ExecContext(ctx, deleteJoin, arg.ID, arg.UserID)
+	_, err := q.db.ExecContext(ctx, deleteJoinSQL, arg.ID, arg.UserID)
 	return err
 }
 
-const deleteJoinWithSubquery = `-- name: DeleteJoinWithSubquery :exec
+const deleteJoinWithSubquerySQL = `-- name: DeleteJoinWithSubquery :exec
 DELETE pt
 FROM primary_table pt
 JOIN (SELECT 1 as id) jt ON pt.id = jt.id
 `
 
 func (q *Queries) DeleteJoinWithSubquery(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, deleteJoinWithSubquery)
+	_, err := q.db.ExecContext(ctx, deleteJoinWithSubquerySQL)
 	return err
 }
 
-const deleteLeftJoin = `-- name: DeleteLeftJoin :exec
+const deleteLeftJoinSQL = `-- name: DeleteLeftJoin :exec
 DELETE jt.*,
 pt.*
 FROM
@@ -58,11 +58,11 @@ type DeleteLeftJoinParams struct {
 }
 
 func (q *Queries) DeleteLeftJoin(ctx context.Context, arg DeleteLeftJoinParams) error {
-	_, err := q.db.ExecContext(ctx, deleteLeftJoin, arg.ID, arg.UserID)
+	_, err := q.db.ExecContext(ctx, deleteLeftJoinSQL, arg.ID, arg.UserID)
 	return err
 }
 
-const deleteRightJoin = `-- name: DeleteRightJoin :exec
+const deleteRightJoinSQL = `-- name: DeleteRightJoin :exec
 DELETE jt.*,
 pt.*
 FROM
@@ -79,6 +79,6 @@ type DeleteRightJoinParams struct {
 }
 
 func (q *Queries) DeleteRightJoin(ctx context.Context, arg DeleteRightJoinParams) error {
-	_, err := q.db.ExecContext(ctx, deleteRightJoin, arg.ID, arg.UserID)
+	_, err := q.db.ExecContext(ctx, deleteRightJoinSQL, arg.ID, arg.UserID)
 	return err
 }

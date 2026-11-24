@@ -9,14 +9,14 @@ import (
 	"context"
 )
 
-const getData = `-- name: GetData :many
+const getDataSQL = `-- name: GetData :many
 select invalid, foo
 from my_table
 where (cast(?1 as boolean) or not invalid)
 `
 
 func (q *Queries) GetData(ctx context.Context, allowInvalid bool) ([]MyTable, error) {
-	rows, err := q.db.QueryContext(ctx, getData, allowInvalid)
+	rows, err := q.db.QueryContext(ctx, getDataSQL, allowInvalid)
 	if err != nil {
 		return nil, err
 	}

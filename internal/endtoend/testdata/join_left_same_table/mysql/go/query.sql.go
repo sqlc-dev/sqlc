@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const allAuthors = `-- name: AllAuthors :many
+const allAuthorsSQL = `-- name: AllAuthors :many
 SELECT  a.id,
         a.name,
         p.id as alias_id,
@@ -28,7 +28,7 @@ type AllAuthorsRow struct {
 }
 
 func (q *Queries) AllAuthors(ctx context.Context) ([]AllAuthorsRow, error) {
-	rows, err := q.db.QueryContext(ctx, allAuthors)
+	rows, err := q.db.QueryContext(ctx, allAuthorsSQL)
 	if err != nil {
 		return nil, err
 	}

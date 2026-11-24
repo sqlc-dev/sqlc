@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const getAuthorByID = `-- name: GetAuthorByID :one
+const getAuthorByIDSQL = `-- name: GetAuthorByID :one
 SELECT id, name, bio
 FROM authors
 WHERE id = ?
@@ -17,13 +17,13 @@ LIMIT 1
 `
 
 func (q *Queries) GetAuthorByID(ctx context.Context, id int64) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthorByID, id)
+	row := q.db.QueryRowContext(ctx, getAuthorByIDSQL, id)
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
 }
 
-const getAuthorIDByID = `-- name: GetAuthorIDByID :one
+const getAuthorIDByIDSQL = `-- name: GetAuthorIDByID :one
 SELECT id
 FROM authors
 WHERE id = ?
@@ -31,13 +31,13 @@ LIMIT 1
 `
 
 func (q *Queries) GetAuthorIDByID(ctx context.Context, id int64) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getAuthorIDByID, id)
+	row := q.db.QueryRowContext(ctx, getAuthorIDByIDSQL, id)
 	var id_2 int64
 	err := row.Scan(&id_2)
 	return id_2, err
 }
 
-const getUser = `-- name: GetUser :one
+const getUserSQL = `-- name: GetUser :one
 SELECT sub
 FROM users
 WHERE sub = ?
@@ -45,7 +45,7 @@ LIMIT 1
 `
 
 func (q *Queries) GetUser(ctx context.Context, sub string) (string, error) {
-	row := q.db.QueryRowContext(ctx, getUser, sub)
+	row := q.db.QueryRowContext(ctx, getUserSQL, sub)
 	var sub_2 string
 	err := row.Scan(&sub_2)
 	return sub_2, err

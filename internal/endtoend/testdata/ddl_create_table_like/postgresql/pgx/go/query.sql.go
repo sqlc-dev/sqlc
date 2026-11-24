@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const allRanked = `-- name: AllRanked :many
+const allRankedSQL = `-- name: AllRanked :many
 SELECT ranked, rank_by_effect_size, rank_by_abs_percent_change FROM changes_ranked
 `
 
 func (q *Queries) AllRanked(ctx context.Context) ([]ChangesRanked, error) {
-	rows, err := q.db.Query(ctx, allRanked)
+	rows, err := q.db.Query(ctx, allRankedSQL)
 	if err != nil {
 		return nil, err
 	}

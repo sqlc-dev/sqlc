@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const listUsersByRole = `-- name: ListUsersByRole :many
+const listUsersByRoleSQL = `-- name: ListUsersByRole :many
 SELECT role FROM foo.users WHERE role = $1
 `
 
 func (q *Queries) ListUsersByRole(ctx context.Context, role NullFooTypeUserRole) ([]NullFooTypeUserRole, error) {
-	rows, err := q.db.Query(ctx, listUsersByRole, role)
+	rows, err := q.db.Query(ctx, listUsersByRoleSQL, role)
 	if err != nil {
 		return nil, err
 	}

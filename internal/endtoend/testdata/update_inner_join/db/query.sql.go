@@ -9,11 +9,11 @@ import (
 	"context"
 )
 
-const updateXWithY = `-- name: UpdateXWithY :exec
+const updateXWithYSQL = `-- name: UpdateXWithY :exec
 UPDATE x INNER JOIN y ON y.a = x.a SET x.b = y.b
 `
 
 func (q *Queries) UpdateXWithY(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, updateXWithY)
+	_, err := q.db.ExecContext(ctx, updateXWithYSQL)
 	return err
 }

@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const testRecursive = `-- name: TestRecursive :one
+const testRecursiveSQL = `-- name: TestRecursive :one
 WITH t1 AS (
     select 1 as foo
 )
@@ -17,7 +17,7 @@ SELECT foo FROM t1
 `
 
 func (q *Queries) TestRecursive(ctx context.Context) (int32, error) {
-	row := q.db.QueryRow(ctx, testRecursive)
+	row := q.db.QueryRow(ctx, testRecursiveSQL)
 	var foo int32
 	err := row.Scan(&foo)
 	return foo, err

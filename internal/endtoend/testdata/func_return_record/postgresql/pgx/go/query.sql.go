@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getData = `-- name: GetData :one
+const getDataSQL = `-- name: GetData :one
 SELECT key, value
 FROM my_table, jsonb_each(data)
 LIMIT 1
@@ -23,7 +23,7 @@ type GetDataRow struct {
 }
 
 func (q *Queries) GetData(ctx context.Context) (GetDataRow, error) {
-	row := q.db.QueryRow(ctx, getData)
+	row := q.db.QueryRow(ctx, getDataSQL)
 	var i GetDataRow
 	err := row.Scan(&i.Key, &i.Value)
 	return i, err

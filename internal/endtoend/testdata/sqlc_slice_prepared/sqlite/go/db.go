@@ -24,7 +24,7 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
-	if q.funcParamIdentStmt, err = db.PrepareContext(ctx, funcParamIdent); err != nil {
+	if q.funcParamIdentStmt, err = db.PrepareContext(ctx, funcParamIdentSQL); err != nil {
 		return nil, fmt.Errorf("error preparing query FuncParamIdent: %w", err)
 	}
 	return &q, nil

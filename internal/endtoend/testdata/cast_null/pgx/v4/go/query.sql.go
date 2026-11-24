@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const listNullable = `-- name: ListNullable :many
+const listNullableSQL = `-- name: ListNullable :many
 SELECT
   NULL::text as a,
   NULL::integer as b,
@@ -27,7 +27,7 @@ type ListNullableRow struct {
 }
 
 func (q *Queries) ListNullable(ctx context.Context) ([]ListNullableRow, error) {
-	rows, err := q.db.Query(ctx, listNullable)
+	rows, err := q.db.Query(ctx, listNullableSQL)
 	if err != nil {
 		return nil, err
 	}

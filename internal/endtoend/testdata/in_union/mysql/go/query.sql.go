@@ -9,13 +9,13 @@ import (
 	"context"
 )
 
-const getAuthors = `-- name: GetAuthors :many
+const getAuthorsSQL = `-- name: GetAuthors :many
 SELECT id, name, bio FROM authors
 WHERE author_id IN (SELECT author_id FROM book1 UNION SELECT author_id FROM book2)
 `
 
 func (q *Queries) GetAuthors(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, getAuthors)
+	rows, err := q.db.QueryContext(ctx, getAuthorsSQL)
 	if err != nil {
 		return nil, err
 	}

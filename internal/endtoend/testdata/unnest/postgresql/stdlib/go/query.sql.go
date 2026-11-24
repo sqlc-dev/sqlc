@@ -12,7 +12,7 @@ import (
 	"github.com/lib/pq"
 )
 
-const createMemories = `-- name: CreateMemories :many
+const createMemoriesSQL = `-- name: CreateMemories :many
 INSERT INTO memories (vampire_id)
 SELECT
     unnest($1::uuid[]) AS vampire_id
@@ -21,7 +21,7 @@ RETURNING
 `
 
 func (q *Queries) CreateMemories(ctx context.Context, vampireID []uuid.UUID) ([]Memory, error) {
-	rows, err := q.db.QueryContext(ctx, createMemories, pq.Array(vampireID))
+	rows, err := q.db.QueryContext(ctx, createMemoriesSQL, pq.Array(vampireID))
 	if err != nil {
 		return nil, err
 	}
@@ -48,12 +48,12 @@ func (q *Queries) CreateMemories(ctx context.Context, vampireID []uuid.UUID) ([]
 	return items, nil
 }
 
-const getVampireIDs = `-- name: GetVampireIDs :many
+const getVampireIDsSQL = `-- name: GetVampireIDs :many
 SELECT vampires.id::uuid FROM unnest($1::uuid[]) AS vampires (id)
 `
 
 func (q *Queries) GetVampireIDs(ctx context.Context, vampireID []uuid.UUID) ([]uuid.UUID, error) {
-	rows, err := q.db.QueryContext(ctx, getVampireIDs, pq.Array(vampireID))
+	rows, err := q.db.QueryContext(ctx, getVampireIDsSQL, pq.Array(vampireID))
 	if err != nil {
 		return nil, err
 	}

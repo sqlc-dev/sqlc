@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const updateAuthor = `-- name: UpdateAuthor :one
+const updateAuthorSQL = `-- name: UpdateAuthor :one
 update authors
 set names[$1] = $2
 where id=$3
@@ -23,7 +23,7 @@ type UpdateAuthorParams struct {
 }
 
 func (q *Queries) UpdateAuthor(ctx context.Context, arg UpdateAuthorParams) (Author, error) {
-	row := q.db.QueryRow(ctx, updateAuthor, arg.Names, arg.Names_2, arg.ID)
+	row := q.db.QueryRow(ctx, updateAuthorSQL, arg.Names, arg.Names_2, arg.ID)
 	var i Author
 	err := row.Scan(&i.ID, &i.Names)
 	return i, err

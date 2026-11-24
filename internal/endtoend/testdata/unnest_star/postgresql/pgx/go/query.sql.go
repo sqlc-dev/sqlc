@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getPlanItems = `-- name: GetPlanItems :many
+const getPlanItemsSQL = `-- name: GetPlanItems :many
 SELECT p.plan_id, p.item_id
 FROM (SELECT unnest FROM unnest($1::bigint[])) AS i(req_item_id),
 LATERAL (
@@ -37,7 +37,7 @@ type GetPlanItemsRow struct {
 }
 
 func (q *Queries) GetPlanItems(ctx context.Context, arg GetPlanItemsParams) ([]GetPlanItemsRow, error) {
-	rows, err := q.db.Query(ctx, getPlanItems, arg.Ids, arg.After, arg.LimitCount)
+	rows, err := q.db.Query(ctx, getPlanItemsSQL, arg.Ids, arg.After, arg.LimitCount)
 	if err != nil {
 		return nil, err
 	}

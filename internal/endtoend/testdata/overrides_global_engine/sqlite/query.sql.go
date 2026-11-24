@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const findEntry = `-- name: FindEntry :one
+const findEntrySQL = `-- name: FindEntry :one
 SELECT id, value, code FROM entries
 WHERE value = ?1 AND code = ?2
 `
@@ -20,7 +20,7 @@ type FindEntryParams struct {
 }
 
 func (q *Queries) FindEntry(ctx context.Context, arg FindEntryParams) (Entry, error) {
-	row := q.db.QueryRowContext(ctx, findEntry, arg.Value, arg.Code)
+	row := q.db.QueryRowContext(ctx, findEntrySQL, arg.Value, arg.Code)
 	var i Entry
 	err := row.Scan(&i.ID, &i.Value, &i.Code)
 	return i, err

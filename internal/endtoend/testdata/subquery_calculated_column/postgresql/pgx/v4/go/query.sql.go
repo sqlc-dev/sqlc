@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const subqueryCalcColumn = `-- name: SubqueryCalcColumn :many
+const subqueryCalcColumnSQL = `-- name: SubqueryCalcColumn :many
 SELECT sum FROM (SELECT a + b AS sum FROM foo) AS f
 `
 
 func (q *Queries) SubqueryCalcColumn(ctx context.Context) ([]int32, error) {
-	rows, err := q.db.Query(ctx, subqueryCalcColumn)
+	rows, err := q.db.Query(ctx, subqueryCalcColumnSQL)
 	if err != nil {
 		return nil, err
 	}

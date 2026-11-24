@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const createAuthor = `-- name: CreateAuthor :one
+const createAuthorSQL = `-- name: CreateAuthor :one
 INSERT INTO authors (
   name, bio
 ) OUTPUT INSERTED.id, INSERTED.name, INSERTED.bio
@@ -25,41 +25,41 @@ type CreateAuthorParams struct {
 }
 
 func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
-	row := q.db.QueryRowContext(ctx, createAuthor, sql.Named("name", arg.Name), sql.Named("bio", arg.Bio))
+	row := q.db.QueryRowContext(ctx, createAuthorSQL, sql.Named("name", arg.Name), sql.Named("bio", arg.Bio))
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
 }
 
-const deleteAuthor = `-- name: DeleteAuthor :exec
+const deleteAuthorSQL = `-- name: DeleteAuthor :exec
 DELETE FROM authors
 WHERE id = @id;
 `
 
 func (q *Queries) DeleteAuthor(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteAuthor, sql.Named("id", id))
+	_, err := q.db.ExecContext(ctx, deleteAuthorSQL, sql.Named("id", id))
 	return err
 }
 
-const getAuthor = `-- name: GetAuthor :one
+const getAuthorSQL = `-- name: GetAuthor :one
 SELECT id, name, bio FROM authors
 WHERE id = @id;
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, sql.Named("id", id))
+	row := q.db.QueryRowContext(ctx, getAuthorSQL, sql.Named("id", id))
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
 }
 
-const listAuthors = `-- name: ListAuthors :many
+const listAuthorsSQL = `-- name: ListAuthors :many
 SELECT id, name, bio FROM authors
 ORDER BY name;
 `
 
 func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthors)
+	rows, err := q.db.QueryContext(ctx, listAuthorsSQL)
 	if err != nil {
 		return nil, err
 	}

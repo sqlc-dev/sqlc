@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const insertContact = `-- name: InsertContact :exec
+const insertContactSQL = `-- name: InsertContact :exec
 INSERT INTO contacts (
   pid,
   customername
@@ -24,6 +24,6 @@ type InsertContactParams struct {
 }
 
 func (q *Queries) InsertContact(ctx context.Context, arg InsertContactParams) error {
-	_, err := q.db.ExecContext(ctx, insertContact, arg.Pid, arg.Customername)
+	_, err := q.db.ExecContext(ctx, insertContactSQL, arg.Pid, arg.Customername)
 	return err
 }

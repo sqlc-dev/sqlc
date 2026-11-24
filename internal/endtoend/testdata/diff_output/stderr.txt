@@ -15,22 +15,22 @@
  	return i, err
  }
  
--const deleteAuthor = `-- name: DeleteAuthor :exec
+-const deleteAuthorSQL = `-- name: DeleteAuthor :exec
 -DELETE FROM authors
 -WHERE id = $1
 -`
 -
 -func (q *Queries) DeleteAuthor(ctx context.Context, id int64) error {
--	_, err := q.db.ExecContext(ctx, deleteAuthor, id)
+-	_, err := q.db.ExecContext(ctx, deleteAuthorSQL, id)
 -	return err
 -}
 -
- const getAuthor = `-- name: GetAuthor :one
+ const getAuthorSQL = `-- name: GetAuthor :one
  SELECT id, name, bio FROM authors
  WHERE id = $1 LIMIT 1
 @@ -55,7 +45,7 @@
  
- const listAuthors = `-- name: ListAuthors :many
+ const listAuthorsSQL = `-- name: ListAuthors :many
  SELECT id, name, bio FROM authors
 +ORDER BY bio
 -ORDER BY name
@@ -42,12 +42,12 @@
  	return items, nil
  }
 +
-+const selectOne = `-- name: SelectOne :one
++const selectOneSQL = `-- name: SelectOne :one
 +SELECT 1
 +`
 +
 +func (q *Queries) SelectOne(ctx context.Context) (int32, error) {
-+	row := q.db.QueryRowContext(ctx, selectOne)
++	row := q.db.QueryRowContext(ctx, selectOneSQL)
 +	var column_1 int32
 +	err := row.Scan(&column_1)
 +	return column_1, err

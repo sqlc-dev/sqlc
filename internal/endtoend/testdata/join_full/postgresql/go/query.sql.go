@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const fullJoin = `-- name: FullJoin :many
+const fullJoinSQL = `-- name: FullJoin :many
 SELECT f.id, f.bar_id, b.id
 FROM foo f
 FULL OUTER JOIN bar b ON b.id = f.bar_id
@@ -24,7 +24,7 @@ type FullJoinRow struct {
 }
 
 func (q *Queries) FullJoin(ctx context.Context, id int32) ([]FullJoinRow, error) {
-	rows, err := q.db.QueryContext(ctx, fullJoin, id)
+	rows, err := q.db.QueryContext(ctx, fullJoinSQL, id)
 	if err != nil {
 		return nil, err
 	}

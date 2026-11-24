@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const getAll = `-- name: GetAll :many
+const getAllSQL = `-- name: GetAll :many
 SELECT id FROM foo
 `
 
 func (q *Queries) GetAll(ctx context.Context) ([]int32, error) {
-	rows, err := q.db.QueryContext(ctx, getAll)
+	rows, err := q.db.QueryContext(ctx, getAllSQL)
 	if err != nil {
 		return nil, err
 	}

@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createAuthor = `-- name: CreateAuthor :one
+const createAuthorSQL = `-- name: CreateAuthor :one
 INSERT INTO authors (
           name, bio
 ) VALUES (
@@ -26,41 +26,41 @@ type CreateAuthorParams struct {
 }
 
 func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
-	row := q.db.QueryRow(ctx, createAuthor, arg.Name, arg.Bio)
+	row := q.db.QueryRow(ctx, createAuthorSQL, arg.Name, arg.Bio)
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
 }
 
-const deleteAuthor = `-- name: DeleteAuthor :exec
+const deleteAuthorSQL = `-- name: DeleteAuthor :exec
 DELETE FROM authors
 WHERE id = $1
 `
 
 func (q *Queries) DeleteAuthor(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, deleteAuthor, id)
+	_, err := q.db.Exec(ctx, deleteAuthorSQL, id)
 	return err
 }
 
-const getAuthor = `-- name: GetAuthor :one
+const getAuthorSQL = `-- name: GetAuthor :one
 SELECT id, name, bio FROM authors
 WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
-	row := q.db.QueryRow(ctx, getAuthor, id)
+	row := q.db.QueryRow(ctx, getAuthorSQL, id)
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
 }
 
-const listAuthors = `-- name: ListAuthors :many
+const listAuthorsSQL = `-- name: ListAuthors :many
 SELECT id, name, bio FROM authors
 ORDER BY name
 `
 
 func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.Query(ctx, listAuthors)
+	rows, err := q.db.Query(ctx, listAuthorsSQL)
 	if err != nil {
 		return nil, err
 	}

@@ -10,12 +10,12 @@ import (
 	"database/sql"
 )
 
-const listAlbums = `-- name: ListAlbums :many
+const listAlbumsSQL = `-- name: ListAlbums :many
 SELECT singer_id, album_id, title, created_at FROM albums WHERE singer_id = @singer_id
 `
 
 func (q *Queries) ListAlbums(ctx context.Context, singerID int64) ([]Album, error) {
-	rows, err := q.db.QueryContext(ctx, listAlbums, sql.Named("singer_id", singerID))
+	rows, err := q.db.QueryContext(ctx, listAlbumsSQL, sql.Named("singer_id", singerID))
 	if err != nil {
 		return nil, err
 	}
@@ -42,12 +42,12 @@ func (q *Queries) ListAlbums(ctx context.Context, singerID int64) ([]Album, erro
 	return items, nil
 }
 
-const listSingers = `-- name: ListSingers :many
+const listSingersSQL = `-- name: ListSingers :many
 SELECT singer_id, first_name, last_name, full_name, active, updated_at FROM singers
 `
 
 func (q *Queries) ListSingers(ctx context.Context) ([]Singer, error) {
-	rows, err := q.db.QueryContext(ctx, listSingers)
+	rows, err := q.db.QueryContext(ctx, listSingersSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -76,12 +76,12 @@ func (q *Queries) ListSingers(ctx context.Context) ([]Singer, error) {
 	return items, nil
 }
 
-const listTickets = `-- name: ListTickets :many
+const listTicketsSQL = `-- name: ListTickets :many
 SELECT ticket_id, singer_id, seat_id, embedding FROM tickets
 `
 
 func (q *Queries) ListTickets(ctx context.Context) ([]Ticket, error) {
-	rows, err := q.db.QueryContext(ctx, listTickets)
+	rows, err := q.db.QueryContext(ctx, listTicketsSQL)
 	if err != nil {
 		return nil, err
 	}

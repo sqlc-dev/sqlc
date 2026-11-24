@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const insertStatus = `-- name: InsertStatus :exec
+const insertStatusSQL = `-- name: InsertStatus :exec
 INSERT INTO status VALUES ($1, $2)
 `
 
@@ -21,6 +21,6 @@ type InsertStatusParams struct {
 }
 
 func (q *Queries) InsertStatus(ctx context.Context, arg InsertStatusParams) error {
-	_, err := q.db.Exec(ctx, insertStatus, arg.Column1, arg.Column2)
+	_, err := q.db.Exec(ctx, insertStatusSQL, arg.Column1, arg.Column2)
 	return err
 }

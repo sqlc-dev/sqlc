@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const insertMultipleValues = `-- name: InsertMultipleValues :exec
+const insertMultipleValuesSQL = `-- name: InsertMultipleValues :exec
 INSERT INTO foo (a, b) VALUES ($1, $2), ($3, $4)
 `
 
@@ -23,7 +23,7 @@ type InsertMultipleValuesParams struct {
 }
 
 func (q *Queries) InsertMultipleValues(ctx context.Context, arg InsertMultipleValuesParams) error {
-	_, err := q.db.Exec(ctx, insertMultipleValues,
+	_, err := q.db.Exec(ctx, insertMultipleValuesSQL,
 		arg.A,
 		arg.B,
 		arg.A_2,
@@ -32,7 +32,7 @@ func (q *Queries) InsertMultipleValues(ctx context.Context, arg InsertMultipleVa
 	return err
 }
 
-const insertValues = `-- name: InsertValues :exec
+const insertValuesSQL = `-- name: InsertValues :exec
 INSERT INTO foo (a, b) VALUES ($1, $2)
 `
 
@@ -42,6 +42,6 @@ type InsertValuesParams struct {
 }
 
 func (q *Queries) InsertValues(ctx context.Context, arg InsertValuesParams) error {
-	_, err := q.db.Exec(ctx, insertValues, arg.A, arg.B)
+	_, err := q.db.Exec(ctx, insertValuesSQL, arg.A, arg.B)
 	return err
 }

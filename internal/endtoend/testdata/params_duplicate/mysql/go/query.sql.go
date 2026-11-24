@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const selectUserByAgeCast = `-- name: SelectUserByAgeCast :many
+const selectUserByAgeCastSQL = `-- name: SelectUserByAgeCast :many
 SELECT first_name FROM users
 WHERE age > CAST(? AS SIGNED)
    OR age < CAST(? AS SIGNED)
@@ -21,7 +21,7 @@ type SelectUserByAgeCastParams struct {
 }
 
 func (q *Queries) SelectUserByAgeCast(ctx context.Context, arg SelectUserByAgeCastParams) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, selectUserByAgeCast, arg.Threshold, arg.Threshold)
+	rows, err := q.db.QueryContext(ctx, selectUserByAgeCastSQL, arg.Threshold, arg.Threshold)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (q *Queries) SelectUserByAgeCast(ctx context.Context, arg SelectUserByAgeCa
 	return items, nil
 }
 
-const selectUserByID = `-- name: SelectUserByID :many
+const selectUserByIDSQL = `-- name: SelectUserByID :many
 SELECT first_name from
 users where (? = id OR ? = 0)
 `
@@ -53,7 +53,7 @@ type SelectUserByIDParams struct {
 }
 
 func (q *Queries) SelectUserByID(ctx context.Context, arg SelectUserByIDParams) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, selectUserByID, arg.ID, arg.ID)
+	rows, err := q.db.QueryContext(ctx, selectUserByIDSQL, arg.ID, arg.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func (q *Queries) SelectUserByID(ctx context.Context, arg SelectUserByIDParams) 
 	return items, nil
 }
 
-const selectUserByName = `-- name: SelectUserByName :many
+const selectUserByNameSQL = `-- name: SelectUserByName :many
 SELECT first_name
 FROM users
 WHERE first_name = ?
@@ -87,7 +87,7 @@ type SelectUserByNameParams struct {
 }
 
 func (q *Queries) SelectUserByName(ctx context.Context, arg SelectUserByNameParams) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, selectUserByName, arg.Name, arg.Name)
+	rows, err := q.db.QueryContext(ctx, selectUserByNameSQL, arg.Name, arg.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (q *Queries) SelectUserByName(ctx context.Context, arg SelectUserByNamePara
 	return items, nil
 }
 
-const selectUserQuestion = `-- name: SelectUserQuestion :many
+const selectUserQuestionSQL = `-- name: SelectUserQuestion :many
 SELECT first_name from
 users where (? = id OR  ? = 0)
 `
@@ -120,7 +120,7 @@ type SelectUserQuestionParams struct {
 }
 
 func (q *Queries) SelectUserQuestion(ctx context.Context, arg SelectUserQuestionParams) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, selectUserQuestion, arg.ID, arg.Column2)
+	rows, err := q.db.QueryContext(ctx, selectUserQuestionSQL, arg.ID, arg.Column2)
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const insertFoo = `-- name: InsertFoo :exec
+const insertFooSQL = `-- name: InsertFoo :exec
 INSERT INTO foo (
     a,
     b,
@@ -31,7 +31,7 @@ type InsertFooParams struct {
 }
 
 func (q *Queries) InsertFoo(ctx context.Context, arg InsertFooParams) error {
-	_, err := q.db.Exec(ctx, insertFoo,
+	_, err := q.db.Exec(ctx, insertFooSQL,
 		arg.A,
 		arg.B,
 		arg.C,
@@ -40,11 +40,11 @@ func (q *Queries) InsertFoo(ctx context.Context, arg InsertFooParams) error {
 	return err
 }
 
-const selectFoo = `-- name: SelectFoo :exec
+const selectFooSQL = `-- name: SelectFoo :exec
 SELECT a, b, c, d FROM foo
 `
 
 func (q *Queries) SelectFoo(ctx context.Context) error {
-	_, err := q.db.Exec(ctx, selectFoo)
+	_, err := q.db.Exec(ctx, selectFooSQL)
 	return err
 }

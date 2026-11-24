@@ -11,31 +11,31 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-const advisoryLockExecResult = `-- name: AdvisoryLockExecResult :execresult
+const advisoryLockExecResultSQL = `-- name: AdvisoryLockExecResult :execresult
 SELECT pg_advisory_lock($1)
 `
 
 func (q *Queries) AdvisoryLockExecResult(ctx context.Context, pgAdvisoryLock int64) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, advisoryLockExecResult, pgAdvisoryLock)
+	return q.db.Exec(ctx, advisoryLockExecResultSQL, pgAdvisoryLock)
 }
 
-const advisoryLockOne = `-- name: AdvisoryLockOne :one
+const advisoryLockOneSQL = `-- name: AdvisoryLockOne :one
 SELECT pg_advisory_lock($1)
 `
 
 func (q *Queries) AdvisoryLockOne(ctx context.Context, pgAdvisoryLock int64) (any, error) {
-	row := q.db.QueryRow(ctx, advisoryLockOne, pgAdvisoryLock)
+	row := q.db.QueryRow(ctx, advisoryLockOneSQL, pgAdvisoryLock)
 	var pg_advisory_lock any
 	err := row.Scan(&pg_advisory_lock)
 	return pg_advisory_lock, err
 }
 
-const advisoryUnlock = `-- name: AdvisoryUnlock :many
+const advisoryUnlockSQL = `-- name: AdvisoryUnlock :many
 SELECT pg_advisory_unlock($1)
 `
 
 func (q *Queries) AdvisoryUnlock(ctx context.Context, pgAdvisoryUnlock int64) ([]bool, error) {
-	rows, err := q.db.Query(ctx, advisoryUnlock, pgAdvisoryUnlock)
+	rows, err := q.db.Query(ctx, advisoryUnlockSQL, pgAdvisoryUnlock)
 	if err != nil {
 		return nil, err
 	}

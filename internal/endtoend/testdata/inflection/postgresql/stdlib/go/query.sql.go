@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const getProductMetadata = `-- name: GetProductMetadata :many
+const getProductMetadataSQL = `-- name: GetProductMetadata :many
 SELECT id FROM product_metadata
 `
 
 func (q *Queries) GetProductMetadata(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, getProductMetadata)
+	rows, err := q.db.QueryContext(ctx, getProductMetadataSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -36,12 +36,12 @@ func (q *Queries) GetProductMetadata(ctx context.Context) ([]string, error) {
 	return items, nil
 }
 
-const listCalories = `-- name: ListCalories :many
+const listCaloriesSQL = `-- name: ListCalories :many
 SELECT id FROM calories
 `
 
 func (q *Queries) ListCalories(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, listCalories)
+	rows, err := q.db.QueryContext(ctx, listCaloriesSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -63,12 +63,12 @@ func (q *Queries) ListCalories(ctx context.Context) ([]string, error) {
 	return items, nil
 }
 
-const listCampuses = `-- name: ListCampuses :many
+const listCampusesSQL = `-- name: ListCampuses :many
 SELECT id FROM campus
 `
 
 func (q *Queries) ListCampuses(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, listCampuses)
+	rows, err := q.db.QueryContext(ctx, listCampusesSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -90,12 +90,12 @@ func (q *Queries) ListCampuses(ctx context.Context) ([]string, error) {
 	return items, nil
 }
 
-const listMetadata = `-- name: ListMetadata :many
+const listMetadataSQL = `-- name: ListMetadata :many
 SELECT id FROM product_meta
 `
 
 func (q *Queries) ListMetadata(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, listMetadata)
+	rows, err := q.db.QueryContext(ctx, listMetadataSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -117,12 +117,12 @@ func (q *Queries) ListMetadata(ctx context.Context) ([]string, error) {
 	return items, nil
 }
 
-const listStudents = `-- name: ListStudents :many
+const listStudentsSQL = `-- name: ListStudents :many
 SELECT id FROM students
 `
 
 func (q *Queries) ListStudents(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, listStudents)
+	rows, err := q.db.QueryContext(ctx, listStudentsSQL)
 	if err != nil {
 		return nil, err
 	}

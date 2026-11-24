@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const cTERecursive = `-- name: CTERecursive :many
+const cTERecursiveSQL = `-- name: CTERecursive :many
 WITH RECURSIVE cte AS (
         SELECT b.id, b.parent_id FROM bar AS b
         WHERE b.id = $1
@@ -27,7 +27,7 @@ type CTERecursiveRow struct {
 }
 
 func (q *Queries) CTERecursive(ctx context.Context, id int32) ([]CTERecursiveRow, error) {
-	rows, err := q.db.Query(ctx, cTERecursive, id)
+	rows, err := q.db.Query(ctx, cTERecursiveSQL, id)
 	if err != nil {
 		return nil, err
 	}

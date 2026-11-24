@@ -9,13 +9,13 @@ import (
 	"context"
 )
 
-const getCitexts = `-- name: GetCitexts :many
+const getCitextsSQL = `-- name: GetCitexts :many
 SELECT bar, bat
 FROM foo
 `
 
 func (q *Queries) GetCitexts(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, getCitexts)
+	rows, err := q.db.QueryContext(ctx, getCitextsSQL)
 	if err != nil {
 		return nil, err
 	}

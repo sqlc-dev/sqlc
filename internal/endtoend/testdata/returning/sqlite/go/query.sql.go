@@ -10,59 +10,59 @@ import (
 	"database/sql"
 )
 
-const deleteUserAndReturnID = `-- name: DeleteUserAndReturnID :one
+const deleteUserAndReturnIDSQL = `-- name: DeleteUserAndReturnID :one
 DELETE FROM users
 WHERE name = ?1
 RETURNING id
 `
 
 func (q *Queries) DeleteUserAndReturnID(ctx context.Context, name sql.NullString) (int64, error) {
-	row := q.db.QueryRowContext(ctx, deleteUserAndReturnID, name)
+	row := q.db.QueryRowContext(ctx, deleteUserAndReturnIDSQL, name)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
 }
 
-const deleteUserAndReturnUser = `-- name: DeleteUserAndReturnUser :one
+const deleteUserAndReturnUserSQL = `-- name: DeleteUserAndReturnUser :one
 DELETE FROM users
 WHERE name = ?1
 RETURNING name, id
 `
 
 func (q *Queries) DeleteUserAndReturnUser(ctx context.Context, name sql.NullString) (User, error) {
-	row := q.db.QueryRowContext(ctx, deleteUserAndReturnUser, name)
+	row := q.db.QueryRowContext(ctx, deleteUserAndReturnUserSQL, name)
 	var i User
 	err := row.Scan(&i.Name, &i.ID)
 	return i, err
 }
 
-const insertUserAndReturnID = `-- name: InsertUserAndReturnID :one
+const insertUserAndReturnIDSQL = `-- name: InsertUserAndReturnID :one
 INSERT INTO users (name)
 VALUES (?1)
 RETURNING id
 `
 
 func (q *Queries) InsertUserAndReturnID(ctx context.Context, name sql.NullString) (int64, error) {
-	row := q.db.QueryRowContext(ctx, insertUserAndReturnID, name)
+	row := q.db.QueryRowContext(ctx, insertUserAndReturnIDSQL, name)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
 }
 
-const insertUserAndReturnUser = `-- name: InsertUserAndReturnUser :one
+const insertUserAndReturnUserSQL = `-- name: InsertUserAndReturnUser :one
 INSERT INTO users (name)
 VALUES (?1)
 RETURNING name, id
 `
 
 func (q *Queries) InsertUserAndReturnUser(ctx context.Context, name sql.NullString) (User, error) {
-	row := q.db.QueryRowContext(ctx, insertUserAndReturnUser, name)
+	row := q.db.QueryRowContext(ctx, insertUserAndReturnUserSQL, name)
 	var i User
 	err := row.Scan(&i.Name, &i.ID)
 	return i, err
 }
 
-const updateUserAndReturnID = `-- name: UpdateUserAndReturnID :one
+const updateUserAndReturnIDSQL = `-- name: UpdateUserAndReturnID :one
 UPDATE users
 SET name = ?1
 WHERE name = ?2
@@ -75,13 +75,13 @@ type UpdateUserAndReturnIDParams struct {
 }
 
 func (q *Queries) UpdateUserAndReturnID(ctx context.Context, arg UpdateUserAndReturnIDParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, updateUserAndReturnID, arg.Name, arg.Name_2)
+	row := q.db.QueryRowContext(ctx, updateUserAndReturnIDSQL, arg.Name, arg.Name_2)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
 }
 
-const updateUserAndReturnUser = `-- name: UpdateUserAndReturnUser :one
+const updateUserAndReturnUserSQL = `-- name: UpdateUserAndReturnUser :one
 UPDATE users
 SET name = ?1
 WHERE name = ?2
@@ -94,7 +94,7 @@ type UpdateUserAndReturnUserParams struct {
 }
 
 func (q *Queries) UpdateUserAndReturnUser(ctx context.Context, arg UpdateUserAndReturnUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUserAndReturnUser, arg.Name, arg.Name_2)
+	row := q.db.QueryRowContext(ctx, updateUserAndReturnUserSQL, arg.Name, arg.Name_2)
 	var i User
 	err := row.Scan(&i.Name, &i.ID)
 	return i, err

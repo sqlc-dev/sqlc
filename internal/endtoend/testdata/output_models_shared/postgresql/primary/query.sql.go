@@ -11,7 +11,7 @@ import (
 	models "github.com/sqlc-dev/sqlc/endtoend/output_models_shared/postgresql/model"
 )
 
-const createAuthor = `-- name: CreateAuthor :one
+const createAuthorSQL = `-- name: CreateAuthor :one
 INSERT INTO authors (name, status) VALUES ($1, $2) RETURNING id, name, status
 `
 
@@ -21,18 +21,18 @@ type CreateAuthorParams struct {
 }
 
 func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (models.Author, error) {
-	row := q.db.QueryRowContext(ctx, createAuthor, arg.Name, arg.Status)
+	row := q.db.QueryRowContext(ctx, createAuthorSQL, arg.Name, arg.Status)
 	var i models.Author
 	err := row.Scan(&i.ID, &i.Name, &i.Status)
 	return i, err
 }
 
-const getAuthor = `-- name: GetAuthor :one
+const getAuthorSQL = `-- name: GetAuthor :one
 SELECT id, name, status FROM authors WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, id int64) (models.Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, id)
+	row := q.db.QueryRowContext(ctx, getAuthorSQL, id)
 	var i models.Author
 	err := row.Scan(&i.ID, &i.Name, &i.Status)
 	return i, err

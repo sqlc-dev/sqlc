@@ -9,14 +9,14 @@ import (
 	"context"
 )
 
-const selectExcept = `-- name: SelectExcept :many
+const selectExceptSQL = `-- name: SelectExcept :many
 SELECT a, b FROM foo
 EXCEPT
 SELECT a, b FROM foo
 `
 
 func (q *Queries) SelectExcept(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.Query(ctx, selectExcept)
+	rows, err := q.db.Query(ctx, selectExceptSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -35,14 +35,14 @@ func (q *Queries) SelectExcept(ctx context.Context) ([]Foo, error) {
 	return items, nil
 }
 
-const selectIntersect = `-- name: SelectIntersect :many
+const selectIntersectSQL = `-- name: SelectIntersect :many
 SELECT a, b FROM foo
 INTERSECT
 SELECT a, b FROM foo
 `
 
 func (q *Queries) SelectIntersect(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.Query(ctx, selectIntersect)
+	rows, err := q.db.Query(ctx, selectIntersectSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -61,14 +61,14 @@ func (q *Queries) SelectIntersect(ctx context.Context) ([]Foo, error) {
 	return items, nil
 }
 
-const selectUnion = `-- name: SelectUnion :many
+const selectUnionSQL = `-- name: SelectUnion :many
 SELECT a, b FROM foo
 UNION
 SELECT a, b FROM foo
 `
 
 func (q *Queries) SelectUnion(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.Query(ctx, selectUnion)
+	rows, err := q.db.Query(ctx, selectUnionSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -87,14 +87,14 @@ func (q *Queries) SelectUnion(ctx context.Context) ([]Foo, error) {
 	return items, nil
 }
 
-const selectUnionAliased = `-- name: SelectUnionAliased :many
+const selectUnionAliasedSQL = `-- name: SelectUnionAliased :many
 (SELECT a, b FROM foo)
 UNION
 SELECT a, b FROM foo
 `
 
 func (q *Queries) SelectUnionAliased(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.Query(ctx, selectUnionAliased)
+	rows, err := q.db.Query(ctx, selectUnionAliasedSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -113,14 +113,14 @@ func (q *Queries) SelectUnionAliased(ctx context.Context) ([]Foo, error) {
 	return items, nil
 }
 
-const selectUnionOther = `-- name: SelectUnionOther :many
+const selectUnionOtherSQL = `-- name: SelectUnionOther :many
 SELECT a, b FROM foo
 UNION
 SELECT a, b FROM bar
 `
 
 func (q *Queries) SelectUnionOther(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.Query(ctx, selectUnionOther)
+	rows, err := q.db.Query(ctx, selectUnionOtherSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func (q *Queries) SelectUnionOther(ctx context.Context) ([]Foo, error) {
 	return items, nil
 }
 
-const selectUnionWithLimit = `-- name: SelectUnionWithLimit :many
+const selectUnionWithLimitSQL = `-- name: SelectUnionWithLimit :many
 SELECT a, b FROM foo
 UNION
 SELECT a, b FROM foo
@@ -152,7 +152,7 @@ type SelectUnionWithLimitParams struct {
 }
 
 func (q *Queries) SelectUnionWithLimit(ctx context.Context, arg SelectUnionWithLimitParams) ([]Foo, error) {
-	rows, err := q.db.Query(ctx, selectUnionWithLimit, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, selectUnionWithLimitSQL, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

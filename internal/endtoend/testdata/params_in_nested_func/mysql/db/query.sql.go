@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const getGroups = `-- name: GetGroups :many
+const getGroupsSQL = `-- name: GetGroups :many
 SELECT
     rg.groupId,
     rg.groupName
@@ -32,7 +32,7 @@ type GetGroupsRow struct {
 }
 
 func (q *Queries) GetGroups(ctx context.Context, arg GetGroupsParams) ([]GetGroupsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getGroups, arg.GroupName, arg.GroupId)
+	rows, err := q.db.QueryContext(ctx, getGroupsSQL, arg.GroupName, arg.GroupId)
 	if err != nil {
 		return nil, err
 	}

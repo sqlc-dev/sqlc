@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const getColumns = `-- name: GetColumns :many
+const getColumnsSQL = `-- name: GetColumns :many
 SELECT table_name::text, column_name::text from information_schema.columns
 `
 
@@ -20,7 +20,7 @@ type GetColumnsRow struct {
 }
 
 func (q *Queries) GetColumns(ctx context.Context) ([]GetColumnsRow, error) {
-	rows, err := q.db.Query(ctx, getColumns)
+	rows, err := q.db.Query(ctx, getColumnsSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -39,12 +39,12 @@ func (q *Queries) GetColumns(ctx context.Context) ([]GetColumnsRow, error) {
 	return items, nil
 }
 
-const getTables = `-- name: GetTables :many
+const getTablesSQL = `-- name: GetTables :many
 SELECT table_name::text from information_schema.tables
 `
 
 func (q *Queries) GetTables(ctx context.Context) ([]string, error) {
-	rows, err := q.db.Query(ctx, getTables)
+	rows, err := q.db.Query(ctx, getTablesSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (q *Queries) GetTables(ctx context.Context) ([]string, error) {
 	return items, nil
 }
 
-const getTimezones = `-- name: GetTimezones :many
+const getTimezonesSQL = `-- name: GetTimezones :many
 SELECT name, abbrev, utc_offset, is_dst from pg_catalog.pg_timezone_names
 `
 
@@ -75,7 +75,7 @@ type GetTimezonesRow struct {
 }
 
 func (q *Queries) GetTimezones(ctx context.Context) ([]GetTimezonesRow, error) {
-	rows, err := q.db.Query(ctx, getTimezones)
+	rows, err := q.db.Query(ctx, getTimezonesSQL)
 	if err != nil {
 		return nil, err
 	}

@@ -11,7 +11,7 @@ import (
 	t "github.com/jackc/pgtype"
 )
 
-const test = `-- name: test :exec
+const testSQL = `-- name: test :exec
 SELECT other, total, retyped FROM foo WHERE other = ? and retyped = ?
 `
 
@@ -21,6 +21,6 @@ type testParams struct {
 }
 
 func (q *Queries) test(ctx context.Context, arg testParams) error {
-	_, err := q.db.ExecContext(ctx, test, arg.Other, arg.Retyped)
+	_, err := q.db.ExecContext(ctx, testSQL, arg.Other, arg.Retyped)
 	return err
 }

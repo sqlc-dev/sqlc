@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const listPaths = `-- name: ListPaths :many
+const listPathsSQL = `-- name: ListPaths :many
 SELECT point_one, point_two FROM foo.paths
 `
 
 func (q *Queries) ListPaths(ctx context.Context) ([]FooPath, error) {
-	rows, err := q.db.Query(ctx, listPaths)
+	rows, err := q.db.Query(ctx, listPathsSQL)
 	if err != nil {
 		return nil, err
 	}

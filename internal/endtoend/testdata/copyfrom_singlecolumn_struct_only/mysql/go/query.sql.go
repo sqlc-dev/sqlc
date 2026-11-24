@@ -9,7 +9,7 @@ import (
 	"database/sql"
 )
 
-const insertSingleValue = `-- name: InsertSingleValue :copyfrom
+const insertSingleValueSQL = `-- name: InsertSingleValue :copyfrom
 INSERT INTO foo (a) VALUES (?)
 `
 

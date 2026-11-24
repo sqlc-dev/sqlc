@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const caseStatementBoolean = `-- name: CaseStatementBoolean :many
+const caseStatementBooleanSQL = `-- name: CaseStatementBoolean :many
 SELECT CASE 
   WHEN id = $1 THEN true
   ELSE false
@@ -18,7 +18,7 @@ FROM foo
 `
 
 func (q *Queries) CaseStatementBoolean(ctx context.Context, id string) ([]bool, error) {
-	rows, err := q.db.Query(ctx, caseStatementBoolean, id)
+	rows, err := q.db.Query(ctx, caseStatementBooleanSQL, id)
 	if err != nil {
 		return nil, err
 	}

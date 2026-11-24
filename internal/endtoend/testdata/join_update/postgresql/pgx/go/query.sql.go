@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const percentile = `-- name: Percentile :exec
+const percentileSQL = `-- name: Percentile :exec
 UPDATE group_calc_totals gct 
 SET npn = nem.npn 
 FROM producer_group_attribute ga 
@@ -18,6 +18,6 @@ WHERE gct.group_id = ga.group_id
 `
 
 func (q *Queries) Percentile(ctx context.Context) error {
-	_, err := q.db.Exec(ctx, percentile)
+	_, err := q.db.Exec(ctx, percentileSQL)
 	return err
 }

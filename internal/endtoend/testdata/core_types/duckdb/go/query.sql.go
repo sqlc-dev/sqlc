@@ -12,12 +12,12 @@ import (
 	"github.com/duckdb/duckdb-go/v2"
 )
 
-const allTypes = `-- name: AllTypes :many
+const allTypesSQL = `-- name: AllTypes :many
 SELECT id, ints, fixed, point, attrs, either, price, title, kind, m, mm, big, ubig, data, bits, uid, tstz, tsns, iv, doc, grid, vi, f4, points, lists, body, n FROM things;
 `
 
 func (q *Queries) AllTypes(ctx context.Context) ([]Thing, error) {
-	rows, err := q.db.QueryContext(ctx, allTypes)
+	rows, err := q.db.QueryContext(ctx, allTypesSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (q *Queries) AllTypes(ctx context.Context) ([]Thing, error) {
 	return items, nil
 }
 
-const casts = `-- name: Casts :one
+const castsSQL = `-- name: Casts :one
 SELECT
   $1::DECIMAL(5,2) AS a,
   $2::INTEGER[] AS b,
@@ -103,7 +103,7 @@ type CastsRow struct {
 }
 
 func (q *Queries) Casts(ctx context.Context, arg CastsParams) (CastsRow, error) {
-	row := q.db.QueryRowContext(ctx, casts,
+	row := q.db.QueryRowContext(ctx, castsSQL,
 		arg.Column1,
 		arg.Column2,
 		arg.Column3,
@@ -127,7 +127,7 @@ func (q *Queries) Casts(ctx context.Context, arg CastsParams) (CastsRow, error) 
 	return i, err
 }
 
-const params = `-- name: Params :one
+const paramsSQL = `-- name: Params :one
 SELECT id FROM things
 WHERE ints = $1 AND point = $2 AND price = $3 AND m = $4 AND either = $5 AND grid = $6;
 `
@@ -142,7 +142,7 @@ type ParamsParams struct {
 }
 
 func (q *Queries) Params(ctx context.Context, arg ParamsParams) (int32, error) {
-	row := q.db.QueryRowContext(ctx, params,
+	row := q.db.QueryRowContext(ctx, paramsSQL,
 		arg.Ints,
 		arg.Point,
 		arg.Price,

@@ -199,9 +199,10 @@ func buildQueries(req *plugin.GenerateRequest, options *opts.Options, enums []En
 
 		var constantName string
 		if options.EmitExportedQueries {
-			constantName = sdk.Title(query.Name)
+			constantName = sdk.Title(query.Name) + "SQL"
 		} else {
-			constantName = escape(sdk.LowerTitle(query.Name))
+			// The suffix keeps the name clear of Go keywords, so no escape is needed.
+			constantName = sdk.LowerTitle(query.Name) + "SQL"
 		}
 
 		comments := query.Comments

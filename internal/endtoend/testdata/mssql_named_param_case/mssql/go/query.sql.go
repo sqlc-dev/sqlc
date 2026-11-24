@@ -10,12 +10,12 @@ import (
 	"database/sql"
 )
 
-const byName = `-- name: ByName :many
+const byNameSQL = `-- name: ByName :many
 SELECT id FROM authors WHERE name = @Name OR bio = @name;
 `
 
 func (q *Queries) ByName(ctx context.Context, name string) ([]int64, error) {
-	rows, err := q.db.QueryContext(ctx, byName, sql.Named("Name", name))
+	rows, err := q.db.QueryContext(ctx, byNameSQL, sql.Named("Name", name))
 	if err != nil {
 		return nil, err
 	}

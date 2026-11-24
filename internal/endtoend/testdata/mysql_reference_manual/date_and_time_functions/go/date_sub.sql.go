@@ -10,35 +10,35 @@ import (
 	"time"
 )
 
-const dateSub31Days = `-- name: DateSub31Days :one
+const dateSub31DaysSQL = `-- name: DateSub31Days :one
 SELECT DATE_SUB('1998-01-02', INTERVAL 31 DAY)
 `
 
 func (q *Queries) DateSub31Days(ctx context.Context) (time.Time, error) {
-	row := q.db.QueryRowContext(ctx, dateSub31Days)
+	row := q.db.QueryRowContext(ctx, dateSub31DaysSQL)
 	var date_sub time.Time
 	err := row.Scan(&date_sub)
 	return date_sub, err
 }
 
-const dateSubDaySecond = `-- name: DateSubDaySecond :one
+const dateSubDaySecondSQL = `-- name: DateSubDaySecond :one
 SELECT DATE_SUB('2025-01-01 00:00:00',
                 INTERVAL '1 1:1:1' DAY_SECOND)
 `
 
 func (q *Queries) DateSubDaySecond(ctx context.Context) (time.Time, error) {
-	row := q.db.QueryRowContext(ctx, dateSubDaySecond)
+	row := q.db.QueryRowContext(ctx, dateSubDaySecondSQL)
 	var date_sub time.Time
 	err := row.Scan(&date_sub)
 	return date_sub, err
 }
 
-const dateSubOneYear = `-- name: DateSubOneYear :one
+const dateSubOneYearSQL = `-- name: DateSubOneYear :one
 SELECT DATE_SUB('2018-05-01',INTERVAL 1 YEAR)
 `
 
 func (q *Queries) DateSubOneYear(ctx context.Context) (time.Time, error) {
-	row := q.db.QueryRowContext(ctx, dateSubOneYear)
+	row := q.db.QueryRowContext(ctx, dateSubOneYearSQL)
 	var date_sub time.Time
 	err := row.Scan(&date_sub)
 	return date_sub, err

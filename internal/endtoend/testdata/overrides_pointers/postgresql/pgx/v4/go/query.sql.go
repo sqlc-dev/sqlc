@@ -11,11 +11,11 @@ import (
 	t "github.com/jackc/pgtype"
 )
 
-const test = `-- name: test :exec
+const testSQL = `-- name: test :exec
 UPDATE foo SET langs = $1
 `
 
 func (q *Queries) test(ctx context.Context, langs *t.Text) error {
-	_, err := q.db.Exec(ctx, test, langs)
+	_, err := q.db.Exec(ctx, testSQL, langs)
 	return err
 }

@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const starExpansionJoin = `-- name: StarExpansionJoin :many
+const starExpansionJoinSQL = `-- name: StarExpansionJoin :many
 SELECT a, b, c, d FROM foo, bar
 `
 
@@ -22,7 +22,7 @@ type StarExpansionJoinRow struct {
 }
 
 func (q *Queries) StarExpansionJoin(ctx context.Context) ([]StarExpansionJoinRow, error) {
-	rows, err := q.db.QueryContext(ctx, starExpansionJoin)
+	rows, err := q.db.QueryContext(ctx, starExpansionJoinSQL)
 	if err != nil {
 		return nil, err
 	}

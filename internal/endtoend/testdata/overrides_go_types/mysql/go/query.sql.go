@@ -12,12 +12,12 @@ import (
 	"github.com/sqlc-dev/sqlc-testdata/pkg"
 )
 
-const testIN = `-- name: TestIN :many
+const testINSQL = `-- name: TestIN :many
 SELECT other, total, retyped FROM foo WHERE retyped IN (/*SLICE:paramname*/?)
 `
 
 func (q *Queries) TestIN(ctx context.Context, paramname []pkg.CustomType) ([]Foo, error) {
-	query := testIN
+	query := testINSQL
 	var queryParams []any
 	if len(paramname) > 0 {
 		for _, v := range paramname {

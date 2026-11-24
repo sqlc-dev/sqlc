@@ -9,29 +9,29 @@ import (
 	"context"
 )
 
-const listenTest = `-- name: ListenTest :exec
+const listenTestSQL = `-- name: ListenTest :exec
 LISTEN test
 `
 
 func (q *Queries) ListenTest(ctx context.Context) error {
-	_, err := q.db.Exec(ctx, listenTest)
+	_, err := q.db.Exec(ctx, listenTestSQL)
 	return err
 }
 
-const notifyTest = `-- name: NotifyTest :exec
+const notifyTestSQL = `-- name: NotifyTest :exec
 NOTIFY test
 `
 
 func (q *Queries) NotifyTest(ctx context.Context) error {
-	_, err := q.db.Exec(ctx, notifyTest)
+	_, err := q.db.Exec(ctx, notifyTestSQL)
 	return err
 }
 
-const notifyWithMessage = `-- name: NotifyWithMessage :exec
+const notifyWithMessageSQL = `-- name: NotifyWithMessage :exec
 NOTIFY test, 'msg'
 `
 
 func (q *Queries) NotifyWithMessage(ctx context.Context) error {
-	_, err := q.db.Exec(ctx, notifyWithMessage)
+	_, err := q.db.Exec(ctx, notifyWithMessageSQL)
 	return err
 }

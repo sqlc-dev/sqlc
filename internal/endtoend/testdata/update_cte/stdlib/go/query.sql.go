@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const updateCode = `-- name: UpdateCode :one
+const updateCodeSQL = `-- name: UpdateCode :one
 WITH cc AS (
             UPDATE td3.codes
             SET
@@ -51,7 +51,7 @@ type UpdateCodeRow struct {
 }
 
 func (q *Queries) UpdateCode(ctx context.Context, arg UpdateCodeParams) (UpdateCodeRow, error) {
-	row := q.db.QueryRowContext(ctx, updateCode,
+	row := q.db.QueryRowContext(ctx, updateCodeSQL,
 		arg.CreatedBy,
 		arg.Code,
 		arg.Hash,

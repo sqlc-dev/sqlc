@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const allAuthors = `-- name: AllAuthors :many
+const allAuthorsSQL = `-- name: AllAuthors :many
 SELECT a.id, a.name, a.parent_id, p.id, p.name, p.parent_id
 FROM authors AS a
 LEFT JOIN authors AS p ON a.parent_id = p.id
@@ -27,7 +27,7 @@ type AllAuthorsRow struct {
 }
 
 func (q *Queries) AllAuthors(ctx context.Context) ([]AllAuthorsRow, error) {
-	rows, err := q.db.QueryContext(ctx, allAuthors)
+	rows, err := q.db.QueryContext(ctx, allAuthorsSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (q *Queries) AllAuthors(ctx context.Context) ([]AllAuthorsRow, error) {
 	return items, nil
 }
 
-const allAuthorsAliases = `-- name: AllAuthorsAliases :many
+const allAuthorsAliasesSQL = `-- name: AllAuthorsAliases :many
 SELECT a.id, a.name, a.parent_id, p.id, p.name, p.parent_id
 FROM authors AS a
 LEFT JOIN authors AS p ON a.parent_id = p.id
@@ -72,7 +72,7 @@ type AllAuthorsAliasesRow struct {
 }
 
 func (q *Queries) AllAuthorsAliases(ctx context.Context) ([]AllAuthorsAliasesRow, error) {
-	rows, err := q.db.QueryContext(ctx, allAuthorsAliases)
+	rows, err := q.db.QueryContext(ctx, allAuthorsAliasesSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (q *Queries) AllAuthorsAliases(ctx context.Context) ([]AllAuthorsAliasesRow
 	return items, nil
 }
 
-const allAuthorsAliases2 = `-- name: AllAuthorsAliases2 :many
+const allAuthorsAliases2SQL = `-- name: AllAuthorsAliases2 :many
 SELECT a.id, a.name, a.parent_id, p.id, p.name, p.parent_id
 FROM authors AS a
 LEFT JOIN authors AS p ON a.parent_id = p.id
@@ -117,7 +117,7 @@ type AllAuthorsAliases2Row struct {
 }
 
 func (q *Queries) AllAuthorsAliases2(ctx context.Context) ([]AllAuthorsAliases2Row, error) {
-	rows, err := q.db.QueryContext(ctx, allAuthorsAliases2)
+	rows, err := q.db.QueryContext(ctx, allAuthorsAliases2SQL)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func (q *Queries) AllAuthorsAliases2(ctx context.Context) ([]AllAuthorsAliases2R
 	return items, nil
 }
 
-const allSuperAuthors = `-- name: AllSuperAuthors :many
+const allSuperAuthorsSQL = `-- name: AllSuperAuthors :many
 SELECT id, name, parent_id, super_id, super_name, super_parent_id
 FROM authors
 LEFT JOIN super_authors ON authors.parent_id = super_authors.super_id
@@ -162,7 +162,7 @@ type AllSuperAuthorsRow struct {
 }
 
 func (q *Queries) AllSuperAuthors(ctx context.Context) ([]AllSuperAuthorsRow, error) {
-	rows, err := q.db.QueryContext(ctx, allSuperAuthors)
+	rows, err := q.db.QueryContext(ctx, allSuperAuthorsSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -191,7 +191,7 @@ func (q *Queries) AllSuperAuthors(ctx context.Context) ([]AllSuperAuthorsRow, er
 	return items, nil
 }
 
-const allSuperAuthorsAliases = `-- name: AllSuperAuthorsAliases :many
+const allSuperAuthorsAliasesSQL = `-- name: AllSuperAuthorsAliases :many
 SELECT id, name, parent_id, super_id, super_name, super_parent_id
 FROM authors AS a
 LEFT JOIN super_authors AS sa ON a.parent_id = sa.super_id
@@ -207,7 +207,7 @@ type AllSuperAuthorsAliasesRow struct {
 }
 
 func (q *Queries) AllSuperAuthorsAliases(ctx context.Context) ([]AllSuperAuthorsAliasesRow, error) {
-	rows, err := q.db.QueryContext(ctx, allSuperAuthorsAliases)
+	rows, err := q.db.QueryContext(ctx, allSuperAuthorsAliasesSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -236,7 +236,7 @@ func (q *Queries) AllSuperAuthorsAliases(ctx context.Context) ([]AllSuperAuthors
 	return items, nil
 }
 
-const allSuperAuthorsAliases2 = `-- name: AllSuperAuthorsAliases2 :many
+const allSuperAuthorsAliases2SQL = `-- name: AllSuperAuthorsAliases2 :many
 SELECT a.id, a.name, a.parent_id, sa.super_id, sa.super_name, sa.super_parent_id
 FROM authors AS a
 LEFT JOIN super_authors AS sa ON a.parent_id = sa.super_id
@@ -252,7 +252,7 @@ type AllSuperAuthorsAliases2Row struct {
 }
 
 func (q *Queries) AllSuperAuthorsAliases2(ctx context.Context) ([]AllSuperAuthorsAliases2Row, error) {
-	rows, err := q.db.QueryContext(ctx, allSuperAuthorsAliases2)
+	rows, err := q.db.QueryContext(ctx, allSuperAuthorsAliases2SQL)
 	if err != nil {
 		return nil, err
 	}
@@ -281,7 +281,7 @@ func (q *Queries) AllSuperAuthorsAliases2(ctx context.Context) ([]AllSuperAuthor
 	return items, nil
 }
 
-const getMayors = `-- name: GetMayors :many
+const getMayorsSQL = `-- name: GetMayors :many
 SELECT
   user_id,
   mayors.full_name
@@ -296,7 +296,7 @@ type GetMayorsRow struct {
 }
 
 func (q *Queries) GetMayors(ctx context.Context) ([]GetMayorsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getMayors)
+	rows, err := q.db.QueryContext(ctx, getMayorsSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -318,7 +318,7 @@ func (q *Queries) GetMayors(ctx context.Context) ([]GetMayorsRow, error) {
 	return items, nil
 }
 
-const getMayorsOptional = `-- name: GetMayorsOptional :many
+const getMayorsOptionalSQL = `-- name: GetMayorsOptional :many
 SELECT
   user_id,
   cities.city_id,
@@ -335,7 +335,7 @@ type GetMayorsOptionalRow struct {
 }
 
 func (q *Queries) GetMayorsOptional(ctx context.Context) ([]GetMayorsOptionalRow, error) {
-	rows, err := q.db.QueryContext(ctx, getMayorsOptional)
+	rows, err := q.db.QueryContext(ctx, getMayorsOptionalSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -357,7 +357,7 @@ func (q *Queries) GetMayorsOptional(ctx context.Context) ([]GetMayorsOptionalRow
 	return items, nil
 }
 
-const getSuggestedUsersByID = `-- name: GetSuggestedUsersByID :many
+const getSuggestedUsersByIDSQL = `-- name: GetSuggestedUsersByID :many
 SELECT DISTINCT u.user_id, u.user_nickname, u.user_email, u.user_display_name, u.user_password, u.user_google_id, u.user_apple_id, u.user_bio, u.user_created_at, u.user_avatar_id, m.media_id, m.media_created_at, m.media_hash, m.media_directory, m.media_author_id, m.media_width, m.media_height
 FROM users_2 AS u
 LEFT JOIN media AS m ON u.user_avatar_id = m.media_id
@@ -385,7 +385,7 @@ type GetSuggestedUsersByIDRow struct {
 }
 
 func (q *Queries) GetSuggestedUsersByID(ctx context.Context, userID int64) ([]GetSuggestedUsersByIDRow, error) {
-	rows, err := q.db.QueryContext(ctx, getSuggestedUsersByID, userID)
+	rows, err := q.db.QueryContext(ctx, getSuggestedUsersByIDSQL, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -425,7 +425,7 @@ func (q *Queries) GetSuggestedUsersByID(ctx context.Context, userID int64) ([]Ge
 	return items, nil
 }
 
-const getSuggestedUsersByID2 = `-- name: GetSuggestedUsersByID2 :many
+const getSuggestedUsersByID2SQL = `-- name: GetSuggestedUsersByID2 :many
 SELECT users_2.user_id
 FROM users_2
 LEFT JOIN media AS m ON user_avatar_id = m.media_id
@@ -433,7 +433,7 @@ WHERE user_id != ?1
 `
 
 func (q *Queries) GetSuggestedUsersByID2(ctx context.Context, userID int64) ([]int64, error) {
-	rows, err := q.db.QueryContext(ctx, getSuggestedUsersByID2, userID)
+	rows, err := q.db.QueryContext(ctx, getSuggestedUsersByID2SQL, userID)
 	if err != nil {
 		return nil, err
 	}

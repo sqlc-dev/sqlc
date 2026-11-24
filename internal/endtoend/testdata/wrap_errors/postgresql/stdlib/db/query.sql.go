@@ -11,7 +11,7 @@ import (
 	"fmt"
 )
 
-const createAuthor = `-- name: CreateAuthor :one
+const createAuthorSQL = `-- name: CreateAuthor :one
 INSERT INTO authors (
           name, bio
 ) VALUES (
@@ -26,7 +26,7 @@ type CreateAuthorParams struct {
 }
 
 func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
-	row := q.db.QueryRowContext(ctx, createAuthor, arg.Name, arg.Bio)
+	row := q.db.QueryRowContext(ctx, createAuthorSQL, arg.Name, arg.Bio)
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	if err != nil {
@@ -35,65 +35,65 @@ func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Aut
 	return i, err
 }
 
-const deleteAuthorExec = `-- name: DeleteAuthorExec :exec
+const deleteAuthorExecSQL = `-- name: DeleteAuthorExec :exec
 DELETE FROM authors
 WHERE id = $1
 `
 
 func (q *Queries) DeleteAuthorExec(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteAuthorExec, id)
+	_, err := q.db.ExecContext(ctx, deleteAuthorExecSQL, id)
 	if err != nil {
 		err = fmt.Errorf("query DeleteAuthorExec: %w", err)
 	}
 	return err
 }
 
-const deleteAuthorExecLastID = `-- name: DeleteAuthorExecLastID :execlastid
+const deleteAuthorExecLastIDSQL = `-- name: DeleteAuthorExecLastID :execlastid
 DELETE FROM authors
 WHERE id = $1
 `
 
 func (q *Queries) DeleteAuthorExecLastID(ctx context.Context, id int64) (int64, error) {
-	result, err := q.db.ExecContext(ctx, deleteAuthorExecLastID, id)
+	result, err := q.db.ExecContext(ctx, deleteAuthorExecLastIDSQL, id)
 	if err != nil {
 		return 0, fmt.Errorf("query DeleteAuthorExecLastID: %w", err)
 	}
 	return result.LastInsertId()
 }
 
-const deleteAuthorExecResult = `-- name: DeleteAuthorExecResult :execresult
+const deleteAuthorExecResultSQL = `-- name: DeleteAuthorExecResult :execresult
 DELETE FROM authors
 WHERE id = $1
 `
 
 func (q *Queries) DeleteAuthorExecResult(ctx context.Context, id int64) (sql.Result, error) {
-	result, err := q.db.ExecContext(ctx, deleteAuthorExecResult, id)
+	result, err := q.db.ExecContext(ctx, deleteAuthorExecResultSQL, id)
 	if err != nil {
 		err = fmt.Errorf("query DeleteAuthorExecResult: %w", err)
 	}
 	return result, err
 }
 
-const deleteAuthorExecRows = `-- name: DeleteAuthorExecRows :execrows
+const deleteAuthorExecRowsSQL = `-- name: DeleteAuthorExecRows :execrows
 DELETE FROM authors
 WHERE id = $1
 `
 
 func (q *Queries) DeleteAuthorExecRows(ctx context.Context, id int64) (int64, error) {
-	result, err := q.db.ExecContext(ctx, deleteAuthorExecRows, id)
+	result, err := q.db.ExecContext(ctx, deleteAuthorExecRowsSQL, id)
 	if err != nil {
 		return 0, fmt.Errorf("query DeleteAuthorExecRows: %w", err)
 	}
 	return result.RowsAffected()
 }
 
-const getAuthor = `-- name: GetAuthor :one
+const getAuthorSQL = `-- name: GetAuthor :one
 SELECT id, name, bio FROM authors
 WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, id)
+	row := q.db.QueryRowContext(ctx, getAuthorSQL, id)
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	if err != nil {
@@ -102,13 +102,13 @@ func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
 	return i, err
 }
 
-const listAuthors = `-- name: ListAuthors :many
+const listAuthorsSQL = `-- name: ListAuthors :many
 SELECT id, name, bio FROM authors
 ORDER BY name
 `
 
 func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthors)
+	rows, err := q.db.QueryContext(ctx, listAuthorsSQL)
 	if err != nil {
 		return nil, fmt.Errorf("query ListAuthors: %w", err)
 	}

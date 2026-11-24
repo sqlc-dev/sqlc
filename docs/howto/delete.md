@@ -41,12 +41,12 @@ type Queries struct {
 	db DBTX
 }
 
-const deleteAuthor = `-- name: DeleteAuthor :exec
+const deleteAuthorSQL = `-- name: DeleteAuthor :exec
 DELETE FROM authors WHERE id = $1
 `
 
 func (q *Queries) DeleteAuthor(ctx context.Context, id int) error {
-	_, err := q.db.ExecContext(ctx, deleteAuthor, id)
+	_, err := q.db.ExecContext(ctx, deleteAuthorSQL, id)
 	return err
 }
 ```

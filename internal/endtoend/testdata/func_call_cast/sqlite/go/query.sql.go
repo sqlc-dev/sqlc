@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const demo = `-- name: Demo :one
+const demoSQL = `-- name: Demo :one
 SELECT CAST(char(1, 2, 3, 4, 5) AS BLOB) AS col1
 `
 
 func (q *Queries) Demo(ctx context.Context) ([]byte, error) {
-	row := q.db.QueryRowContext(ctx, demo)
+	row := q.db.QueryRowContext(ctx, demoSQL)
 	var col1 []byte
 	err := row.Scan(&col1)
 	return col1, err

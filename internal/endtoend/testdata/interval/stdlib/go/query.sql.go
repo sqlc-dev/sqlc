@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const get = `-- name: Get :many
+const getSQL = `-- name: Get :many
 SELECT bar, "interval" FROM foo LIMIT $1
 `
 
 func (q *Queries) Get(ctx context.Context, limit int32) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, get, limit)
+	rows, err := q.db.QueryContext(ctx, getSQL, limit)
 	if err != nil {
 		return nil, err
 	}

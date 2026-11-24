@@ -11,12 +11,12 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getAll = `-- name: GetAll :many
+const getAllSQL = `-- name: GetAll :many
 SELECT "CamelCase" FROM users
 `
 
 func (q *Queries) GetAll(ctx context.Context) ([]pgtype.Text, error) {
-	rows, err := q.db.Query(ctx, getAll)
+	rows, err := q.db.Query(ctx, getAllSQL)
 	if err != nil {
 		return nil, err
 	}

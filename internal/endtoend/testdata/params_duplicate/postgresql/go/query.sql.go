@@ -10,13 +10,13 @@ import (
 	"database/sql"
 )
 
-const selectUserByID = `-- name: SelectUserByID :many
+const selectUserByIDSQL = `-- name: SelectUserByID :many
 SELECT first_name from
 users where ($1 = id OR $1 = 0)
 `
 
 func (q *Queries) SelectUserByID(ctx context.Context, id int32) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, selectUserByID, id)
+	rows, err := q.db.QueryContext(ctx, selectUserByIDSQL, id)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (q *Queries) SelectUserByID(ctx context.Context, id int32) ([]sql.NullStrin
 	return items, nil
 }
 
-const selectUserByName = `-- name: SelectUserByName :many
+const selectUserByNameSQL = `-- name: SelectUserByName :many
 SELECT first_name
 FROM users
 WHERE first_name = $1
@@ -46,7 +46,7 @@ WHERE first_name = $1
 `
 
 func (q *Queries) SelectUserByName(ctx context.Context, name sql.NullString) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, selectUserByName, name)
+	rows, err := q.db.QueryContext(ctx, selectUserByNameSQL, name)
 	if err != nil {
 		return nil, err
 	}
@@ -68,13 +68,13 @@ func (q *Queries) SelectUserByName(ctx context.Context, name sql.NullString) ([]
 	return items, nil
 }
 
-const selectUserQuestion = `-- name: SelectUserQuestion :many
+const selectUserQuestionSQL = `-- name: SelectUserQuestion :many
 SELECT first_name from
 users where ($1 = id OR  $1 = 0)
 `
 
 func (q *Queries) SelectUserQuestion(ctx context.Context, id int32) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, selectUserQuestion, id)
+	rows, err := q.db.QueryContext(ctx, selectUserQuestionSQL, id)
 	if err != nil {
 		return nil, err
 	}

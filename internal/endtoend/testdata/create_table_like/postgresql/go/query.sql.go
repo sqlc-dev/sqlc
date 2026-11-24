@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const getAll = `-- name: GetAll :many
+const getAllSQL = `-- name: GetAll :many
 SELECT id, first_name, last_name, date_of_birth FROM super_users
 `
 
 func (q *Queries) GetAll(ctx context.Context) ([]SuperUser, error) {
-	rows, err := q.db.QueryContext(ctx, getAll)
+	rows, err := q.db.QueryContext(ctx, getAllSQL)
 	if err != nil {
 		return nil, err
 	}

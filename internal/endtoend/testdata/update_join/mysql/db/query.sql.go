@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const updateJoin = `-- name: UpdateJoin :exec
+const updateJoinSQL = `-- name: UpdateJoin :exec
 UPDATE  join_table as jt
         JOIN primary_table as pt
             ON jt.primary_table_id = pt.id
@@ -25,11 +25,11 @@ type UpdateJoinParams struct {
 }
 
 func (q *Queries) UpdateJoin(ctx context.Context, arg UpdateJoinParams) error {
-	_, err := q.db.ExecContext(ctx, updateJoin, arg.IsActive, arg.ID, arg.UserID)
+	_, err := q.db.ExecContext(ctx, updateJoinSQL, arg.IsActive, arg.ID, arg.UserID)
 	return err
 }
 
-const updateLeftJoin = `-- name: UpdateLeftJoin :exec
+const updateLeftJoinSQL = `-- name: UpdateLeftJoin :exec
 UPDATE  join_table as jt
         LEFT JOIN primary_table as pt
             ON jt.primary_table_id = pt.id
@@ -45,11 +45,11 @@ type UpdateLeftJoinParams struct {
 }
 
 func (q *Queries) UpdateLeftJoin(ctx context.Context, arg UpdateLeftJoinParams) error {
-	_, err := q.db.ExecContext(ctx, updateLeftJoin, arg.IsActive, arg.ID, arg.UserID)
+	_, err := q.db.ExecContext(ctx, updateLeftJoinSQL, arg.IsActive, arg.ID, arg.UserID)
 	return err
 }
 
-const updateRightJoin = `-- name: UpdateRightJoin :exec
+const updateRightJoinSQL = `-- name: UpdateRightJoin :exec
 UPDATE  join_table as jt
         RIGHT JOIN primary_table as pt
             ON jt.primary_table_id = pt.id
@@ -65,6 +65,6 @@ type UpdateRightJoinParams struct {
 }
 
 func (q *Queries) UpdateRightJoin(ctx context.Context, arg UpdateRightJoinParams) error {
-	_, err := q.db.ExecContext(ctx, updateRightJoin, arg.IsActive, arg.ID, arg.UserID)
+	_, err := q.db.ExecContext(ctx, updateRightJoinSQL, arg.IsActive, arg.ID, arg.UserID)
 	return err
 }

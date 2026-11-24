@@ -11,13 +11,13 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const fooLimit = `-- name: FooLimit :many
+const fooLimitSQL = `-- name: FooLimit :many
 SELECT a FROM foo
 LIMIT $1
 `
 
 func (q *Queries) FooLimit(ctx context.Context, limit int32) ([]pgtype.Text, error) {
-	rows, err := q.db.Query(ctx, fooLimit, limit)
+	rows, err := q.db.Query(ctx, fooLimitSQL, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func (q *Queries) FooLimit(ctx context.Context, limit int32) ([]pgtype.Text, err
 	return items, nil
 }
 
-const fooLimitOffset = `-- name: FooLimitOffset :many
+const fooLimitOffsetSQL = `-- name: FooLimitOffset :many
 SELECT a FROM foo
 LIMIT $1 OFFSET $2
 `
@@ -47,7 +47,7 @@ type FooLimitOffsetParams struct {
 }
 
 func (q *Queries) FooLimitOffset(ctx context.Context, arg FooLimitOffsetParams) ([]pgtype.Text, error) {
-	rows, err := q.db.Query(ctx, fooLimitOffset, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, fooLimitOffsetSQL, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getSystemColumns = `-- name: GetSystemColumns :one
+const getSystemColumnsSQL = `-- name: GetSystemColumns :one
 SELECT
   tableoid, xmin, cmin, xmax, cmax, ctid
 FROM test
@@ -27,7 +27,7 @@ type GetSystemColumnsRow struct {
 }
 
 func (q *Queries) GetSystemColumns(ctx context.Context) (GetSystemColumnsRow, error) {
-	row := q.db.QueryRow(ctx, getSystemColumns)
+	row := q.db.QueryRow(ctx, getSystemColumnsSQL)
 	var i GetSystemColumnsRow
 	err := row.Scan(
 		&i.Tableoid,

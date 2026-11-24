@@ -10,23 +10,23 @@ import (
 	"net/netip"
 )
 
-const find = `-- name: Find :one
+const findSQL = `-- name: Find :one
 SELECT bar FROM foo WHERE baz = $1
 `
 
 func (q *Queries) Find(ctx context.Context, baz *netip.Prefix) (*netip.Addr, error) {
-	row := q.db.QueryRow(ctx, find, baz)
+	row := q.db.QueryRow(ctx, findSQL, baz)
 	var bar *netip.Addr
 	err := row.Scan(&bar)
 	return bar, err
 }
 
-const list = `-- name: List :many
+const listSQL = `-- name: List :many
 SELECT bar, baz FROM foo
 `
 
 func (q *Queries) List(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.Query(ctx, list)
+	rows, err := q.db.Query(ctx, listSQL)
 	if err != nil {
 		return nil, err
 	}

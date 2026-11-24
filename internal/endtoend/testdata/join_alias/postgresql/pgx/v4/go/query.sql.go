@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const aliasExpand = `-- name: AliasExpand :many
+const aliasExpandSQL = `-- name: AliasExpand :many
 SELECT f.id, b.id, title
 FROM foo f
 JOIN bar b ON b.id = f.id
@@ -24,7 +24,7 @@ type AliasExpandRow struct {
 }
 
 func (q *Queries) AliasExpand(ctx context.Context, id int32) ([]AliasExpandRow, error) {
-	rows, err := q.db.Query(ctx, aliasExpand, id)
+	rows, err := q.db.Query(ctx, aliasExpandSQL, id)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (q *Queries) AliasExpand(ctx context.Context, id int32) ([]AliasExpandRow, 
 	return items, nil
 }
 
-const aliasJoin = `-- name: AliasJoin :many
+const aliasJoinSQL = `-- name: AliasJoin :many
 SELECT f.id, b.title
 FROM foo f
 JOIN bar b ON b.id = f.id
@@ -56,7 +56,7 @@ type AliasJoinRow struct {
 }
 
 func (q *Queries) AliasJoin(ctx context.Context, id int32) ([]AliasJoinRow, error) {
-	rows, err := q.db.Query(ctx, aliasJoin, id)
+	rows, err := q.db.Query(ctx, aliasJoinSQL, id)
 	if err != nil {
 		return nil, err
 	}

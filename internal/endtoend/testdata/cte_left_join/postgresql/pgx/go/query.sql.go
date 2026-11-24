@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const badQuery = `-- name: BadQuery :exec
+const badQuerySQL = `-- name: BadQuery :exec
 WITH
 	q
 		AS (
@@ -29,6 +29,6 @@ WHERE c1.name = $1
 `
 
 func (q *Queries) BadQuery(ctx context.Context, dollar_1 pgtype.Text) error {
-	_, err := q.db.Exec(ctx, badQuery, dollar_1)
+	_, err := q.db.Exec(ctx, badQuerySQL, dollar_1)
 	return err
 }

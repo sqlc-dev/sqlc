@@ -17,7 +17,7 @@ var (
 	ErrBatchAlreadyClosed = errors.New("batch already closed")
 )
 
-const insertValues = `-- name: InsertValues :batchone
+const insertValuesSQL = `-- name: InsertValues :batchone
 INSERT INTO foo (a, b)
 VALUES ($1, $2)
 ON CONFLICT DO NOTHING
@@ -42,7 +42,7 @@ func (q *Queries) InsertValues(ctx context.Context, arg []*InsertValuesParams) *
 			a.A,
 			a.B,
 		}
-		batch.Queue(insertValues, vals...)
+		batch.Queue(insertValuesSQL, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
 	return &InsertValuesBatchResults{br, len(arg), false}

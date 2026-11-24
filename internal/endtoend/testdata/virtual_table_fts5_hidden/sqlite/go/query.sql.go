@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const searchRecipes = `-- name: SearchRecipes :many
+const searchRecipesSQL = `-- name: SearchRecipes :many
 SELECT rowid, name
 FROM recipes_fts
 WHERE recipes_fts MATCH ?
@@ -22,7 +22,7 @@ type SearchRecipesRow struct {
 }
 
 func (q *Queries) SearchRecipes(ctx context.Context, recipesFts string) ([]SearchRecipesRow, error) {
-	rows, err := q.db.QueryContext(ctx, searchRecipes, recipesFts)
+	rows, err := q.db.QueryContext(ctx, searchRecipesSQL, recipesFts)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func (q *Queries) SearchRecipes(ctx context.Context, recipesFts string) ([]Searc
 	return items, nil
 }
 
-const searchRecipesRanked = `-- name: SearchRecipesRanked :many
+const searchRecipesRankedSQL = `-- name: SearchRecipesRanked :many
 SELECT rowid, name, rank
 FROM recipes_fts
 WHERE recipes_fts MATCH ?
@@ -58,7 +58,7 @@ type SearchRecipesRankedRow struct {
 }
 
 func (q *Queries) SearchRecipesRanked(ctx context.Context, recipesFts string) ([]SearchRecipesRankedRow, error) {
-	rows, err := q.db.QueryContext(ctx, searchRecipesRanked, recipesFts)
+	rows, err := q.db.QueryContext(ctx, searchRecipesRankedSQL, recipesFts)
 	if err != nil {
 		return nil, err
 	}

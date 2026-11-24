@@ -10,13 +10,13 @@ import (
 	"database/sql"
 )
 
-const listAuthors = `-- name: ListAuthors :many
+const listAuthorsSQL = `-- name: ListAuthors :many
 SELECT   id, name as name, bio
 FROM     authors
 `
 
 func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthors)
+	rows, err := q.db.QueryContext(ctx, listAuthorsSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -38,13 +38,13 @@ func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
 	return items, nil
 }
 
-const listAuthorsIdenticalAlias = `-- name: ListAuthorsIdenticalAlias :many
+const listAuthorsIdenticalAliasSQL = `-- name: ListAuthorsIdenticalAlias :many
 SELECT   id, name as name, bio
 FROM     authors
 `
 
 func (q *Queries) ListAuthorsIdenticalAlias(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthorsIdenticalAlias)
+	rows, err := q.db.QueryContext(ctx, listAuthorsIdenticalAliasSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (q *Queries) ListAuthorsIdenticalAlias(ctx context.Context) ([]Author, erro
 	return items, nil
 }
 
-const listMetrics = `-- name: ListMetrics :many
+const listMetricsSQL = `-- name: ListMetrics :many
 SELECT date_trunc('day', time) AS bucket, city_name, AVG(temp_c)
 FROM weather_metrics
 WHERE time > NOW() - (6 * INTERVAL '1 month')
@@ -81,7 +81,7 @@ type ListMetricsRow struct {
 }
 
 func (q *Queries) ListMetrics(ctx context.Context) ([]ListMetricsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listMetrics)
+	rows, err := q.db.QueryContext(ctx, listMetricsSQL)
 	if err != nil {
 		return nil, err
 	}

@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const insertSelect = `-- name: InsertSelect :exec
+const insertSelectSQL = `-- name: InsertSelect :exec
 INSERT INTO authors (id, name, bio) 
 SELECT $1, name, bio
 FROM authors
@@ -24,6 +24,6 @@ type InsertSelectParams struct {
 }
 
 func (q *Queries) InsertSelect(ctx context.Context, arg InsertSelectParams) error {
-	_, err := q.db.Exec(ctx, insertSelect, arg.ID, arg.Name)
+	_, err := q.db.Exec(ctx, insertSelectSQL, arg.ID, arg.Name)
 	return err
 }

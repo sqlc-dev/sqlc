@@ -9,34 +9,34 @@ import (
 	"context"
 )
 
-const deleteBarByID = `-- name: DeleteBarByID :one
+const deleteBarByIDSQL = `-- name: DeleteBarByID :one
 DELETE FROM bars WHERE id = $1 RETURNING id, name
 `
 
 func (q *Queries) DeleteBarByID(ctx context.Context, id int32) (Bar, error) {
-	row := q.db.QueryRow(ctx, deleteBarByID, id)
+	row := q.db.QueryRow(ctx, deleteBarByIDSQL, id)
 	var i Bar
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err
 }
 
-const deleteExclusionByID = `-- name: DeleteExclusionByID :one
+const deleteExclusionByIDSQL = `-- name: DeleteExclusionByID :one
 DELETE FROM exclusions WHERE id = $1 RETURNING id, name
 `
 
 func (q *Queries) DeleteExclusionByID(ctx context.Context, id int32) (Exclusions, error) {
-	row := q.db.QueryRow(ctx, deleteExclusionByID, id)
+	row := q.db.QueryRow(ctx, deleteExclusionByIDSQL, id)
 	var i Exclusions
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err
 }
 
-const deleteMyDataByID = `-- name: DeleteMyDataByID :one
+const deleteMyDataByIDSQL = `-- name: DeleteMyDataByID :one
 DELETE FROM my_data WHERE id = $1 RETURNING id, name
 `
 
 func (q *Queries) DeleteMyDataByID(ctx context.Context, id int32) (MyData, error) {
-	row := q.db.QueryRow(ctx, deleteMyDataByID, id)
+	row := q.db.QueryRow(ctx, deleteMyDataByIDSQL, id)
 	var i MyData
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err

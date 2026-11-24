@@ -11,13 +11,13 @@ import (
 	"github.com/lib/pq"
 )
 
-const getAuthor = `-- name: GetAuthor :one
+const getAuthorSQL = `-- name: GetAuthor :one
 SELECT id, name, bio, tags FROM authors
 WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, id)
+	row := q.db.QueryRowContext(ctx, getAuthorSQL, id)
 	var i Author
 	err := row.Scan(
 		&i.ID,

@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const schemaScopedColList = `-- name: SchemaScopedColList :many
+const schemaScopedColListSQL = `-- name: SchemaScopedColList :many
 SELECT foo.bar.id FROM foo.bar
 `
 
 func (q *Queries) SchemaScopedColList(ctx context.Context) ([]int32, error) {
-	rows, err := q.db.Query(ctx, schemaScopedColList)
+	rows, err := q.db.Query(ctx, schemaScopedColListSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -33,12 +33,12 @@ func (q *Queries) SchemaScopedColList(ctx context.Context) ([]int32, error) {
 	return items, nil
 }
 
-const schemaScopedList = `-- name: SchemaScopedList :many
+const schemaScopedListSQL = `-- name: SchemaScopedList :many
 SELECT id FROM foo.bar
 `
 
 func (q *Queries) SchemaScopedList(ctx context.Context) ([]int32, error) {
-	rows, err := q.db.Query(ctx, schemaScopedList)
+	rows, err := q.db.Query(ctx, schemaScopedListSQL)
 	if err != nil {
 		return nil, err
 	}

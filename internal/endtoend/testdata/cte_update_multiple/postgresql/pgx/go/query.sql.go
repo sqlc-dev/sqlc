@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const updateUserAddressWithAddress = `-- name: UpdateUserAddressWithAddress :one
+const updateUserAddressWithAddressSQL = `-- name: UpdateUserAddressWithAddress :one
 WITH t1 AS (
     UPDATE "address" as a
     SET
@@ -61,7 +61,7 @@ type UpdateUserAddressWithAddressRow struct {
 }
 
 func (q *Queries) UpdateUserAddressWithAddress(ctx context.Context, arg UpdateUserAddressWithAddressParams) (UpdateUserAddressWithAddressRow, error) {
-	row := q.db.QueryRow(ctx, updateUserAddressWithAddress,
+	row := q.db.QueryRow(ctx, updateUserAddressWithAddressSQL,
 		arg.AddressLine,
 		arg.Region,
 		arg.City,

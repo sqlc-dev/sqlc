@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const getTransaction = `-- name: GetTransaction :many
+const getTransactionSQL = `-- name: GetTransaction :many
 SELECT
   json_extract(transactions.data, '$.transaction.signatures[0]'),
   json_group_array(instructions.value)
@@ -33,7 +33,7 @@ type GetTransactionRow struct {
 }
 
 func (q *Queries) GetTransaction(ctx context.Context, arg GetTransactionParams) ([]GetTransactionRow, error) {
-	rows, err := q.db.QueryContext(ctx, getTransaction, arg.ProgramID, arg.Data, arg.Limit)
+	rows, err := q.db.QueryContext(ctx, getTransactionSQL, arg.ProgramID, arg.Data, arg.Limit)
 	if err != nil {
 		return nil, err
 	}

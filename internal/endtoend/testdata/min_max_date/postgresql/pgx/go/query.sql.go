@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const activityStats = `-- name: ActivityStats :one
+const activityStatsSQL = `-- name: ActivityStats :one
 SELECT COUNT(*) as NumOfActivities,
         MIN(event_time) as MinDate, 
         MAX(event_time) as MaxDate 
@@ -26,7 +26,7 @@ type ActivityStatsRow struct {
 }
 
 func (q *Queries) ActivityStats(ctx context.Context, accountID int64) (ActivityStatsRow, error) {
-	row := q.db.QueryRow(ctx, activityStats, accountID)
+	row := q.db.QueryRow(ctx, activityStatsSQL, accountID)
 	var i ActivityStatsRow
 	err := row.Scan(&i.Numofactivities, &i.Mindate, &i.Maxdate)
 	return i, err

@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const getAuthor = `-- name: GetAuthor :one
+const getAuthorSQL = `-- name: GetAuthor :one
 SELECT a.id, name, b.id, title
 FROM authors AS a
 FULL JOIN books AS b ON a.id = b.id
@@ -26,7 +26,7 @@ type GetAuthorRow struct {
 }
 
 func (q *Queries) GetAuthor(ctx context.Context, id int64) (GetAuthorRow, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, id)
+	row := q.db.QueryRowContext(ctx, getAuthorSQL, id)
 	var i GetAuthorRow
 	err := row.Scan(
 		&i.ID,

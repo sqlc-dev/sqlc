@@ -9,11 +9,11 @@ import (
 	"context"
 )
 
-const createTable = `-- name: CreateTable :exec
+const createTableSQL = `-- name: CreateTable :exec
 CREATE TABLE test (id INTEGER NOT NULL)
 `
 
 func (q *Queries) CreateTable(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, createTable)
+	_, err := q.db.ExecContext(ctx, createTableSQL)
 	return err
 }

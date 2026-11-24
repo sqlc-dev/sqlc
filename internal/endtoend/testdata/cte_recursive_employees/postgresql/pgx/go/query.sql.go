@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getSubordinates = `-- name: GetSubordinates :many
+const getSubordinatesSQL = `-- name: GetSubordinates :many
 WITH RECURSIVE subordinates(name, manager) AS (
     SELECT
         NULL, $1::TEXT
@@ -36,7 +36,7 @@ WHERE
 `
 
 func (q *Queries) GetSubordinates(ctx context.Context, name pgtype.Text) ([]pgtype.Text, error) {
-	rows, err := q.db.Query(ctx, getSubordinates, name)
+	rows, err := q.db.Query(ctx, getSubordinatesSQL, name)
 	if err != nil {
 		return nil, err
 	}

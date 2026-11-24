@@ -10,551 +10,551 @@ import (
 	"database/sql"
 )
 
-const getAbs = `-- name: GetAbs :one
+const getAbsSQL = `-- name: GetAbs :one
 SELECT abs(int_val) FROM test
 `
 
 func (q *Queries) GetAbs(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getAbs)
+	row := q.db.QueryRowContext(ctx, getAbsSQL)
 	var abs float64
 	err := row.Scan(&abs)
 	return abs, err
 }
 
-const getChanges = `-- name: GetChanges :one
+const getChangesSQL = `-- name: GetChanges :one
 SELECT changes()
 `
 
 func (q *Queries) GetChanges(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getChanges)
+	row := q.db.QueryRowContext(ctx, getChangesSQL)
 	var changes int64
 	err := row.Scan(&changes)
 	return changes, err
 }
 
-const getChar1 = `-- name: GetChar1 :one
+const getChar1SQL = `-- name: GetChar1 :one
 SELECT char(65)
 `
 
 func (q *Queries) GetChar1(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getChar1)
+	row := q.db.QueryRowContext(ctx, getChar1SQL)
 	var char string
 	err := row.Scan(&char)
 	return char, err
 }
 
-const getChar3 = `-- name: GetChar3 :one
+const getChar3SQL = `-- name: GetChar3 :one
 SELECT char(65, 66, 67)
 `
 
 func (q *Queries) GetChar3(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getChar3)
+	row := q.db.QueryRowContext(ctx, getChar3SQL)
 	var char string
 	err := row.Scan(&char)
 	return char, err
 }
 
-const getCoalesce = `-- name: GetCoalesce :one
+const getCoalesceSQL = `-- name: GetCoalesce :one
 SELECT coalesce(NULL, 1, 'test')
 `
 
 func (q *Queries) GetCoalesce(ctx context.Context) (any, error) {
-	row := q.db.QueryRowContext(ctx, getCoalesce)
+	row := q.db.QueryRowContext(ctx, getCoalesceSQL)
 	var coalesce any
 	err := row.Scan(&coalesce)
 	return coalesce, err
 }
 
-const getFormat = `-- name: GetFormat :one
+const getFormatSQL = `-- name: GetFormat :one
 SELECT format('Hello %s', 'world')
 `
 
 func (q *Queries) GetFormat(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getFormat)
+	row := q.db.QueryRowContext(ctx, getFormatSQL)
 	var format string
 	err := row.Scan(&format)
 	return format, err
 }
 
-const getGlob = `-- name: GetGlob :one
+const getGlobSQL = `-- name: GetGlob :one
 SELECT glob('a*c', 'abc')
 `
 
 func (q *Queries) GetGlob(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getGlob)
+	row := q.db.QueryRowContext(ctx, getGlobSQL)
 	var glob int64
 	err := row.Scan(&glob)
 	return glob, err
 }
 
-const getHex = `-- name: GetHex :one
+const getHexSQL = `-- name: GetHex :one
 SELECT hex(123456)
 `
 
 func (q *Queries) GetHex(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getHex)
+	row := q.db.QueryRowContext(ctx, getHexSQL)
 	var hex string
 	err := row.Scan(&hex)
 	return hex, err
 }
 
-const getIfnull = `-- name: GetIfnull :one
+const getIfnullSQL = `-- name: GetIfnull :one
 SELECT ifnull(1, 2)
 `
 
 func (q *Queries) GetIfnull(ctx context.Context) (any, error) {
-	row := q.db.QueryRowContext(ctx, getIfnull)
+	row := q.db.QueryRowContext(ctx, getIfnullSQL)
 	var ifnull any
 	err := row.Scan(&ifnull)
 	return ifnull, err
 }
 
-const getIif = `-- name: GetIif :one
+const getIifSQL = `-- name: GetIif :one
 SELECT iif(1, 2, 3)
 `
 
 func (q *Queries) GetIif(ctx context.Context) (any, error) {
-	row := q.db.QueryRowContext(ctx, getIif)
+	row := q.db.QueryRowContext(ctx, getIifSQL)
 	var iif any
 	err := row.Scan(&iif)
 	return iif, err
 }
 
-const getInstr = `-- name: GetInstr :one
+const getInstrSQL = `-- name: GetInstr :one
 SELECT instr('hello', 'l')
 `
 
 func (q *Queries) GetInstr(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getInstr)
+	row := q.db.QueryRowContext(ctx, getInstrSQL)
 	var instr int64
 	err := row.Scan(&instr)
 	return instr, err
 }
 
-const getLastInsertRowID = `-- name: GetLastInsertRowID :one
+const getLastInsertRowIDSQL = `-- name: GetLastInsertRowID :one
 SELECT last_insert_rowid()
 `
 
 func (q *Queries) GetLastInsertRowID(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getLastInsertRowID)
+	row := q.db.QueryRowContext(ctx, getLastInsertRowIDSQL)
 	var last_insert_rowid int64
 	err := row.Scan(&last_insert_rowid)
 	return last_insert_rowid, err
 }
 
-const getLength = `-- name: GetLength :one
+const getLengthSQL = `-- name: GetLength :one
 SELECT length('12345')
 `
 
 func (q *Queries) GetLength(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getLength)
+	row := q.db.QueryRowContext(ctx, getLengthSQL)
 	var length int64
 	err := row.Scan(&length)
 	return length, err
 }
 
-const getLike2 = `-- name: GetLike2 :one
+const getLike2SQL = `-- name: GetLike2 :one
 SELECT like('%bc%', 'abcd')
 `
 
 func (q *Queries) GetLike2(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getLike2)
+	row := q.db.QueryRowContext(ctx, getLike2SQL)
 	var like int64
 	err := row.Scan(&like)
 	return like, err
 }
 
-const getLike3 = `-- name: GetLike3 :one
+const getLike3SQL = `-- name: GetLike3 :one
 SELECT like('$%1%', '%100', '$')
 `
 
 func (q *Queries) GetLike3(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getLike3)
+	row := q.db.QueryRowContext(ctx, getLike3SQL)
 	var like int64
 	err := row.Scan(&like)
 	return like, err
 }
 
-const getLikelihood = `-- name: GetLikelihood :one
+const getLikelihoodSQL = `-- name: GetLikelihood :one
 SELECT likelihood('12345', 0.5)
 `
 
 func (q *Queries) GetLikelihood(ctx context.Context) (any, error) {
-	row := q.db.QueryRowContext(ctx, getLikelihood)
+	row := q.db.QueryRowContext(ctx, getLikelihoodSQL)
 	var likelihood any
 	err := row.Scan(&likelihood)
 	return likelihood, err
 }
 
-const getLikely = `-- name: GetLikely :one
+const getLikelySQL = `-- name: GetLikely :one
 SELECT likely('12345')
 `
 
 func (q *Queries) GetLikely(ctx context.Context) (any, error) {
-	row := q.db.QueryRowContext(ctx, getLikely)
+	row := q.db.QueryRowContext(ctx, getLikelySQL)
 	var likely any
 	err := row.Scan(&likely)
 	return likely, err
 }
 
-const getLower = `-- name: GetLower :one
+const getLowerSQL = `-- name: GetLower :one
 SELECT lower('ABCDE')
 `
 
 func (q *Queries) GetLower(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getLower)
+	row := q.db.QueryRowContext(ctx, getLowerSQL)
 	var lower string
 	err := row.Scan(&lower)
 	return lower, err
 }
 
-const getLtrim = `-- name: GetLtrim :one
+const getLtrimSQL = `-- name: GetLtrim :one
 SELECT ltrim(' ABCDE')
 `
 
 func (q *Queries) GetLtrim(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getLtrim)
+	row := q.db.QueryRowContext(ctx, getLtrimSQL)
 	var ltrim string
 	err := row.Scan(&ltrim)
 	return ltrim, err
 }
 
-const getLtrim2 = `-- name: GetLtrim2 :one
+const getLtrim2SQL = `-- name: GetLtrim2 :one
 SELECT ltrim(':ABCDE', ':')
 `
 
 func (q *Queries) GetLtrim2(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getLtrim2)
+	row := q.db.QueryRowContext(ctx, getLtrim2SQL)
 	var ltrim string
 	err := row.Scan(&ltrim)
 	return ltrim, err
 }
 
-const getMax3 = `-- name: GetMax3 :one
+const getMax3SQL = `-- name: GetMax3 :one
 SELECT max(1, 3, 2)
 `
 
 func (q *Queries) GetMax3(ctx context.Context) (any, error) {
-	row := q.db.QueryRowContext(ctx, getMax3)
+	row := q.db.QueryRowContext(ctx, getMax3SQL)
 	var max any
 	err := row.Scan(&max)
 	return max, err
 }
 
-const getMin3 = `-- name: GetMin3 :one
+const getMin3SQL = `-- name: GetMin3 :one
 SELECT min(1, 3, 2)
 `
 
 func (q *Queries) GetMin3(ctx context.Context) (any, error) {
-	row := q.db.QueryRowContext(ctx, getMin3)
+	row := q.db.QueryRowContext(ctx, getMin3SQL)
 	var min any
 	err := row.Scan(&min)
 	return min, err
 }
 
-const getNullif = `-- name: GetNullif :one
+const getNullifSQL = `-- name: GetNullif :one
 SELECT nullif(1, 2)
 `
 
 func (q *Queries) GetNullif(ctx context.Context) (any, error) {
-	row := q.db.QueryRowContext(ctx, getNullif)
+	row := q.db.QueryRowContext(ctx, getNullifSQL)
 	var nullif any
 	err := row.Scan(&nullif)
 	return nullif, err
 }
 
-const getPrintf = `-- name: GetPrintf :one
+const getPrintfSQL = `-- name: GetPrintf :one
 SELECT printf('Hello %s', 'world')
 `
 
 func (q *Queries) GetPrintf(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getPrintf)
+	row := q.db.QueryRowContext(ctx, getPrintfSQL)
 	var printf string
 	err := row.Scan(&printf)
 	return printf, err
 }
 
-const getQuote = `-- name: GetQuote :one
+const getQuoteSQL = `-- name: GetQuote :one
 SELECT quote(1)
 `
 
 func (q *Queries) GetQuote(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getQuote)
+	row := q.db.QueryRowContext(ctx, getQuoteSQL)
 	var quote string
 	err := row.Scan(&quote)
 	return quote, err
 }
 
-const getRandom = `-- name: GetRandom :one
+const getRandomSQL = `-- name: GetRandom :one
 SELECT random()
 `
 
 func (q *Queries) GetRandom(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getRandom)
+	row := q.db.QueryRowContext(ctx, getRandomSQL)
 	var random int64
 	err := row.Scan(&random)
 	return random, err
 }
 
-const getRandomBlob = `-- name: GetRandomBlob :one
+const getRandomBlobSQL = `-- name: GetRandomBlob :one
 SELECT randomblob(16)
 `
 
 func (q *Queries) GetRandomBlob(ctx context.Context) ([]byte, error) {
-	row := q.db.QueryRowContext(ctx, getRandomBlob)
+	row := q.db.QueryRowContext(ctx, getRandomBlobSQL)
 	var randomblob []byte
 	err := row.Scan(&randomblob)
 	return randomblob, err
 }
 
-const getReplace = `-- name: GetReplace :one
+const getReplaceSQL = `-- name: GetReplace :one
 SELECT replace('abc', 'bc', 'df')
 `
 
 func (q *Queries) GetReplace(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getReplace)
+	row := q.db.QueryRowContext(ctx, getReplaceSQL)
 	var replace string
 	err := row.Scan(&replace)
 	return replace, err
 }
 
-const getRound = `-- name: GetRound :one
+const getRoundSQL = `-- name: GetRound :one
 SELECT round(1.1)
 `
 
 func (q *Queries) GetRound(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getRound)
+	row := q.db.QueryRowContext(ctx, getRoundSQL)
 	var round float64
 	err := row.Scan(&round)
 	return round, err
 }
 
-const getRound2 = `-- name: GetRound2 :one
+const getRound2SQL = `-- name: GetRound2 :one
 SELECT round(1.1, 2)
 `
 
 func (q *Queries) GetRound2(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getRound2)
+	row := q.db.QueryRowContext(ctx, getRound2SQL)
 	var round float64
 	err := row.Scan(&round)
 	return round, err
 }
 
-const getRtrim = `-- name: GetRtrim :one
+const getRtrimSQL = `-- name: GetRtrim :one
 SELECT rtrim('ABCDE ')
 `
 
 func (q *Queries) GetRtrim(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getRtrim)
+	row := q.db.QueryRowContext(ctx, getRtrimSQL)
 	var rtrim string
 	err := row.Scan(&rtrim)
 	return rtrim, err
 }
 
-const getRtrim2 = `-- name: GetRtrim2 :one
+const getRtrim2SQL = `-- name: GetRtrim2 :one
 SELECT rtrim('ABCDE:', ':')
 `
 
 func (q *Queries) GetRtrim2(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getRtrim2)
+	row := q.db.QueryRowContext(ctx, getRtrim2SQL)
 	var rtrim string
 	err := row.Scan(&rtrim)
 	return rtrim, err
 }
 
-const getSQLiteCompileOptionGet = `-- name: GetSQLiteCompileOptionGet :one
+const getSQLiteCompileOptionGetSQL = `-- name: GetSQLiteCompileOptionGet :one
 SELECT sqlite_compileoption_get(1)
 `
 
 func (q *Queries) GetSQLiteCompileOptionGet(ctx context.Context) (sql.NullString, error) {
-	row := q.db.QueryRowContext(ctx, getSQLiteCompileOptionGet)
+	row := q.db.QueryRowContext(ctx, getSQLiteCompileOptionGetSQL)
 	var sqlite_compileoption_get sql.NullString
 	err := row.Scan(&sqlite_compileoption_get)
 	return sqlite_compileoption_get, err
 }
 
-const getSQLiteCompileOptionUsed = `-- name: GetSQLiteCompileOptionUsed :one
+const getSQLiteCompileOptionUsedSQL = `-- name: GetSQLiteCompileOptionUsed :one
 SELECT sqlite_compileoption_used(1)
 `
 
 func (q *Queries) GetSQLiteCompileOptionUsed(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getSQLiteCompileOptionUsed)
+	row := q.db.QueryRowContext(ctx, getSQLiteCompileOptionUsedSQL)
 	var sqlite_compileoption_used int64
 	err := row.Scan(&sqlite_compileoption_used)
 	return sqlite_compileoption_used, err
 }
 
-const getSQLiteSourceID = `-- name: GetSQLiteSourceID :one
+const getSQLiteSourceIDSQL = `-- name: GetSQLiteSourceID :one
 SELECT sqlite_source_id()
 `
 
 func (q *Queries) GetSQLiteSourceID(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getSQLiteSourceID)
+	row := q.db.QueryRowContext(ctx, getSQLiteSourceIDSQL)
 	var sqlite_source_id string
 	err := row.Scan(&sqlite_source_id)
 	return sqlite_source_id, err
 }
 
-const getSQLiteVersion = `-- name: GetSQLiteVersion :one
+const getSQLiteVersionSQL = `-- name: GetSQLiteVersion :one
 SELECT sqlite_version()
 `
 
 func (q *Queries) GetSQLiteVersion(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getSQLiteVersion)
+	row := q.db.QueryRowContext(ctx, getSQLiteVersionSQL)
 	var sqlite_version string
 	err := row.Scan(&sqlite_version)
 	return sqlite_version, err
 }
 
-const getSign = `-- name: GetSign :one
+const getSignSQL = `-- name: GetSign :one
 SELECT sign(1)
 `
 
 func (q *Queries) GetSign(ctx context.Context) (sql.NullInt64, error) {
-	row := q.db.QueryRowContext(ctx, getSign)
+	row := q.db.QueryRowContext(ctx, getSignSQL)
 	var sign sql.NullInt64
 	err := row.Scan(&sign)
 	return sign, err
 }
 
-const getSoundex = `-- name: GetSoundex :one
+const getSoundexSQL = `-- name: GetSoundex :one
 SELECT soundex('abc')
 `
 
 func (q *Queries) GetSoundex(ctx context.Context) (any, error) {
-	row := q.db.QueryRowContext(ctx, getSoundex)
+	row := q.db.QueryRowContext(ctx, getSoundexSQL)
 	var soundex any
 	err := row.Scan(&soundex)
 	return soundex, err
 }
 
-const getSubstr2 = `-- name: GetSubstr2 :one
+const getSubstr2SQL = `-- name: GetSubstr2 :one
 SELECT substr('abcdef', 2)
 `
 
 func (q *Queries) GetSubstr2(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getSubstr2)
+	row := q.db.QueryRowContext(ctx, getSubstr2SQL)
 	var substr string
 	err := row.Scan(&substr)
 	return substr, err
 }
 
-const getSubstr3 = `-- name: GetSubstr3 :one
+const getSubstr3SQL = `-- name: GetSubstr3 :one
 SELECT substr('abcdef', 1, 2)
 `
 
 func (q *Queries) GetSubstr3(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getSubstr3)
+	row := q.db.QueryRowContext(ctx, getSubstr3SQL)
 	var substr string
 	err := row.Scan(&substr)
 	return substr, err
 }
 
-const getSubstring2 = `-- name: GetSubstring2 :one
+const getSubstring2SQL = `-- name: GetSubstring2 :one
 SELECT substring('abcdef', 1)
 `
 
 func (q *Queries) GetSubstring2(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getSubstring2)
+	row := q.db.QueryRowContext(ctx, getSubstring2SQL)
 	var substring string
 	err := row.Scan(&substring)
 	return substring, err
 }
 
-const getSusbstring3 = `-- name: GetSusbstring3 :one
+const getSusbstring3SQL = `-- name: GetSusbstring3 :one
 SELECT substring('abcdef', 1, 2)
 `
 
 func (q *Queries) GetSusbstring3(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getSusbstring3)
+	row := q.db.QueryRowContext(ctx, getSusbstring3SQL)
 	var substring string
 	err := row.Scan(&substring)
 	return substring, err
 }
 
-const getTotalChanges = `-- name: GetTotalChanges :one
+const getTotalChangesSQL = `-- name: GetTotalChanges :one
 SELECT total_changes()
 `
 
 func (q *Queries) GetTotalChanges(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getTotalChanges)
+	row := q.db.QueryRowContext(ctx, getTotalChangesSQL)
 	var total_changes int64
 	err := row.Scan(&total_changes)
 	return total_changes, err
 }
 
-const getTrim = `-- name: GetTrim :one
+const getTrimSQL = `-- name: GetTrim :one
 SELECT trim(' ABCDE ')
 `
 
 func (q *Queries) GetTrim(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getTrim)
+	row := q.db.QueryRowContext(ctx, getTrimSQL)
 	var trim string
 	err := row.Scan(&trim)
 	return trim, err
 }
 
-const getTrim2 = `-- name: GetTrim2 :one
+const getTrim2SQL = `-- name: GetTrim2 :one
 SELECT trim(':ABCDE:', ':')
 `
 
 func (q *Queries) GetTrim2(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getTrim2)
+	row := q.db.QueryRowContext(ctx, getTrim2SQL)
 	var trim string
 	err := row.Scan(&trim)
 	return trim, err
 }
 
-const getTypeof = `-- name: GetTypeof :one
+const getTypeofSQL = `-- name: GetTypeof :one
 SELECT typeof('ABCDE')
 `
 
 func (q *Queries) GetTypeof(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getTypeof)
+	row := q.db.QueryRowContext(ctx, getTypeofSQL)
 	var typeof string
 	err := row.Scan(&typeof)
 	return typeof, err
 }
 
-const getUnicode = `-- name: GetUnicode :one
+const getUnicodeSQL = `-- name: GetUnicode :one
 SELECT unicode('A')
 `
 
 func (q *Queries) GetUnicode(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getUnicode)
+	row := q.db.QueryRowContext(ctx, getUnicodeSQL)
 	var unicode int64
 	err := row.Scan(&unicode)
 	return unicode, err
 }
 
-const getUnlikely = `-- name: GetUnlikely :one
+const getUnlikelySQL = `-- name: GetUnlikely :one
 SELECT unlikely('12345')
 `
 
 func (q *Queries) GetUnlikely(ctx context.Context) (any, error) {
-	row := q.db.QueryRowContext(ctx, getUnlikely)
+	row := q.db.QueryRowContext(ctx, getUnlikelySQL)
 	var unlikely any
 	err := row.Scan(&unlikely)
 	return unlikely, err
 }
 
-const getUpper = `-- name: GetUpper :one
+const getUpperSQL = `-- name: GetUpper :one
 SELECT upper('abcde')
 `
 
 func (q *Queries) GetUpper(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, getUpper)
+	row := q.db.QueryRowContext(ctx, getUpperSQL)
 	var upper string
 	err := row.Scan(&upper)
 	return upper, err
 }
 
-const getZeroblob = `-- name: GetZeroblob :one
+const getZeroblobSQL = `-- name: GetZeroblob :one
 SELECT zeroblob(16)
 `
 
 func (q *Queries) GetZeroblob(ctx context.Context) ([]byte, error) {
-	row := q.db.QueryRowContext(ctx, getZeroblob)
+	row := q.db.QueryRowContext(ctx, getZeroblobSQL)
 	var zeroblob []byte
 	err := row.Scan(&zeroblob)
 	return zeroblob, err

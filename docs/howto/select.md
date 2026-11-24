@@ -81,25 +81,25 @@ type Queries struct {
 	db DBTX
 }
 
-const getAuthor = `-- name: GetAuthor :one
+const getAuthorSQL = `-- name: GetAuthor :one
 SELECT id, bio, birth_year FROM authors
 WHERE id = $1
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, id int) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, id)
+	row := q.db.QueryRowContext(ctx, getAuthorSQL, id)
 	var i Author
 	err := row.Scan(&i.ID, &i.Bio, &i.BirthYear)
 	return i, err
 }
 
-const listAuthors = `-- name: ListAuthors :many
+const listAuthorsSQL = `-- name: ListAuthors :many
 SELECT id, bio, birth_year FROM authors
 ORDER BY id
 `
 
 func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthors)
+	rows, err := q.db.QueryContext(ctx, listAuthorsSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -172,19 +172,19 @@ type Queries struct {
 	db DBTX
 }
 
-const getBioForAuthor = `-- name: GetBioForAuthor :one
+const getBioForAuthorSQL = `-- name: GetBioForAuthor :one
 SELECT bio FROM authors
 WHERE id = $1
 `
 
 func (q *Queries) GetBioForAuthor(ctx context.Context, id int) (string, error) {
-	row := q.db.QueryRowContext(ctx, getBioForAuthor, id)
+	row := q.db.QueryRowContext(ctx, getBioForAuthorSQL, id)
 	var i string
 	err := row.Scan(&i)
 	return i, err
 }
 
-const getInfoForAuthor = `-- name: GetInfoForAuthor :one
+const getInfoForAuthorSQL = `-- name: GetInfoForAuthor :one
 SELECT bio, birth_year FROM authors
 WHERE id = $1
 `
@@ -195,7 +195,7 @@ type GetInfoForAuthorRow struct {
 }
 
 func (q *Queries) GetInfoForAuthor(ctx context.Context, id int) (GetInfoForAuthorRow, error) {
-	row := q.db.QueryRowContext(ctx, getInfoForAuthor, id)
+	row := q.db.QueryRowContext(ctx, getInfoForAuthorSQL, id)
 	var i GetInfoForAuthorRow
 	err := row.Scan(&i.Bio, &i.BirthYear)
 	return i, err
@@ -255,13 +255,13 @@ type Queries struct {
 	db DBTX
 }
 
-const listAuthors = `-- name: ListAuthorsByIDs :many
+const listAuthorsSQL = `-- name: ListAuthorsByIDs :many
 SELECT id, bio, birth_year FROM authors
 WHERE id = ANY($1::int[])
 `
 
 func (q *Queries) ListAuthorsByIDs(ctx context.Context, ids []int) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthors, pq.Array(ids))
+	rows, err := q.db.QueryContext(ctx, listAuthorsSQL, pq.Array(ids))
 	if err != nil {
 		return nil, err
 	}
@@ -354,13 +354,13 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	}
 }
 
-const listAuthorsByIDs = `-- name: ListAuthorsByIDs :many
+const listAuthorsByIDsSQL = `-- name: ListAuthorsByIDs :many
 SELECT id, bio, birth_year FROM authors
 WHERE id IN (/*SLICE:ids*/?)
 `
 
 func (q *Queries) ListAuthorsByIDs(ctx context.Context, ids []int64) ([]Author, error) {
-	sql := listAuthorsByIDs
+	sql := listAuthorsByIDsSQL
 	var queryParams []any
 	if len(ids) == 0 {
 		return nil, fmt.Errorf("slice ids must have at least one element")

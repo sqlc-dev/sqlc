@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const updateSetMultiple = `-- name: UpdateSetMultiple :exec
+const updateSetMultipleSQL = `-- name: UpdateSetMultiple :exec
 UPDATE foo SET name = ?, slug = ?
 `
 
@@ -19,6 +19,6 @@ type UpdateSetMultipleParams struct {
 }
 
 func (q *Queries) UpdateSetMultiple(ctx context.Context, arg UpdateSetMultipleParams) error {
-	_, err := q.db.ExecContext(ctx, updateSetMultiple, arg.Name, arg.Slug)
+	_, err := q.db.ExecContext(ctx, updateSetMultipleSQL, arg.Name, arg.Slug)
 	return err
 }

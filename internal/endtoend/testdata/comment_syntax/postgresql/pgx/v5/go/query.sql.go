@@ -11,23 +11,23 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const doubleDash = `-- name: DoubleDash :one
+const doubleDashSQL = `-- name: DoubleDash :one
 SELECT bar FROM foo LIMIT 1
 `
 
 func (q *Queries) DoubleDash(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, doubleDash)
+	row := q.db.QueryRow(ctx, doubleDashSQL)
 	var bar pgtype.Text
 	err := row.Scan(&bar)
 	return bar, err
 }
 
-const slashStar = `-- name: SlashStar :one
+const slashStarSQL = `-- name: SlashStar :one
 SELECT bar FROM foo LIMIT 1
 `
 
 func (q *Queries) SlashStar(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, slashStar)
+	row := q.db.QueryRow(ctx, slashStarSQL)
 	var bar pgtype.Text
 	err := row.Scan(&bar)
 	return bar, err

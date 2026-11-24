@@ -9,22 +9,22 @@ import (
 	"context"
 )
 
-const bar = `-- name: Bar :exec
+const barSQL = `-- name: Bar :exec
 SELECT bar
 FROM foo
 `
 
 func (q *Queries) Bar(ctx context.Context) error {
-	_, err := q.db.Exec(ctx, bar)
+	_, err := q.db.Exec(ctx, barSQL)
 	return err
 }
 
-const bars = `-- name: Bars :exec
+const barsSQL = `-- name: Bars :exec
 SELECT bars
 FROM foo
 `
 
 func (q *Queries) Bars(ctx context.Context) error {
-	_, err := q.db.Exec(ctx, bars)
+	_, err := q.db.Exec(ctx, barsSQL)
 	return err
 }

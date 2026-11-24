@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const getAuthor = `-- name: GetAuthor :one
+const getAuthorSQL = `-- name: GetAuthor :one
 SELECT id, name, bio
 FROM authors1
 WHERE id = ?1
@@ -17,7 +17,7 @@ LIMIT 1
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, id int64) (Authors1, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, id)
+	row := q.db.QueryRowContext(ctx, getAuthorSQL, id)
 	var i Authors1
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err

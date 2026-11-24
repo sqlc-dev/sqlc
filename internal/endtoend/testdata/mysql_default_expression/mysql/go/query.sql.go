@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const getExpiration = `-- name: GetExpiration :one
+const getExpirationSQL = `-- name: GetExpiration :one
 SELECT id, created_at, expiry FROM expirations WHERE id = ?
 `
 
 func (q *Queries) GetExpiration(ctx context.Context, id int32) (Expiration, error) {
-	row := q.db.QueryRowContext(ctx, getExpiration, id)
+	row := q.db.QueryRowContext(ctx, getExpirationSQL, id)
 	var i Expiration
 	err := row.Scan(&i.ID, &i.CreatedAt, &i.Expiry)
 	return i, err

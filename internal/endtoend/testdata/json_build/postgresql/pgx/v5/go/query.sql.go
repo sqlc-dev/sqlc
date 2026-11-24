@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const selectJSONBBuildArray = `-- name: SelectJSONBBuildArray :one
+const selectJSONBBuildArraySQL = `-- name: SelectJSONBBuildArray :one
 SELECT 
   jsonb_build_array(),
   jsonb_build_array(1),
@@ -27,7 +27,7 @@ type SelectJSONBBuildArrayRow struct {
 }
 
 func (q *Queries) SelectJSONBBuildArray(ctx context.Context) (SelectJSONBBuildArrayRow, error) {
-	row := q.db.QueryRow(ctx, selectJSONBBuildArray)
+	row := q.db.QueryRow(ctx, selectJSONBBuildArraySQL)
 	var i SelectJSONBBuildArrayRow
 	err := row.Scan(
 		&i.JsonbBuildArray,
@@ -39,7 +39,7 @@ func (q *Queries) SelectJSONBBuildArray(ctx context.Context) (SelectJSONBBuildAr
 	return i, err
 }
 
-const selectJSONBBuildObject = `-- name: SelectJSONBBuildObject :one
+const selectJSONBBuildObjectSQL = `-- name: SelectJSONBBuildObject :one
 SELECT
   jsonb_build_object(),
   jsonb_build_object('foo'),
@@ -57,7 +57,7 @@ type SelectJSONBBuildObjectRow struct {
 }
 
 func (q *Queries) SelectJSONBBuildObject(ctx context.Context) (SelectJSONBBuildObjectRow, error) {
-	row := q.db.QueryRow(ctx, selectJSONBBuildObject)
+	row := q.db.QueryRow(ctx, selectJSONBBuildObjectSQL)
 	var i SelectJSONBBuildObjectRow
 	err := row.Scan(
 		&i.JsonbBuildObject,
@@ -69,7 +69,7 @@ func (q *Queries) SelectJSONBBuildObject(ctx context.Context) (SelectJSONBBuildO
 	return i, err
 }
 
-const selectJSONBuildArray = `-- name: SelectJSONBuildArray :one
+const selectJSONBuildArraySQL = `-- name: SelectJSONBuildArray :one
 SELECT 
   json_build_array(),
   json_build_array(1),
@@ -87,7 +87,7 @@ type SelectJSONBuildArrayRow struct {
 }
 
 func (q *Queries) SelectJSONBuildArray(ctx context.Context) (SelectJSONBuildArrayRow, error) {
-	row := q.db.QueryRow(ctx, selectJSONBuildArray)
+	row := q.db.QueryRow(ctx, selectJSONBuildArraySQL)
 	var i SelectJSONBuildArrayRow
 	err := row.Scan(
 		&i.JsonBuildArray,
@@ -99,7 +99,7 @@ func (q *Queries) SelectJSONBuildArray(ctx context.Context) (SelectJSONBuildArra
 	return i, err
 }
 
-const selectJSONBuildObject = `-- name: SelectJSONBuildObject :one
+const selectJSONBuildObjectSQL = `-- name: SelectJSONBuildObject :one
 SELECT
   json_build_object(),
   json_build_object('foo'),
@@ -117,7 +117,7 @@ type SelectJSONBuildObjectRow struct {
 }
 
 func (q *Queries) SelectJSONBuildObject(ctx context.Context) (SelectJSONBuildObjectRow, error) {
-	row := q.db.QueryRow(ctx, selectJSONBuildObject)
+	row := q.db.QueryRow(ctx, selectJSONBuildObjectSQL)
 	var i SelectJSONBuildObjectRow
 	err := row.Scan(
 		&i.JsonBuildObject,

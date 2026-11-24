@@ -12,21 +12,21 @@ import (
 	"github.com/jackc/pgconn"
 )
 
-const deleteValues = `-- name: DeleteValues :execresult
+const deleteValuesSQL = `-- name: DeleteValues :execresult
 DELETE
 FROM myschema.foo
 `
 
 func (q *Queries) DeleteValues(ctx context.Context) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, deleteValues)
+	return q.db.Exec(ctx, deleteValuesSQL)
 }
 
-const insertSingleValue = `-- name: InsertSingleValue :exec
+const insertSingleValueSQL = `-- name: InsertSingleValue :exec
 INSERT INTO myschema.foo (a) VALUES ($1)
 `
 
 func (q *Queries) InsertSingleValue(ctx context.Context, a sql.NullString) error {
-	_, err := q.db.Exec(ctx, insertSingleValue, a)
+	_, err := q.db.Exec(ctx, insertSingleValueSQL, a)
 	return err
 }
 

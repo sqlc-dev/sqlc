@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getAuthor = `-- name: GetAuthor :one
+const getAuthorSQL = `-- name: GetAuthor :one
 WITH person AS(
     WITH summary AS(
         WITH mb AS(
@@ -31,7 +31,7 @@ select total from person
 `
 
 func (q *Queries) GetAuthor(ctx context.Context) (pgtype.Int8, error) {
-	row := q.db.QueryRow(ctx, getAuthor)
+	row := q.db.QueryRow(ctx, getAuthorSQL)
 	var total pgtype.Int8
 	err := row.Scan(&total)
 	return total, err

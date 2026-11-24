@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const coldCities = `-- name: ColdCities :many
+const coldCitiesSQL = `-- name: ColdCities :many
 SELECT city
 FROM weather
 GROUP BY city
@@ -17,7 +17,7 @@ HAVING max(temp_lo) < ?
 `
 
 func (q *Queries) ColdCities(ctx context.Context, tempLo int32) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, coldCities, tempLo)
+	rows, err := q.db.QueryContext(ctx, coldCitiesSQL, tempLo)
 	if err != nil {
 		return nil, err
 	}

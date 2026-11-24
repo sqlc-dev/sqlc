@@ -9,11 +9,11 @@ import (
 	"context"
 )
 
-const refresh = `-- name: Refresh :exec
+const refreshSQL = `-- name: Refresh :exec
 REFRESH MATERIALIZED VIEW myview
 `
 
 func (q *Queries) Refresh(ctx context.Context) error {
-	_, err := q.db.Exec(ctx, refresh)
+	_, err := q.db.Exec(ctx, refreshSQL)
 	return err
 }

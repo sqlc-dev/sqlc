@@ -11,12 +11,12 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const foo = `-- name: Foo :one
+const fooSQL = `-- name: Foo :one
 SELECT register_account FROM register_account('a', 'b')
 `
 
 func (q *Queries) Foo(ctx context.Context) (pgtype.Int4, error) {
-	row := q.db.QueryRow(ctx, foo)
+	row := q.db.QueryRow(ctx, fooSQL)
 	var register_account pgtype.Int4
 	err := row.Scan(&register_account)
 	return register_account, err

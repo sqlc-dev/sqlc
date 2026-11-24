@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const testFuncSelectBlog = `-- name: TestFuncSelectBlog :many
+const testFuncSelectBlogSQL = `-- name: TestFuncSelectBlog :many
 select id, name from test_select_blog($1)
 `
 
@@ -21,7 +21,7 @@ type TestFuncSelectBlogRow struct {
 }
 
 func (q *Queries) TestFuncSelectBlog(ctx context.Context, pID int32) ([]TestFuncSelectBlogRow, error) {
-	rows, err := q.db.Query(ctx, testFuncSelectBlog, pID)
+	rows, err := q.db.Query(ctx, testFuncSelectBlogSQL, pID)
 	if err != nil {
 		return nil, err
 	}

@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const rightJoin = `-- name: RightJoin :many
+const rightJoinSQL = `-- name: RightJoin :many
 SELECT f.id, f.bar_id, b.id
 FROM foo f
 RIGHT JOIN bar b ON b.id = f.bar_id
@@ -24,7 +24,7 @@ type RightJoinRow struct {
 }
 
 func (q *Queries) RightJoin(ctx context.Context, id int32) ([]RightJoinRow, error) {
-	rows, err := q.db.QueryContext(ctx, rightJoin, id)
+	rows, err := q.db.QueryContext(ctx, rightJoinSQL, id)
 	if err != nil {
 		return nil, err
 	}

@@ -9,14 +9,14 @@ import (
 	"context"
 )
 
-const joinTextArray = `-- name: JoinTextArray :many
+const joinTextArraySQL = `-- name: JoinTextArray :many
 SELECT bar.info
 FROM foo
 JOIN bar ON foo.bar = bar.id
 `
 
 func (q *Queries) JoinTextArray(ctx context.Context) ([][]string, error) {
-	rows, err := q.db.Query(ctx, joinTextArray)
+	rows, err := q.db.Query(ctx, joinTextArraySQL)
 	if err != nil {
 		return nil, err
 	}

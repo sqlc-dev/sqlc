@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const listAuthors = `-- name: ListAuthors :one
+const listAuthorsSQL = `-- name: ListAuthors :one
 SELECT  id, username, email, name, bio
 FROM    authors
 WHERE   email = CASE WHEN ? = '' then NULL else ? END
@@ -24,7 +24,7 @@ type ListAuthorsParams struct {
 }
 
 func (q *Queries) ListAuthors(ctx context.Context, arg ListAuthorsParams) (Author, error) {
-	row := q.db.QueryRowContext(ctx, listAuthors,
+	row := q.db.QueryRowContext(ctx, listAuthorsSQL,
 		arg.Email,
 		arg.Email,
 		arg.Username,

@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const caseStatementText = `-- name: CaseStatementText :many
+const caseStatementTextSQL = `-- name: CaseStatementText :many
 SELECT CASE 
   WHEN id = $1 THEN 'foo'
   ELSE 'bar'
@@ -18,7 +18,7 @@ FROM foo
 `
 
 func (q *Queries) CaseStatementText(ctx context.Context, id string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, caseStatementText, id)
+	rows, err := q.db.QueryContext(ctx, caseStatementTextSQL, id)
 	if err != nil {
 		return nil, err
 	}

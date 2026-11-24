@@ -9,11 +9,11 @@ import (
 	"context"
 )
 
-const deleteFrom = `-- name: DeleteFrom :exec
+const deleteFromSQL = `-- name: DeleteFrom :exec
 DELETE FROM foo WHERE id = ?
 `
 
 func (q *Queries) DeleteFrom(ctx context.Context, id string) error {
-	_, err := q.db.ExecContext(ctx, deleteFrom, id)
+	_, err := q.db.ExecContext(ctx, deleteFromSQL, id)
 	return err
 }

@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const alsoNotEqual = `-- name: AlsoNotEqual :many
+const alsoNotEqualSQL = `-- name: AlsoNotEqual :many
 SELECT count(*) <> 0 FROM bar
 `
 
 func (q *Queries) AlsoNotEqual(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.Query(ctx, alsoNotEqual)
+	rows, err := q.db.Query(ctx, alsoNotEqualSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -33,12 +33,12 @@ func (q *Queries) AlsoNotEqual(ctx context.Context) ([]bool, error) {
 	return items, nil
 }
 
-const equal = `-- name: Equal :many
+const equalSQL = `-- name: Equal :many
 SELECT count(*) = 0 FROM bar
 `
 
 func (q *Queries) Equal(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.Query(ctx, equal)
+	rows, err := q.db.Query(ctx, equalSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -57,12 +57,12 @@ func (q *Queries) Equal(ctx context.Context) ([]bool, error) {
 	return items, nil
 }
 
-const greaterThan = `-- name: GreaterThan :many
+const greaterThanSQL = `-- name: GreaterThan :many
 SELECT count(*) > 0 FROM bar
 `
 
 func (q *Queries) GreaterThan(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.Query(ctx, greaterThan)
+	rows, err := q.db.Query(ctx, greaterThanSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -81,12 +81,12 @@ func (q *Queries) GreaterThan(ctx context.Context) ([]bool, error) {
 	return items, nil
 }
 
-const greaterThanOrEqual = `-- name: GreaterThanOrEqual :many
+const greaterThanOrEqualSQL = `-- name: GreaterThanOrEqual :many
 SELECT count(*) >= 0 FROM bar
 `
 
 func (q *Queries) GreaterThanOrEqual(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.Query(ctx, greaterThanOrEqual)
+	rows, err := q.db.Query(ctx, greaterThanOrEqualSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -105,12 +105,12 @@ func (q *Queries) GreaterThanOrEqual(ctx context.Context) ([]bool, error) {
 	return items, nil
 }
 
-const lessThan = `-- name: LessThan :many
+const lessThanSQL = `-- name: LessThan :many
 SELECT count(*) < 0 FROM bar
 `
 
 func (q *Queries) LessThan(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.Query(ctx, lessThan)
+	rows, err := q.db.Query(ctx, lessThanSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -129,12 +129,12 @@ func (q *Queries) LessThan(ctx context.Context) ([]bool, error) {
 	return items, nil
 }
 
-const lessThanOrEqual = `-- name: LessThanOrEqual :many
+const lessThanOrEqualSQL = `-- name: LessThanOrEqual :many
 SELECT count(*) <= 0 FROM bar
 `
 
 func (q *Queries) LessThanOrEqual(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.Query(ctx, lessThanOrEqual)
+	rows, err := q.db.Query(ctx, lessThanOrEqualSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -153,12 +153,12 @@ func (q *Queries) LessThanOrEqual(ctx context.Context) ([]bool, error) {
 	return items, nil
 }
 
-const notEqual = `-- name: NotEqual :many
+const notEqualSQL = `-- name: NotEqual :many
 SELECT count(*) != 0 FROM bar
 `
 
 func (q *Queries) NotEqual(ctx context.Context) ([]bool, error) {
-	rows, err := q.db.Query(ctx, notEqual)
+	rows, err := q.db.Query(ctx, notEqualSQL)
 	if err != nil {
 		return nil, err
 	}

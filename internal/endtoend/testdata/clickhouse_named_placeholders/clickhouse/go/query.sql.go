@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const insertEvent = `-- name: InsertEvent :exec
+const insertEventSQL = `-- name: InsertEvent :exec
 INSERT INTO events (id, name, tag, amount, uid, ip, big)
 VALUES ({id:UInt64}, {name:String}, {tag:Nullable(String)}, {amount:Decimal(10, 2)}, {uid:UUID}, {ip:IPv4}, {big:Int128});
 `
@@ -26,7 +26,7 @@ type InsertEventParams struct {
 }
 
 func (q *Queries) InsertEvent(ctx context.Context, arg InsertEventParams) error {
-	_, err := q.db.ExecContext(ctx, insertEvent,
+	_, err := q.db.ExecContext(ctx, insertEventSQL,
 		sql.Named("id", arg.ID),
 		sql.Named("name", arg.Name),
 		sql.Named("tag", arg.Tag),
@@ -38,7 +38,7 @@ func (q *Queries) InsertEvent(ctx context.Context, arg InsertEventParams) error 
 	return err
 }
 
-const positionalEvent = `-- name: PositionalEvent :exec
+const positionalEventSQL = `-- name: PositionalEvent :exec
 INSERT INTO events (id, name, tag, amount, uid, ip, big)
 VALUES (?, ?, ?, ?, ?, ?, ?);
 `
@@ -54,7 +54,7 @@ type PositionalEventParams struct {
 }
 
 func (q *Queries) PositionalEvent(ctx context.Context, arg PositionalEventParams) error {
-	_, err := q.db.ExecContext(ctx, positionalEvent,
+	_, err := q.db.ExecContext(ctx, positionalEventSQL,
 		arg.ID,
 		arg.Name,
 		arg.Tag,
@@ -66,7 +66,7 @@ func (q *Queries) PositionalEvent(ctx context.Context, arg PositionalEventParams
 	return err
 }
 
-const repeatedName = `-- name: RepeatedName :many
+const repeatedNameSQL = `-- name: RepeatedName :many
 SELECT id FROM events
 WHERE name = {name:String} OR tag = {name:String} OR id = {id:UInt64};
 `
@@ -77,7 +77,7 @@ type RepeatedNameParams struct {
 }
 
 func (q *Queries) RepeatedName(ctx context.Context, arg RepeatedNameParams) ([]uint64, error) {
-	rows, err := q.db.QueryContext(ctx, repeatedName, sql.Named("name", arg.Name), sql.Named("id", arg.ID))
+	rows, err := q.db.QueryContext(ctx, repeatedNameSQL, sql.Named("name", arg.Name), sql.Named("id", arg.ID))
 	if err != nil {
 		return nil, err
 	}

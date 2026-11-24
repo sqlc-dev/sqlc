@@ -11,12 +11,12 @@ import (
 	models "github.com/sqlc-dev/sqlc/endtoend/output_models_shared/postgresql/model"
 )
 
-const listAuthors = `-- name: ListAuthors :many
+const listAuthorsSQL = `-- name: ListAuthors :many
 SELECT id, name, status FROM authors ORDER BY name
 `
 
 func (q *Queries) ListAuthors(ctx context.Context) ([]models.Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthors)
+	rows, err := q.db.QueryContext(ctx, listAuthorsSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -38,12 +38,12 @@ func (q *Queries) ListAuthors(ctx context.Context) ([]models.Author, error) {
 	return items, nil
 }
 
-const listAuthorsByStatus = `-- name: ListAuthorsByStatus :many
+const listAuthorsByStatusSQL = `-- name: ListAuthorsByStatus :many
 SELECT id, name, status FROM authors WHERE status = $1 ORDER BY name
 `
 
 func (q *Queries) ListAuthorsByStatus(ctx context.Context, status models.Status) ([]models.Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthorsByStatus, status)
+	rows, err := q.db.QueryContext(ctx, listAuthorsByStatusSQL, status)
 	if err != nil {
 		return nil, err
 	}

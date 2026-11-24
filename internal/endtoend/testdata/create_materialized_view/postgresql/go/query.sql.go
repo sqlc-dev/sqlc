@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const getFirst = `-- name: GetFirst :many
+const getFirstSQL = `-- name: GetFirst :many
 SELECT val FROM mat_first_view
 `
 
 func (q *Queries) GetFirst(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, getFirst)
+	rows, err := q.db.QueryContext(ctx, getFirstSQL)
 	if err != nil {
 		return nil, err
 	}

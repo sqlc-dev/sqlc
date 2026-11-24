@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const schemaScopedCreate = `-- name: SchemaScopedCreate :one
+const schemaScopedCreateSQL = `-- name: SchemaScopedCreate :one
 INSERT INTO foo.bar (id, name) VALUES ($1, $2) RETURNING id
 `
 
@@ -19,7 +19,7 @@ type SchemaScopedCreateParams struct {
 }
 
 func (q *Queries) SchemaScopedCreate(ctx context.Context, arg SchemaScopedCreateParams) (int32, error) {
-	row := q.db.QueryRow(ctx, schemaScopedCreate, arg.ID, arg.Name)
+	row := q.db.QueryRow(ctx, schemaScopedCreateSQL, arg.ID, arg.Name)
 	var id int32
 	err := row.Scan(&id)
 	return id, err

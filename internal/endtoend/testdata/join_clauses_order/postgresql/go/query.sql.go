@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const testInnerLeft = `-- name: TestInnerLeft :many
+const testInnerLeftSQL = `-- name: TestInnerLeft :many
 SELECT a.a, b.b, c.c
 FROM a
 INNER JOIN b ON b.a_id = a.id
@@ -24,7 +24,7 @@ type TestInnerLeftRow struct {
 }
 
 func (q *Queries) TestInnerLeft(ctx context.Context) ([]TestInnerLeftRow, error) {
-	rows, err := q.db.QueryContext(ctx, testInnerLeft)
+	rows, err := q.db.QueryContext(ctx, testInnerLeftSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (q *Queries) TestInnerLeft(ctx context.Context) ([]TestInnerLeftRow, error)
 	return items, nil
 }
 
-const testInnerLeftInnerLeft = `-- name: TestInnerLeftInnerLeft :many
+const testInnerLeftInnerLeftSQL = `-- name: TestInnerLeftInnerLeft :many
 SELECT a.a, b.b, c.c, d.d, e.e
 FROM a
 INNER JOIN b ON b.a_id = a.id
@@ -64,7 +64,7 @@ type TestInnerLeftInnerLeftRow struct {
 }
 
 func (q *Queries) TestInnerLeftInnerLeft(ctx context.Context) ([]TestInnerLeftInnerLeftRow, error) {
-	rows, err := q.db.QueryContext(ctx, testInnerLeftInnerLeft)
+	rows, err := q.db.QueryContext(ctx, testInnerLeftInnerLeftSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (q *Queries) TestInnerLeftInnerLeft(ctx context.Context) ([]TestInnerLeftIn
 	return items, nil
 }
 
-const testLeftInner = `-- name: TestLeftInner :many
+const testLeftInnerSQL = `-- name: TestLeftInner :many
 SELECT a.a, b.b, c.c
 FROM a
 LEFT JOIN b ON b.a_id = a.id
@@ -106,7 +106,7 @@ type TestLeftInnerRow struct {
 }
 
 func (q *Queries) TestLeftInner(ctx context.Context) ([]TestLeftInnerRow, error) {
-	rows, err := q.db.QueryContext(ctx, testLeftInner)
+	rows, err := q.db.QueryContext(ctx, testLeftInnerSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func (q *Queries) TestLeftInner(ctx context.Context) ([]TestLeftInnerRow, error)
 	return items, nil
 }
 
-const testLeftInnerLeftInner = `-- name: TestLeftInnerLeftInner :many
+const testLeftInnerLeftInnerSQL = `-- name: TestLeftInnerLeftInner :many
 SELECT a.a, b.b, c.c, d.d, e.e
 FROM a
 LEFT JOIN b ON b.a_id = a.id
@@ -146,7 +146,7 @@ type TestLeftInnerLeftInnerRow struct {
 }
 
 func (q *Queries) TestLeftInnerLeftInner(ctx context.Context) ([]TestLeftInnerLeftInnerRow, error) {
-	rows, err := q.db.QueryContext(ctx, testLeftInnerLeftInner)
+	rows, err := q.db.QueryContext(ctx, testLeftInnerLeftInnerSQL)
 	if err != nil {
 		return nil, err
 	}

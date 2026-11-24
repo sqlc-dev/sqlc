@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const listBar = `-- name: ListBar :many
+const listBarSQL = `-- name: ListBar :many
 SELECT id FROM bar
 `
 
 func (q *Queries) ListBar(ctx context.Context) ([]int32, error) {
-	rows, err := q.db.Query(ctx, listBar)
+	rows, err := q.db.Query(ctx, listBarSQL)
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const getBetweenPrices = `-- name: GetBetweenPrices :many
+const getBetweenPricesSQL = `-- name: GetBetweenPrices :many
 SELECT  id, name, price
 FROM    products
 WHERE   price BETWEEN ? AND ?
@@ -21,7 +21,7 @@ type GetBetweenPricesParams struct {
 }
 
 func (q *Queries) GetBetweenPrices(ctx context.Context, arg GetBetweenPricesParams) ([]Product, error) {
-	rows, err := q.db.QueryContext(ctx, getBetweenPrices, arg.FromPrice, arg.ToPrice)
+	rows, err := q.db.QueryContext(ctx, getBetweenPricesSQL, arg.FromPrice, arg.ToPrice)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (q *Queries) GetBetweenPrices(ctx context.Context, arg GetBetweenPricesPara
 	return items, nil
 }
 
-const getBetweenPricesNamed = `-- name: GetBetweenPricesNamed :many
+const getBetweenPricesNamedSQL = `-- name: GetBetweenPricesNamed :many
 SELECT  id, name, price
 FROM    products
 WHERE   price BETWEEN ? AND ?
@@ -55,7 +55,7 @@ type GetBetweenPricesNamedParams struct {
 }
 
 func (q *Queries) GetBetweenPricesNamed(ctx context.Context, arg GetBetweenPricesNamedParams) ([]Product, error) {
-	rows, err := q.db.QueryContext(ctx, getBetweenPricesNamed, arg.MinPrice, arg.MaxPrice)
+	rows, err := q.db.QueryContext(ctx, getBetweenPricesNamedSQL, arg.MinPrice, arg.MaxPrice)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (q *Queries) GetBetweenPricesNamed(ctx context.Context, arg GetBetweenPrice
 	return items, nil
 }
 
-const getBetweenPricesTable = `-- name: GetBetweenPricesTable :many
+const getBetweenPricesTableSQL = `-- name: GetBetweenPricesTable :many
 SELECT  id, name, price
 FROM    products
 WHERE   products.price BETWEEN ? AND ?
@@ -89,7 +89,7 @@ type GetBetweenPricesTableParams struct {
 }
 
 func (q *Queries) GetBetweenPricesTable(ctx context.Context, arg GetBetweenPricesTableParams) ([]Product, error) {
-	rows, err := q.db.QueryContext(ctx, getBetweenPricesTable, arg.FromPrice, arg.ToPrice)
+	rows, err := q.db.QueryContext(ctx, getBetweenPricesTableSQL, arg.FromPrice, arg.ToPrice)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func (q *Queries) GetBetweenPricesTable(ctx context.Context, arg GetBetweenPrice
 	return items, nil
 }
 
-const getBetweenPricesTableAlias = `-- name: GetBetweenPricesTableAlias :many
+const getBetweenPricesTableAliasSQL = `-- name: GetBetweenPricesTableAlias :many
 SELECT  id, name, price
 FROM    products as p
 WHERE   p.price BETWEEN ? AND ?
@@ -123,7 +123,7 @@ type GetBetweenPricesTableAliasParams struct {
 }
 
 func (q *Queries) GetBetweenPricesTableAlias(ctx context.Context, arg GetBetweenPricesTableAliasParams) ([]Product, error) {
-	rows, err := q.db.QueryContext(ctx, getBetweenPricesTableAlias, arg.FromPrice, arg.ToPrice)
+	rows, err := q.db.QueryContext(ctx, getBetweenPricesTableAliasSQL, arg.FromPrice, arg.ToPrice)
 	if err != nil {
 		return nil, err
 	}

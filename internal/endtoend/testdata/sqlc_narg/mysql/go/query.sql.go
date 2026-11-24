@@ -10,12 +10,12 @@ import (
 	"database/sql"
 )
 
-const identOnNonNullable = `-- name: IdentOnNonNullable :many
+const identOnNonNullableSQL = `-- name: IdentOnNonNullable :many
 SELECT bar FROM foo WHERE bar = ?
 `
 
 func (q *Queries) IdentOnNonNullable(ctx context.Context, bar sql.NullString) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, identOnNonNullable, bar)
+	rows, err := q.db.QueryContext(ctx, identOnNonNullableSQL, bar)
 	if err != nil {
 		return nil, err
 	}
@@ -37,12 +37,12 @@ func (q *Queries) IdentOnNonNullable(ctx context.Context, bar sql.NullString) ([
 	return items, nil
 }
 
-const identOnNullable = `-- name: IdentOnNullable :many
+const identOnNullableSQL = `-- name: IdentOnNullable :many
 SELECT maybe_bar FROM foo WHERE maybe_bar = ?
 `
 
 func (q *Queries) IdentOnNullable(ctx context.Context, maybeBar sql.NullString) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, identOnNullable, maybeBar)
+	rows, err := q.db.QueryContext(ctx, identOnNullableSQL, maybeBar)
 	if err != nil {
 		return nil, err
 	}
@@ -64,12 +64,12 @@ func (q *Queries) IdentOnNullable(ctx context.Context, maybeBar sql.NullString) 
 	return items, nil
 }
 
-const stringOnNonNullable = `-- name: StringOnNonNullable :many
+const stringOnNonNullableSQL = `-- name: StringOnNonNullable :many
 SELECT bar FROM foo WHERE bar = ?
 `
 
 func (q *Queries) StringOnNonNullable(ctx context.Context, bar sql.NullString) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, stringOnNonNullable, bar)
+	rows, err := q.db.QueryContext(ctx, stringOnNonNullableSQL, bar)
 	if err != nil {
 		return nil, err
 	}
@@ -91,12 +91,12 @@ func (q *Queries) StringOnNonNullable(ctx context.Context, bar sql.NullString) (
 	return items, nil
 }
 
-const stringOnNullable = `-- name: StringOnNullable :many
+const stringOnNullableSQL = `-- name: StringOnNullable :many
 SELECT maybe_bar FROM foo WHERE maybe_bar = ?
 `
 
 func (q *Queries) StringOnNullable(ctx context.Context, maybeBar sql.NullString) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, stringOnNullable, maybeBar)
+	rows, err := q.db.QueryContext(ctx, stringOnNullableSQL, maybeBar)
 	if err != nil {
 		return nil, err
 	}

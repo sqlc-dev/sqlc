@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const getAllOrganisations = `-- name: GetAllOrganisations :many
+const getAllOrganisationsSQL = `-- name: GetAllOrganisations :many
 SELECT party_id, name, legal_name FROM organisation
 `
 
 func (q *Queries) GetAllOrganisations(ctx context.Context) ([]Organisation, error) {
-	rows, err := q.db.Query(ctx, getAllOrganisations)
+	rows, err := q.db.Query(ctx, getAllOrganisationsSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -33,12 +33,12 @@ func (q *Queries) GetAllOrganisations(ctx context.Context) ([]Organisation, erro
 	return items, nil
 }
 
-const getAllParties = `-- name: GetAllParties :many
+const getAllPartiesSQL = `-- name: GetAllParties :many
 SELECT party_id, name FROM party
 `
 
 func (q *Queries) GetAllParties(ctx context.Context) ([]Party, error) {
-	rows, err := q.db.Query(ctx, getAllParties)
+	rows, err := q.db.Query(ctx, getAllPartiesSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -57,12 +57,12 @@ func (q *Queries) GetAllParties(ctx context.Context) ([]Party, error) {
 	return items, nil
 }
 
-const getAllPeople = `-- name: GetAllPeople :many
+const getAllPeopleSQL = `-- name: GetAllPeople :many
 SELECT party_id, name, first_name, last_name FROM person
 `
 
 func (q *Queries) GetAllPeople(ctx context.Context) ([]Person, error) {
-	rows, err := q.db.Query(ctx, getAllPeople)
+	rows, err := q.db.Query(ctx, getAllPeopleSQL)
 	if err != nil {
 		return nil, err
 	}

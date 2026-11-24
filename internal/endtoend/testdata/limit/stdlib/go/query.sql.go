@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const limitMe = `-- name: LimitMe :many
+const limitMeSQL = `-- name: LimitMe :many
 SELECT bar FROM foo LIMIT $1
 `
 
 func (q *Queries) LimitMe(ctx context.Context, limit int32) ([]bool, error) {
-	rows, err := q.db.QueryContext(ctx, limitMe, limit)
+	rows, err := q.db.QueryContext(ctx, limitMeSQL, limit)
 	if err != nil {
 		return nil, err
 	}

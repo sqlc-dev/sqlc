@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const badQuery = `-- name: BadQuery :one
+const badQuerySQL = `-- name: BadQuery :one
 WITH
 	q
 		AS (
@@ -36,7 +36,7 @@ type BadQueryRow struct {
 }
 
 func (q *Queries) BadQuery(ctx context.Context) (BadQueryRow, error) {
-	row := q.db.QueryRow(ctx, badQuery)
+	row := q.db.QueryRow(ctx, badQuerySQL)
 	var i BadQueryRow
 	err := row.Scan(
 		&i.Name,

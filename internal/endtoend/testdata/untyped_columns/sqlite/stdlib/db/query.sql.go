@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const getRepro = `-- name: GetRepro :one
+const getReproSQL = `-- name: GetRepro :one
 SELECT id, name, seq FROM repro WHERE id = ? LIMIT 1
 `
 
 func (q *Queries) GetRepro(ctx context.Context, id any) (Repro, error) {
-	row := q.db.QueryRowContext(ctx, getRepro, id)
+	row := q.db.QueryRowContext(ctx, getReproSQL, id)
 	var i Repro
 	err := row.Scan(&i.ID, &i.Name, &i.Seq)
 	return i, err

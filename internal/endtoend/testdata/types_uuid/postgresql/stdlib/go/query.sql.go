@@ -11,23 +11,23 @@ import (
 	"github.com/google/uuid"
 )
 
-const find = `-- name: Find :one
+const findSQL = `-- name: Find :one
 SELECT bar FROM foo WHERE baz = $1
 `
 
 func (q *Queries) Find(ctx context.Context, baz uuid.UUID) (uuid.NullUUID, error) {
-	row := q.db.QueryRowContext(ctx, find, baz)
+	row := q.db.QueryRowContext(ctx, findSQL, baz)
 	var bar uuid.NullUUID
 	err := row.Scan(&bar)
 	return bar, err
 }
 
-const list = `-- name: List :many
+const listSQL = `-- name: List :many
 SELECT description, bar, baz FROM foo
 `
 
 func (q *Queries) List(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, list)
+	rows, err := q.db.QueryContext(ctx, listSQL)
 	if err != nil {
 		return nil, err
 	}

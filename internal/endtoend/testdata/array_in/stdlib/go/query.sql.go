@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const in = `-- name: In :many
+const inSQL = `-- name: In :many
 SELECT id
 FROM bar
 WHERE id IN ($1, $2)
@@ -21,7 +21,7 @@ type InParams struct {
 }
 
 func (q *Queries) In(ctx context.Context, arg InParams) ([]int32, error) {
-	rows, err := q.db.QueryContext(ctx, in, arg.ID, arg.ID_2)
+	rows, err := q.db.QueryContext(ctx, inSQL, arg.ID, arg.ID_2)
 	if err != nil {
 		return nil, err
 	}

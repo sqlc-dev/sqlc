@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const fooByAandB = `-- name: FooByAandB :many
+const fooByAandBSQL = `-- name: FooByAandB :many
 SELECT a, b FROM foo 
 WHERE a = $1 and b = $2
 `
@@ -21,7 +21,7 @@ type FooByAandBParams struct {
 }
 
 func (q *Queries) FooByAandB(ctx context.Context, arg FooByAandBParams) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, fooByAandB, arg.A, arg.B)
+	rows, err := q.db.QueryContext(ctx, fooByAandBSQL, arg.A, arg.B)
 	if err != nil {
 		return nil, err
 	}

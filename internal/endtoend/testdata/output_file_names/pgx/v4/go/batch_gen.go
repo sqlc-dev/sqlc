@@ -16,7 +16,7 @@ var (
 	ErrBatchAlreadyClosed = errors.New("batch already closed")
 )
 
-const usersB = `-- name: UsersB :batchmany
+const usersBSQL = `-- name: UsersB :batchmany
 SELECT id FROM "user"
 WHERE id = $1
 `
@@ -33,7 +33,7 @@ func (q *Queries) UsersB(ctx context.Context, id []int64) *UsersBBatchResults {
 		vals := []any{
 			a,
 		}
-		batch.Queue(usersB, vals...)
+		batch.Queue(usersBSQL, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
 	return &UsersBBatchResults{br, len(id), false}

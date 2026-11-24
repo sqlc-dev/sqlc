@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const generateSeries = `-- name: GenerateSeries :many
+const generateSeriesSQL = `-- name: GenerateSeries :many
 SELECT generate_series($1::timestamp, $2::timestamp, '10 hours')
 `
 
@@ -20,7 +20,7 @@ type GenerateSeriesParams struct {
 }
 
 func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams) ([]int64, error) {
-	rows, err := q.db.QueryContext(ctx, generateSeries, arg.Column1, arg.Column2)
+	rows, err := q.db.QueryContext(ctx, generateSeriesSQL, arg.Column1, arg.Column2)
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const twoJoins = `-- name: TwoJoins :many
+const twoJoinsSQL = `-- name: TwoJoins :many
 SELECT foo.bar_id, foo.baz_id
 FROM foo
 JOIN bar ON bar.id = bar_id
@@ -17,7 +17,7 @@ JOIN baz ON baz.id = baz_id
 `
 
 func (q *Queries) TwoJoins(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, twoJoins)
+	rows, err := q.db.QueryContext(ctx, twoJoinsSQL)
 	if err != nil {
 		return nil, err
 	}

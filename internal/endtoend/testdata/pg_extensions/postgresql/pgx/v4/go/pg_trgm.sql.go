@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const wordSimilarity = `-- name: WordSimilarity :one
+const wordSimilaritySQL = `-- name: WordSimilarity :one
 SELECT word_similarity('word', 'two words')
 `
 
 func (q *Queries) WordSimilarity(ctx context.Context) (float32, error) {
-	row := q.db.QueryRow(ctx, wordSimilarity)
+	row := q.db.QueryRow(ctx, wordSimilaritySQL)
 	var word_similarity float32
 	err := row.Scan(&word_similarity)
 	return word_similarity, err

@@ -11,12 +11,12 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getDate = `-- name: GetDate :one
+const getDateSQL = `-- name: GetDate :one
 SELECT now from NOW()
 `
 
 func (q *Queries) GetDate(ctx context.Context) (pgtype.Timestamptz, error) {
-	row := q.db.QueryRow(ctx, getDate)
+	row := q.db.QueryRow(ctx, getDateSQL)
 	var now pgtype.Timestamptz
 	err := row.Scan(&now)
 	return now, err

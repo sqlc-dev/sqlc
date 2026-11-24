@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const getLatestVersionWithSubquery = `-- name: GetLatestVersionWithSubquery :one
+const getLatestVersionWithSubquerySQL = `-- name: GetLatestVersionWithSubquery :one
 SELECT * 
 FROM versions
 WHERE versions.id IN (
@@ -25,7 +25,7 @@ WHERE versions.id IN (
 `
 
 func (q *Queries) GetLatestVersionWithSubquery(ctx context.Context) (Version, error) {
-	row := q.db.QueryRow(ctx, getLatestVersionWithSubquery)
+	row := q.db.QueryRow(ctx, getLatestVersionWithSubquerySQL)
 	var i Version
 	err := row.Scan(&i.ID, &i.Name, &i.PreviousVersionID)
 	return i, err

@@ -13,7 +13,7 @@ import (
 	"github.com/lib/pq"
 )
 
-const createVenue = `-- name: CreateVenue :one
+const createVenueSQL = `-- name: CreateVenue :one
 INSERT INTO venue (
     slug,
     name,
@@ -46,7 +46,7 @@ type CreateVenueParams struct {
 }
 
 func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (int32, error) {
-	row := q.queryRow(ctx, q.createVenueStmt, createVenue,
+	row := q.queryRow(ctx, q.createVenueStmt, createVenueSQL,
 		arg.Slug,
 		arg.Name,
 		arg.City,
@@ -60,17 +60,17 @@ func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (int32
 	return id, err
 }
 
-const deleteVenue = `-- name: DeleteVenue :exec
+const deleteVenueSQL = `-- name: DeleteVenue :exec
 DELETE FROM venue
 WHERE slug = $1 AND slug = $1
 `
 
 func (q *Queries) DeleteVenue(ctx context.Context, slug string) error {
-	_, err := q.exec(ctx, q.deleteVenueStmt, deleteVenue, slug)
+	_, err := q.exec(ctx, q.deleteVenueStmt, deleteVenueSQL, slug)
 	return err
 }
 
-const getVenue = `-- name: GetVenue :one
+const getVenueSQL = `-- name: GetVenue :one
 SELECT id, status, statuses, slug, name, city, spotify_playlist, songkick_id, tags, created_at
 FROM venue
 WHERE slug = $1 AND city = $2
@@ -82,7 +82,7 @@ type GetVenueParams struct {
 }
 
 func (q *Queries) GetVenue(ctx context.Context, arg GetVenueParams) (Venue, error) {
-	row := q.queryRow(ctx, q.getVenueStmt, getVenue, arg.Slug, arg.City)
+	row := q.queryRow(ctx, q.getVenueStmt, getVenueSQL, arg.Slug, arg.City)
 	var i Venue
 	err := row.Scan(
 		&i.ID,
@@ -99,7 +99,7 @@ func (q *Queries) GetVenue(ctx context.Context, arg GetVenueParams) (Venue, erro
 	return i, err
 }
 
-const listVenues = `-- name: ListVenues :many
+const listVenuesSQL = `-- name: ListVenues :many
 SELECT id, status, statuses, slug, name, city, spotify_playlist, songkick_id, tags, created_at
 FROM venue
 WHERE city = $1
@@ -107,7 +107,7 @@ ORDER BY name
 `
 
 func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) {
-	rows, err := q.query(ctx, q.listVenuesStmt, listVenues, city)
+	rows, err := q.query(ctx, q.listVenuesStmt, listVenuesSQL, city)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +140,7 @@ func (q *Queries) ListVenues(ctx context.Context, city string) ([]Venue, error) 
 	return items, nil
 }
 
-const updateVenueName = `-- name: UpdateVenueName :one
+const updateVenueNameSQL = `-- name: UpdateVenueName :one
 UPDATE venue
 SET name = $2
 WHERE slug = $1
@@ -153,13 +153,13 @@ type UpdateVenueNameParams struct {
 }
 
 func (q *Queries) UpdateVenueName(ctx context.Context, arg UpdateVenueNameParams) (int32, error) {
-	row := q.queryRow(ctx, q.updateVenueNameStmt, updateVenueName, arg.Slug, arg.Name)
+	row := q.queryRow(ctx, q.updateVenueNameStmt, updateVenueNameSQL, arg.Slug, arg.Name)
 	var id int32
 	err := row.Scan(&id)
 	return id, err
 }
 
-const venueCountByCity = `-- name: VenueCountByCity :many
+const venueCountByCitySQL = `-- name: VenueCountByCity :many
 SELECT
     city,
     count(*)
@@ -174,7 +174,7 @@ type VenueCountByCityRow struct {
 }
 
 func (q *Queries) VenueCountByCity(ctx context.Context) ([]VenueCountByCityRow, error) {
-	rows, err := q.query(ctx, q.venueCountByCityStmt, venueCountByCity)
+	rows, err := q.query(ctx, q.venueCountByCityStmt, venueCountByCitySQL)
 	if err != nil {
 		return nil, err
 	}

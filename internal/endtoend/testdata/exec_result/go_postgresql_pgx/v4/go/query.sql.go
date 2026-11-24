@@ -11,10 +11,10 @@ import (
 	"github.com/jackc/pgconn"
 )
 
-const deleteBarByID = `-- name: DeleteBarByID :execresult
+const deleteBarByIDSQL = `-- name: DeleteBarByID :execresult
 DELETE FROM bar WHERE id = $1
 `
 
 func (q *Queries) DeleteBarByID(ctx context.Context, id int32) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, deleteBarByID, id)
+	return q.db.Exec(ctx, deleteBarByIDSQL, id)
 }

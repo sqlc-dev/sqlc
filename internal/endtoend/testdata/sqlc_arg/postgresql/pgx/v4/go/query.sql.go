@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const funcParamIdent = `-- name: FuncParamIdent :many
+const funcParamIdentSQL = `-- name: FuncParamIdent :many
 SELECT name FROM foo WHERE name = $1
 `
 
 func (q *Queries) FuncParamIdent(ctx context.Context, slug string) ([]string, error) {
-	rows, err := q.db.Query(ctx, funcParamIdent, slug)
+	rows, err := q.db.Query(ctx, funcParamIdentSQL, slug)
 	if err != nil {
 		return nil, err
 	}
@@ -33,12 +33,12 @@ func (q *Queries) FuncParamIdent(ctx context.Context, slug string) ([]string, er
 	return items, nil
 }
 
-const funcParamString = `-- name: FuncParamString :many
+const funcParamStringSQL = `-- name: FuncParamString :many
 SELECT name FROM foo WHERE name = $1
 `
 
 func (q *Queries) FuncParamString(ctx context.Context, slug string) ([]string, error) {
-	rows, err := q.db.Query(ctx, funcParamString, slug)
+	rows, err := q.db.Query(ctx, funcParamStringSQL, slug)
 	if err != nil {
 		return nil, err
 	}

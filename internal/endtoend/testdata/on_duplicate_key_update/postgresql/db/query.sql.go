@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const upsertAuthor = `-- name: UpsertAuthor :exec
+const upsertAuthorSQL = `-- name: UpsertAuthor :exec
 INSERT INTO authors (name, bio)
 VALUES ($1, $2)
 ON CONFLICT (name) DO UPDATE
@@ -23,11 +23,11 @@ type UpsertAuthorParams struct {
 }
 
 func (q *Queries) UpsertAuthor(ctx context.Context, arg UpsertAuthorParams) error {
-	_, err := q.db.ExecContext(ctx, upsertAuthor, arg.Name, arg.Bio)
+	_, err := q.db.ExecContext(ctx, upsertAuthorSQL, arg.Name, arg.Bio)
 	return err
 }
 
-const upsertAuthorNamed = `-- name: UpsertAuthorNamed :exec
+const upsertAuthorNamedSQL = `-- name: UpsertAuthorNamed :exec
 INSERT INTO authors (name, bio)
 VALUES ($1, $2)
 ON CONFLICT (name) DO UPDATE
@@ -40,6 +40,6 @@ type UpsertAuthorNamedParams struct {
 }
 
 func (q *Queries) UpsertAuthorNamed(ctx context.Context, arg UpsertAuthorNamedParams) error {
-	_, err := q.db.ExecContext(ctx, upsertAuthorNamed, arg.Name, arg.Bio)
+	_, err := q.db.ExecContext(ctx, upsertAuthorNamedSQL, arg.Name, arg.Bio)
 	return err
 }

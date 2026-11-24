@@ -9,11 +9,11 @@ import (
 	"context"
 )
 
-const schemaScopedDelete = `-- name: SchemaScopedDelete :exec
+const schemaScopedDeleteSQL = `-- name: SchemaScopedDelete :exec
 DELETE FROM foo.bar WHERE id = ?
 `
 
 func (q *Queries) SchemaScopedDelete(ctx context.Context, id uint64) error {
-	_, err := q.db.ExecContext(ctx, schemaScopedDelete, id)
+	_, err := q.db.ExecContext(ctx, schemaScopedDeleteSQL, id)
 	return err
 }

@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const textArray = `-- name: TextArray :many
+const textArraySQL = `-- name: TextArray :many
 SELECT tags FROM bar
 `
 
 func (q *Queries) TextArray(ctx context.Context) ([][]string, error) {
-	rows, err := q.db.Query(ctx, textArray)
+	rows, err := q.db.Query(ctx, textArraySQL)
 	if err != nil {
 		return nil, err
 	}

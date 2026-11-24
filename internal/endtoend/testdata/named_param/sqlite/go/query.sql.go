@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const atParams = `-- name: AtParams :many
+const atParamsSQL = `-- name: AtParams :many
 SELECT name FROM foo WHERE name = ?1
 `
 
 func (q *Queries) AtParams(ctx context.Context, slug string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, atParams, slug)
+	rows, err := q.db.QueryContext(ctx, atParamsSQL, slug)
 	if err != nil {
 		return nil, err
 	}
@@ -36,12 +36,12 @@ func (q *Queries) AtParams(ctx context.Context, slug string) ([]string, error) {
 	return items, nil
 }
 
-const funcParams = `-- name: FuncParams :many
+const funcParamsSQL = `-- name: FuncParams :many
 SELECT name FROM foo WHERE name = ?1
 `
 
 func (q *Queries) FuncParams(ctx context.Context, slug string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, funcParams, slug)
+	rows, err := q.db.QueryContext(ctx, funcParamsSQL, slug)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (q *Queries) FuncParams(ctx context.Context, slug string) ([]string, error)
 	return items, nil
 }
 
-const insertAtParams = `-- name: InsertAtParams :one
+const insertAtParamsSQL = `-- name: InsertAtParams :one
 INSERT INTO foo(name, bio) values (?1, ?2) returning name
 `
 
@@ -73,13 +73,13 @@ type InsertAtParamsParams struct {
 }
 
 func (q *Queries) InsertAtParams(ctx context.Context, arg InsertAtParamsParams) (string, error) {
-	row := q.db.QueryRowContext(ctx, insertAtParams, arg.Name, arg.Bio)
+	row := q.db.QueryRowContext(ctx, insertAtParamsSQL, arg.Name, arg.Bio)
 	var name string
 	err := row.Scan(&name)
 	return name, err
 }
 
-const insertFuncParams = `-- name: InsertFuncParams :one
+const insertFuncParamsSQL = `-- name: InsertFuncParams :one
 INSERT INTO foo(name, bio) values (?1, ?2) returning name
 `
 
@@ -89,7 +89,7 @@ type InsertFuncParamsParams struct {
 }
 
 func (q *Queries) InsertFuncParams(ctx context.Context, arg InsertFuncParamsParams) (string, error) {
-	row := q.db.QueryRowContext(ctx, insertFuncParams, arg.Name, arg.Bio)
+	row := q.db.QueryRowContext(ctx, insertFuncParamsSQL, arg.Name, arg.Bio)
 	var name string
 	err := row.Scan(&name)
 	return name, err

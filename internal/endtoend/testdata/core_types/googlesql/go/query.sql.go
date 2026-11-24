@@ -13,12 +13,12 @@ import (
 	"cloud.google.com/go/spanner"
 )
 
-const allTypes = `-- name: AllTypes :many
+const allTypesSQL = `-- name: AllTypes :many
 SELECT id, s, smax, n, byt, ai, as2, ts, d, j, b, f, f32, u FROM things
 `
 
 func (q *Queries) AllTypes(ctx context.Context) ([]Thing, error) {
-	rows, err := q.db.QueryContext(ctx, allTypes)
+	rows, err := q.db.QueryContext(ctx, allTypesSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (q *Queries) AllTypes(ctx context.Context) ([]Thing, error) {
 	return items, nil
 }
 
-const casts = `-- name: Casts :one
+const castsSQL = `-- name: Casts :one
 SELECT
   CAST(@a AS NUMERIC) AS a,
   CAST(@b AS ARRAY<INT64>) AS b,
@@ -79,7 +79,7 @@ type CastsRow struct {
 }
 
 func (q *Queries) Casts(ctx context.Context, arg CastsParams) (CastsRow, error) {
-	row := q.db.QueryRowContext(ctx, casts,
+	row := q.db.QueryRowContext(ctx, castsSQL,
 		sql.Named("a", arg.A),
 		sql.Named("b", arg.B),
 		sql.Named("d", arg.D),
@@ -95,7 +95,7 @@ func (q *Queries) Casts(ctx context.Context, arg CastsParams) (CastsRow, error) 
 	return i, err
 }
 
-const params = `-- name: Params :one
+const paramsSQL = `-- name: Params :one
 SELECT id FROM things
 WHERE s = @s AND n = @n AND smax = @smax AND f32 = @f32
 `
@@ -108,7 +108,7 @@ type ParamsParams struct {
 }
 
 func (q *Queries) Params(ctx context.Context, arg ParamsParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, params,
+	row := q.db.QueryRowContext(ctx, paramsSQL,
 		sql.Named("s", arg.S),
 		sql.Named("n", arg.N),
 		sql.Named("smax", arg.Smax),

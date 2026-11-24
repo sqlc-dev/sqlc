@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const updateSet = `-- name: UpdateSet :exec
+const updateSetSQL = `-- name: UpdateSet :exec
 UPDATE foo SET name = ? WHERE slug = ?
 `
 
@@ -19,6 +19,6 @@ type UpdateSetParams struct {
 }
 
 func (q *Queries) UpdateSet(ctx context.Context, arg UpdateSetParams) error {
-	_, err := q.db.ExecContext(ctx, updateSet, arg.Name, arg.Slug)
+	_, err := q.db.ExecContext(ctx, updateSetSQL, arg.Name, arg.Slug)
 	return err
 }

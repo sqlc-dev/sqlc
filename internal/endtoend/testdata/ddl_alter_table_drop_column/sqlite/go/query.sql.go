@@ -9,11 +9,11 @@ import (
 	"context"
 )
 
-const placeholder = `-- name: Placeholder :exec
+const placeholderSQL = `-- name: Placeholder :exec
 SELECT baz FROM foo
 `
 
 func (q *Queries) Placeholder(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, placeholder)
+	_, err := q.db.ExecContext(ctx, placeholderSQL)
 	return err
 }

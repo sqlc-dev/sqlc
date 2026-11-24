@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const insertOrders = `-- name: InsertOrders :exec
+const insertOrdersSQL = `-- name: InsertOrders :exec
 insert into Orders (id,name)
 select id , CASE WHEN $1::BOOLEAN THEN $2 ELSE s.name END 
 from Orders s
@@ -23,6 +23,6 @@ type InsertOrdersParams struct {
 }
 
 func (q *Queries) InsertOrders(ctx context.Context, arg InsertOrdersParams) error {
-	_, err := q.db.Exec(ctx, insertOrders, arg.NameDoUpdate, arg.Name)
+	_, err := q.db.Exec(ctx, insertOrdersSQL, arg.NameDoUpdate, arg.Name)
 	return err
 }

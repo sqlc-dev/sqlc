@@ -9,32 +9,32 @@ import (
 	"context"
 )
 
-const countPilots = `-- name: CountPilots :one
+const countPilotsSQL = `-- name: CountPilots :one
 SELECT COUNT(*) FROM pilots
 `
 
 func (q *Queries) CountPilots(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, countPilots)
+	row := q.db.QueryRow(ctx, countPilotsSQL)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
 }
 
-const deletePilot = `-- name: DeletePilot :exec
+const deletePilotSQL = `-- name: DeletePilot :exec
 DELETE FROM pilots WHERE id = $1
 `
 
 func (q *Queries) DeletePilot(ctx context.Context, id int32) error {
-	_, err := q.db.Exec(ctx, deletePilot, id)
+	_, err := q.db.Exec(ctx, deletePilotSQL, id)
 	return err
 }
 
-const listPilots = `-- name: ListPilots :many
+const listPilotsSQL = `-- name: ListPilots :many
 SELECT id, name FROM pilots LIMIT 5
 `
 
 func (q *Queries) ListPilots(ctx context.Context) ([]Pilot, error) {
-	rows, err := q.db.Query(ctx, listPilots)
+	rows, err := q.db.Query(ctx, listPilotsSQL)
 	if err != nil {
 		return nil, err
 	}

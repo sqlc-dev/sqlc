@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const subquery = `-- name: Subquery :many
+const subquerySQL = `-- name: Subquery :many
 SELECT a, name FROM (SELECT a, name FROM foo)
 `
 
 func (q *Queries) Subquery(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, subquery)
+	rows, err := q.db.QueryContext(ctx, subquerySQL)
 	if err != nil {
 		return nil, err
 	}

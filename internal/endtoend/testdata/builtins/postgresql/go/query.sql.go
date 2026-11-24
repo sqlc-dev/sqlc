@@ -9,265 +9,265 @@ import (
 	"context"
 )
 
-const abs = `-- name: Abs :one
+const absSQL = `-- name: Abs :one
 SELECT abs(-17.4)
 `
 
 func (q *Queries) Abs(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, abs)
+	row := q.db.QueryRowContext(ctx, absSQL)
 	var abs int64
 	err := row.Scan(&abs)
 	return abs, err
 }
 
-const cbrt = `-- name: Cbrt :one
+const cbrtSQL = `-- name: Cbrt :one
 SELECT cbrt(27.0)
 `
 
 func (q *Queries) Cbrt(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, cbrt)
+	row := q.db.QueryRowContext(ctx, cbrtSQL)
 	var cbrt float64
 	err := row.Scan(&cbrt)
 	return cbrt, err
 }
 
-const ceil = `-- name: Ceil :one
+const ceilSQL = `-- name: Ceil :one
 SELECT ceil(-42.8)
 `
 
 func (q *Queries) Ceil(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, ceil)
+	row := q.db.QueryRowContext(ctx, ceilSQL)
 	var ceil float64
 	err := row.Scan(&ceil)
 	return ceil, err
 }
 
-const ceiling = `-- name: Ceiling :one
+const ceilingSQL = `-- name: Ceiling :one
 SELECT ceiling(-95.3)
 `
 
 func (q *Queries) Ceiling(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, ceiling)
+	row := q.db.QueryRowContext(ctx, ceilingSQL)
 	var ceiling float64
 	err := row.Scan(&ceiling)
 	return ceiling, err
 }
 
-const degrees = `-- name: Degrees :one
+const degreesSQL = `-- name: Degrees :one
 SELECT degrees(0.5)
 `
 
 func (q *Queries) Degrees(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, degrees)
+	row := q.db.QueryRowContext(ctx, degreesSQL)
 	var degrees float64
 	err := row.Scan(&degrees)
 	return degrees, err
 }
 
-const div = `-- name: Div :one
+const divSQL = `-- name: Div :one
 SELECT div(9,4)
 `
 
 func (q *Queries) Div(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, div)
+	row := q.db.QueryRowContext(ctx, divSQL)
 	var div string
 	err := row.Scan(&div)
 	return div, err
 }
 
-const exp = `-- name: Exp :one
+const expSQL = `-- name: Exp :one
 SELECT exp(1.0)
 `
 
 func (q *Queries) Exp(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, exp)
+	row := q.db.QueryRowContext(ctx, expSQL)
 	var exp float64
 	err := row.Scan(&exp)
 	return exp, err
 }
 
-const floor = `-- name: Floor :one
+const floorSQL = `-- name: Floor :one
 SELECT floor(-42.8)
 `
 
 func (q *Queries) Floor(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, floor)
+	row := q.db.QueryRowContext(ctx, floorSQL)
 	var floor float64
 	err := row.Scan(&floor)
 	return floor, err
 }
 
-const ln = `-- name: Ln :one
+const lnSQL = `-- name: Ln :one
 SELECT ln(2.0)
 `
 
 func (q *Queries) Ln(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, ln)
+	row := q.db.QueryRowContext(ctx, lnSQL)
 	var ln float64
 	err := row.Scan(&ln)
 	return ln, err
 }
 
-const log = `-- name: Log :one
+const logSQL = `-- name: Log :one
 SELECT log(100.0)
 `
 
 func (q *Queries) Log(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, log)
+	row := q.db.QueryRowContext(ctx, logSQL)
 	var log float64
 	err := row.Scan(&log)
 	return log, err
 }
 
-const logs = `-- name: Logs :one
+const logsSQL = `-- name: Logs :one
 SELECT log(2.0, 64.0)
 `
 
 func (q *Queries) Logs(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, logs)
+	row := q.db.QueryRowContext(ctx, logsSQL)
 	var log string
 	err := row.Scan(&log)
 	return log, err
 }
 
-const mod = `-- name: Mod :one
+const modSQL = `-- name: Mod :one
 SELECT mod(9,4)
 `
 
 func (q *Queries) Mod(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, mod)
+	row := q.db.QueryRowContext(ctx, modSQL)
 	var mod int64
 	err := row.Scan(&mod)
 	return mod, err
 }
 
-const pi = `-- name: Pi :one
+const piSQL = `-- name: Pi :one
 SELECT pi()
 `
 
 func (q *Queries) Pi(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, pi)
+	row := q.db.QueryRowContext(ctx, piSQL)
 	var pi float64
 	err := row.Scan(&pi)
 	return pi, err
 }
 
-const power = `-- name: Power :one
+const powerSQL = `-- name: Power :one
 SELECT power(9.0, 3.0)
 `
 
 func (q *Queries) Power(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, power)
+	row := q.db.QueryRowContext(ctx, powerSQL)
 	var power float64
 	err := row.Scan(&power)
 	return power, err
 }
 
-const radians = `-- name: Radians :one
+const radiansSQL = `-- name: Radians :one
 SELECT radians(45.0)
 `
 
 func (q *Queries) Radians(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, radians)
+	row := q.db.QueryRowContext(ctx, radiansSQL)
 	var radians float64
 	err := row.Scan(&radians)
 	return radians, err
 }
 
-const round = `-- name: Round :one
+const roundSQL = `-- name: Round :one
 SELECT round(42.4)
 `
 
 func (q *Queries) Round(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, round)
+	row := q.db.QueryRowContext(ctx, roundSQL)
 	var round float64
 	err := row.Scan(&round)
 	return round, err
 }
 
-const rounds = `-- name: Rounds :one
+const roundsSQL = `-- name: Rounds :one
 SELECT round(42.4382, 2)
 `
 
 func (q *Queries) Rounds(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, rounds)
+	row := q.db.QueryRowContext(ctx, roundsSQL)
 	var round string
 	err := row.Scan(&round)
 	return round, err
 }
 
-const scale = `-- name: Scale :one
+const scaleSQL = `-- name: Scale :one
 SELECT scale(8.41)
 `
 
 func (q *Queries) Scale(ctx context.Context) (int32, error) {
-	row := q.db.QueryRowContext(ctx, scale)
+	row := q.db.QueryRowContext(ctx, scaleSQL)
 	var scale int32
 	err := row.Scan(&scale)
 	return scale, err
 }
 
-const sign = `-- name: Sign :one
+const signSQL = `-- name: Sign :one
 SELECT sign(-8.4)
 `
 
 func (q *Queries) Sign(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, sign)
+	row := q.db.QueryRowContext(ctx, signSQL)
 	var sign float64
 	err := row.Scan(&sign)
 	return sign, err
 }
 
-const sqrt = `-- name: Sqrt :one
+const sqrtSQL = `-- name: Sqrt :one
 SELECT sqrt(2.0)
 `
 
 func (q *Queries) Sqrt(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, sqrt)
+	row := q.db.QueryRowContext(ctx, sqrtSQL)
 	var sqrt float64
 	err := row.Scan(&sqrt)
 	return sqrt, err
 }
 
-const trunc = `-- name: Trunc :one
+const truncSQL = `-- name: Trunc :one
 SELECT trunc(42.8)
 `
 
 func (q *Queries) Trunc(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, trunc)
+	row := q.db.QueryRowContext(ctx, truncSQL)
 	var trunc float64
 	err := row.Scan(&trunc)
 	return trunc, err
 }
 
-const truncs = `-- name: Truncs :one
+const truncsSQL = `-- name: Truncs :one
 SELECT trunc(42.4382, 2)
 `
 
 func (q *Queries) Truncs(ctx context.Context) (string, error) {
-	row := q.db.QueryRowContext(ctx, truncs)
+	row := q.db.QueryRowContext(ctx, truncsSQL)
 	var trunc string
 	err := row.Scan(&trunc)
 	return trunc, err
 }
 
-const widthBucketNumerics = `-- name: WidthBucketNumerics :one
+const widthBucketNumericsSQL = `-- name: WidthBucketNumerics :one
 SELECT width_bucket(5.35, 0.024, 10.06, 5)
 `
 
 func (q *Queries) WidthBucketNumerics(ctx context.Context) (int32, error) {
-	row := q.db.QueryRowContext(ctx, widthBucketNumerics)
+	row := q.db.QueryRowContext(ctx, widthBucketNumericsSQL)
 	var width_bucket int32
 	err := row.Scan(&width_bucket)
 	return width_bucket, err
 }
 
-const widthBucketTimestamps = `-- name: WidthBucketTimestamps :one
+const widthBucketTimestampsSQL = `-- name: WidthBucketTimestamps :one
 SELECT width_bucket(now(), array['yesterday', 'today', 'tomorrow']::timestamptz[])
 `
 
 func (q *Queries) WidthBucketTimestamps(ctx context.Context) (int32, error) {
-	row := q.db.QueryRowContext(ctx, widthBucketTimestamps)
+	row := q.db.QueryRowContext(ctx, widthBucketTimestampsSQL)
 	var width_bucket int32
 	err := row.Scan(&width_bucket)
 	return width_bucket, err

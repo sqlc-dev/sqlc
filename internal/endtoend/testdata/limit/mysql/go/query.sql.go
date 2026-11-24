@@ -9,20 +9,20 @@ import (
 	"context"
 )
 
-const limitMe = `-- name: LimitMe :exec
+const limitMeSQL = `-- name: LimitMe :exec
 UPDATE foo SET bar='baz' LIMIT ?
 `
 
 func (q *Queries) LimitMe(ctx context.Context, limit int32) error {
-	_, err := q.db.ExecContext(ctx, limitMe, limit)
+	_, err := q.db.ExecContext(ctx, limitMeSQL, limit)
 	return err
 }
 
-const limitMeToo = `-- name: LimitMeToo :exec
+const limitMeTooSQL = `-- name: LimitMeToo :exec
 DELETE FROM foo LIMIT ?
 `
 
 func (q *Queries) LimitMeToo(ctx context.Context, limit int32) error {
-	_, err := q.db.ExecContext(ctx, limitMeToo, limit)
+	_, err := q.db.ExecContext(ctx, limitMeTooSQL, limit)
 	return err
 }

@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const deleteAuthor = `-- name: DeleteAuthor :exec
+const deleteAuthorSQL = `-- name: DeleteAuthor :exec
 DELETE FROM books AS b
 WHERE NOT b.author IN (
     SELECT a.name
@@ -32,6 +32,6 @@ type DeleteAuthorParams struct {
 }
 
 func (q *Queries) DeleteAuthor(ctx context.Context, arg DeleteAuthorParams) error {
-	_, err := q.db.ExecContext(ctx, deleteAuthor, arg.Age, arg.Age_2, arg.Year)
+	_, err := q.db.ExecContext(ctx, deleteAuthorSQL, arg.Age, arg.Age_2, arg.Year)
 	return err
 }

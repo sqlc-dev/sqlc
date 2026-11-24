@@ -9,40 +9,40 @@ import (
 	"context"
 )
 
-const makeIntervalDays = `-- name: MakeIntervalDays :one
+const makeIntervalDaysSQL = `-- name: MakeIntervalDays :one
 SELECT make_interval(days => $1::int)
 `
 
 func (q *Queries) MakeIntervalDays(ctx context.Context, dollar_1 int32) (int64, error) {
-	row := q.db.QueryRowContext(ctx, makeIntervalDays, dollar_1)
+	row := q.db.QueryRowContext(ctx, makeIntervalDaysSQL, dollar_1)
 	var make_interval int64
 	err := row.Scan(&make_interval)
 	return make_interval, err
 }
 
-const makeIntervalMonths = `-- name: MakeIntervalMonths :one
+const makeIntervalMonthsSQL = `-- name: MakeIntervalMonths :one
 SELECT make_interval(months => $1::int)
 `
 
 func (q *Queries) MakeIntervalMonths(ctx context.Context, months int32) (int64, error) {
-	row := q.db.QueryRowContext(ctx, makeIntervalMonths, months)
+	row := q.db.QueryRowContext(ctx, makeIntervalMonthsSQL, months)
 	var make_interval int64
 	err := row.Scan(&make_interval)
 	return make_interval, err
 }
 
-const makeIntervalSecs = `-- name: MakeIntervalSecs :one
+const makeIntervalSecsSQL = `-- name: MakeIntervalSecs :one
 SELECT make_interval(secs => $1)
 `
 
 func (q *Queries) MakeIntervalSecs(ctx context.Context, secs float64) (int64, error) {
-	row := q.db.QueryRowContext(ctx, makeIntervalSecs, secs)
+	row := q.db.QueryRowContext(ctx, makeIntervalSecsSQL, secs)
 	var make_interval int64
 	err := row.Scan(&make_interval)
 	return make_interval, err
 }
 
-const plus = `-- name: Plus :one
+const plusSQL = `-- name: Plus :one
 SELECT plus(b => $2, a => $1)
 `
 
@@ -52,18 +52,18 @@ type PlusParams struct {
 }
 
 func (q *Queries) Plus(ctx context.Context, arg PlusParams) (int32, error) {
-	row := q.db.QueryRowContext(ctx, plus, arg.A, arg.B)
+	row := q.db.QueryRowContext(ctx, plusSQL, arg.A, arg.B)
 	var plus int32
 	err := row.Scan(&plus)
 	return plus, err
 }
 
-const tableArgs = `-- name: TableArgs :one
+const tableArgsSQL = `-- name: TableArgs :one
 SELECT table_args(x => $1)
 `
 
 func (q *Queries) TableArgs(ctx context.Context, x int32) (int32, error) {
-	row := q.db.QueryRowContext(ctx, tableArgs, x)
+	row := q.db.QueryRowContext(ctx, tableArgsSQL, x)
 	var table_args int32
 	err := row.Scan(&table_args)
 	return table_args, err

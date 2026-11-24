@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const starExpansion = `-- name: StarExpansion :many
+const starExpansionSQL = `-- name: StarExpansion :many
 SELECT a, b, a, b, foo.a, foo.b FROM foo
 `
 
@@ -24,7 +24,7 @@ type StarExpansionRow struct {
 }
 
 func (q *Queries) StarExpansion(ctx context.Context) ([]StarExpansionRow, error) {
-	rows, err := q.db.QueryContext(ctx, starExpansion)
+	rows, err := q.db.QueryContext(ctx, starExpansionSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -53,12 +53,12 @@ func (q *Queries) StarExpansion(ctx context.Context) ([]StarExpansionRow, error)
 	return items, nil
 }
 
-const starQuotedExpansion = `-- name: StarQuotedExpansion :many
+const starQuotedExpansionSQL = `-- name: StarQuotedExpansion :many
 SELECT t.a, t.b FROM foo ` + "`" + `t` + "`" + `
 `
 
 func (q *Queries) StarQuotedExpansion(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, starQuotedExpansion)
+	rows, err := q.db.QueryContext(ctx, starQuotedExpansionSQL)
 	if err != nil {
 		return nil, err
 	}

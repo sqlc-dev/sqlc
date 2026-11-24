@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const subquery = `-- name: Subquery :many
+const subquerySQL = `-- name: Subquery :many
 SELECT 
 	a,
 	name,
@@ -30,7 +30,7 @@ type SubqueryRow struct {
 }
 
 func (q *Queries) Subquery(ctx context.Context, arg SubqueryParams) ([]SubqueryRow, error) {
-	rows, err := q.db.QueryContext(ctx, subquery, arg.Column1, arg.Column2)
+	rows, err := q.db.QueryContext(ctx, subquerySQL, arg.Column1, arg.Column2)
 	if err != nil {
 		return nil, err
 	}
