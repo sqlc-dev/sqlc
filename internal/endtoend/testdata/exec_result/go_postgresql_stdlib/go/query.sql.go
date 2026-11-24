@@ -10,10 +10,10 @@ import (
 	"database/sql"
 )
 
-const deleteBarByID = `-- name: DeleteBarByID :execresult
+const deleteBarByIDSQL = `-- name: DeleteBarByID :execresult
 DELETE FROM bar WHERE id = $1
 `
 
 func (q *Queries) DeleteBarByID(ctx context.Context, id int32) (sql.Result, error) {
-	return q.db.ExecContext(ctx, deleteBarByID, id)
+	return q.db.ExecContext(ctx, deleteBarByIDSQL, id)
 }

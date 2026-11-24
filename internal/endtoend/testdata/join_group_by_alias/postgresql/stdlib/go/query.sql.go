@@ -9,14 +9,14 @@ import (
 	"context"
 )
 
-const columnAsGroupBy = `-- name: ColumnAsGroupBy :many
+const columnAsGroupBySQL = `-- name: ColumnAsGroupBy :many
 SELECT a.email AS id
 FROM foo a JOIN foo b ON a.email = b.email
 GROUP BY id
 `
 
 func (q *Queries) ColumnAsGroupBy(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, columnAsGroupBy)
+	rows, err := q.db.QueryContext(ctx, columnAsGroupBySQL)
 	if err != nil {
 		return nil, err
 	}

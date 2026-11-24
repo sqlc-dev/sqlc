@@ -11,23 +11,23 @@ import (
 	"time"
 )
 
-const createNotice = `-- name: CreateNotice :exec
+const createNoticeSQL = `-- name: CreateNotice :exec
 INSERT INTO notice (cnt, created_at)
 VALUES ($1, $2)
 `
 
 func (q *Queries) CreateNotice(ctx context.Context, cnt int32, createdAt time.Time) error {
-	_, err := q.db.ExecContext(ctx, createNotice, cnt, createdAt)
+	_, err := q.db.ExecContext(ctx, createNoticeSQL, cnt, createdAt)
 	return err
 }
 
-const markNoticeDone = `-- name: MarkNoticeDone :exec
+const markNoticeDoneSQL = `-- name: MarkNoticeDone :exec
 UPDATE notice
 SET status='done', notice_at=$1
 WHERE id=$2
 `
 
 func (q *Queries) MarkNoticeDone(ctx context.Context, noticeAt sql.NullTime, iD int32) error {
-	_, err := q.db.ExecContext(ctx, markNoticeDone, noticeAt, iD)
+	_, err := q.db.ExecContext(ctx, markNoticeDoneSQL, noticeAt, iD)
 	return err
 }

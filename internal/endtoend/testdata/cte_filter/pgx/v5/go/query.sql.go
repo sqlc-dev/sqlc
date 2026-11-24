@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const cTEFilter = `-- name: CTEFilter :many
+const cTEFilterSQL = `-- name: CTEFilter :many
 WITH filter_count AS (
 	SELECT count(*) FROM bar WHERE ready = $1
 )
@@ -18,7 +18,7 @@ FROM filter_count
 `
 
 func (q *Queries) CTEFilter(ctx context.Context, ready bool) ([]int64, error) {
-	rows, err := q.db.Query(ctx, cTEFilter, ready)
+	rows, err := q.db.Query(ctx, cTEFilterSQL, ready)
 	if err != nil {
 		return nil, err
 	}

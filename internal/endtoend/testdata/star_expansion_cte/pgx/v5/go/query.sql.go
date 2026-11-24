@@ -11,12 +11,12 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const starExpansionCTE = `-- name: StarExpansionCTE :many
+const starExpansionCTESQL = `-- name: StarExpansionCTE :many
 WITH cte AS (SELECT a, b FROM foo) SELECT c, d FROM bar
 `
 
 func (q *Queries) StarExpansionCTE(ctx context.Context) ([]Bar, error) {
-	rows, err := q.db.Query(ctx, starExpansionCTE)
+	rows, err := q.db.Query(ctx, starExpansionCTESQL)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func (q *Queries) StarExpansionCTE(ctx context.Context) ([]Bar, error) {
 	return items, nil
 }
 
-const starExpansionTwoCTE = `-- name: StarExpansionTwoCTE :many
+const starExpansionTwoCTESQL = `-- name: StarExpansionTwoCTE :many
 WITH 
   a AS (SELECT a, b FROM foo),
   b AS (SELECT 1::int as bar, a, b FROM a)
@@ -49,7 +49,7 @@ type StarExpansionTwoCTERow struct {
 }
 
 func (q *Queries) StarExpansionTwoCTE(ctx context.Context) ([]StarExpansionTwoCTERow, error) {
-	rows, err := q.db.Query(ctx, starExpansionTwoCTE)
+	rows, err := q.db.Query(ctx, starExpansionTwoCTESQL)
 	if err != nil {
 		return nil, err
 	}

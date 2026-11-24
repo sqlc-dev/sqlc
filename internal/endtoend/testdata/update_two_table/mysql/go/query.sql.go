@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const deleteAuthor = `-- name: DeleteAuthor :exec
+const deleteAuthorSQL = `-- name: DeleteAuthor :exec
 UPDATE
   authors,
   books
@@ -22,6 +22,6 @@ WHERE
 `
 
 func (q *Queries) DeleteAuthor(ctx context.Context, name string) error {
-	_, err := q.db.ExecContext(ctx, deleteAuthor, name)
+	_, err := q.db.ExecContext(ctx, deleteAuthorSQL, name)
 	return err
 }

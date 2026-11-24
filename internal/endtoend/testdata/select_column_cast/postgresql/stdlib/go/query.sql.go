@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const selectColumnCast = `-- name: SelectColumnCast :many
+const selectColumnCastSQL = `-- name: SelectColumnCast :many
 SELECT bar::int FROM foo
 `
 
 func (q *Queries) SelectColumnCast(ctx context.Context) ([]int32, error) {
-	rows, err := q.db.QueryContext(ctx, selectColumnCast)
+	rows, err := q.db.QueryContext(ctx, selectColumnCastSQL)
 	if err != nil {
 		return nil, err
 	}

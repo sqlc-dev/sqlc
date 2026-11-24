@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const generateSeries = `-- name: GenerateSeries :many
+const generateSeriesSQL = `-- name: GenerateSeries :many
 SELECT ($1::int) + i
 FROM generate_series(0, $2::int) AS i
 LIMIT 1
@@ -21,7 +21,7 @@ type GenerateSeriesParams struct {
 }
 
 func (q *Queries) GenerateSeries(ctx context.Context, arg GenerateSeriesParams) ([]int32, error) {
-	rows, err := q.db.Query(ctx, generateSeries, arg.Column1, arg.Column2)
+	rows, err := q.db.Query(ctx, generateSeriesSQL, arg.Column1, arg.Column2)
 	if err != nil {
 		return nil, err
 	}

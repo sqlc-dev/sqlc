@@ -13,13 +13,13 @@ import (
 	"github.com/sqlc-dev/sqlc-testdata/mysql"
 )
 
-const funcNullable = `-- name: FuncNullable :many
+const funcNullableSQL = `-- name: FuncNullable :many
 SELECT bar FROM foo
 WHERE id IN (/*SLICE:favourites*/?)
 `
 
 func (q *Queries) FuncNullable(ctx context.Context, favourites []int32) ([]sql.NullString, error) {
-	query := funcNullable
+	query := funcNullableSQL
 	var queryParams []any
 	if len(favourites) > 0 {
 		for _, v := range favourites {
@@ -51,13 +51,13 @@ func (q *Queries) FuncNullable(ctx context.Context, favourites []int32) ([]sql.N
 	return items, nil
 }
 
-const funcNullableNot = `-- name: FuncNullableNot :many
+const funcNullableNotSQL = `-- name: FuncNullableNot :many
 SELECT bar FROM foo
 WHERE id NOT IN (/*SLICE:favourites*/?)
 `
 
 func (q *Queries) FuncNullableNot(ctx context.Context, favourites []int32) ([]sql.NullString, error) {
-	query := funcNullableNot
+	query := funcNullableNotSQL
 	var queryParams []any
 	if len(favourites) > 0 {
 		for _, v := range favourites {
@@ -89,7 +89,7 @@ func (q *Queries) FuncNullableNot(ctx context.Context, favourites []int32) ([]sq
 	return items, nil
 }
 
-const funcParamIdent = `-- name: FuncParamIdent :many
+const funcParamIdentSQL = `-- name: FuncParamIdent :many
 SELECT name FROM foo
 WHERE name = ?
   AND id IN (/*SLICE:favourites*/?)
@@ -101,7 +101,7 @@ type FuncParamIdentParams struct {
 }
 
 func (q *Queries) FuncParamIdent(ctx context.Context, arg FuncParamIdentParams) ([]string, error) {
-	query := funcParamIdent
+	query := funcParamIdentSQL
 	var queryParams []any
 	queryParams = append(queryParams, arg.Slug)
 	if len(arg.Favourites) > 0 {
@@ -134,13 +134,13 @@ func (q *Queries) FuncParamIdent(ctx context.Context, arg FuncParamIdentParams) 
 	return items, nil
 }
 
-const funcParamSoloArg = `-- name: FuncParamSoloArg :many
+const funcParamSoloArgSQL = `-- name: FuncParamSoloArg :many
 SELECT name FROM foo
 WHERE id IN (/*SLICE:favourites*/?)
 `
 
 func (q *Queries) FuncParamSoloArg(ctx context.Context, favourites []int32) ([]string, error) {
-	query := funcParamSoloArg
+	query := funcParamSoloArgSQL
 	var queryParams []any
 	if len(favourites) > 0 {
 		for _, v := range favourites {
@@ -172,7 +172,7 @@ func (q *Queries) FuncParamSoloArg(ctx context.Context, favourites []int32) ([]s
 	return items, nil
 }
 
-const funcParamString = `-- name: FuncParamString :many
+const funcParamStringSQL = `-- name: FuncParamString :many
 SELECT name FROM foo
 WHERE name = ?
   AND id IN (/*SLICE:favourites*/?)
@@ -184,7 +184,7 @@ type FuncParamStringParams struct {
 }
 
 func (q *Queries) FuncParamString(ctx context.Context, arg FuncParamStringParams) ([]string, error) {
-	query := funcParamString
+	query := funcParamStringSQL
 	var queryParams []any
 	queryParams = append(queryParams, arg.Slug)
 	if len(arg.Favourites) > 0 {
@@ -217,7 +217,7 @@ func (q *Queries) FuncParamString(ctx context.Context, arg FuncParamStringParams
 	return items, nil
 }
 
-const sliceExec = `-- name: SliceExec :exec
+const sliceExecSQL = `-- name: SliceExec :exec
 UPDATE foo SET name = ?
 WHERE id IN (/*SLICE:favourites*/?)
 `
@@ -228,7 +228,7 @@ type SliceExecParams struct {
 }
 
 func (q *Queries) SliceExec(ctx context.Context, arg SliceExecParams) error {
-	query := sliceExec
+	query := sliceExecSQL
 	var queryParams []any
 	queryParams = append(queryParams, arg.Slug)
 	if len(arg.Favourites) > 0 {
@@ -243,13 +243,13 @@ func (q *Queries) SliceExec(ctx context.Context, arg SliceExecParams) error {
 	return err
 }
 
-const typedMyStr = `-- name: TypedMyStr :many
+const typedMyStrSQL = `-- name: TypedMyStr :many
 SELECT bar FROM foo
 WHERE mystr IN (/*SLICE:mystr*/?)
 `
 
 func (q *Queries) TypedMyStr(ctx context.Context, mystr []mysql.ID) ([]sql.NullString, error) {
-	query := typedMyStr
+	query := typedMyStrSQL
 	var queryParams []any
 	if len(mystr) > 0 {
 		for _, v := range mystr {

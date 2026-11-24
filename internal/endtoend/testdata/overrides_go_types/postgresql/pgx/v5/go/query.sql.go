@@ -11,12 +11,12 @@ import (
 	uuid "github.com/gofrs/uuid"
 )
 
-const loadFoo = `-- name: LoadFoo :many
+const loadFooSQL = `-- name: LoadFoo :many
 SELECT id, other_id, age, balance, bio, about FROM foo WHERE id = $1
 `
 
 func (q *Queries) LoadFoo(ctx context.Context, id uuid.UUID) ([]Foo, error) {
-	rows, err := q.db.Query(ctx, loadFoo, id)
+	rows, err := q.db.Query(ctx, loadFooSQL, id)
 	if err != nil {
 		return nil, err
 	}

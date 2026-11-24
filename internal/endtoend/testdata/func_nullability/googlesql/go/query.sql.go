@@ -14,7 +14,7 @@ import (
 	"cloud.google.com/go/spanner"
 )
 
-const aggregates = `-- name: Aggregates :one
+const aggregatesSQL = `-- name: Aggregates :one
 SELECT COUNT(*) AS total, SUM(amount) AS total_amount, AVG(id) AS mean_id, MAX(name) AS last_name,
   ARRAY_AGG(id) AS ids, STRING_AGG(name, ',') AS names
 FROM events
@@ -30,7 +30,7 @@ type AggregatesRow struct {
 }
 
 func (q *Queries) Aggregates(ctx context.Context) (AggregatesRow, error) {
-	row := q.db.QueryRowContext(ctx, aggregates)
+	row := q.db.QueryRowContext(ctx, aggregatesSQL)
 	var i AggregatesRow
 	err := row.Scan(
 		&i.Total,
@@ -43,7 +43,7 @@ func (q *Queries) Aggregates(ctx context.Context) (AggregatesRow, error) {
 	return i, err
 }
 
-const conditionals = `-- name: Conditionals :many
+const conditionalsSQL = `-- name: Conditionals :many
 SELECT COALESCE(nickname, name) AS display_name, IFNULL(ratio, 0) AS ratio_or_zero,
   NULLIF(name, '') AS non_empty, IF(id > 10, name, nickname) AS chosen, GREATEST(id, 1) AS at_least_one
 FROM events
@@ -58,7 +58,7 @@ type ConditionalsRow struct {
 }
 
 func (q *Queries) Conditionals(ctx context.Context) ([]ConditionalsRow, error) {
-	rows, err := q.db.QueryContext(ctx, conditionals)
+	rows, err := q.db.QueryContext(ctx, conditionalsSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func (q *Queries) Conditionals(ctx context.Context) ([]ConditionalsRow, error) {
 	return items, nil
 }
 
-const mayBeNull = `-- name: MayBeNull :many
+const mayBeNullSQL = `-- name: MayBeNull :many
 SELECT JSON_VALUE(details, '$.kind') AS kind, REGEXP_EXTRACT(name, 'a+') AS run,
   SAFE_DIVIDE(id, 0) AS ratio, SAFE.SUBSTR(name, 1, 3) AS prefix, ARRAY_FIRST(scores) AS first_score
 FROM events
@@ -101,7 +101,7 @@ type MayBeNullRow struct {
 }
 
 func (q *Queries) MayBeNull(ctx context.Context) ([]MayBeNullRow, error) {
-	rows, err := q.db.QueryContext(ctx, mayBeNull)
+	rows, err := q.db.QueryContext(ctx, mayBeNullSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +129,7 @@ func (q *Queries) MayBeNull(ctx context.Context) ([]MayBeNullRow, error) {
 	return items, nil
 }
 
-const paramsFromFunctions = `-- name: ParamsFromFunctions :many
+const paramsFromFunctionsSQL = `-- name: ParamsFromFunctions :many
 SELECT id FROM events
 WHERE STARTS_WITH(name, @prefix) AND TIMESTAMP_TRUNC(happened_at, DAY) = @day
   AND EXTRACT(DATE FROM happened_at) = @on AND ARRAY_INCLUDES(scores, @score)
@@ -143,7 +143,7 @@ type ParamsFromFunctionsParams struct {
 }
 
 func (q *Queries) ParamsFromFunctions(ctx context.Context, arg ParamsFromFunctionsParams) ([]int64, error) {
-	rows, err := q.db.QueryContext(ctx, paramsFromFunctions,
+	rows, err := q.db.QueryContext(ctx, paramsFromFunctionsSQL,
 		sql.Named("prefix", arg.Prefix),
 		sql.Named("day", arg.Day),
 		sql.Named("on", arg.On),
@@ -170,7 +170,7 @@ func (q *Queries) ParamsFromFunctions(ctx context.Context, arg ParamsFromFunctio
 	return items, nil
 }
 
-const propagates = `-- name: Propagates :many
+const propagatesSQL = `-- name: Propagates :many
 SELECT UPPER(name) AS upper_name, UPPER(nickname) AS upper_nickname, LENGTH(nickname) AS nickname_length
 FROM events
 `
@@ -182,7 +182,7 @@ type PropagatesRow struct {
 }
 
 func (q *Queries) Propagates(ctx context.Context) ([]PropagatesRow, error) {
-	rows, err := q.db.QueryContext(ctx, propagates)
+	rows, err := q.db.QueryContext(ctx, propagatesSQL)
 	if err != nil {
 		return nil, err
 	}

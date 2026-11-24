@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const starExpansionSubquery = `-- name: StarExpansionSubquery :many
+const starExpansionSubquerySQL = `-- name: StarExpansionSubquery :many
 SELECT a, b FROM foo WHERE EXISTS (SELECT a, b FROM foo)
 `
 
 func (q *Queries) StarExpansionSubquery(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.Query(ctx, starExpansionSubquery)
+	rows, err := q.db.Query(ctx, starExpansionSubquerySQL)
 	if err != nil {
 		return nil, err
 	}

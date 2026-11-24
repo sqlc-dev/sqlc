@@ -11,12 +11,12 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const demo = `-- name: Demo :one
+const demoSQL = `-- name: Demo :one
 SELECT uuid_generate_v5('7c4597a0-8cfa-4c19-8da0-b8474a36440d', $1)::uuid as col1
 `
 
 func (q *Queries) Demo(ctx context.Context, name string) (pgtype.UUID, error) {
-	row := q.db.QueryRow(ctx, demo, name)
+	row := q.db.QueryRow(ctx, demoSQL, name)
 	var col1 pgtype.UUID
 	err := row.Scan(&col1)
 	return col1, err

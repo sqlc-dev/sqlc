@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const schemaScopedCreate = `-- name: SchemaScopedCreate :execresult
+const schemaScopedCreateSQL = `-- name: SchemaScopedCreate :execresult
 INSERT INTO foo.bar (id, name) VALUES (?, ?)
 `
 
@@ -20,5 +20,5 @@ type SchemaScopedCreateParams struct {
 }
 
 func (q *Queries) SchemaScopedCreate(ctx context.Context, arg SchemaScopedCreateParams) (sql.Result, error) {
-	return q.db.ExecContext(ctx, schemaScopedCreate, arg.ID, arg.Name)
+	return q.db.ExecContext(ctx, schemaScopedCreateSQL, arg.ID, arg.Name)
 }

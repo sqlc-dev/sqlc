@@ -10,13 +10,13 @@ import (
 	"database/sql"
 )
 
-const coalesceNumeric = `-- name: CoalesceNumeric :many
+const coalesceNumericSQL = `-- name: CoalesceNumeric :many
 SELECT coalesce(baz, 0) as login
 FROM foo
 `
 
 func (q *Queries) CoalesceNumeric(ctx context.Context) ([]int64, error) {
-	rows, err := q.db.QueryContext(ctx, coalesceNumeric)
+	rows, err := q.db.QueryContext(ctx, coalesceNumericSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (q *Queries) CoalesceNumeric(ctx context.Context) ([]int64, error) {
 	return items, nil
 }
 
-const coalesceNumericColumns = `-- name: CoalesceNumericColumns :many
+const coalesceNumericColumnsSQL = `-- name: CoalesceNumericColumns :many
 SELECT baz, qux, coalesce(baz, qux)
 FROM foo
 `
@@ -50,7 +50,7 @@ type CoalesceNumericColumnsRow struct {
 }
 
 func (q *Queries) CoalesceNumericColumns(ctx context.Context) ([]CoalesceNumericColumnsRow, error) {
-	rows, err := q.db.QueryContext(ctx, coalesceNumericColumns)
+	rows, err := q.db.QueryContext(ctx, coalesceNumericColumnsSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (q *Queries) CoalesceNumericColumns(ctx context.Context) ([]CoalesceNumeric
 	return items, nil
 }
 
-const coalesceNumericNull = `-- name: CoalesceNumericNull :many
+const coalesceNumericNullSQL = `-- name: CoalesceNumericNull :many
 SELECT baz, coalesce(baz)
 FROM foo
 `
@@ -83,7 +83,7 @@ type CoalesceNumericNullRow struct {
 }
 
 func (q *Queries) CoalesceNumericNull(ctx context.Context) ([]CoalesceNumericNullRow, error) {
-	rows, err := q.db.QueryContext(ctx, coalesceNumericNull)
+	rows, err := q.db.QueryContext(ctx, coalesceNumericNullSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -105,13 +105,13 @@ func (q *Queries) CoalesceNumericNull(ctx context.Context) ([]CoalesceNumericNul
 	return items, nil
 }
 
-const coalesceString = `-- name: CoalesceString :many
+const coalesceStringSQL = `-- name: CoalesceString :many
 SELECT coalesce(bar, '') as login
 FROM foo
 `
 
 func (q *Queries) CoalesceString(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, coalesceString)
+	rows, err := q.db.QueryContext(ctx, coalesceStringSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func (q *Queries) CoalesceString(ctx context.Context) ([]string, error) {
 	return items, nil
 }
 
-const coalesceStringColumns = `-- name: CoalesceStringColumns :many
+const coalesceStringColumnsSQL = `-- name: CoalesceStringColumns :many
 SELECT bar, bat, coalesce(bar, bat)
 FROM foo
 `
@@ -145,7 +145,7 @@ type CoalesceStringColumnsRow struct {
 }
 
 func (q *Queries) CoalesceStringColumns(ctx context.Context) ([]CoalesceStringColumnsRow, error) {
-	rows, err := q.db.QueryContext(ctx, coalesceStringColumns)
+	rows, err := q.db.QueryContext(ctx, coalesceStringColumnsSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +167,7 @@ func (q *Queries) CoalesceStringColumns(ctx context.Context) ([]CoalesceStringCo
 	return items, nil
 }
 
-const coalesceStringNull = `-- name: CoalesceStringNull :many
+const coalesceStringNullSQL = `-- name: CoalesceStringNull :many
 SELECT bar, coalesce(bar)
 FROM foo
 `
@@ -178,7 +178,7 @@ type CoalesceStringNullRow struct {
 }
 
 func (q *Queries) CoalesceStringNull(ctx context.Context) ([]CoalesceStringNullRow, error) {
-	rows, err := q.db.QueryContext(ctx, coalesceStringNull)
+	rows, err := q.db.QueryContext(ctx, coalesceStringNullSQL)
 	if err != nil {
 		return nil, err
 	}

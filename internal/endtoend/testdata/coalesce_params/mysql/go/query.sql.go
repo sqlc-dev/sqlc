@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const addAuthor = `-- name: AddAuthor :execlastid
+const addAuthorSQL = `-- name: AddAuthor :execlastid
 INSERT INTO authors (
     address,
     name,
@@ -28,14 +28,14 @@ type AddAuthorParams struct {
 }
 
 func (q *Queries) AddAuthor(ctx context.Context, arg AddAuthorParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, addAuthor, arg.Address, arg.CalName, arg.CalDescription)
+	result, err := q.db.ExecContext(ctx, addAuthorSQL, arg.Address, arg.CalName, arg.CalDescription)
 	if err != nil {
 		return 0, err
 	}
 	return result.LastInsertId()
 }
 
-const addEvent = `-- name: AddEvent :execlastid
+const addEventSQL = `-- name: AddEvent :execlastid
 INSERT INTO ` + "`" + `Event` + "`" + ` (
     Timezone
 ) VALUES (
@@ -49,7 +49,7 @@ type AddEventParams struct {
 }
 
 func (q *Queries) AddEvent(ctx context.Context, arg AddEventParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, addEvent, arg.Timezone, arg.CalendarIdKey, arg.Timezone)
+	result, err := q.db.ExecContext(ctx, addEventSQL, arg.Timezone, arg.CalendarIdKey, arg.Timezone)
 	if err != nil {
 		return 0, err
 	}

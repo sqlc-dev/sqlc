@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const authorPages = `-- name: AuthorPages :many
+const authorPagesSQL = `-- name: AuthorPages :many
 SELECT author, count(title) AS num_books, sum(pages) AS total_pages
 FROM books
 GROUP BY author
@@ -23,7 +23,7 @@ type AuthorPagesRow struct {
 }
 
 func (q *Queries) AuthorPages(ctx context.Context) ([]AuthorPagesRow, error) {
-	rows, err := q.db.QueryContext(ctx, authorPages)
+	rows, err := q.db.QueryContext(ctx, authorPagesSQL)
 	if err != nil {
 		return nil, err
 	}

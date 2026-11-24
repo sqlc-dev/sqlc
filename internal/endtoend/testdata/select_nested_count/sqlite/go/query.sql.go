@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const getAuthorsWithBooksCount = `-- name: GetAuthorsWithBooksCount :many
+const getAuthorsWithBooksCountSQL = `-- name: GetAuthorsWithBooksCount :many
 SELECT
   id, name, bio,
   (
@@ -29,7 +29,7 @@ type GetAuthorsWithBooksCountRow struct {
 }
 
 func (q *Queries) GetAuthorsWithBooksCount(ctx context.Context) ([]GetAuthorsWithBooksCountRow, error) {
-	rows, err := q.db.QueryContext(ctx, getAuthorsWithBooksCount)
+	rows, err := q.db.QueryContext(ctx, getAuthorsWithBooksCountSQL)
 	if err != nil {
 		return nil, err
 	}

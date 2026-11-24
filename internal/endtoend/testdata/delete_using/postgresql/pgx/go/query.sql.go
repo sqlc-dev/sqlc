@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getSomeDeletedNotOk = `-- name: GetSomeDeletedNotOk :many
+const getSomeDeletedNotOkSQL = `-- name: GetSomeDeletedNotOk :many
 DELETE FROM a
 USING b
 WHERE a.b_id_fk = b.b_id
@@ -19,7 +19,7 @@ RETURNING b.b_id
 `
 
 func (q *Queries) GetSomeDeletedNotOk(ctx context.Context) ([]pgtype.Text, error) {
-	rows, err := q.db.Query(ctx, getSomeDeletedNotOk)
+	rows, err := q.db.Query(ctx, getSomeDeletedNotOkSQL)
 	if err != nil {
 		return nil, err
 	}

@@ -11,16 +11,16 @@ import (
 	"github.com/pgvector/pgvector-go"
 )
 
-const insertVector = `-- name: InsertVector :exec
+const insertVectorSQL = `-- name: InsertVector :exec
 INSERT INTO items (embedding) VALUES ($1)
 `
 
 func (q *Queries) InsertVector(ctx context.Context, embedding pgvector.Vector) error {
-	_, err := q.db.Exec(ctx, insertVector, embedding)
+	_, err := q.db.Exec(ctx, insertVectorSQL, embedding)
 	return err
 }
 
-const nearestNeighbor = `-- name: NearestNeighbor :many
+const nearestNeighborSQL = `-- name: NearestNeighbor :many
 SELECT id, embedding
 FROM items
 ORDER BY embedding <-> $1
@@ -28,7 +28,7 @@ LIMIT 5
 `
 
 func (q *Queries) NearestNeighbor(ctx context.Context, embedding pgvector.Vector) ([]Item, error) {
-	rows, err := q.db.Query(ctx, nearestNeighbor, embedding)
+	rows, err := q.db.Query(ctx, nearestNeighborSQL, embedding)
 	if err != nil {
 		return nil, err
 	}

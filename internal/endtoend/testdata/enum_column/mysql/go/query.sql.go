@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const listAuthors = `-- name: ListAuthors :many
+const listAuthorsSQL = `-- name: ListAuthors :many
 SELECT id, foo, bar, added, add_item, remove_item FROM authors
 `
 
 func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthors)
+	rows, err := q.db.QueryContext(ctx, listAuthorsSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -43,12 +43,12 @@ func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
 	return items, nil
 }
 
-const listBooks = `-- name: ListBooks :many
+const listBooksSQL = `-- name: ListBooks :many
 SELECT id, foo FROM books
 `
 
 func (q *Queries) ListBooks(ctx context.Context) ([]Book, error) {
-	rows, err := q.db.QueryContext(ctx, listBooks)
+	rows, err := q.db.QueryContext(ctx, listBooksSQL)
 	if err != nil {
 		return nil, err
 	}

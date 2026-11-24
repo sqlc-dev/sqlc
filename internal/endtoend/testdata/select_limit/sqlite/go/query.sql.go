@@ -10,14 +10,14 @@ import (
 	"database/sql"
 )
 
-const fooLimit = `-- name: FooLimit :many
+const fooLimitSQL = `-- name: FooLimit :many
 SELECT a
 FROM foo
 LIMIT ?
 `
 
 func (q *Queries) FooLimit(ctx context.Context, limit int64) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, fooLimit, limit)
+	rows, err := q.db.QueryContext(ctx, fooLimitSQL, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (q *Queries) FooLimit(ctx context.Context, limit int64) ([]sql.NullString, 
 	return items, nil
 }
 
-const fooLimitOffset = `-- name: FooLimitOffset :many
+const fooLimitOffsetSQL = `-- name: FooLimitOffset :many
 SELECT a
 FROM foo
 LIMIT ?
@@ -52,7 +52,7 @@ type FooLimitOffsetParams struct {
 }
 
 func (q *Queries) FooLimitOffset(ctx context.Context, arg FooLimitOffsetParams) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, fooLimitOffset, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, fooLimitOffsetSQL, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

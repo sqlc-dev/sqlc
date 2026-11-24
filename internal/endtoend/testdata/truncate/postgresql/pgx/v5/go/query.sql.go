@@ -9,11 +9,11 @@ import (
 	"context"
 )
 
-const truncate = `-- name: Truncate :exec
+const truncateSQL = `-- name: Truncate :exec
 TRUNCATE bar
 `
 
 func (q *Queries) Truncate(ctx context.Context) error {
-	_, err := q.db.Exec(ctx, truncate)
+	_, err := q.db.Exec(ctx, truncateSQL)
 	return err
 }

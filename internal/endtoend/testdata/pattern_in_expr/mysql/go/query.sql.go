@@ -10,12 +10,12 @@ import (
 	"database/sql"
 )
 
-const fooByBarB = `-- name: FooByBarB :many
+const fooByBarBSQL = `-- name: FooByBarB :many
 SELECT a, b from foo where foo.a in (select a from bar where bar.b = ?)
 `
 
 func (q *Queries) FooByBarB(ctx context.Context, b sql.NullString) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, fooByBarB, b)
+	rows, err := q.db.QueryContext(ctx, fooByBarBSQL, b)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,7 @@ func (q *Queries) FooByBarB(ctx context.Context, b sql.NullString) ([]Foo, error
 	return items, nil
 }
 
-const fooByList = `-- name: FooByList :many
+const fooByListSQL = `-- name: FooByList :many
 SELECT a, b from foo where foo.a in (?, ?)
 `
 
@@ -47,7 +47,7 @@ type FooByListParams struct {
 }
 
 func (q *Queries) FooByList(ctx context.Context, arg FooByListParams) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, fooByList, arg.A, arg.A_2)
+	rows, err := q.db.QueryContext(ctx, fooByListSQL, arg.A, arg.A_2)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (q *Queries) FooByList(ctx context.Context, arg FooByListParams) ([]Foo, er
 	return items, nil
 }
 
-const fooByNotList = `-- name: FooByNotList :many
+const fooByNotListSQL = `-- name: FooByNotList :many
 SELECT a, b from foo where foo.a not in (?, ?)
 `
 
@@ -79,7 +79,7 @@ type FooByNotListParams struct {
 }
 
 func (q *Queries) FooByNotList(ctx context.Context, arg FooByNotListParams) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, fooByNotList, arg.A, arg.A_2)
+	rows, err := q.db.QueryContext(ctx, fooByNotListSQL, arg.A, arg.A_2)
 	if err != nil {
 		return nil, err
 	}
@@ -101,12 +101,12 @@ func (q *Queries) FooByNotList(ctx context.Context, arg FooByNotListParams) ([]F
 	return items, nil
 }
 
-const fooByParamList = `-- name: FooByParamList :many
+const fooByParamListSQL = `-- name: FooByParamList :many
 SELECT a, b from foo where ? in (foo.a, foo.b)
 `
 
 func (q *Queries) FooByParamList(ctx context.Context, a sql.NullString) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, fooByParamList, a)
+	rows, err := q.db.QueryContext(ctx, fooByParamListSQL, a)
 	if err != nil {
 		return nil, err
 	}

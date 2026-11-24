@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const createUser = `-- name: CreateUser :exec
+const createUserSQL = `-- name: CreateUser :exec
 INSERT INTO users (role, required_role, status) VALUES ($1, $2, $3)
 `
 
@@ -20,16 +20,16 @@ type CreateUserParams struct {
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
-	_, err := q.db.Exec(ctx, createUser, arg.Role, arg.RequiredRole, arg.Status)
+	_, err := q.db.Exec(ctx, createUserSQL, arg.Role, arg.RequiredRole, arg.Status)
 	return err
 }
 
-const listUsersByRole = `-- name: ListUsersByRole :many
+const listUsersByRoleSQL = `-- name: ListUsersByRole :many
 SELECT role, required_role, status FROM users WHERE role = $1
 `
 
 func (q *Queries) ListUsersByRole(ctx context.Context, role *UserRole) ([]User, error) {
-	rows, err := q.db.Query(ctx, listUsersByRole, role)
+	rows, err := q.db.Query(ctx, listUsersByRoleSQL, role)
 	if err != nil {
 		return nil, err
 	}

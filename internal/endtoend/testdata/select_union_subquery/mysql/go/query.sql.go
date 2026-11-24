@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const testSubqueryUnion = `-- name: TestSubqueryUnion :many
+const testSubqueryUnionSQL = `-- name: TestSubqueryUnion :many
 SELECT tmp.id, tmp.name, tmp.bio FROM (
   SELECT id, name, bio FROM authors
   UNION
@@ -18,7 +18,7 @@ SELECT tmp.id, tmp.name, tmp.bio FROM (
 `
 
 func (q *Queries) TestSubqueryUnion(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, testSubqueryUnion)
+	rows, err := q.db.QueryContext(ctx, testSubqueryUnionSQL)
 	if err != nil {
 		return nil, err
 	}

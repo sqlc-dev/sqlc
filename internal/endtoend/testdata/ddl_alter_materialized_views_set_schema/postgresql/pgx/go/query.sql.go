@@ -11,12 +11,12 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const someQuery = `-- name: SomeQuery :many
+const someQuerySQL = `-- name: SomeQuery :many
 select id from "computed_tables"."something"
 `
 
 func (q *Queries) SomeQuery(ctx context.Context) ([]pgtype.Int4, error) {
-	rows, err := q.db.Query(ctx, someQuery)
+	rows, err := q.db.Query(ctx, someQuerySQL)
 	if err != nil {
 		return nil, err
 	}

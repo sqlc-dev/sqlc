@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const withAs = `-- name: WithAs :one
+const withAsSQL = `-- name: WithAs :one
 SELECT 1 AS x, 2 AS y
 `
 
@@ -19,13 +19,13 @@ type WithAsRow struct {
 }
 
 func (q *Queries) WithAs(ctx context.Context) (WithAsRow, error) {
-	row := q.db.QueryRowContext(ctx, withAs)
+	row := q.db.QueryRowContext(ctx, withAsSQL)
 	var i WithAsRow
 	err := row.Scan(&i.X, &i.Y)
 	return i, err
 }
 
-const withoutAs = `-- name: WithoutAs :one
+const withoutAsSQL = `-- name: WithoutAs :one
 SELECT 1 AS x, 2 AS y
 `
 
@@ -35,7 +35,7 @@ type WithoutAsRow struct {
 }
 
 func (q *Queries) WithoutAs(ctx context.Context) (WithoutAsRow, error) {
-	row := q.db.QueryRowContext(ctx, withoutAs)
+	row := q.db.QueryRowContext(ctx, withoutAsSQL)
 	var i WithoutAsRow
 	err := row.Scan(&i.X, &i.Y)
 	return i, err

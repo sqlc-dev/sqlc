@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const nestedSelect = `-- name: NestedSelect :one
+const nestedSelectSQL = `-- name: NestedSelect :one
 SELECT latest.id, t.count
 FROM (
   SELECT id, max(update_time) AS update_time
@@ -35,7 +35,7 @@ type NestedSelectRow struct {
 }
 
 func (q *Queries) NestedSelect(ctx context.Context, arg NestedSelectParams) (NestedSelectRow, error) {
-	row := q.db.QueryRow(ctx, nestedSelect, arg.IDs, arg.StartTime)
+	row := q.db.QueryRow(ctx, nestedSelectSQL, arg.IDs, arg.StartTime)
 	var i NestedSelectRow
 	err := row.Scan(&i.ID, &i.Count)
 	return i, err

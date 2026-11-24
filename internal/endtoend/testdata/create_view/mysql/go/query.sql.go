@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const getFirst = `-- name: GetFirst :many
+const getFirstSQL = `-- name: GetFirst :many
 SELECT val FROM first_view
 `
 
 func (q *Queries) GetFirst(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, getFirst)
+	rows, err := q.db.QueryContext(ctx, getFirstSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -36,12 +36,12 @@ func (q *Queries) GetFirst(ctx context.Context) ([]string, error) {
 	return items, nil
 }
 
-const getSecond = `-- name: GetSecond :many
+const getSecondSQL = `-- name: GetSecond :many
 SELECT val, val2 FROM second_view WHERE val2 = $1
 `
 
 func (q *Queries) GetSecond(ctx context.Context) ([]SecondView, error) {
-	rows, err := q.db.QueryContext(ctx, getSecond)
+	rows, err := q.db.QueryContext(ctx, getSecondSQL)
 	if err != nil {
 		return nil, err
 	}

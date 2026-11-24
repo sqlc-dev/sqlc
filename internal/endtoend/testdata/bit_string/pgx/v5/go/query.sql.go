@@ -9,13 +9,13 @@ import (
 	"context"
 )
 
-const selectTest = `-- name: SelectTest :many
+const selectTestSQL = `-- name: SelectTest :many
 SELECT v_bit_null, v_varbit_null, v_bit, v_varbit
 from test_table
 `
 
 func (q *Queries) SelectTest(ctx context.Context) ([]TestTable, error) {
-	rows, err := q.db.Query(ctx, selectTest)
+	rows, err := q.db.Query(ctx, selectTestSQL)
 	if err != nil {
 		return nil, err
 	}

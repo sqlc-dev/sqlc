@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const sumBaz = `-- name: SumBaz :many
+const sumBazSQL = `-- name: SumBaz :many
 SELECT bar, coalesce(sum(baz), 0) as quantity
 FROM foo
 GROUP BY 1
@@ -23,7 +23,7 @@ type SumBazRow struct {
 }
 
 func (q *Queries) SumBaz(ctx context.Context) ([]SumBazRow, error) {
-	rows, err := q.db.Query(ctx, sumBaz)
+	rows, err := q.db.Query(ctx, sumBazSQL)
 	if err != nil {
 		return nil, err
 	}

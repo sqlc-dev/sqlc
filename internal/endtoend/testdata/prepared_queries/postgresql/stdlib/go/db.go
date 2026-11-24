@@ -24,19 +24,19 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
-	if q.deleteUsersByNameStmt, err = db.PrepareContext(ctx, deleteUsersByName); err != nil {
+	if q.deleteUsersByNameStmt, err = db.PrepareContext(ctx, deleteUsersByNameSQL); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteUsersByName: %w", err)
 	}
-	if q.getUserByIDStmt, err = db.PrepareContext(ctx, getUserByID); err != nil {
+	if q.getUserByIDStmt, err = db.PrepareContext(ctx, getUserByIDSQL); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByID: %w", err)
 	}
-	if q.insertNewUserStmt, err = db.PrepareContext(ctx, insertNewUser); err != nil {
+	if q.insertNewUserStmt, err = db.PrepareContext(ctx, insertNewUserSQL); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertNewUser: %w", err)
 	}
-	if q.insertNewUserWithResultStmt, err = db.PrepareContext(ctx, insertNewUserWithResult); err != nil {
+	if q.insertNewUserWithResultStmt, err = db.PrepareContext(ctx, insertNewUserWithResultSQL); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertNewUserWithResult: %w", err)
 	}
-	if q.listUsersStmt, err = db.PrepareContext(ctx, listUsers); err != nil {
+	if q.listUsersStmt, err = db.PrepareContext(ctx, listUsersSQL); err != nil {
 		return nil, fmt.Errorf("error preparing query ListUsers: %w", err)
 	}
 	return &q, nil

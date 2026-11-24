@@ -10,7 +10,7 @@ import (
 	"encoding/json"
 )
 
-const insertFoo = `-- name: InsertFoo :exec
+const insertFooSQL = `-- name: InsertFoo :exec
 INSERT INTO foo (
   a,
   b,
@@ -46,7 +46,7 @@ type InsertFooParams struct {
 }
 
 func (q *Queries) InsertFoo(ctx context.Context, arg InsertFooParams) error {
-	_, err := q.db.ExecContext(ctx, insertFoo,
+	_, err := q.db.ExecContext(ctx, insertFooSQL,
 		arg.A,
 		arg.B,
 		arg.C,
@@ -59,11 +59,11 @@ func (q *Queries) InsertFoo(ctx context.Context, arg InsertFooParams) error {
 	return err
 }
 
-const selectFoo = `-- name: SelectFoo :exec
+const selectFooSQL = `-- name: SelectFoo :exec
 SELECT a, json(b), c, json(d), e, json(f), g, json(h) FROM foo
 `
 
 func (q *Queries) SelectFoo(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, selectFoo)
+	_, err := q.db.ExecContext(ctx, selectFooSQL)
 	return err
 }

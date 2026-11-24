@@ -12,45 +12,45 @@ import (
 	"github.com/jackc/pgconn"
 )
 
-const execFoo = `-- name: ExecFoo :exec
+const execFooSQL = `-- name: ExecFoo :exec
 INSERT INTO foo (bar) VALUES ('bar')
 `
 
 // This function creates a Foo via :exec
 func (q *Queries) ExecFoo(ctx context.Context, db DBTX) error {
-	_, err := db.Exec(ctx, execFoo)
+	_, err := db.Exec(ctx, execFooSQL)
 	return err
 }
 
-const execResultFoo = `-- name: ExecResultFoo :execresult
+const execResultFooSQL = `-- name: ExecResultFoo :execresult
 INSERT INTO foo (bar) VALUES ('bar')
 `
 
 // This function creates a Foo via :execresult
 func (q *Queries) ExecResultFoo(ctx context.Context, db DBTX) (pgconn.CommandTag, error) {
-	return db.Exec(ctx, execResultFoo)
+	return db.Exec(ctx, execResultFooSQL)
 }
 
-const execRowFoo = `-- name: ExecRowFoo :execrows
+const execRowFooSQL = `-- name: ExecRowFoo :execrows
 INSERT INTO foo (bar) VALUES ('bar')
 `
 
 // This function creates a Foo via :execrows
 func (q *Queries) ExecRowFoo(ctx context.Context, db DBTX) (int64, error) {
-	result, err := db.Exec(ctx, execRowFoo)
+	result, err := db.Exec(ctx, execRowFooSQL)
 	if err != nil {
 		return 0, err
 	}
 	return result.RowsAffected(), nil
 }
 
-const manyFoo = `-- name: ManyFoo :many
+const manyFooSQL = `-- name: ManyFoo :many
 SELECT bar FROM foo
 `
 
 // This function returns a list of Foos
 func (q *Queries) ManyFoo(ctx context.Context, db DBTX) ([]sql.NullString, error) {
-	rows, err := db.Query(ctx, manyFoo)
+	rows, err := db.Query(ctx, manyFooSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -69,13 +69,13 @@ func (q *Queries) ManyFoo(ctx context.Context, db DBTX) ([]sql.NullString, error
 	return items, nil
 }
 
-const oneFoo = `-- name: OneFoo :one
+const oneFooSQL = `-- name: OneFoo :one
 SELECT bar FROM foo
 `
 
 // This function returns one Foo
 func (q *Queries) OneFoo(ctx context.Context, db DBTX) (sql.NullString, error) {
-	row := db.QueryRow(ctx, oneFoo)
+	row := db.QueryRow(ctx, oneFooSQL)
 	var bar sql.NullString
 	err := row.Scan(&bar)
 	return bar, err

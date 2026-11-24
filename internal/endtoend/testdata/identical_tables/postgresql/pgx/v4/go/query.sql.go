@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const identicalTable = `-- name: IdenticalTable :many
+const identicalTableSQL = `-- name: IdenticalTable :many
 SELECT id FROM foo
 `
 
 func (q *Queries) IdenticalTable(ctx context.Context) ([]string, error) {
-	rows, err := q.db.Query(ctx, identicalTable)
+	rows, err := q.db.Query(ctx, identicalTableSQL)
 	if err != nil {
 		return nil, err
 	}

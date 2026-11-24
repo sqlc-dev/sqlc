@@ -9,23 +9,23 @@ import (
 	"context"
 )
 
-const insertVector = `-- name: InsertVector :exec
+const insertVectorSQL = `-- name: InsertVector :exec
 INSERT INTO foo(embedding) VALUES (STRING_TO_VECTOR('[0.1, 0.2, 0.3, 0.4]'))
 `
 
 func (q *Queries) InsertVector(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, insertVector)
+	_, err := q.db.ExecContext(ctx, insertVectorSQL)
 	return err
 }
 
-const selectVector = `-- name: SelectVector :many
+const selectVectorSQL = `-- name: SelectVector :many
 SELECT id FROM foo
 ORDER BY DISTANCE(STRING_TO_VECTOR('[1.2, 3.4, 5.6]'), embedding, 'L2_squared')
 LIMIT 10
 `
 
 func (q *Queries) SelectVector(ctx context.Context) ([]int32, error) {
-	rows, err := q.db.QueryContext(ctx, selectVector)
+	rows, err := q.db.QueryContext(ctx, selectVectorSQL)
 	if err != nil {
 		return nil, err
 	}

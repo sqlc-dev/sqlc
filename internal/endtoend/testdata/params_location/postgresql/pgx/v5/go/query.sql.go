@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getUserByID = `-- name: GetUserByID :one
+const getUserByIDSQL = `-- name: GetUserByID :one
 SELECT first_name, id, last_name FROM users WHERE id = $1
 `
 
@@ -22,13 +22,13 @@ type GetUserByIDRow struct {
 }
 
 func (q *Queries) GetUserByID(ctx context.Context, targetID int32) (GetUserByIDRow, error) {
-	row := q.db.QueryRow(ctx, getUserByID, targetID)
+	row := q.db.QueryRow(ctx, getUserByIDSQL, targetID)
 	var i GetUserByIDRow
 	err := row.Scan(&i.FirstName, &i.ID, &i.LastName)
 	return i, err
 }
 
-const insertNewUser = `-- name: InsertNewUser :exec
+const insertNewUserSQL = `-- name: InsertNewUser :exec
 INSERT INTO users (first_name, last_name) VALUES ($1, $2)
 `
 
@@ -38,11 +38,11 @@ type InsertNewUserParams struct {
 }
 
 func (q *Queries) InsertNewUser(ctx context.Context, arg InsertNewUserParams) error {
-	_, err := q.db.Exec(ctx, insertNewUser, arg.FirstName, arg.LastName)
+	_, err := q.db.Exec(ctx, insertNewUserSQL, arg.FirstName, arg.LastName)
 	return err
 }
 
-const limitSQLCArg = `-- name: LimitSQLCArg :many
+const limitSQLCArgSQL = `-- name: LimitSQLCArg :many
 select first_name, id FROM users LIMIT $1
 `
 
@@ -52,7 +52,7 @@ type LimitSQLCArgRow struct {
 }
 
 func (q *Queries) LimitSQLCArg(ctx context.Context, limit int32) ([]LimitSQLCArgRow, error) {
-	rows, err := q.db.Query(ctx, limitSQLCArg, limit)
+	rows, err := q.db.Query(ctx, limitSQLCArgSQL, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func (q *Queries) LimitSQLCArg(ctx context.Context, limit int32) ([]LimitSQLCArg
 	return items, nil
 }
 
-const listUserOrders = `-- name: ListUserOrders :many
+const listUserOrdersSQL = `-- name: ListUserOrders :many
 SELECT
 	users.id,
 	users.first_name,
@@ -89,7 +89,7 @@ type ListUserOrdersRow struct {
 }
 
 func (q *Queries) ListUserOrders(ctx context.Context, minPrice pgtype.Numeric) ([]ListUserOrdersRow, error) {
-	rows, err := q.db.Query(ctx, listUserOrders, minPrice)
+	rows, err := q.db.Query(ctx, listUserOrdersSQL, minPrice)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func (q *Queries) ListUserOrders(ctx context.Context, minPrice pgtype.Numeric) (
 	return items, nil
 }
 
-const listUserParenExpr = `-- name: ListUserParenExpr :many
+const listUserParenExprSQL = `-- name: ListUserParenExpr :many
 SELECT id, first_name, last_name, age, job_status FROM users WHERE (job_status = 'APPLIED' OR job_status = 'PENDING')
 AND id > $1
 ORDER BY id
@@ -121,7 +121,7 @@ type ListUserParenExprParams struct {
 }
 
 func (q *Queries) ListUserParenExpr(ctx context.Context, arg ListUserParenExprParams) ([]User, error) {
-	rows, err := q.db.Query(ctx, listUserParenExpr, arg.ID, arg.Limit)
+	rows, err := q.db.Query(ctx, listUserParenExprSQL, arg.ID, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func (q *Queries) ListUserParenExpr(ctx context.Context, arg ListUserParenExprPa
 	return items, nil
 }
 
-const listUsersByFamily = `-- name: ListUsersByFamily :many
+const listUsersByFamilySQL = `-- name: ListUsersByFamily :many
 SELECT first_name, last_name FROM users WHERE age < $1 AND last_name = $2
 `
 
@@ -161,7 +161,7 @@ type ListUsersByFamilyRow struct {
 }
 
 func (q *Queries) ListUsersByFamily(ctx context.Context, arg ListUsersByFamilyParams) ([]ListUsersByFamilyRow, error) {
-	rows, err := q.db.Query(ctx, listUsersByFamily, arg.MaxAge, arg.InFamily)
+	rows, err := q.db.Query(ctx, listUsersByFamilySQL, arg.MaxAge, arg.InFamily)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ func (q *Queries) ListUsersByFamily(ctx context.Context, arg ListUsersByFamilyPa
 	return items, nil
 }
 
-const listUsersByID = `-- name: ListUsersByID :many
+const listUsersByIDSQL = `-- name: ListUsersByID :many
 SELECT first_name, id, last_name FROM users WHERE id < $1
 `
 
@@ -191,7 +191,7 @@ type ListUsersByIDRow struct {
 }
 
 func (q *Queries) ListUsersByID(ctx context.Context, id int32) ([]ListUsersByIDRow, error) {
-	rows, err := q.db.Query(ctx, listUsersByID, id)
+	rows, err := q.db.Query(ctx, listUsersByIDSQL, id)
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +210,7 @@ func (q *Queries) ListUsersByID(ctx context.Context, id int32) ([]ListUsersByIDR
 	return items, nil
 }
 
-const listUsersWithLimit = `-- name: ListUsersWithLimit :many
+const listUsersWithLimitSQL = `-- name: ListUsersWithLimit :many
 SELECT first_name, last_name FROM users LIMIT $1
 `
 
@@ -220,7 +220,7 @@ type ListUsersWithLimitRow struct {
 }
 
 func (q *Queries) ListUsersWithLimit(ctx context.Context, limit int32) ([]ListUsersWithLimitRow, error) {
-	rows, err := q.db.Query(ctx, listUsersWithLimit, limit)
+	rows, err := q.db.Query(ctx, listUsersWithLimitSQL, limit)
 	if err != nil {
 		return nil, err
 	}

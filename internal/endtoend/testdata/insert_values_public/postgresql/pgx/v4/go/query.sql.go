@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const insertValues = `-- name: InsertValues :exec
+const insertValuesSQL = `-- name: InsertValues :exec
 INSERT INTO public.foo (a, b) VALUES ($1, $2)
 `
 
@@ -20,6 +20,6 @@ type InsertValuesParams struct {
 }
 
 func (q *Queries) InsertValues(ctx context.Context, arg InsertValuesParams) error {
-	_, err := q.db.Exec(ctx, insertValues, arg.A, arg.B)
+	_, err := q.db.Exec(ctx, insertValuesSQL, arg.A, arg.B)
 	return err
 }

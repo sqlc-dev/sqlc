@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const user = `-- name: User :many
+const userSQL = `-- name: User :many
 SELECT "user".id FROM "user"
 `
 
 func (q *Queries) User(ctx context.Context) ([]int64, error) {
-	rows, err := q.db.Query(ctx, user)
+	rows, err := q.db.Query(ctx, userSQL)
 	if err != nil {
 		return nil, err
 	}

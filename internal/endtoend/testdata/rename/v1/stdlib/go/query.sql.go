@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const listBar = `-- name: ListBar :many
+const listBarSQL = `-- name: ListBar :many
 SELECT id_old, ip_old FROM bar_old
 `
 
 func (q *Queries) ListBar(ctx context.Context) ([]BarNew, error) {
-	rows, err := q.db.QueryContext(ctx, listBar)
+	rows, err := q.db.QueryContext(ctx, listBarSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func (q *Queries) ListBar(ctx context.Context) ([]BarNew, error) {
 	return items, nil
 }
 
-const listFoo = `-- name: ListFoo :many
+const listFooSQL = `-- name: ListFoo :many
 SELECT id_old as foo_old, id_old as baz_old
 FROM bar_old
 WHERE ip_old = $1 AND id_old = $2
@@ -53,7 +53,7 @@ type ListFooRow struct {
 }
 
 func (q *Queries) ListFoo(ctx context.Context, arg ListFooParams) ([]ListFooRow, error) {
-	rows, err := q.db.QueryContext(ctx, listFoo, arg.IpOld, arg.IDNew)
+	rows, err := q.db.QueryContext(ctx, listFooSQL, arg.IpOld, arg.IDNew)
 	if err != nil {
 		return nil, err
 	}

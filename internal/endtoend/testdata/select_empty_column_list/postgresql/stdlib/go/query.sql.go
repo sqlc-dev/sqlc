@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const getBars = `-- name: GetBars :many
+const getBarsSQL = `-- name: GetBars :many
 SELECT FROM bar LIMIT 5
 `
 
@@ -17,7 +17,7 @@ type GetBarsRow struct {
 }
 
 func (q *Queries) GetBars(ctx context.Context) ([]GetBarsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getBars)
+	rows, err := q.db.QueryContext(ctx, getBarsSQL)
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const cTECount = `-- name: CTECount :many
+const cTECountSQL = `-- name: CTECount :many
 WITH all_count AS (
 	SELECT count(*) FROM bar
 ), ready_count AS (
@@ -25,7 +25,7 @@ type CTECountRow struct {
 }
 
 func (q *Queries) CTECount(ctx context.Context) ([]CTECountRow, error) {
-	rows, err := q.db.QueryContext(ctx, cTECount)
+	rows, err := q.db.QueryContext(ctx, cTECountSQL)
 	if err != nil {
 		return nil, err
 	}

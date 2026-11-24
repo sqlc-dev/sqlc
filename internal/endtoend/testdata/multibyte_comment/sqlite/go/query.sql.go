@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const createItem = `-- name: CreateItem :exec
+const createItemSQL = `-- name: CreateItem :exec
 INSERT INTO items (name, cap_read)
 VALUES (?, ?)
 `
@@ -21,22 +21,22 @@ type CreateItemParams struct {
 
 // 当新建条目时，需要写入名称和权限
 func (q *Queries) CreateItem(ctx context.Context, arg CreateItemParams) error {
-	_, err := q.db.ExecContext(ctx, createItem, arg.Name, arg.CapRead)
+	_, err := q.db.ExecContext(ctx, createItemSQL, arg.Name, arg.CapRead)
 	return err
 }
 
-const deleteItem = `-- name: DeleteItem :one
+const deleteItemSQL = `-- name: DeleteItem :one
 DELETE FROM items WHERE id = ? RETURNING id, name, cap_read
 `
 
 func (q *Queries) DeleteItem(ctx context.Context, id int64) (Item, error) {
-	row := q.db.QueryRowContext(ctx, deleteItem, id)
+	row := q.db.QueryRowContext(ctx, deleteItemSQL, id)
 	var i Item
 	err := row.Scan(&i.ID, &i.Name, &i.CapRead)
 	return i, err
 }
 
-const listItems = `-- name: ListItems :many
+const listItemsSQL = `-- name: ListItems :many
 
 SELECT id, name, cap_read
 FROM items
@@ -48,7 +48,7 @@ ORDER BY name
 // query text out of the source file (#4523, #4235, #4372).
 // an em dash right here — must not truncate the ORDER BY below
 func (q *Queries) ListItems(ctx context.Context) ([]Item, error) {
-	rows, err := q.db.QueryContext(ctx, listItems)
+	rows, err := q.db.QueryContext(ctx, listItemsSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (q *Queries) ListItems(ctx context.Context) ([]Item, error) {
 	return items, nil
 }
 
-const updateItem = `-- name: UpdateItem :exec
+const updateItemSQL = `-- name: UpdateItem :exec
 
 UPDATE items SET name = ? WHERE id = ?
 `
@@ -82,6 +82,6 @@ type UpdateItemParams struct {
 
 // section — divider between queries
 func (q *Queries) UpdateItem(ctx context.Context, arg UpdateItemParams) error {
-	_, err := q.db.ExecContext(ctx, updateItem, arg.Name, arg.ID)
+	_, err := q.db.ExecContext(ctx, updateItemSQL, arg.Name, arg.ID)
 	return err
 }

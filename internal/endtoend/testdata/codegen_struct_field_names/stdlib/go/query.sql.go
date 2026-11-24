@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const test = `-- name: test :one
+const testSQL = `-- name: test :one
 SELECT id, "!!!nobody,_,-would-believe---this-...?!", "parent        id" from bar limit 1
 `
 
 func (q *Queries) test(ctx context.Context) (Bar, error) {
-	row := q.db.QueryRowContext(ctx, test)
+	row := q.db.QueryRowContext(ctx, testSQL)
 	var i Bar
 	err := row.Scan(&i.ID, &i.NobodyWouldBelieveThis, &i.ParentID)
 	return i, err

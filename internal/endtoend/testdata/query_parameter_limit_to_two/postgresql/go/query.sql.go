@@ -13,7 +13,7 @@ import (
 	"github.com/lib/pq"
 )
 
-const addNewClient = `-- name: AddNewClient :one
+const addNewClientSQL = `-- name: AddNewClient :one
 INSERT INTO clients (
   id, name
 ) VALUES (
@@ -23,13 +23,13 @@ RETURNING id, name
 `
 
 func (q *Queries) AddNewClient(ctx context.Context, iD int32, name string) (Client, error) {
-	row := q.db.QueryRowContext(ctx, addNewClient, iD, name)
+	row := q.db.QueryRowContext(ctx, addNewClientSQL, iD, name)
 	var i Client
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err
 }
 
-const createAuthor = `-- name: CreateAuthor :one
+const createAuthorSQL = `-- name: CreateAuthor :one
 INSERT INTO authors (
   name, bio, country_code, titles
 ) VALUES (
@@ -46,7 +46,7 @@ type CreateAuthorParams struct {
 }
 
 func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
-	row := q.db.QueryRowContext(ctx, createAuthor,
+	row := q.db.QueryRowContext(ctx, createAuthorSQL,
 		arg.Name,
 		arg.Bio,
 		arg.CountryCode,
@@ -63,12 +63,12 @@ func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Aut
 	return i, err
 }
 
-const createAuthorOnlyTitles = `-- name: CreateAuthorOnlyTitles :one
+const createAuthorOnlyTitlesSQL = `-- name: CreateAuthorOnlyTitles :one
 INSERT INTO authors (name, titles) VALUES ($1, $2) RETURNING id, name, bio, country_code, titles
 `
 
 func (q *Queries) CreateAuthorOnlyTitles(ctx context.Context, name string, titles []string) (Author, error) {
-	row := q.db.QueryRowContext(ctx, createAuthorOnlyTitles, name, pq.Array(titles))
+	row := q.db.QueryRowContext(ctx, createAuthorOnlyTitlesSQL, name, pq.Array(titles))
 	var i Author
 	err := row.Scan(
 		&i.ID,
@@ -80,23 +80,23 @@ func (q *Queries) CreateAuthorOnlyTitles(ctx context.Context, name string, title
 	return i, err
 }
 
-const deleteAuthor = `-- name: DeleteAuthor :exec
+const deleteAuthorSQL = `-- name: DeleteAuthor :exec
 DELETE FROM authors
 WHERE id = $1
 `
 
 func (q *Queries) DeleteAuthor(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteAuthor, id)
+	_, err := q.db.ExecContext(ctx, deleteAuthorSQL, id)
 	return err
 }
 
-const deleteAuthors = `-- name: DeleteAuthors :exec
+const deleteAuthorsSQL = `-- name: DeleteAuthors :exec
 DELETE FROM authors
 WHERE id IN ($2) AND name = $1
 `
 
 func (q *Queries) DeleteAuthors(ctx context.Context, name string, ids []int64) error {
-	query := deleteAuthors
+	query := deleteAuthorsSQL
 	var queryParams []any
 	queryParams = append(queryParams, name)
 	if len(ids) > 0 {
@@ -111,13 +111,13 @@ func (q *Queries) DeleteAuthors(ctx context.Context, name string, ids []int64) e
 	return err
 }
 
-const getAuthor = `-- name: GetAuthor :one
+const getAuthorSQL = `-- name: GetAuthor :one
 SELECT id, name, bio, country_code, titles FROM authors
 WHERE name = $1 AND country_code = $2 LIMIT 1
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, name string, countryCode string) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, name, countryCode)
+	row := q.db.QueryRowContext(ctx, getAuthorSQL, name, countryCode)
 	var i Author
 	err := row.Scan(
 		&i.ID,
@@ -129,13 +129,13 @@ func (q *Queries) GetAuthor(ctx context.Context, name string, countryCode string
 	return i, err
 }
 
-const listAuthors = `-- name: ListAuthors :many
+const listAuthorsSQL = `-- name: ListAuthors :many
 SELECT id, name, bio, country_code, titles FROM authors
 ORDER BY name
 `
 
 func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthors)
+	rows, err := q.db.QueryContext(ctx, listAuthorsSQL)
 	if err != nil {
 		return nil, err
 	}

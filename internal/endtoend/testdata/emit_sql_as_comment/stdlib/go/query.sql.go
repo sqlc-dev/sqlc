@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const listBar = `-- name: ListBar :many
+const listBarSQL = `-- name: ListBar :many
 SELECT id FROM (
   SELECT id FROM bar
 ) bar
@@ -21,7 +21,7 @@ SELECT id FROM (
 //	  SELECT id FROM bar
 //	) bar
 func (q *Queries) ListBar(ctx context.Context) ([]int32, error) {
-	rows, err := q.db.QueryContext(ctx, listBar)
+	rows, err := q.db.QueryContext(ctx, listBarSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (q *Queries) ListBar(ctx context.Context) ([]int32, error) {
 	return items, nil
 }
 
-const removeBar = `-- name: RemoveBar :exec
+const removeBarSQL = `-- name: RemoveBar :exec
 DELETE FROM bar WHERE id = $1
 `
 
@@ -51,6 +51,6 @@ DELETE FROM bar WHERE id = $1
 //
 //	DELETE FROM bar WHERE id = $1
 func (q *Queries) RemoveBar(ctx context.Context, id int32) error {
-	_, err := q.db.ExecContext(ctx, removeBar, id)
+	_, err := q.db.ExecContext(ctx, removeBarSQL, id)
 	return err
 }

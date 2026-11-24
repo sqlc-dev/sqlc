@@ -9,7 +9,7 @@ import (
 	"database/sql"
 )
 
-const insertMultipleValues = `-- name: InsertMultipleValues :copyfrom
+const insertMultipleValuesSQL = `-- name: InsertMultipleValues :copyfrom
 INSERT INTO foo (a, b) VALUES (?, ?)
 `
 

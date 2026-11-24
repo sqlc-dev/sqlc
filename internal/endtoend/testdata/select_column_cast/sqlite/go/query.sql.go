@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const selectColumnCast = `-- name: SelectColumnCast :many
+const selectColumnCastSQL = `-- name: SelectColumnCast :many
 SELECT CAST(bar AS BLOB) FROM foo
 `
 
 func (q *Queries) SelectColumnCast(ctx context.Context) ([][]byte, error) {
-	rows, err := q.db.QueryContext(ctx, selectColumnCast)
+	rows, err := q.db.QueryContext(ctx, selectColumnCastSQL)
 	if err != nil {
 		return nil, err
 	}

@@ -9,16 +9,16 @@ import (
 	"context"
 )
 
-const deleteTblFt = `-- name: DeleteTblFt :exec
+const deleteTblFtSQL = `-- name: DeleteTblFt :exec
 DELETE FROM tbl_ft WHERE b = ?
 `
 
 func (q *Queries) DeleteTblFt(ctx context.Context, b string) error {
-	_, err := q.db.ExecContext(ctx, deleteTblFt, b)
+	_, err := q.db.ExecContext(ctx, deleteTblFtSQL, b)
 	return err
 }
 
-const insertTblFt = `-- name: InsertTblFt :exec
+const insertTblFtSQL = `-- name: InsertTblFt :exec
 INSERT INTO tbl_ft (b, c) VALUES (?, ?)
 `
 
@@ -28,18 +28,18 @@ type InsertTblFtParams struct {
 }
 
 func (q *Queries) InsertTblFt(ctx context.Context, arg InsertTblFtParams) error {
-	_, err := q.db.ExecContext(ctx, insertTblFt, arg.B, arg.C)
+	_, err := q.db.ExecContext(ctx, insertTblFtSQL, arg.B, arg.C)
 	return err
 }
 
-const selectAllColsFt = `-- name: SelectAllColsFt :many
+const selectAllColsFtSQL = `-- name: SelectAllColsFt :many
 SELECT b
 FROM ft
 WHERE b MATCH ?
 `
 
 func (q *Queries) SelectAllColsFt(ctx context.Context, b string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, selectAllColsFt, b)
+	rows, err := q.db.QueryContext(ctx, selectAllColsFtSQL, b)
 	if err != nil {
 		return nil, err
 	}
@@ -61,14 +61,14 @@ func (q *Queries) SelectAllColsFt(ctx context.Context, b string) ([]string, erro
 	return items, nil
 }
 
-const selectAllColsTblFt = `-- name: SelectAllColsTblFt :many
+const selectAllColsTblFtSQL = `-- name: SelectAllColsTblFt :many
 SELECT b, c
 FROM tbl_ft
 WHERE b MATCH ?
 `
 
 func (q *Queries) SelectAllColsTblFt(ctx context.Context, b string) ([]TblFt, error) {
-	rows, err := q.db.QueryContext(ctx, selectAllColsTblFt, b)
+	rows, err := q.db.QueryContext(ctx, selectAllColsTblFtSQL, b)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (q *Queries) SelectAllColsTblFt(ctx context.Context, b string) ([]TblFt, er
 	return items, nil
 }
 
-const selectBm25Func = `-- name: SelectBm25Func :many
+const selectBm25FuncSQL = `-- name: SelectBm25Func :many
 SELECT b, c, bm25(tbl_ft, 2.0)
 FROM tbl_ft
 WHERE b MATCH ?
@@ -104,7 +104,7 @@ type SelectBm25FuncRow struct {
 }
 
 func (q *Queries) SelectBm25Func(ctx context.Context, b string) ([]SelectBm25FuncRow, error) {
-	rows, err := q.db.QueryContext(ctx, selectBm25Func, b)
+	rows, err := q.db.QueryContext(ctx, selectBm25FuncSQL, b)
 	if err != nil {
 		return nil, err
 	}
@@ -126,14 +126,14 @@ func (q *Queries) SelectBm25Func(ctx context.Context, b string) ([]SelectBm25Fun
 	return items, nil
 }
 
-const selectHightlighFunc = `-- name: SelectHightlighFunc :many
+const selectHightlighFuncSQL = `-- name: SelectHightlighFunc :many
 SELECT highlight(tbl_ft, 0, '<b>', '</b>')
 FROM tbl_ft
 WHERE b MATCH ?
 `
 
 func (q *Queries) SelectHightlighFunc(ctx context.Context, b string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, selectHightlighFunc, b)
+	rows, err := q.db.QueryContext(ctx, selectHightlighFuncSQL, b)
 	if err != nil {
 		return nil, err
 	}
@@ -155,14 +155,14 @@ func (q *Queries) SelectHightlighFunc(ctx context.Context, b string) ([]string, 
 	return items, nil
 }
 
-const selectOneColFt = `-- name: SelectOneColFt :many
+const selectOneColFtSQL = `-- name: SelectOneColFt :many
 SELECT b
 FROM ft
 WHERE b = ?
 `
 
 func (q *Queries) SelectOneColFt(ctx context.Context, b string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, selectOneColFt, b)
+	rows, err := q.db.QueryContext(ctx, selectOneColFtSQL, b)
 	if err != nil {
 		return nil, err
 	}
@@ -184,14 +184,14 @@ func (q *Queries) SelectOneColFt(ctx context.Context, b string) ([]string, error
 	return items, nil
 }
 
-const selectOneColTblFt = `-- name: SelectOneColTblFt :many
+const selectOneColTblFtSQL = `-- name: SelectOneColTblFt :many
 SELECT c
 FROM tbl_ft
 WHERE b = ?
 `
 
 func (q *Queries) SelectOneColTblFt(ctx context.Context, b string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, selectOneColTblFt, b)
+	rows, err := q.db.QueryContext(ctx, selectOneColTblFtSQL, b)
 	if err != nil {
 		return nil, err
 	}
@@ -213,12 +213,12 @@ func (q *Queries) SelectOneColTblFt(ctx context.Context, b string) ([]string, er
 	return items, nil
 }
 
-const selectSnippetFunc = `-- name: SelectSnippetFunc :many
+const selectSnippetFuncSQL = `-- name: SelectSnippetFunc :many
 SELECT snippet(tbl_ft, 0, '<b>', '</b>', 'aa', ?) FROM tbl_ft
 `
 
 func (q *Queries) SelectSnippetFunc(ctx context.Context, snippet int64) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, selectSnippetFunc, snippet)
+	rows, err := q.db.QueryContext(ctx, selectSnippetFuncSQL, snippet)
 	if err != nil {
 		return nil, err
 	}
@@ -240,7 +240,7 @@ func (q *Queries) SelectSnippetFunc(ctx context.Context, snippet int64) ([]strin
 	return items, nil
 }
 
-const updateTblFt = `-- name: UpdateTblFt :exec
+const updateTblFtSQL = `-- name: UpdateTblFt :exec
 UPDATE tbl_ft SET c = ? WHERE b = ?
 `
 
@@ -250,6 +250,6 @@ type UpdateTblFtParams struct {
 }
 
 func (q *Queries) UpdateTblFt(ctx context.Context, arg UpdateTblFtParams) error {
-	_, err := q.db.ExecContext(ctx, updateTblFt, arg.C, arg.B)
+	_, err := q.db.ExecContext(ctx, updateTblFtSQL, arg.C, arg.B)
 	return err
 }

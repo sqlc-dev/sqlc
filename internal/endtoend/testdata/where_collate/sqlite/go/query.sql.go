@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const getAccountByName = `-- name: GetAccountByName :one
+const getAccountByNameSQL = `-- name: GetAccountByName :one
 SELECT id, name
 FROM accounts
 WHERE name = ? COLLATE nocase
@@ -17,7 +17,7 @@ LIMIT 1
 `
 
 func (q *Queries) GetAccountByName(ctx context.Context, name string) (Account, error) {
-	row := q.db.QueryRowContext(ctx, getAccountByName, name)
+	row := q.db.QueryRowContext(ctx, getAccountByNameSQL, name)
 	var i Account
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err

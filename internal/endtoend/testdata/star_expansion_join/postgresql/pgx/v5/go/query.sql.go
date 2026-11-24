@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const starExpansionJoin = `-- name: StarExpansionJoin :many
+const starExpansionJoinSQL = `-- name: StarExpansionJoin :many
 SELECT a, b, c, d FROM foo, bar
 `
 
@@ -23,7 +23,7 @@ type StarExpansionJoinRow struct {
 }
 
 func (q *Queries) StarExpansionJoin(ctx context.Context) ([]StarExpansionJoinRow, error) {
-	rows, err := q.db.Query(ctx, starExpansionJoin)
+	rows, err := q.db.Query(ctx, starExpansionJoinSQL)
 	if err != nil {
 		return nil, err
 	}

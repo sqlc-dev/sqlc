@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const listItems = `-- name: ListItems :one
+const listItemsSQL = `-- name: ListItems :one
 WITH
     items1 AS (SELECT 'id'::TEXT AS id, 'name'::TEXT AS name),
     items2 AS (SELECT 'id'::TEXT AS id, 'name'::TEXT AS name)
@@ -27,7 +27,7 @@ type ListItemsRow struct {
 }
 
 func (q *Queries) ListItems(ctx context.Context) (ListItemsRow, error) {
-	row := q.db.QueryRow(ctx, listItems)
+	row := q.db.QueryRow(ctx, listItemsSQL)
 	var i ListItemsRow
 	err := row.Scan(&i.Id1, &i.Id2)
 	return i, err

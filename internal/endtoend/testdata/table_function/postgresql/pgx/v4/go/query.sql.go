@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgtype"
 )
 
-const getTransaction = `-- name: GetTransaction :many
+const getTransactionSQL = `-- name: GetTransaction :many
 SELECT
 	jsonb_extract_path(transactions.data, '$.transaction.signatures[0]'),
 	jsonb_agg(instructions.value)
@@ -36,7 +36,7 @@ type GetTransactionRow struct {
 }
 
 func (q *Queries) GetTransaction(ctx context.Context, arg GetTransactionParams) ([]GetTransactionRow, error) {
-	rows, err := q.db.Query(ctx, getTransaction, arg.ProgramID, arg.Data)
+	rows, err := q.db.Query(ctx, getTransactionSQL, arg.ProgramID, arg.Data)
 	if err != nil {
 		return nil, err
 	}

@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getAuthorByID = `-- name: GetAuthorByID :one
+const getAuthorByIDSQL = `-- name: GetAuthorByID :one
 SELECT  id, name, bio
 FROM    authors
 WHERE   id = $1
@@ -19,13 +19,13 @@ LIMIT   1
 `
 
 func (q *Queries) GetAuthorByID(ctx context.Context, id int64) (Author, error) {
-	row := q.db.QueryRow(ctx, getAuthorByID, id)
+	row := q.db.QueryRow(ctx, getAuthorByIDSQL, id)
 	var i Author
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
 }
 
-const getAuthorIDByID = `-- name: GetAuthorIDByID :one
+const getAuthorIDByIDSQL = `-- name: GetAuthorIDByID :one
 SELECT  id
 FROM    authors
 WHERE   id = $1
@@ -33,13 +33,13 @@ LIMIT   1
 `
 
 func (q *Queries) GetAuthorIDByID(ctx context.Context, id int64) (int64, error) {
-	row := q.db.QueryRow(ctx, getAuthorIDByID, id)
+	row := q.db.QueryRow(ctx, getAuthorIDByIDSQL, id)
 	var id_2 int64
 	err := row.Scan(&id_2)
 	return id_2, err
 }
 
-const getUser = `-- name: GetUser :one
+const getUserSQL = `-- name: GetUser :one
 SELECT  sub
 FROM    users
 WHERE   sub = $1
@@ -47,13 +47,13 @@ LIMIT   1
 `
 
 func (q *Queries) GetUser(ctx context.Context, sub pgtype.UUID) (pgtype.UUID, error) {
-	row := q.db.QueryRow(ctx, getUser, sub)
+	row := q.db.QueryRow(ctx, getUserSQL, sub)
 	var sub_2 pgtype.UUID
 	err := row.Scan(&sub_2)
 	return sub_2, err
 }
 
-const setDefaultName = `-- name: SetDefaultName :one
+const setDefaultNameSQL = `-- name: SetDefaultName :one
 
 UPDATE  authors
 SET     name = 'Default Name'
@@ -63,7 +63,7 @@ RETURNING id
 
 // https://github.com/sqlc-dev/sqlc/issues/1235
 func (q *Queries) SetDefaultName(ctx context.Context, id int64) (int64, error) {
-	row := q.db.QueryRow(ctx, setDefaultName, id)
+	row := q.db.QueryRow(ctx, setDefaultNameSQL, id)
 	var id_2 int64
 	err := row.Scan(&id_2)
 	return id_2, err

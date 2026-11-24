@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const listCaseIntentHistory = `-- name: ListCaseIntentHistory :many
+const listCaseIntentHistorySQL = `-- name: ListCaseIntentHistory :many
 WITH RECURSIVE descendants AS
    ( SELECT case_intent_parent_id AS parent, case_intent_id AS child, 1 AS lvl
      FROM case_intent_parent_join
@@ -37,7 +37,7 @@ type ListCaseIntentHistoryRow struct {
 }
 
 func (q *Queries) ListCaseIntentHistory(ctx context.Context, caseIntentID pgtype.Int8) ([]ListCaseIntentHistoryRow, error) {
-	rows, err := q.db.Query(ctx, listCaseIntentHistory, caseIntentID)
+	rows, err := q.db.Query(ctx, listCaseIntentHistorySQL, caseIntentID)
 	if err != nil {
 		return nil, err
 	}

@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const multiFrom = `-- name: MultiFrom :many
+const multiFromSQL = `-- name: MultiFrom :many
 SELECT email FROM bar, foo WHERE login = $1
 `
 
 func (q *Queries) MultiFrom(ctx context.Context, login string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, multiFrom, login)
+	rows, err := q.db.QueryContext(ctx, multiFromSQL, login)
 	if err != nil {
 		return nil, err
 	}

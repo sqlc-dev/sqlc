@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const selectAuthor = `-- name: SelectAuthor :many
+const selectAuthorSQL = `-- name: SelectAuthor :many
 SELECT id, name, bio, explanation FROM authors
 `
 
 func (q *Queries) SelectAuthor(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, selectAuthor)
+	rows, err := q.db.QueryContext(ctx, selectAuthorSQL)
 	if err != nil {
 		return nil, err
 	}

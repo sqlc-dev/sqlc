@@ -10,12 +10,12 @@ import (
 	"database/sql"
 )
 
-const petsByName = `-- name: PetsByName :many
+const petsByNameSQL = `-- name: PetsByName :many
 SELECT name FROM pet WHERE name LIKE $1
 `
 
 func (q *Queries) PetsByName(ctx context.Context, name sql.NullString) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, petsByName, name)
+	rows, err := q.db.QueryContext(ctx, petsByNameSQL, name)
 	if err != nil {
 		return nil, err
 	}

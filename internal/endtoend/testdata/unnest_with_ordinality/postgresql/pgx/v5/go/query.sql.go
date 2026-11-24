@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const getValues = `-- name: GetValues :many
+const getValuesSQL = `-- name: GetValues :many
 SELECT id, index::bigint, value::text
 FROM array_values AS x, unnest(values) WITH ORDINALITY AS y (value, index)
 `
@@ -21,7 +21,7 @@ type GetValuesRow struct {
 }
 
 func (q *Queries) GetValues(ctx context.Context) ([]GetValuesRow, error) {
-	rows, err := q.db.Query(ctx, getValues)
+	rows, err := q.db.Query(ctx, getValuesSQL)
 	if err != nil {
 		return nil, err
 	}

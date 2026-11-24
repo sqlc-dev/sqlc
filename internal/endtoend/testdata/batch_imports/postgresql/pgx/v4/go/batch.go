@@ -17,7 +17,7 @@ var (
 	ErrBatchAlreadyClosed = errors.New("batch already closed")
 )
 
-const getValues = `-- name: GetValues :batchmany
+const getValuesSQL = `-- name: GetValues :batchmany
 SELECT a, b
 FROM myschema.foo
 WHERE b = $1
@@ -35,7 +35,7 @@ func (q *Queries) GetValues(ctx context.Context, b []sql.NullInt32) *GetValuesBa
 		vals := []any{
 			a,
 		}
-		batch.Queue(getValues, vals...)
+		batch.Queue(getValuesSQL, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
 	return &GetValuesBatchResults{br, len(b), false}
@@ -77,7 +77,7 @@ func (b *GetValuesBatchResults) Close() error {
 	return b.br.Close()
 }
 
-const insertValues = `-- name: InsertValues :batchone
+const insertValuesSQL = `-- name: InsertValues :batchone
 INSERT INTO myschema.foo (a, b)
 VALUES ($1, $2)
 RETURNING a
@@ -101,7 +101,7 @@ func (q *Queries) InsertValues(ctx context.Context, arg []InsertValuesParams) *I
 			a.A,
 			a.B,
 		}
-		batch.Queue(insertValues, vals...)
+		batch.Queue(insertValuesSQL, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
 	return &InsertValuesBatchResults{br, len(arg), false}

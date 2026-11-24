@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const upsertAuthor = `-- name: UpsertAuthor :exec
+const upsertAuthorSQL = `-- name: UpsertAuthor :exec
 INSERT INTO authors (name, bio)
 VALUES (?, ?)
 ON DUPLICATE KEY
@@ -24,11 +24,11 @@ type UpsertAuthorParams struct {
 }
 
 func (q *Queries) UpsertAuthor(ctx context.Context, arg UpsertAuthorParams) error {
-	_, err := q.db.ExecContext(ctx, upsertAuthor, arg.Name, arg.Bio, arg.Bio_2)
+	_, err := q.db.ExecContext(ctx, upsertAuthorSQL, arg.Name, arg.Bio, arg.Bio_2)
 	return err
 }
 
-const upsertAuthorNamed = `-- name: UpsertAuthorNamed :exec
+const upsertAuthorNamedSQL = `-- name: UpsertAuthorNamed :exec
 INSERT INTO authors (name, bio)
 VALUES (?, ?)
 ON DUPLICATE KEY
@@ -41,6 +41,6 @@ type UpsertAuthorNamedParams struct {
 }
 
 func (q *Queries) UpsertAuthorNamed(ctx context.Context, arg UpsertAuthorNamedParams) error {
-	_, err := q.db.ExecContext(ctx, upsertAuthorNamed, arg.Name, arg.Bio, arg.Bio)
+	_, err := q.db.ExecContext(ctx, upsertAuthorNamedSQL, arg.Name, arg.Bio, arg.Bio)
 	return err
 }

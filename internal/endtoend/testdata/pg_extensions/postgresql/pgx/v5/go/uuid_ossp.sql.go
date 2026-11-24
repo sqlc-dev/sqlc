@@ -11,12 +11,12 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const generateUUID = `-- name: GenerateUUID :one
+const generateUUIDSQL = `-- name: GenerateUUID :one
 SELECT uuid_generate_v4()
 `
 
 func (q *Queries) GenerateUUID(ctx context.Context) (pgtype.UUID, error) {
-	row := q.db.QueryRow(ctx, generateUUID)
+	row := q.db.QueryRow(ctx, generateUUIDSQL)
 	var uuid_generate_v4 pgtype.UUID
 	err := row.Scan(&uuid_generate_v4)
 	return uuid_generate_v4, err

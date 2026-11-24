@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const noop = `-- name: Noop :one
+const noopSQL = `-- name: Noop :one
 SELECT 1
 `
 
 func (q *Queries) Noop(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, noop)
+	row := q.db.QueryRowContext(ctx, noopSQL)
 	var column_1 int64
 	err := row.Scan(&column_1)
 	return column_1, err

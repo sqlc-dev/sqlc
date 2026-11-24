@@ -11,14 +11,14 @@ import (
 	"github.com/lib/pq"
 )
 
-const joinTextArray = `-- name: JoinTextArray :many
+const joinTextArraySQL = `-- name: JoinTextArray :many
 SELECT bar.info
 FROM foo
 JOIN bar ON foo.bar = bar.id
 `
 
 func (q *Queries) JoinTextArray(ctx context.Context) ([][]string, error) {
-	rows, err := q.db.QueryContext(ctx, joinTextArray)
+	rows, err := q.db.QueryContext(ctx, joinTextArraySQL)
 	if err != nil {
 		return nil, err
 	}

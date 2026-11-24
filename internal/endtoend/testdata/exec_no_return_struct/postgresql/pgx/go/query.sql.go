@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const resetTaskRun = `-- name: ResetTaskRun :exec
+const resetTaskRunSQL = `-- name: ResetTaskRun :exec
 UPDATE job
 SET last_run = NOW()
 FROM (
@@ -25,6 +25,6 @@ RETURNING job.last_run AS this_run,
 `
 
 func (q *Queries) ResetTaskRun(ctx context.Context, taskName string) error {
-	_, err := q.db.Exec(ctx, resetTaskRun, taskName)
+	_, err := q.db.Exec(ctx, resetTaskRunSQL, taskName)
 	return err
 }

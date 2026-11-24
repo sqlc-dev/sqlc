@@ -9,11 +9,11 @@ import (
 	"context"
 )
 
-const insertWorkspace = `-- name: InsertWorkspace :exec
+const insertWorkspaceSQL = `-- name: InsertWorkspace :exec
 INSERT INTO workspace DEFAULT VALUES
 `
 
 func (q *Queries) InsertWorkspace(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, insertWorkspace)
+	_, err := q.db.ExecContext(ctx, insertWorkspaceSQL)
 	return err
 }

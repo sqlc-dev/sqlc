@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const UpdateBarID = `-- name: UpdateBarID :exec
+const UpdateBarIDSQL = `-- name: UpdateBarID :exec
 UPDATE bar SET id = $1 WHERE id = $2
 `
 
@@ -19,6 +19,6 @@ type UpdateBarIDParams struct {
 }
 
 func (q *Queries) UpdateBarID(ctx context.Context, arg UpdateBarIDParams) error {
-	_, err := q.db.Exec(ctx, UpdateBarID, arg.ID, arg.ID_2)
+	_, err := q.db.Exec(ctx, UpdateBarIDSQL, arg.ID, arg.ID_2)
 	return err
 }

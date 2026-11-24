@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getActionCodeByResource = `-- name: GetActionCodeByResource :one
+const getActionCodeByResourceSQL = `-- name: GetActionCodeByResource :one
 SELECT code, arr.item_object ->> 'code'  as resource_code
 FROM sys_actions,
     jsonb_array_elements(resources) with ordinality arr(item_object, resource)
@@ -25,7 +25,7 @@ type GetActionCodeByResourceRow struct {
 }
 
 func (q *Queries) GetActionCodeByResource(ctx context.Context, resource pgtype.Text) (GetActionCodeByResourceRow, error) {
-	row := q.db.QueryRow(ctx, getActionCodeByResource, resource)
+	row := q.db.QueryRow(ctx, getActionCodeByResourceSQL, resource)
 	var i GetActionCodeByResourceRow
 	err := row.Scan(&i.Code, &i.ResourceCode)
 	return i, err

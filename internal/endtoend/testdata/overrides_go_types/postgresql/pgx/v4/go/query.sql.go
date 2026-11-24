@@ -15,12 +15,12 @@ import (
 	null_v4 "gopkg.in/guregu/null.v4"
 )
 
-const loadFoo = `-- name: LoadFoo :many
+const loadFooSQL = `-- name: LoadFoo :many
 SELECT id, other_id, age, balance, bio, about FROM foo WHERE id = $1
 `
 
 func (q *Queries) LoadFoo(ctx context.Context, id uuid.UUID) ([]Foo, error) {
-	rows, err := q.db.Query(ctx, loadFoo, id)
+	rows, err := q.db.Query(ctx, loadFooSQL, id)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (q *Queries) LoadFoo(ctx context.Context, id uuid.UUID) ([]Foo, error) {
 	return items, nil
 }
 
-const loadFooWithAliases = `-- name: LoadFooWithAliases :many
+const loadFooWithAliasesSQL = `-- name: LoadFooWithAliases :many
 SELECT
   id AS aliased_id,
   other_id AS aliased_other_id,
@@ -68,7 +68,7 @@ type LoadFooWithAliasesRow struct {
 }
 
 func (q *Queries) LoadFooWithAliases(ctx context.Context, namedParameterID uuid.UUID) ([]LoadFooWithAliasesRow, error) {
-	rows, err := q.db.Query(ctx, loadFooWithAliases, namedParameterID)
+	rows, err := q.db.Query(ctx, loadFooWithAliasesSQL, namedParameterID)
 	if err != nil {
 		return nil, err
 	}

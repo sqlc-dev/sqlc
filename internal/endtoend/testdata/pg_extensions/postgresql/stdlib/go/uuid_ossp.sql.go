@@ -11,12 +11,12 @@ import (
 	"github.com/google/uuid"
 )
 
-const generateUUID = `-- name: GenerateUUID :one
+const generateUUIDSQL = `-- name: GenerateUUID :one
 SELECT uuid_generate_v4()
 `
 
 func (q *Queries) GenerateUUID(ctx context.Context) (uuid.UUID, error) {
-	row := q.db.QueryRowContext(ctx, generateUUID)
+	row := q.db.QueryRowContext(ctx, generateUUIDSQL)
 	var uuid_generate_v4 uuid.UUID
 	err := row.Scan(&uuid_generate_v4)
 	return uuid_generate_v4, err

@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const setAuthor = `-- name: SetAuthor :exec
+const setAuthorSQL = `-- name: SetAuthor :exec
 UPDATE  authors
 SET     name = ?
 WHERE   id = ?
@@ -21,6 +21,6 @@ type SetAuthorParams struct {
 }
 
 func (q *Queries) SetAuthor(ctx context.Context, arg SetAuthorParams) error {
-	_, err := q.db.ExecContext(ctx, setAuthor, arg.Name, arg.ID)
+	_, err := q.db.ExecContext(ctx, setAuthorSQL, arg.Name, arg.ID)
 	return err
 }

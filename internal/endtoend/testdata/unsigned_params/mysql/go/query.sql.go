@@ -9,11 +9,11 @@ import (
 	"context"
 )
 
-const createFoo = `-- name: CreateFoo :exec
+const createFooSQL = `-- name: CreateFoo :exec
 INSERT INTO foo (id) VALUES (?)
 `
 
 func (q *Queries) CreateFoo(ctx context.Context, id uint32) error {
-	_, err := q.db.ExecContext(ctx, createFoo, id)
+	_, err := q.db.ExecContext(ctx, createFooSQL, id)
 	return err
 }

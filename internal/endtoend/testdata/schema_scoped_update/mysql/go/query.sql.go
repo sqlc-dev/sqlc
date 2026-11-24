@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const schemaScopedUpdate = `-- name: SchemaScopedUpdate :exec
+const schemaScopedUpdateSQL = `-- name: SchemaScopedUpdate :exec
 UPDATE foo.bar SET name = ? WHERE id = ?
 `
 
@@ -19,6 +19,6 @@ type SchemaScopedUpdateParams struct {
 }
 
 func (q *Queries) SchemaScopedUpdate(ctx context.Context, arg SchemaScopedUpdateParams) error {
-	_, err := q.db.ExecContext(ctx, schemaScopedUpdate, arg.Name, arg.ID)
+	_, err := q.db.ExecContext(ctx, schemaScopedUpdateSQL, arg.Name, arg.ID)
 	return err
 }

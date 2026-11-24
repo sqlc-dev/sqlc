@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const getUsers = `-- name: GetUsers :many
+const getUsersSQL = `-- name: GetUsers :many
 SELECT 
     users.id,
     users.fname,
@@ -47,7 +47,7 @@ type GetUsersRow struct {
 }
 
 func (q *Queries) GetUsers(ctx context.Context, searchTerm string) ([]GetUsersRow, error) {
-	rows, err := q.db.QueryContext(ctx, getUsers, searchTerm)
+	rows, err := q.db.QueryContext(ctx, getUsersSQL, searchTerm)
 	if err != nil {
 		return nil, err
 	}

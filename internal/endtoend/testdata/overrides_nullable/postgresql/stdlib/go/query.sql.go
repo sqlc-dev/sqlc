@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const listFoo = `-- name: ListFoo :many
+const listFooSQL = `-- name: ListFoo :many
 SELECT bar, bam, baz FROM foo
 `
 
 func (q *Queries) ListFoo(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, listFoo)
+	rows, err := q.db.QueryContext(ctx, listFooSQL)
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const getRestrictedId = `-- name: GetRestrictedId :one
+const getRestrictedIdSQL = `-- name: GetRestrictedId :one
 SELECT
   NULLIF(id, $1) restricted_id
 FROM
@@ -17,7 +17,7 @@ FROM
 `
 
 func (q *Queries) GetRestrictedId(ctx context.Context, id int64) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getRestrictedId, id)
+	row := q.db.QueryRowContext(ctx, getRestrictedIdSQL, id)
 	var restricted_id int64
 	err := row.Scan(&restricted_id)
 	return restricted_id, err

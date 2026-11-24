@@ -11,34 +11,34 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const testFuncGetTime = `-- name: TestFuncGetTime :one
+const testFuncGetTimeSQL = `-- name: TestFuncGetTime :one
 select test_func_get_time from test_func_get_time()
 `
 
 func (q *Queries) TestFuncGetTime(ctx context.Context) (pgtype.Timestamp, error) {
-	row := q.db.QueryRow(ctx, testFuncGetTime)
+	row := q.db.QueryRow(ctx, testFuncGetTimeSQL)
 	var test_func_get_time pgtype.Timestamp
 	err := row.Scan(&test_func_get_time)
 	return test_func_get_time, err
 }
 
-const testFuncSelectBlog = `-- name: TestFuncSelectBlog :one
+const testFuncSelectBlogSQL = `-- name: TestFuncSelectBlog :one
 select test_func_select_blog from test_func_select_blog($1)
 `
 
 func (q *Queries) TestFuncSelectBlog(ctx context.Context, pID int32) (any, error) {
-	row := q.db.QueryRow(ctx, testFuncSelectBlog, pID)
+	row := q.db.QueryRow(ctx, testFuncSelectBlogSQL, pID)
 	var test_func_select_blog any
 	err := row.Scan(&test_func_select_blog)
 	return test_func_select_blog, err
 }
 
-const testFuncSelectString = `-- name: TestFuncSelectString :one
+const testFuncSelectStringSQL = `-- name: TestFuncSelectString :one
 select test_func_select_string from test_func_select_string($1)
 `
 
 func (q *Queries) TestFuncSelectString(ctx context.Context, pString string) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, testFuncSelectString, pString)
+	row := q.db.QueryRow(ctx, testFuncSelectStringSQL, pString)
 	var test_func_select_string pgtype.Text
 	err := row.Scan(&test_func_select_string)
 	return test_func_select_string, err

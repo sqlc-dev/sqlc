@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const fn = `-- name: Fn :one
+const fnSQL = `-- name: Fn :one
 SELECT f$n()
 `
 
 func (q *Queries) Fn(ctx context.Context) (int32, error) {
-	row := q.db.QueryRowContext(ctx, fn)
+	row := q.db.QueryRowContext(ctx, fnSQL)
 	var f_n int32
 	err := row.Scan(&f_n)
 	return f_n, err

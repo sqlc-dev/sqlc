@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const listVenueNames = `-- name: ListVenueNames :many
+const listVenueNamesSQL = `-- name: ListVenueNames :many
 SELECT id, name, city FROM venue_names
 `
 
@@ -21,7 +21,7 @@ type ListVenueNamesRow struct {
 }
 
 func (q *Queries) ListVenueNames(ctx context.Context) ([]ListVenueNamesRow, error) {
-	rows, err := q.db.QueryContext(ctx, listVenueNames)
+	rows, err := q.db.QueryContext(ctx, listVenueNamesSQL)
 	if err != nil {
 		return nil, err
 	}

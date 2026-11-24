@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const selectTextArray = `-- name: SelectTextArray :many
+const selectTextArraySQL = `-- name: SelectTextArray :many
 SELECT $1::TEXT[]
 `
 
 func (q *Queries) SelectTextArray(ctx context.Context, dollar_1 []string) ([][]string, error) {
-	rows, err := q.db.Query(ctx, selectTextArray, dollar_1)
+	rows, err := q.db.Query(ctx, selectTextArraySQL, dollar_1)
 	if err != nil {
 		return nil, err
 	}

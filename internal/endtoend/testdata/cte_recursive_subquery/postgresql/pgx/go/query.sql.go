@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const getLatestVersion = `-- name: GetLatestVersion :one
+const getLatestVersionSQL = `-- name: GetLatestVersion :one
 WITH RECURSIVE search_tree(id, chain_id, chain_counter) AS (
 	SELECT base.id, base.id AS chain_id, 0 as chain_counter
 	FROM versions AS base
@@ -26,13 +26,13 @@ ORDER BY search_tree.chain_id, chain_counter DESC
 `
 
 func (q *Queries) GetLatestVersion(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, getLatestVersion)
+	row := q.db.QueryRow(ctx, getLatestVersionSQL)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
 }
 
-const getLatestVersionWithSubquery = `-- name: GetLatestVersionWithSubquery :one
+const getLatestVersionWithSubquerySQL = `-- name: GetLatestVersionWithSubquery :one
 SELECT id
 FROM versions
 WHERE versions.id IN (
@@ -53,7 +53,7 @@ WHERE versions.id IN (
 `
 
 func (q *Queries) GetLatestVersionWithSubquery(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, getLatestVersionWithSubquery)
+	row := q.db.QueryRow(ctx, getLatestVersionWithSubquerySQL)
 	var id int64
 	err := row.Scan(&id)
 	return id, err

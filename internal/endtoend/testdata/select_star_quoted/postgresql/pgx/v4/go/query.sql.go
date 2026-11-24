@@ -10,12 +10,12 @@ import (
 	"database/sql"
 )
 
-const getAll = `-- name: GetAll :many
+const getAllSQL = `-- name: GetAll :many
 SELECT "CamelCase" FROM users
 `
 
 func (q *Queries) GetAll(ctx context.Context) ([]sql.NullString, error) {
-	rows, err := q.db.Query(ctx, getAll)
+	rows, err := q.db.Query(ctx, getAllSQL)
 	if err != nil {
 		return nil, err
 	}

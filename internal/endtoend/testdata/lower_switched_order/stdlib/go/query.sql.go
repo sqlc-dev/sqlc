@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const lowerSwitchedOrder = `-- name: LowerSwitchedOrder :many
+const lowerSwitchedOrderSQL = `-- name: LowerSwitchedOrder :many
 SELECT bar FROM foo WHERE bar = $1 AND bat = LOWER($2)
 `
 
@@ -19,7 +19,7 @@ type LowerSwitchedOrderParams struct {
 }
 
 func (q *Queries) LowerSwitchedOrder(ctx context.Context, arg LowerSwitchedOrderParams) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, lowerSwitchedOrder, arg.Bar, arg.Lower)
+	rows, err := q.db.QueryContext(ctx, lowerSwitchedOrderSQL, arg.Bar, arg.Lower)
 	if err != nil {
 		return nil, err
 	}

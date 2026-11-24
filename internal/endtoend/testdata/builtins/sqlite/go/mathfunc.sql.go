@@ -9,320 +9,320 @@ import (
 	"context"
 )
 
-const getAcos = `-- name: GetAcos :one
+const getAcosSQL = `-- name: GetAcos :one
 SELECT acos(1.0)
 `
 
 func (q *Queries) GetAcos(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getAcos)
+	row := q.db.QueryRowContext(ctx, getAcosSQL)
 	var acos float64
 	err := row.Scan(&acos)
 	return acos, err
 }
 
-const getAcosh = `-- name: GetAcosh :one
+const getAcoshSQL = `-- name: GetAcosh :one
 SELECT acosh(1.0)
 `
 
 func (q *Queries) GetAcosh(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getAcosh)
+	row := q.db.QueryRowContext(ctx, getAcoshSQL)
 	var acosh float64
 	err := row.Scan(&acosh)
 	return acosh, err
 }
 
-const getAsin = `-- name: GetAsin :one
+const getAsinSQL = `-- name: GetAsin :one
 SELECT asin(1.0)
 `
 
 func (q *Queries) GetAsin(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getAsin)
+	row := q.db.QueryRowContext(ctx, getAsinSQL)
 	var asin float64
 	err := row.Scan(&asin)
 	return asin, err
 }
 
-const getAsinh = `-- name: GetAsinh :one
+const getAsinhSQL = `-- name: GetAsinh :one
 SELECT asinh(1.0)
 `
 
 func (q *Queries) GetAsinh(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getAsinh)
+	row := q.db.QueryRowContext(ctx, getAsinhSQL)
 	var asinh float64
 	err := row.Scan(&asinh)
 	return asinh, err
 }
 
-const getAtan = `-- name: GetAtan :one
+const getAtanSQL = `-- name: GetAtan :one
 SELECT atan(1.0)
 `
 
 func (q *Queries) GetAtan(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getAtan)
+	row := q.db.QueryRowContext(ctx, getAtanSQL)
 	var atan float64
 	err := row.Scan(&atan)
 	return atan, err
 }
 
-const getAtan2 = `-- name: GetAtan2 :one
+const getAtan2SQL = `-- name: GetAtan2 :one
 SELECT atan2(1.0, 0.5)
 `
 
 func (q *Queries) GetAtan2(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getAtan2)
+	row := q.db.QueryRowContext(ctx, getAtan2SQL)
 	var atan2 float64
 	err := row.Scan(&atan2)
 	return atan2, err
 }
 
-const getAtanh = `-- name: GetAtanh :one
+const getAtanhSQL = `-- name: GetAtanh :one
 SELECT atanh(1.0)
 `
 
 func (q *Queries) GetAtanh(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getAtanh)
+	row := q.db.QueryRowContext(ctx, getAtanhSQL)
 	var atanh float64
 	err := row.Scan(&atanh)
 	return atanh, err
 }
 
-const getCeil = `-- name: GetCeil :one
+const getCeilSQL = `-- name: GetCeil :one
 SELECT ceil(1.0)
 `
 
 func (q *Queries) GetCeil(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getCeil)
+	row := q.db.QueryRowContext(ctx, getCeilSQL)
 	var ceil float64
 	err := row.Scan(&ceil)
 	return ceil, err
 }
 
-const getCeilin = `-- name: GetCeilin :one
+const getCeilinSQL = `-- name: GetCeilin :one
 SELECT ceiling(1.0)
 `
 
 func (q *Queries) GetCeilin(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getCeilin)
+	row := q.db.QueryRowContext(ctx, getCeilinSQL)
 	var ceiling float64
 	err := row.Scan(&ceiling)
 	return ceiling, err
 }
 
-const getCos = `-- name: GetCos :one
+const getCosSQL = `-- name: GetCos :one
 SELECT cos(1.0)
 `
 
 func (q *Queries) GetCos(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getCos)
+	row := q.db.QueryRowContext(ctx, getCosSQL)
 	var cos float64
 	err := row.Scan(&cos)
 	return cos, err
 }
 
-const getCosh = `-- name: GetCosh :one
+const getCoshSQL = `-- name: GetCosh :one
 SELECT cosh(1.0)
 `
 
 func (q *Queries) GetCosh(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getCosh)
+	row := q.db.QueryRowContext(ctx, getCoshSQL)
 	var cosh float64
 	err := row.Scan(&cosh)
 	return cosh, err
 }
 
-const getDegrees = `-- name: GetDegrees :one
+const getDegreesSQL = `-- name: GetDegrees :one
 SELECT degrees(1.0)
 `
 
 func (q *Queries) GetDegrees(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getDegrees)
+	row := q.db.QueryRowContext(ctx, getDegreesSQL)
 	var degrees float64
 	err := row.Scan(&degrees)
 	return degrees, err
 }
 
-const getExp = `-- name: GetExp :one
+const getExpSQL = `-- name: GetExp :one
 SELECT exp(1.0)
 `
 
 func (q *Queries) GetExp(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getExp)
+	row := q.db.QueryRowContext(ctx, getExpSQL)
 	var exp float64
 	err := row.Scan(&exp)
 	return exp, err
 }
 
-const getFloor = `-- name: GetFloor :one
+const getFloorSQL = `-- name: GetFloor :one
 SELECT floor(1.0)
 `
 
 func (q *Queries) GetFloor(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getFloor)
+	row := q.db.QueryRowContext(ctx, getFloorSQL)
 	var floor float64
 	err := row.Scan(&floor)
 	return floor, err
 }
 
-const getLn = `-- name: GetLn :one
+const getLnSQL = `-- name: GetLn :one
 SELECT ln(1.0)
 `
 
 func (q *Queries) GetLn(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getLn)
+	row := q.db.QueryRowContext(ctx, getLnSQL)
 	var ln float64
 	err := row.Scan(&ln)
 	return ln, err
 }
 
-const getLog = `-- name: GetLog :one
+const getLogSQL = `-- name: GetLog :one
 SELECT log(1.0)
 `
 
 func (q *Queries) GetLog(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getLog)
+	row := q.db.QueryRowContext(ctx, getLogSQL)
 	var log float64
 	err := row.Scan(&log)
 	return log, err
 }
 
-const getLog10 = `-- name: GetLog10 :one
+const getLog10SQL = `-- name: GetLog10 :one
 SELECT log10(1.0)
 `
 
 func (q *Queries) GetLog10(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getLog10)
+	row := q.db.QueryRowContext(ctx, getLog10SQL)
 	var log10 float64
 	err := row.Scan(&log10)
 	return log10, err
 }
 
-const getLog2 = `-- name: GetLog2 :one
+const getLog2SQL = `-- name: GetLog2 :one
 SELECT log2(1.0)
 `
 
 func (q *Queries) GetLog2(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getLog2)
+	row := q.db.QueryRowContext(ctx, getLog2SQL)
 	var log2 float64
 	err := row.Scan(&log2)
 	return log2, err
 }
 
-const getLogBase = `-- name: GetLogBase :one
+const getLogBaseSQL = `-- name: GetLogBase :one
 SELECT log(1.0, 2.0)
 `
 
 func (q *Queries) GetLogBase(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getLogBase)
+	row := q.db.QueryRowContext(ctx, getLogBaseSQL)
 	var log float64
 	err := row.Scan(&log)
 	return log, err
 }
 
-const getMod = `-- name: GetMod :one
+const getModSQL = `-- name: GetMod :one
 SELECT mod(1, 2)
 `
 
 func (q *Queries) GetMod(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getMod)
+	row := q.db.QueryRowContext(ctx, getModSQL)
 	var mod float64
 	err := row.Scan(&mod)
 	return mod, err
 }
 
-const getPi = `-- name: GetPi :one
+const getPiSQL = `-- name: GetPi :one
 SELECT pi()
 `
 
 func (q *Queries) GetPi(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getPi)
+	row := q.db.QueryRowContext(ctx, getPiSQL)
 	var pi float64
 	err := row.Scan(&pi)
 	return pi, err
 }
 
-const getPow = `-- name: GetPow :one
+const getPowSQL = `-- name: GetPow :one
 SELECT pow(1, 2)
 `
 
 func (q *Queries) GetPow(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getPow)
+	row := q.db.QueryRowContext(ctx, getPowSQL)
 	var pow float64
 	err := row.Scan(&pow)
 	return pow, err
 }
 
-const getPower = `-- name: GetPower :one
+const getPowerSQL = `-- name: GetPower :one
 SELECT power(1, 2)
 `
 
 func (q *Queries) GetPower(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getPower)
+	row := q.db.QueryRowContext(ctx, getPowerSQL)
 	var power float64
 	err := row.Scan(&power)
 	return power, err
 }
 
-const getRadians = `-- name: GetRadians :one
+const getRadiansSQL = `-- name: GetRadians :one
 SELECT radians(1)
 `
 
 func (q *Queries) GetRadians(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getRadians)
+	row := q.db.QueryRowContext(ctx, getRadiansSQL)
 	var radians float64
 	err := row.Scan(&radians)
 	return radians, err
 }
 
-const getSin = `-- name: GetSin :one
+const getSinSQL = `-- name: GetSin :one
 SELECT sin(1.0)
 `
 
 func (q *Queries) GetSin(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getSin)
+	row := q.db.QueryRowContext(ctx, getSinSQL)
 	var sin float64
 	err := row.Scan(&sin)
 	return sin, err
 }
 
-const getSinh = `-- name: GetSinh :one
+const getSinhSQL = `-- name: GetSinh :one
 SELECT sinh(1.0)
 `
 
 func (q *Queries) GetSinh(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getSinh)
+	row := q.db.QueryRowContext(ctx, getSinhSQL)
 	var sinh float64
 	err := row.Scan(&sinh)
 	return sinh, err
 }
 
-const getSqrt = `-- name: GetSqrt :one
+const getSqrtSQL = `-- name: GetSqrt :one
 SELECT sqrt(1.0)
 `
 
 func (q *Queries) GetSqrt(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getSqrt)
+	row := q.db.QueryRowContext(ctx, getSqrtSQL)
 	var sqrt float64
 	err := row.Scan(&sqrt)
 	return sqrt, err
 }
 
-const getTan = `-- name: GetTan :one
+const getTanSQL = `-- name: GetTan :one
 SELECT tan(1.0)
 `
 
 func (q *Queries) GetTan(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getTan)
+	row := q.db.QueryRowContext(ctx, getTanSQL)
 	var tan float64
 	err := row.Scan(&tan)
 	return tan, err
 }
 
-const getTrunc = `-- name: GetTrunc :one
+const getTruncSQL = `-- name: GetTrunc :one
 SELECT trunc(1.0)
 `
 
 func (q *Queries) GetTrunc(ctx context.Context) (float64, error) {
-	row := q.db.QueryRowContext(ctx, getTrunc)
+	row := q.db.QueryRowContext(ctx, getTruncSQL)
 	var trunc float64
 	err := row.Scan(&trunc)
 	return trunc, err

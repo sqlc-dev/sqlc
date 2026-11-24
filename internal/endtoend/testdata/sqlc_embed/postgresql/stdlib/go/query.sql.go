@@ -12,7 +12,7 @@ import (
 	"github.com/lib/pq"
 )
 
-const duplicate = `-- name: Duplicate :one
+const duplicateSQL = `-- name: Duplicate :one
 SELECT users.id, users.name, users.age, users.id, users.name, users.age FROM users
 `
 
@@ -22,7 +22,7 @@ type DuplicateRow struct {
 }
 
 func (q *Queries) Duplicate(ctx context.Context) (DuplicateRow, error) {
-	row := q.db.QueryRowContext(ctx, duplicate)
+	row := q.db.QueryRowContext(ctx, duplicateSQL)
 	var i DuplicateRow
 	err := row.Scan(
 		&i.User.ID,
@@ -35,7 +35,7 @@ func (q *Queries) Duplicate(ctx context.Context) (DuplicateRow, error) {
 	return i, err
 }
 
-const join = `-- name: Join :one
+const joinSQL = `-- name: Join :one
 SELECT users.id, users.name, users.age, posts.id, posts.user_id, posts.likes FROM posts
 INNER JOIN users ON posts.user_id = users.id
 `
@@ -46,7 +46,7 @@ type JoinRow struct {
 }
 
 func (q *Queries) Join(ctx context.Context) (JoinRow, error) {
-	row := q.db.QueryRowContext(ctx, join)
+	row := q.db.QueryRowContext(ctx, joinSQL)
 	var i JoinRow
 	err := row.Scan(
 		&i.User.ID,
@@ -59,7 +59,7 @@ func (q *Queries) Join(ctx context.Context) (JoinRow, error) {
 	return i, err
 }
 
-const only = `-- name: Only :one
+const onlySQL = `-- name: Only :one
 SELECT users.id, users.name, users.age FROM users
 `
 
@@ -68,13 +68,13 @@ type OnlyRow struct {
 }
 
 func (q *Queries) Only(ctx context.Context) (OnlyRow, error) {
-	row := q.db.QueryRowContext(ctx, only)
+	row := q.db.QueryRowContext(ctx, onlySQL)
 	var i OnlyRow
 	err := row.Scan(&i.User.ID, &i.User.Name, &i.User.Age)
 	return i, err
 }
 
-const withAlias = `-- name: WithAlias :one
+const withAliasSQL = `-- name: WithAlias :one
 SELECT u.id, u.name, u.age FROM users u
 `
 
@@ -83,13 +83,13 @@ type WithAliasRow struct {
 }
 
 func (q *Queries) WithAlias(ctx context.Context) (WithAliasRow, error) {
-	row := q.db.QueryRowContext(ctx, withAlias)
+	row := q.db.QueryRowContext(ctx, withAliasSQL)
 	var i WithAliasRow
 	err := row.Scan(&i.User.ID, &i.User.Name, &i.User.Age)
 	return i, err
 }
 
-const withAsterisk = `-- name: WithAsterisk :one
+const withAsteriskSQL = `-- name: WithAsterisk :one
 SELECT users.id, users.name, users.age, id, name, age FROM users
 `
 
@@ -101,7 +101,7 @@ type WithAsteriskRow struct {
 }
 
 func (q *Queries) WithAsterisk(ctx context.Context) (WithAsteriskRow, error) {
-	row := q.db.QueryRowContext(ctx, withAsterisk)
+	row := q.db.QueryRowContext(ctx, withAsteriskSQL)
 	var i WithAsteriskRow
 	err := row.Scan(
 		&i.User.ID,
@@ -114,7 +114,7 @@ func (q *Queries) WithAsterisk(ctx context.Context) (WithAsteriskRow, error) {
 	return i, err
 }
 
-const withCrossSchema = `-- name: WithCrossSchema :many
+const withCrossSchemaSQL = `-- name: WithCrossSchema :many
 SELECT users.id, users.name, users.age, bu.id, bu.name FROM users
 INNER JOIN baz.users bu ON users.id = bu.id
 `
@@ -125,7 +125,7 @@ type WithCrossSchemaRow struct {
 }
 
 func (q *Queries) WithCrossSchema(ctx context.Context) ([]WithCrossSchemaRow, error) {
-	rows, err := q.db.QueryContext(ctx, withCrossSchema)
+	rows, err := q.db.QueryContext(ctx, withCrossSchemaSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +153,7 @@ func (q *Queries) WithCrossSchema(ctx context.Context) ([]WithCrossSchemaRow, er
 	return items, nil
 }
 
-const withSchema = `-- name: WithSchema :one
+const withSchemaSQL = `-- name: WithSchema :one
 SELECT bu.id, bu.name FROM baz.users bu
 `
 
@@ -162,13 +162,13 @@ type WithSchemaRow struct {
 }
 
 func (q *Queries) WithSchema(ctx context.Context) (WithSchemaRow, error) {
-	row := q.db.QueryRowContext(ctx, withSchema)
+	row := q.db.QueryRowContext(ctx, withSchemaSQL)
 	var i WithSchemaRow
 	err := row.Scan(&i.BazUser.ID, &i.BazUser.Name)
 	return i, err
 }
 
-const withSubquery = `-- name: WithSubquery :many
+const withSubquerySQL = `-- name: WithSubquery :many
 SELECT users.id, users.name, users.age, (SELECT count(*) FROM users) AS total_count FROM users
 `
 
@@ -178,7 +178,7 @@ type WithSubqueryRow struct {
 }
 
 func (q *Queries) WithSubquery(ctx context.Context) ([]WithSubqueryRow, error) {
-	rows, err := q.db.QueryContext(ctx, withSubquery)
+	rows, err := q.db.QueryContext(ctx, withSubquerySQL)
 	if err != nil {
 		return nil, err
 	}

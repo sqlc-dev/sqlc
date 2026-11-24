@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const plusPositionalCast = `-- name: PlusPositionalCast :one
+const plusPositionalCastSQL = `-- name: PlusPositionalCast :one
 SELECT plus($1, $2::INTEGER)
 `
 
@@ -19,7 +19,7 @@ type PlusPositionalCastParams struct {
 }
 
 func (q *Queries) PlusPositionalCast(ctx context.Context, arg PlusPositionalCastParams) (int32, error) {
-	row := q.db.QueryRow(ctx, plusPositionalCast, arg.A, arg.Column2)
+	row := q.db.QueryRow(ctx, plusPositionalCastSQL, arg.A, arg.Column2)
 	var plus int32
 	err := row.Scan(&plus)
 	return plus, err

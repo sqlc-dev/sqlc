@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const createAuthor = `-- name: CreateAuthor :one
+const createAuthorSQL = `-- name: CreateAuthor :one
 INSERT INTO authors (
   name, bio, country_code
 ) VALUES (
@@ -26,7 +26,7 @@ type CreateAuthorParams struct {
 }
 
 func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Author, error) {
-	row := q.db.QueryRowContext(ctx, createAuthor, arg.Name, arg.Bio, arg.CountryCode)
+	row := q.db.QueryRowContext(ctx, createAuthorSQL, arg.Name, arg.Bio, arg.CountryCode)
 	var i Author
 	err := row.Scan(
 		&i.ID,
@@ -37,7 +37,7 @@ func (q *Queries) CreateAuthor(ctx context.Context, arg CreateAuthorParams) (Aut
 	return i, err
 }
 
-const deleteAuthor = `-- name: DeleteAuthor :exec
+const deleteAuthorSQL = `-- name: DeleteAuthor :exec
 DELETE FROM authors
 WHERE id = $1
 `
@@ -47,11 +47,11 @@ type DeleteAuthorParams struct {
 }
 
 func (q *Queries) DeleteAuthor(ctx context.Context, arg DeleteAuthorParams) error {
-	_, err := q.db.ExecContext(ctx, deleteAuthor, arg.ID)
+	_, err := q.db.ExecContext(ctx, deleteAuthorSQL, arg.ID)
 	return err
 }
 
-const getAuthor = `-- name: GetAuthor :one
+const getAuthorSQL = `-- name: GetAuthor :one
 SELECT id, name, bio, country_code FROM authors
 WHERE name = $1 AND country_code = $2 LIMIT 1
 `
@@ -62,7 +62,7 @@ type GetAuthorParams struct {
 }
 
 func (q *Queries) GetAuthor(ctx context.Context, arg GetAuthorParams) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, arg.Name, arg.CountryCode)
+	row := q.db.QueryRowContext(ctx, getAuthorSQL, arg.Name, arg.CountryCode)
 	var i Author
 	err := row.Scan(
 		&i.ID,
@@ -73,13 +73,13 @@ func (q *Queries) GetAuthor(ctx context.Context, arg GetAuthorParams) (Author, e
 	return i, err
 }
 
-const listAuthors = `-- name: ListAuthors :many
+const listAuthorsSQL = `-- name: ListAuthors :many
 SELECT id, name, bio, country_code FROM authors
 ORDER BY name
 `
 
 func (q *Queries) ListAuthors(ctx context.Context) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthors)
+	rows, err := q.db.QueryContext(ctx, listAuthorsSQL)
 	if err != nil {
 		return nil, err
 	}

@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const aliasBar = `-- name: AliasBar :exec
+const aliasBarSQL = `-- name: AliasBar :exec
 DELETE FROM bar AS b
 WHERE b.id = ?
 `
 
 func (q *Queries) AliasBar(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, aliasBar, id)
+	_, err := q.db.ExecContext(ctx, aliasBarSQL, id)
 	return err
 }

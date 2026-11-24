@@ -9,13 +9,13 @@ import (
 	"context"
 )
 
-const getBars = `-- name: GetBars :many
+const getBarsSQL = `-- name: GetBars :many
 SELECT DISTINCT ON (a.id) a.id, a.name
 FROM bar a
 `
 
 func (q *Queries) GetBars(ctx context.Context) ([]Bar, error) {
-	rows, err := q.db.QueryContext(ctx, getBars)
+	rows, err := q.db.QueryContext(ctx, getBarsSQL)
 	if err != nil {
 		return nil, err
 	}

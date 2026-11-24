@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const starExpansion = `-- name: StarExpansion :many
+const starExpansionSQL = `-- name: StarExpansion :many
 SELECT a, b, "group", a, b, "group", foo.a, foo.b, foo."group" FROM foo
 `
 
@@ -27,7 +27,7 @@ type StarExpansionRow struct {
 }
 
 func (q *Queries) StarExpansion(ctx context.Context) ([]StarExpansionRow, error) {
-	rows, err := q.db.QueryContext(ctx, starExpansion)
+	rows, err := q.db.QueryContext(ctx, starExpansionSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -59,12 +59,12 @@ func (q *Queries) StarExpansion(ctx context.Context) ([]StarExpansionRow, error)
 	return items, nil
 }
 
-const starExpansionAliasedSubquery = `-- name: StarExpansionAliasedSubquery :many
+const starExpansionAliasedSubquerySQL = `-- name: StarExpansionAliasedSubquery :many
 SELECT (SELECT z FROM baz LIMIT 1) AS x FROM foo GROUP BY x
 `
 
 func (q *Queries) StarExpansionAliasedSubquery(ctx context.Context) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, starExpansionAliasedSubquery)
+	rows, err := q.db.QueryContext(ctx, starExpansionAliasedSubquerySQL)
 	if err != nil {
 		return nil, err
 	}
@@ -86,12 +86,12 @@ func (q *Queries) StarExpansionAliasedSubquery(ctx context.Context) ([]sql.NullS
 	return items, nil
 }
 
-const starExpansionCTE = `-- name: StarExpansionCTE :many
+const starExpansionCTESQL = `-- name: StarExpansionCTE :many
 WITH t AS (SELECT a, c FROM bar) SELECT a, c FROM t
 `
 
 func (q *Queries) StarExpansionCTE(ctx context.Context) ([]Bar, error) {
-	rows, err := q.db.QueryContext(ctx, starExpansionCTE)
+	rows, err := q.db.QueryContext(ctx, starExpansionCTESQL)
 	if err != nil {
 		return nil, err
 	}
@@ -113,12 +113,12 @@ func (q *Queries) StarExpansionCTE(ctx context.Context) ([]Bar, error) {
 	return items, nil
 }
 
-const starExpansionHiddenColumns = `-- name: StarExpansionHiddenColumns :many
+const starExpansionHiddenColumnsSQL = `-- name: StarExpansionHiddenColumns :many
 SELECT name FROM recipes_fts
 `
 
 func (q *Queries) StarExpansionHiddenColumns(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, starExpansionHiddenColumns)
+	rows, err := q.db.QueryContext(ctx, starExpansionHiddenColumnsSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +140,7 @@ func (q *Queries) StarExpansionHiddenColumns(ctx context.Context) ([]string, err
 	return items, nil
 }
 
-const starExpansionJoin = `-- name: StarExpansionJoin :many
+const starExpansionJoinSQL = `-- name: StarExpansionJoin :many
 SELECT foo.a, b, "group", bar.a, c FROM foo, bar
 `
 
@@ -153,7 +153,7 @@ type StarExpansionJoinRow struct {
 }
 
 func (q *Queries) StarExpansionJoin(ctx context.Context) ([]StarExpansionJoinRow, error) {
-	rows, err := q.db.QueryContext(ctx, starExpansionJoin)
+	rows, err := q.db.QueryContext(ctx, starExpansionJoinSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -181,12 +181,12 @@ func (q *Queries) StarExpansionJoin(ctx context.Context) ([]StarExpansionJoinRow
 	return items, nil
 }
 
-const starExpansionQualifiedHiddenColumns = `-- name: StarExpansionQualifiedHiddenColumns :many
+const starExpansionQualifiedHiddenColumnsSQL = `-- name: StarExpansionQualifiedHiddenColumns :many
 SELECT recipes_fts.name FROM recipes_fts
 `
 
 func (q *Queries) StarExpansionQualifiedHiddenColumns(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, starExpansionQualifiedHiddenColumns)
+	rows, err := q.db.QueryContext(ctx, starExpansionQualifiedHiddenColumnsSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +208,7 @@ func (q *Queries) StarExpansionQualifiedHiddenColumns(ctx context.Context) ([]st
 	return items, nil
 }
 
-const starExpansionReturning = `-- name: StarExpansionReturning :one
+const starExpansionReturningSQL = `-- name: StarExpansionReturning :one
 INSERT INTO bar (a, c) VALUES (?, ?) RETURNING a, c
 `
 
@@ -218,18 +218,18 @@ type StarExpansionReturningParams struct {
 }
 
 func (q *Queries) StarExpansionReturning(ctx context.Context, arg StarExpansionReturningParams) (Bar, error) {
-	row := q.db.QueryRowContext(ctx, starExpansionReturning, arg.A, arg.C)
+	row := q.db.QueryRowContext(ctx, starExpansionReturningSQL, arg.A, arg.C)
 	var i Bar
 	err := row.Scan(&i.A, &i.C)
 	return i, err
 }
 
-const starExpansionSubquery = `-- name: StarExpansionSubquery :many
+const starExpansionSubquerySQL = `-- name: StarExpansionSubquery :many
 SELECT a, c FROM (SELECT a, c FROM bar) AS sub
 `
 
 func (q *Queries) StarExpansionSubquery(ctx context.Context) ([]Bar, error) {
-	rows, err := q.db.QueryContext(ctx, starExpansionSubquery)
+	rows, err := q.db.QueryContext(ctx, starExpansionSubquerySQL)
 	if err != nil {
 		return nil, err
 	}
@@ -251,12 +251,12 @@ func (q *Queries) StarExpansionSubquery(ctx context.Context) ([]Bar, error) {
 	return items, nil
 }
 
-const starQuotedExpansion = `-- name: StarQuotedExpansion :many
+const starQuotedExpansionSQL = `-- name: StarQuotedExpansion :many
 SELECT t.a, t.b, t."group" FROM foo AS t
 `
 
 func (q *Queries) StarQuotedExpansion(ctx context.Context) ([]Foo, error) {
-	rows, err := q.db.QueryContext(ctx, starQuotedExpansion)
+	rows, err := q.db.QueryContext(ctx, starQuotedExpansionSQL)
 	if err != nil {
 		return nil, err
 	}

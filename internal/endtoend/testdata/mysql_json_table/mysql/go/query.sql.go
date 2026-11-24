@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const getEmails = `-- name: GetEmails :many
+const getEmailsSQL = `-- name: GetEmails :many
 SELECT email FROM person_email
 `
 
 func (q *Queries) GetEmails(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, getEmails)
+	rows, err := q.db.QueryContext(ctx, getEmailsSQL)
 	if err != nil {
 		return nil, err
 	}

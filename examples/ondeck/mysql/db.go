@@ -24,34 +24,34 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
-	if q.createCityStmt, err = db.PrepareContext(ctx, createCity); err != nil {
+	if q.createCityStmt, err = db.PrepareContext(ctx, createCitySQL); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateCity: %w", err)
 	}
-	if q.createVenueStmt, err = db.PrepareContext(ctx, createVenue); err != nil {
+	if q.createVenueStmt, err = db.PrepareContext(ctx, createVenueSQL); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateVenue: %w", err)
 	}
-	if q.deleteVenueStmt, err = db.PrepareContext(ctx, deleteVenue); err != nil {
+	if q.deleteVenueStmt, err = db.PrepareContext(ctx, deleteVenueSQL); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteVenue: %w", err)
 	}
-	if q.getCityStmt, err = db.PrepareContext(ctx, getCity); err != nil {
+	if q.getCityStmt, err = db.PrepareContext(ctx, getCitySQL); err != nil {
 		return nil, fmt.Errorf("error preparing query GetCity: %w", err)
 	}
-	if q.getVenueStmt, err = db.PrepareContext(ctx, getVenue); err != nil {
+	if q.getVenueStmt, err = db.PrepareContext(ctx, getVenueSQL); err != nil {
 		return nil, fmt.Errorf("error preparing query GetVenue: %w", err)
 	}
-	if q.listCitiesStmt, err = db.PrepareContext(ctx, listCities); err != nil {
+	if q.listCitiesStmt, err = db.PrepareContext(ctx, listCitiesSQL); err != nil {
 		return nil, fmt.Errorf("error preparing query ListCities: %w", err)
 	}
-	if q.listVenuesStmt, err = db.PrepareContext(ctx, listVenues); err != nil {
+	if q.listVenuesStmt, err = db.PrepareContext(ctx, listVenuesSQL); err != nil {
 		return nil, fmt.Errorf("error preparing query ListVenues: %w", err)
 	}
-	if q.updateCityNameStmt, err = db.PrepareContext(ctx, updateCityName); err != nil {
+	if q.updateCityNameStmt, err = db.PrepareContext(ctx, updateCityNameSQL); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateCityName: %w", err)
 	}
-	if q.updateVenueNameStmt, err = db.PrepareContext(ctx, updateVenueName); err != nil {
+	if q.updateVenueNameStmt, err = db.PrepareContext(ctx, updateVenueNameSQL); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateVenueName: %w", err)
 	}
-	if q.venueCountByCityStmt, err = db.PrepareContext(ctx, venueCountByCity); err != nil {
+	if q.venueCountByCityStmt, err = db.PrepareContext(ctx, venueCountByCitySQL); err != nil {
 		return nil, fmt.Errorf("error preparing query VenueCountByCity: %w", err)
 	}
 	return &q, nil

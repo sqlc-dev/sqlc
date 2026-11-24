@@ -12,12 +12,12 @@ import (
 	"github.com/lib/pq"
 )
 
-const query_enum_array_table = `-- name: query_enum_array_table :many
+const query_enum_array_tableSQL = `-- name: query_enum_array_table :many
 SELECT id, value FROM array_enum_table
 `
 
 func (q *Queries) query_enum_array_table(ctx context.Context) ([]ArrayEnumTable, error) {
-	rows, err := q.db.QueryContext(ctx, query_enum_array_table)
+	rows, err := q.db.QueryContext(ctx, query_enum_array_tableSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -39,18 +39,18 @@ func (q *Queries) query_enum_array_table(ctx context.Context) ([]ArrayEnumTable,
 	return items, nil
 }
 
-const query_param_enum_table = `-- name: query_param_enum_table :one
+const query_param_enum_tableSQL = `-- name: query_param_enum_table :one
 SELECT id, other, value FROM query_param_enum_table WHERE value = $1
 `
 
 func (q *Queries) query_param_enum_table(ctx context.Context, value NullQueryParamEnumTableEnum) (QueryParamEnumTable, error) {
-	row := q.db.QueryRowContext(ctx, query_param_enum_table, value)
+	row := q.db.QueryRowContext(ctx, query_param_enum_tableSQL, value)
 	var i QueryParamEnumTable
 	err := row.Scan(&i.ID, &i.Other, &i.Value)
 	return i, err
 }
 
-const query_param_struct_enum_table = `-- name: query_param_struct_enum_table :one
+const query_param_struct_enum_tableSQL = `-- name: query_param_struct_enum_table :one
 SELECT id FROM query_param_struct_enum_table WHERE id = $1 AND value = $2
 `
 
@@ -60,29 +60,29 @@ type query_param_struct_enum_tableParams struct {
 }
 
 func (q *Queries) query_param_struct_enum_table(ctx context.Context, arg query_param_struct_enum_tableParams) (int32, error) {
-	row := q.db.QueryRowContext(ctx, query_param_struct_enum_table, arg.ID, arg.Value)
+	row := q.db.QueryRowContext(ctx, query_param_struct_enum_tableSQL, arg.ID, arg.Value)
 	var id int32
 	err := row.Scan(&id)
 	return id, err
 }
 
-const query_return_enum_table = `-- name: query_return_enum_table :one
+const query_return_enum_tableSQL = `-- name: query_return_enum_table :one
 SELECT value FROM query_return_enum_table WHERE id = $1
 `
 
 func (q *Queries) query_return_enum_table(ctx context.Context, id int32) (NullQueryReturnEnumTableEnum, error) {
-	row := q.db.QueryRowContext(ctx, query_return_enum_table, id)
+	row := q.db.QueryRowContext(ctx, query_return_enum_tableSQL, id)
 	var value NullQueryReturnEnumTableEnum
 	err := row.Scan(&value)
 	return value, err
 }
 
-const query_return_full_table = `-- name: query_return_full_table :many
+const query_return_full_tableSQL = `-- name: query_return_full_table :many
 SELECT id, value FROM query_return_full_table
 `
 
 func (q *Queries) query_return_full_table(ctx context.Context) ([]QueryReturnFullTable, error) {
-	rows, err := q.db.QueryContext(ctx, query_return_full_table)
+	rows, err := q.db.QueryContext(ctx, query_return_full_tableSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (q *Queries) query_return_full_table(ctx context.Context) ([]QueryReturnFul
 	return items, nil
 }
 
-const query_return_struct_enum_table = `-- name: query_return_struct_enum_table :one
+const query_return_struct_enum_tableSQL = `-- name: query_return_struct_enum_table :one
 SELECT value, another FROM query_return_struct_enum_table WHERE id = $1
 `
 
@@ -114,13 +114,13 @@ type query_return_struct_enum_tableRow struct {
 }
 
 func (q *Queries) query_return_struct_enum_table(ctx context.Context, id int32) (query_return_struct_enum_tableRow, error) {
-	row := q.db.QueryRowContext(ctx, query_return_struct_enum_table, id)
+	row := q.db.QueryRowContext(ctx, query_return_struct_enum_tableSQL, id)
 	var i query_return_struct_enum_tableRow
 	err := row.Scan(&i.Value, &i.Another)
 	return i, err
 }
 
-const query_sqlc_embed_table = `-- name: query_sqlc_embed_table :one
+const query_sqlc_embed_tableSQL = `-- name: query_sqlc_embed_table :one
 SELECT query_sqlc_embed_table.id, query_sqlc_embed_table.value FROM query_sqlc_embed_table WHERE id = $1
 `
 
@@ -129,7 +129,7 @@ type query_sqlc_embed_tableRow struct {
 }
 
 func (q *Queries) query_sqlc_embed_table(ctx context.Context, id int32) (query_sqlc_embed_tableRow, error) {
-	row := q.db.QueryRowContext(ctx, query_sqlc_embed_table, id)
+	row := q.db.QueryRowContext(ctx, query_sqlc_embed_tableSQL, id)
 	var i query_sqlc_embed_tableRow
 	err := row.Scan(&i.QuerySqlcEmbedTable.ID, &i.QuerySqlcEmbedTable.Value)
 	return i, err

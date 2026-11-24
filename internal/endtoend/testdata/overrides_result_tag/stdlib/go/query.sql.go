@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const findAccount = `-- name: FindAccount :one
+const findAccountSQL = `-- name: FindAccount :one
 SELECT
     a.id, a.state,
     ua.name
@@ -31,7 +31,7 @@ type FindAccountRow struct {
 }
 
 func (q *Queries) FindAccount(ctx context.Context, accountID uuid.UUID) (FindAccountRow, error) {
-	row := q.db.QueryRowContext(ctx, findAccount, accountID)
+	row := q.db.QueryRowContext(ctx, findAccountSQL, accountID)
 	var i FindAccountRow
 	err := row.Scan(&i.ID, &i.State, &i.Name)
 	return i, err

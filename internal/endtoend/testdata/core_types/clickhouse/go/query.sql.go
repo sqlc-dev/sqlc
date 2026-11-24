@@ -13,12 +13,12 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-const allTypes = `-- name: AllTypes :many
+const allTypesSQL = `-- name: AllTypes :many
 SELECT id, name, tag, amount, tags, labels, matrix, kind, created, updated, price, status, attrs, pos, geo, scores, ip, uid, fixed, flag, small, plain, either, n.a, n.b, total, whole FROM things;
 `
 
 func (q *Queries) AllTypes(ctx context.Context) ([]Thing, error) {
-	rows, err := q.db.QueryContext(ctx, allTypes)
+	rows, err := q.db.QueryContext(ctx, allTypesSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (q *Queries) AllTypes(ctx context.Context) ([]Thing, error) {
 	return items, nil
 }
 
-const casts = `-- name: Casts :one
+const castsSQL = `-- name: Casts :one
 SELECT
   CAST(id AS String) AS a,
   toDecimal64(id, 4) AS b,
@@ -89,7 +89,7 @@ type CastsRow struct {
 }
 
 func (q *Queries) Casts(ctx context.Context) (CastsRow, error) {
-	row := q.db.QueryRowContext(ctx, casts)
+	row := q.db.QueryRowContext(ctx, castsSQL)
 	var i CastsRow
 	err := row.Scan(
 		&i.A,
@@ -102,7 +102,7 @@ func (q *Queries) Casts(ctx context.Context) (CastsRow, error) {
 	return i, err
 }
 
-const placeholders = `-- name: Placeholders :many
+const placeholdersSQL = `-- name: Placeholders :many
 SELECT id FROM things
 WHERE id = {p1:UInt64} AND name = {p2:String} AND amount > {p3:Float64} AND tag = {p4:Nullable(String)} AND price = {p5:Decimal(10, 2)};
 `
@@ -116,7 +116,7 @@ type PlaceholdersParams struct {
 }
 
 func (q *Queries) Placeholders(ctx context.Context, arg PlaceholdersParams) ([]uint64, error) {
-	rows, err := q.db.QueryContext(ctx, placeholders,
+	rows, err := q.db.QueryContext(ctx, placeholdersSQL,
 		sql.Named("p1", arg.P1),
 		sql.Named("p2", arg.P2),
 		sql.Named("p3", arg.P3),
@@ -144,12 +144,12 @@ func (q *Queries) Placeholders(ctx context.Context, arg PlaceholdersParams) ([]u
 	return items, nil
 }
 
-const starColumns = `-- name: StarColumns :many
+const starColumnsSQL = `-- name: StarColumns :many
 SELECT id, name, tag, amount, tags, labels, matrix, kind, created, updated, price, status, attrs, pos, geo, scores, ip, uid, fixed, flag, small, plain, either, n.a, n.b, total, whole FROM things;
 `
 
 func (q *Queries) StarColumns(ctx context.Context) ([]Thing, error) {
-	rows, err := q.db.QueryContext(ctx, starColumns)
+	rows, err := q.db.QueryContext(ctx, starColumnsSQL)
 	if err != nil {
 		return nil, err
 	}

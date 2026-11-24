@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const listAuthorsUnion = `-- name: ListAuthorsUnion :many
+const listAuthorsUnionSQL = `-- name: ListAuthorsUnion :many
 SELECT name as foo FROM authors
 UNION
 SELECT first_name as foo FROM people
@@ -17,7 +17,7 @@ ORDER BY foo
 `
 
 func (q *Queries) ListAuthorsUnion(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthorsUnion)
+	rows, err := q.db.QueryContext(ctx, listAuthorsUnionSQL)
 	if err != nil {
 		return nil, err
 	}

@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getDictTree = `-- name: GetDictTree :many
+const getDictTreeSQL = `-- name: GetDictTree :many
 with recursive dictTree(id, code, parent_code, label, value, path, depth) AS (
 	select id, code, parent_code, label, value, ARRAY[COALESCE((select id from dict where code=''),'virtual_root'), id], 1 as depth from dict where app_id = '1' and parent_code = '' and is_delete=false
 	union
@@ -31,7 +31,7 @@ type GetDictTreeRow struct {
 }
 
 func (q *Queries) GetDictTree(ctx context.Context) ([]GetDictTreeRow, error) {
-	rows, err := q.db.Query(ctx, getDictTree)
+	rows, err := q.db.Query(ctx, getDictTreeSQL)
 	if err != nil {
 		return nil, err
 	}

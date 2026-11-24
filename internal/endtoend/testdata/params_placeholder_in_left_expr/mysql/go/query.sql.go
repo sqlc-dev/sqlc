@@ -10,12 +10,12 @@ import (
 	"database/sql"
 )
 
-const findByID = `-- name: FindByID :many
+const findByIDSQL = `-- name: FindByID :many
 SELECT id, name FROM users WHERE ? = id
 `
 
 func (q *Queries) FindByID(ctx context.Context, id int32) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, findByID, id)
+	rows, err := q.db.QueryContext(ctx, findByIDSQL, id)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,7 @@ func (q *Queries) FindByID(ctx context.Context, id int32) ([]User, error) {
 	return items, nil
 }
 
-const findByIDAndName = `-- name: FindByIDAndName :many
+const findByIDAndNameSQL = `-- name: FindByIDAndName :many
 SELECT id, name FROM users WHERE ? = id AND ? = name
 `
 
@@ -47,7 +47,7 @@ type FindByIDAndNameParams struct {
 }
 
 func (q *Queries) FindByIDAndName(ctx context.Context, arg FindByIDAndNameParams) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, findByIDAndName, arg.ID, arg.Name)
+	rows, err := q.db.QueryContext(ctx, findByIDAndNameSQL, arg.ID, arg.Name)
 	if err != nil {
 		return nil, err
 	}

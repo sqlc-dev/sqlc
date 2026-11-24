@@ -11,12 +11,12 @@ import (
 	"github.com/lib/pq"
 )
 
-const selectTextArray = `-- name: SelectTextArray :many
+const selectTextArraySQL = `-- name: SelectTextArray :many
 SELECT $1::TEXT[]
 `
 
 func (q *Queries) SelectTextArray(ctx context.Context, dollar_1 []string) ([][]string, error) {
-	rows, err := q.db.QueryContext(ctx, selectTextArray, pq.Array(dollar_1))
+	rows, err := q.db.QueryContext(ctx, selectTextArraySQL, pq.Array(dollar_1))
 	if err != nil {
 		return nil, err
 	}

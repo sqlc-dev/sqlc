@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const schemaScopedFilter = `-- name: SchemaScopedFilter :many
+const schemaScopedFilterSQL = `-- name: SchemaScopedFilter :many
 SELECT id FROM foo.bar WHERE id = $1
 `
 
 func (q *Queries) SchemaScopedFilter(ctx context.Context, id int32) ([]int32, error) {
-	rows, err := q.db.QueryContext(ctx, schemaScopedFilter, id)
+	rows, err := q.db.QueryContext(ctx, schemaScopedFilterSQL, id)
 	if err != nil {
 		return nil, err
 	}

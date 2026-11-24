@@ -10,13 +10,13 @@ import (
 	"database/sql"
 )
 
-const coalesce = `-- name: Coalesce :many
+const coalesceSQL = `-- name: Coalesce :many
 SELECT coalesce(bar, '') as login
 FROM foo
 `
 
 func (q *Queries) Coalesce(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, coalesce)
+	rows, err := q.db.QueryContext(ctx, coalesceSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (q *Queries) Coalesce(ctx context.Context) ([]string, error) {
 	return items, nil
 }
 
-const coalesceColumns = `-- name: CoalesceColumns :many
+const coalesceColumnsSQL = `-- name: CoalesceColumns :many
 SELECT bar, bat, coalesce(bar, bat)
 FROM foo
 `
@@ -50,7 +50,7 @@ type CoalesceColumnsRow struct {
 }
 
 func (q *Queries) CoalesceColumns(ctx context.Context) ([]CoalesceColumnsRow, error) {
-	rows, err := q.db.QueryContext(ctx, coalesceColumns)
+	rows, err := q.db.QueryContext(ctx, coalesceColumnsSQL)
 	if err != nil {
 		return nil, err
 	}

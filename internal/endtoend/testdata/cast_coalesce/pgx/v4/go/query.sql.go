@@ -9,13 +9,13 @@ import (
 	"context"
 )
 
-const castCoalesce = `-- name: CastCoalesce :many
+const castCoalesceSQL = `-- name: CastCoalesce :many
 SELECT coalesce(bar, '')::text as login
 FROM foo
 `
 
 func (q *Queries) CastCoalesce(ctx context.Context) ([]string, error) {
-	rows, err := q.db.Query(ctx, castCoalesce)
+	rows, err := q.db.Query(ctx, castCoalesceSQL)
 	if err != nil {
 		return nil, err
 	}

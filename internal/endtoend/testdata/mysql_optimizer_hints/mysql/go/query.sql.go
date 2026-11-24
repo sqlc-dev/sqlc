@@ -10,18 +10,18 @@ import (
 	"database/sql"
 )
 
-const inlineHint = `-- name: InlineHint :one
+const inlineHintSQL = `-- name: InlineHint :one
 SELECT /*+ MAX_EXECUTION_TIME(1000) */ bar FROM foo LIMIT 1
 `
 
 func (q *Queries) InlineHint(ctx context.Context) (sql.NullString, error) {
-	row := q.db.QueryRowContext(ctx, inlineHint)
+	row := q.db.QueryRowContext(ctx, inlineHintSQL)
 	var bar sql.NullString
 	err := row.Scan(&bar)
 	return bar, err
 }
 
-const multilineHint = `-- name: MultilineHint :one
+const multilineHintSQL = `-- name: MultilineHint :one
 SELECT
 /*+ MAX_EXECUTION_TIME(1000) */
 bar
@@ -30,7 +30,7 @@ LIMIT 1
 `
 
 func (q *Queries) MultilineHint(ctx context.Context) (sql.NullString, error) {
-	row := q.db.QueryRowContext(ctx, multilineHint)
+	row := q.db.QueryRowContext(ctx, multilineHintSQL)
 	var bar sql.NullString
 	err := row.Scan(&bar)
 	return bar, err

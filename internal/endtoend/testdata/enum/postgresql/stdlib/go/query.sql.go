@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const deleteBySize = `-- name: DeleteBySize :exec
+const deleteBySizeSQL = `-- name: DeleteBySize :exec
 DELETE FROM users
 WHERE shoe_size = $1 AND shirt_size = $2
 `
@@ -21,16 +21,16 @@ type DeleteBySizeParams struct {
 }
 
 func (q *Queries) DeleteBySize(ctx context.Context, db DBTX, arg DeleteBySizeParams) error {
-	_, err := db.ExecContext(ctx, deleteBySize, arg.ShoeSize, arg.ShirtSize)
+	_, err := db.ExecContext(ctx, deleteBySizeSQL, arg.ShoeSize, arg.ShirtSize)
 	return err
 }
 
-const getAll = `-- name: GetAll :many
+const getAllSQL = `-- name: GetAll :many
 SELECT id, first_name, last_name, age, shoe_size, shirt_size FROM users
 `
 
 func (q *Queries) GetAll(ctx context.Context, db DBTX) ([]User, error) {
-	rows, err := db.QueryContext(ctx, getAll)
+	rows, err := db.QueryContext(ctx, getAllSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (q *Queries) GetAll(ctx context.Context, db DBTX) ([]User, error) {
 	return items, nil
 }
 
-const newUser = `-- name: NewUser :exec
+const newUserSQL = `-- name: NewUser :exec
 INSERT INTO users (
     first_name,
     last_name,
@@ -79,7 +79,7 @@ type NewUserParams struct {
 }
 
 func (q *Queries) NewUser(ctx context.Context, db DBTX, arg NewUserParams) error {
-	_, err := db.ExecContext(ctx, newUser,
+	_, err := db.ExecContext(ctx, newUserSQL,
 		arg.FirstName,
 		arg.LastName,
 		arg.Age,
@@ -89,7 +89,7 @@ func (q *Queries) NewUser(ctx context.Context, db DBTX, arg NewUserParams) error
 	return err
 }
 
-const updateSizes = `-- name: UpdateSizes :exec
+const updateSizesSQL = `-- name: UpdateSizes :exec
 UPDATE users
 SET shoe_size = $2, shirt_size = $3
 WHERE id = $1
@@ -102,6 +102,6 @@ type UpdateSizesParams struct {
 }
 
 func (q *Queries) UpdateSizes(ctx context.Context, db DBTX, arg UpdateSizesParams) error {
-	_, err := db.ExecContext(ctx, updateSizes, arg.ID, arg.ShoeSize, arg.ShirtSize)
+	_, err := db.ExecContext(ctx, updateSizesSQL, arg.ID, arg.ShoeSize, arg.ShirtSize)
 	return err
 }

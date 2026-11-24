@@ -10,23 +10,23 @@ import (
 	"database/sql"
 )
 
-const doubleDash = `-- name: DoubleDash :one
+const doubleDashSQL = `-- name: DoubleDash :one
 SELECT bar FROM foo LIMIT 1
 `
 
 func (q *Queries) DoubleDash(ctx context.Context) (sql.NullString, error) {
-	row := q.db.QueryRowContext(ctx, doubleDash)
+	row := q.db.QueryRowContext(ctx, doubleDashSQL)
 	var bar sql.NullString
 	err := row.Scan(&bar)
 	return bar, err
 }
 
-const slashStar = `-- name: SlashStar :one
+const slashStarSQL = `-- name: SlashStar :one
 SELECT bar FROM foo LIMIT 1
 `
 
 func (q *Queries) SlashStar(ctx context.Context) (sql.NullString, error) {
-	row := q.db.QueryRowContext(ctx, slashStar)
+	row := q.db.QueryRowContext(ctx, slashStarSQL)
 	var bar sql.NullString
 	err := row.Scan(&bar)
 	return bar, err

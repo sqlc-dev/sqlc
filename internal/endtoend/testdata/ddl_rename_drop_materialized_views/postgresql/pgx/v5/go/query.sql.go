@@ -9,13 +9,13 @@ import (
 	"context"
 )
 
-const getAuthorMv = `-- name: GetAuthorMv :one
+const getAuthorMvSQL = `-- name: GetAuthorMv :one
 SELECT id, name, bio FROM authors_mv
 WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetAuthorMv(ctx context.Context, id int64) (AuthorsMv, error) {
-	row := q.db.QueryRow(ctx, getAuthorMv, id)
+	row := q.db.QueryRow(ctx, getAuthorMvSQL, id)
 	var i AuthorsMv
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err

@@ -11,12 +11,12 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const listBar = `-- name: ListBar :many
+const listBarSQL = `-- name: ListBar :many
 SELECT bar FROM foo
 `
 
 func (q *Queries) ListBar(ctx context.Context) ([]pgtype.Hstore, error) {
-	rows, err := q.db.Query(ctx, listBar)
+	rows, err := q.db.Query(ctx, listBarSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -35,12 +35,12 @@ func (q *Queries) ListBar(ctx context.Context) ([]pgtype.Hstore, error) {
 	return items, nil
 }
 
-const listBaz = `-- name: ListBaz :many
+const listBazSQL = `-- name: ListBaz :many
 SELECT baz FROM foo
 `
 
 func (q *Queries) ListBaz(ctx context.Context) ([]pgtype.Hstore, error) {
-	rows, err := q.db.Query(ctx, listBaz)
+	rows, err := q.db.Query(ctx, listBazSQL)
 	if err != nil {
 		return nil, err
 	}

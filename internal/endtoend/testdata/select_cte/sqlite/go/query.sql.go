@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const listAuthors = `-- name: ListAuthors :many
+const listAuthorsSQL = `-- name: ListAuthors :many
 WITH abc AS (
   SELECT 1 AS n
 )
@@ -17,7 +17,7 @@ SELECT n FROM abc
 `
 
 func (q *Queries) ListAuthors(ctx context.Context) ([]int64, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthors)
+	rows, err := q.db.QueryContext(ctx, listAuthorsSQL)
 	if err != nil {
 		return nil, err
 	}

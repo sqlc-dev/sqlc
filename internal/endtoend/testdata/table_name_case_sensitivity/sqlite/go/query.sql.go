@@ -10,123 +10,123 @@ import (
 	"database/sql"
 )
 
-const deleteAuthor = `-- name: DeleteAuthor :exec
+const deleteAuthorSQL = `-- name: DeleteAuthor :exec
 DELETE FROM "Authors" WHERE id = ?
 `
 
 func (q *Queries) DeleteAuthor(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteAuthor, id)
+	_, err := q.db.ExecContext(ctx, deleteAuthorSQL, id)
 	return err
 }
 
-const deleteBook = `-- name: DeleteBook :exec
+const deleteBookSQL = `-- name: DeleteBook :exec
 DELETE FROM books WHERE id = ?
 `
 
 func (q *Queries) DeleteBook(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteBook, id)
+	_, err := q.db.ExecContext(ctx, deleteBookSQL, id)
 	return err
 }
 
-const deleteUser = `-- name: DeleteUser :exec
+const deleteUserSQL = `-- name: DeleteUser :exec
 DELETE FROM users WHERE id = ?
 `
 
 func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteUser, id)
+	_, err := q.db.ExecContext(ctx, deleteUserSQL, id)
 	return err
 }
 
-const deleteUserMixedCase = `-- name: DeleteUserMixedCase :exec
+const deleteUserMixedCaseSQL = `-- name: DeleteUserMixedCase :exec
 DELETE FROM users WHERE id = ?
 `
 
 func (q *Queries) DeleteUserMixedCase(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteUserMixedCase, id)
+	_, err := q.db.ExecContext(ctx, deleteUserMixedCaseSQL, id)
 	return err
 }
 
-const getAuthor = `-- name: GetAuthor :one
+const getAuthorSQL = `-- name: GetAuthor :one
 SELECT id, name FROM "Authors" WHERE id = ?
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, id)
+	row := q.db.QueryRowContext(ctx, getAuthorSQL, id)
 	var i Author
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err
 }
 
-const getBook = `-- name: GetBook :one
+const getBookSQL = `-- name: GetBook :one
 SELECT id, title FROM books WHERE id = ?
 `
 
 func (q *Queries) GetBook(ctx context.Context, id int64) (Book, error) {
-	row := q.db.QueryRowContext(ctx, getBook, id)
+	row := q.db.QueryRowContext(ctx, getBookSQL, id)
 	var i Book
 	err := row.Scan(&i.ID, &i.Title)
 	return i, err
 }
 
-const getUser = `-- name: GetUser :one
+const getUserSQL = `-- name: GetUser :one
 SELECT id, name FROM users WHERE id = ?
 `
 
 func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUser, id)
+	row := q.db.QueryRowContext(ctx, getUserSQL, id)
 	var i User
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err
 }
 
-const getUserMixedCase = `-- name: GetUserMixedCase :one
+const getUserMixedCaseSQL = `-- name: GetUserMixedCase :one
 SELECT id, name FROM users WHERE id = ?
 `
 
 func (q *Queries) GetUserMixedCase(ctx context.Context, id int64) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUserMixedCase, id)
+	row := q.db.QueryRowContext(ctx, getUserMixedCaseSQL, id)
 	var i User
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err
 }
 
-const insertAuthor = `-- name: InsertAuthor :exec
+const insertAuthorSQL = `-- name: InsertAuthor :exec
 INSERT INTO "Authors" (name) VALUES (?)
 `
 
 func (q *Queries) InsertAuthor(ctx context.Context, name sql.NullString) error {
-	_, err := q.db.ExecContext(ctx, insertAuthor, name)
+	_, err := q.db.ExecContext(ctx, insertAuthorSQL, name)
 	return err
 }
 
-const insertBook = `-- name: InsertBook :exec
+const insertBookSQL = `-- name: InsertBook :exec
 INSERT INTO books (title) VALUES (?)
 `
 
 func (q *Queries) InsertBook(ctx context.Context, title sql.NullString) error {
-	_, err := q.db.ExecContext(ctx, insertBook, title)
+	_, err := q.db.ExecContext(ctx, insertBookSQL, title)
 	return err
 }
 
-const insertUser = `-- name: InsertUser :exec
+const insertUserSQL = `-- name: InsertUser :exec
 INSERT INTO users (name) VALUES (?)
 `
 
 func (q *Queries) InsertUser(ctx context.Context, name sql.NullString) error {
-	_, err := q.db.ExecContext(ctx, insertUser, name)
+	_, err := q.db.ExecContext(ctx, insertUserSQL, name)
 	return err
 }
 
-const insertUserMixedCase = `-- name: InsertUserMixedCase :exec
+const insertUserMixedCaseSQL = `-- name: InsertUserMixedCase :exec
 INSERT INTO users (name) VALUES (?)
 `
 
 func (q *Queries) InsertUserMixedCase(ctx context.Context, name sql.NullString) error {
-	_, err := q.db.ExecContext(ctx, insertUserMixedCase, name)
+	_, err := q.db.ExecContext(ctx, insertUserMixedCaseSQL, name)
 	return err
 }
 
-const updateAuthor = `-- name: UpdateAuthor :exec
+const updateAuthorSQL = `-- name: UpdateAuthor :exec
 UPDATE "Authors" SET name = ? WHERE id = ?
 `
 
@@ -136,11 +136,11 @@ type UpdateAuthorParams struct {
 }
 
 func (q *Queries) UpdateAuthor(ctx context.Context, arg UpdateAuthorParams) error {
-	_, err := q.db.ExecContext(ctx, updateAuthor, arg.Name, arg.ID)
+	_, err := q.db.ExecContext(ctx, updateAuthorSQL, arg.Name, arg.ID)
 	return err
 }
 
-const updateBook = `-- name: UpdateBook :exec
+const updateBookSQL = `-- name: UpdateBook :exec
 UPDATE books SET title = ? WHERE id = ?
 `
 
@@ -150,11 +150,11 @@ type UpdateBookParams struct {
 }
 
 func (q *Queries) UpdateBook(ctx context.Context, arg UpdateBookParams) error {
-	_, err := q.db.ExecContext(ctx, updateBook, arg.Title, arg.ID)
+	_, err := q.db.ExecContext(ctx, updateBookSQL, arg.Title, arg.ID)
 	return err
 }
 
-const updateUser = `-- name: UpdateUser :exec
+const updateUserSQL = `-- name: UpdateUser :exec
 UPDATE users SET name = ? WHERE id = ?
 `
 
@@ -164,11 +164,11 @@ type UpdateUserParams struct {
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
-	_, err := q.db.ExecContext(ctx, updateUser, arg.Name, arg.ID)
+	_, err := q.db.ExecContext(ctx, updateUserSQL, arg.Name, arg.ID)
 	return err
 }
 
-const updateUserMixedCase = `-- name: UpdateUserMixedCase :exec
+const updateUserMixedCaseSQL = `-- name: UpdateUserMixedCase :exec
 UPDATE users SET name = ? WHERE id = ?
 `
 
@@ -178,6 +178,6 @@ type UpdateUserMixedCaseParams struct {
 }
 
 func (q *Queries) UpdateUserMixedCase(ctx context.Context, arg UpdateUserMixedCaseParams) error {
-	_, err := q.db.ExecContext(ctx, updateUserMixedCase, arg.Name, arg.ID)
+	_, err := q.db.ExecContext(ctx, updateUserMixedCaseSQL, arg.Name, arg.ID)
 	return err
 }

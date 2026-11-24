@@ -9,23 +9,23 @@ import (
 	"context"
 )
 
-const countStarLower = `-- name: CountStarLower :one
+const countStarLowerSQL = `-- name: CountStarLower :one
 SELECT count(*) FROM bar
 `
 
 func (q *Queries) CountStarLower(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, countStarLower)
+	row := q.db.QueryRow(ctx, countStarLowerSQL)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
 }
 
-const countStarUpper = `-- name: CountStarUpper :one
+const countStarUpperSQL = `-- name: CountStarUpper :one
 SELECT COUNT(*) FROM bar
 `
 
 func (q *Queries) CountStarUpper(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, countStarUpper)
+	row := q.db.QueryRow(ctx, countStarUpperSQL)
 	var count int64
 	err := row.Scan(&count)
 	return count, err

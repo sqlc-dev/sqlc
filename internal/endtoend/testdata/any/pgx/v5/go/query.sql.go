@@ -9,14 +9,14 @@ import (
 	"context"
 )
 
-const any_ = `-- name: Any :many
+const anySQL = `-- name: Any :many
 SELECT id
 FROM bar
 WHERE id = ANY($1::bigint[])
 `
 
 func (q *Queries) Any(ctx context.Context, dollar_1 []int64) ([]int64, error) {
-	rows, err := q.db.Query(ctx, any_, dollar_1)
+	rows, err := q.db.Query(ctx, anySQL, dollar_1)
 	if err != nil {
 		return nil, err
 	}

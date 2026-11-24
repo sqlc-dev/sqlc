@@ -10,14 +10,14 @@ import (
 	"database/sql"
 )
 
-const getFoo = `-- name: GetFoo :many
+const getFooSQL = `-- name: GetFoo :many
 SELECT bar
 FROM foo
 WHERE bar = ?
 `
 
 func (q *Queries) GetFoo(ctx context.Context, bar sql.NullString) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, getFoo, bar)
+	rows, err := q.db.QueryContext(ctx, getFooSQL, bar)
 	if err != nil {
 		return nil, err
 	}
@@ -39,12 +39,12 @@ func (q *Queries) GetFoo(ctx context.Context, bar sql.NullString) ([]sql.NullStr
 	return items, nil
 }
 
-const listFoo = `-- name: ListFoo :many
+const listFooSQL = `-- name: ListFoo :many
 SELECT bar FROM foo
 `
 
 func (q *Queries) ListFoo(ctx context.Context) ([]sql.NullString, error) {
-	rows, err := q.db.QueryContext(ctx, listFoo)
+	rows, err := q.db.QueryContext(ctx, listFooSQL)
 	if err != nil {
 		return nil, err
 	}

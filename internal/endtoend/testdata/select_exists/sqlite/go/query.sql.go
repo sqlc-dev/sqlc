@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const barExists = `-- name: BarExists :one
+const barExistsSQL = `-- name: BarExists :one
 SELECT
   EXISTS (
     SELECT 1
@@ -19,7 +19,7 @@ SELECT
 `
 
 func (q *Queries) BarExists(ctx context.Context, id int64) (bool, error) {
-	row := q.db.QueryRowContext(ctx, barExists, id)
+	row := q.db.QueryRowContext(ctx, barExistsSQL, id)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err

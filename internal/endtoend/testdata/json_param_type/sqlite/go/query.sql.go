@@ -10,12 +10,12 @@ import (
 	"database/sql"
 )
 
-const findByAddress = `-- name: FindByAddress :one
+const findByAddressSQL = `-- name: FindByAddress :one
 SELECT id, metadata FROM "user" WHERE "metadata"->>'address1' = ?1 LIMIT 1
 `
 
 func (q *Queries) FindByAddress(ctx context.Context, metadata sql.NullString) (User, error) {
-	row := q.db.QueryRowContext(ctx, findByAddress, metadata)
+	row := q.db.QueryRowContext(ctx, findByAddressSQL, metadata)
 	var i User
 	err := row.Scan(&i.ID, &i.Metadata)
 	return i, err

@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const getPrice = `-- name: GetPrice :one
+const getPriceSQL = `-- name: GetPrice :one
 SELECT id, amount FROM prices WHERE id = $1
 `
 
 func (q *Queries) GetPrice(ctx context.Context, id int64) (Price, error) {
-	row := q.db.QueryRowContext(ctx, getPrice, id)
+	row := q.db.QueryRowContext(ctx, getPriceSQL, id)
 	var i Price
 	err := row.Scan(&i.ID, &i.Amount)
 	return i, err

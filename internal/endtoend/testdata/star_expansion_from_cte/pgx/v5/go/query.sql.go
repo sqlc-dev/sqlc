@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const starExpansionCTE = `-- name: StarExpansionCTE :many
+const starExpansionCTESQL = `-- name: StarExpansionCTE :many
 WITH cte AS (SELECT a, b FROM foo) SELECT a, b FROM cte
 `
 
@@ -21,7 +21,7 @@ type StarExpansionCTERow struct {
 }
 
 func (q *Queries) StarExpansionCTE(ctx context.Context) ([]StarExpansionCTERow, error) {
-	rows, err := q.db.Query(ctx, starExpansionCTE)
+	rows, err := q.db.Query(ctx, starExpansionCTESQL)
 	if err != nil {
 		return nil, err
 	}

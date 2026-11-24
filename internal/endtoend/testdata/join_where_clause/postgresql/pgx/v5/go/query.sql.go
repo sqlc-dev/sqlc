@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const joinNoConstraints = `-- name: JoinNoConstraints :many
+const joinNoConstraintsSQL = `-- name: JoinNoConstraints :many
 SELECT foo.barid
 FROM foo
 CROSS JOIN bar
@@ -22,7 +22,7 @@ type JoinNoConstraintsParams struct {
 }
 
 func (q *Queries) JoinNoConstraints(ctx context.Context, arg JoinNoConstraintsParams) ([]int32, error) {
-	rows, err := q.db.Query(ctx, joinNoConstraints, arg.Owner, arg.ID)
+	rows, err := q.db.Query(ctx, joinNoConstraintsSQL, arg.Owner, arg.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (q *Queries) JoinNoConstraints(ctx context.Context, arg JoinNoConstraintsPa
 	return items, nil
 }
 
-const joinParamWhereClause = `-- name: JoinParamWhereClause :many
+const joinParamWhereClauseSQL = `-- name: JoinParamWhereClause :many
 SELECT foo.barid
 FROM foo
 JOIN bar ON bar.id = $2
@@ -54,7 +54,7 @@ type JoinParamWhereClauseParams struct {
 }
 
 func (q *Queries) JoinParamWhereClause(ctx context.Context, arg JoinParamWhereClauseParams) ([]int32, error) {
-	rows, err := q.db.Query(ctx, joinParamWhereClause, arg.Owner, arg.ID)
+	rows, err := q.db.Query(ctx, joinParamWhereClauseSQL, arg.Owner, arg.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (q *Queries) JoinParamWhereClause(ctx context.Context, arg JoinParamWhereCl
 	return items, nil
 }
 
-const joinWhereClause = `-- name: JoinWhereClause :many
+const joinWhereClauseSQL = `-- name: JoinWhereClause :many
 SELECT foo.barid
 FROM foo
 JOIN bar ON bar.id = barid
@@ -81,7 +81,7 @@ WHERE owner = $1
 `
 
 func (q *Queries) JoinWhereClause(ctx context.Context, owner string) ([]int32, error) {
-	rows, err := q.db.Query(ctx, joinWhereClause, owner)
+	rows, err := q.db.Query(ctx, joinWhereClauseSQL, owner)
 	if err != nil {
 		return nil, err
 	}

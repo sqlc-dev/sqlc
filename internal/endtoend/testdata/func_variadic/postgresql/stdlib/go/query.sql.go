@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const updateJ = `-- name: UpdateJ :exec
+const updateJSQL = `-- name: UpdateJ :exec
 UPDATE
     test
 SET
@@ -28,7 +28,7 @@ type UpdateJParams struct {
 }
 
 func (q *Queries) UpdateJ(ctx context.Context, arg UpdateJParams) error {
-	_, err := q.db.ExecContext(ctx, updateJ,
+	_, err := q.db.ExecContext(ctx, updateJSQL,
 		arg.Column1,
 		arg.Column2,
 		arg.Column3,

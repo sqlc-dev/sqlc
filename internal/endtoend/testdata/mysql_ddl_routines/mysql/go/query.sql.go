@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const getCollection = `-- name: GetCollection :one
+const getCollectionSQL = `-- name: GetCollection :one
 SELECT id, updated_at FROM collections WHERE id = ?
 `
 
 func (q *Queries) GetCollection(ctx context.Context, id int64) (Collection, error) {
-	row := q.db.QueryRowContext(ctx, getCollection, id)
+	row := q.db.QueryRowContext(ctx, getCollectionSQL, id)
 	var i Collection
 	err := row.Scan(&i.ID, &i.UpdatedAt)
 	return i, err

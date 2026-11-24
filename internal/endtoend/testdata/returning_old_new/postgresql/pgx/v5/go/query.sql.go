@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const deleteReturningOldNew = `-- name: DeleteReturningOldNew :one
+const deleteReturningOldNewSQL = `-- name: DeleteReturningOldNew :one
 DELETE FROM users WHERE id = $1
 RETURNING old.name, new.name
 `
@@ -22,13 +22,13 @@ type DeleteReturningOldNewRow struct {
 }
 
 func (q *Queries) DeleteReturningOldNew(ctx context.Context, id int64) (DeleteReturningOldNewRow, error) {
-	row := q.db.QueryRow(ctx, deleteReturningOldNew, id)
+	row := q.db.QueryRow(ctx, deleteReturningOldNewSQL, id)
 	var i DeleteReturningOldNewRow
 	err := row.Scan(&i.Name, &i.Name_2)
 	return i, err
 }
 
-const insertReturningOldNew = `-- name: InsertReturningOldNew :one
+const insertReturningOldNewSQL = `-- name: InsertReturningOldNew :one
 INSERT INTO users (name) VALUES ($1)
 RETURNING old.id, new.id
 `
@@ -39,13 +39,13 @@ type InsertReturningOldNewRow struct {
 }
 
 func (q *Queries) InsertReturningOldNew(ctx context.Context, name string) (InsertReturningOldNewRow, error) {
-	row := q.db.QueryRow(ctx, insertReturningOldNew, name)
+	row := q.db.QueryRow(ctx, insertReturningOldNewSQL, name)
 	var i InsertReturningOldNewRow
 	err := row.Scan(&i.ID, &i.ID_2)
 	return i, err
 }
 
-const updateReturningOld = `-- name: UpdateReturningOld :one
+const updateReturningOldSQL = `-- name: UpdateReturningOld :one
 UPDATE users SET name = $1 WHERE id = $2
 RETURNING old.name
 `
@@ -56,13 +56,13 @@ type UpdateReturningOldParams struct {
 }
 
 func (q *Queries) UpdateReturningOld(ctx context.Context, arg UpdateReturningOldParams) (string, error) {
-	row := q.db.QueryRow(ctx, updateReturningOld, arg.Name, arg.ID)
+	row := q.db.QueryRow(ctx, updateReturningOldSQL, arg.Name, arg.ID)
 	var name string
 	err := row.Scan(&name)
 	return name, err
 }
 
-const updateReturningOldNew = `-- name: UpdateReturningOldNew :one
+const updateReturningOldNewSQL = `-- name: UpdateReturningOldNew :one
 UPDATE users SET name = $1 WHERE id = $2
 RETURNING old.name, new.name
 `
@@ -78,13 +78,13 @@ type UpdateReturningOldNewRow struct {
 }
 
 func (q *Queries) UpdateReturningOldNew(ctx context.Context, arg UpdateReturningOldNewParams) (UpdateReturningOldNewRow, error) {
-	row := q.db.QueryRow(ctx, updateReturningOldNew, arg.Name, arg.ID)
+	row := q.db.QueryRow(ctx, updateReturningOldNewSQL, arg.Name, arg.ID)
 	var i UpdateReturningOldNewRow
 	err := row.Scan(&i.Name, &i.Name_2)
 	return i, err
 }
 
-const updateReturningOldStar = `-- name: UpdateReturningOldStar :one
+const updateReturningOldStarSQL = `-- name: UpdateReturningOldStar :one
 UPDATE users SET name = $1 WHERE id = $2
 RETURNING old.id, old.name, old.bio
 `
@@ -95,13 +95,13 @@ type UpdateReturningOldStarParams struct {
 }
 
 func (q *Queries) UpdateReturningOldStar(ctx context.Context, arg UpdateReturningOldStarParams) (User, error) {
-	row := q.db.QueryRow(ctx, updateReturningOldStar, arg.Name, arg.ID)
+	row := q.db.QueryRow(ctx, updateReturningOldStarSQL, arg.Name, arg.ID)
 	var i User
 	err := row.Scan(&i.ID, &i.Name, &i.Bio)
 	return i, err
 }
 
-const updateReturningWithAliases = `-- name: UpdateReturningWithAliases :one
+const updateReturningWithAliasesSQL = `-- name: UpdateReturningWithAliases :one
 UPDATE users SET name = $1 WHERE id = $2
 RETURNING WITH (OLD AS o, NEW AS n) o.name, n.name
 `
@@ -117,7 +117,7 @@ type UpdateReturningWithAliasesRow struct {
 }
 
 func (q *Queries) UpdateReturningWithAliases(ctx context.Context, arg UpdateReturningWithAliasesParams) (UpdateReturningWithAliasesRow, error) {
-	row := q.db.QueryRow(ctx, updateReturningWithAliases, arg.Name, arg.ID)
+	row := q.db.QueryRow(ctx, updateReturningWithAliasesSQL, arg.Name, arg.ID)
 	var i UpdateReturningWithAliasesRow
 	err := row.Scan(&i.Name, &i.Name_2)
 	return i, err

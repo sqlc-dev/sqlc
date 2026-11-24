@@ -11,521 +11,521 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const keywordBreak = `-- name: KeywordBreak :exec
+const keywordBreakSQL = `-- name: KeywordBreak :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordBreak(ctx context.Context, break_ string) error {
-	_, err := q.db.Exec(ctx, keywordBreak, break_)
+	_, err := q.db.Exec(ctx, keywordBreakSQL, break_)
 	return err
 }
 
-const keywordCase = `-- name: KeywordCase :exec
+const keywordCaseSQL = `-- name: KeywordCase :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordCase(ctx context.Context, case_ string) error {
-	_, err := q.db.Exec(ctx, keywordCase, case_)
+	_, err := q.db.Exec(ctx, keywordCaseSQL, case_)
 	return err
 }
 
-const keywordChan = `-- name: KeywordChan :exec
+const keywordChanSQL = `-- name: KeywordChan :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordChan(ctx context.Context, chan_ string) error {
-	_, err := q.db.Exec(ctx, keywordChan, chan_)
+	_, err := q.db.Exec(ctx, keywordChanSQL, chan_)
 	return err
 }
 
-const keywordConst = `-- name: KeywordConst :exec
+const keywordConstSQL = `-- name: KeywordConst :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordConst(ctx context.Context, const_ string) error {
-	_, err := q.db.Exec(ctx, keywordConst, const_)
+	_, err := q.db.Exec(ctx, keywordConstSQL, const_)
 	return err
 }
 
-const keywordContinue = `-- name: KeywordContinue :exec
+const keywordContinueSQL = `-- name: KeywordContinue :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordContinue(ctx context.Context, continue_ string) error {
-	_, err := q.db.Exec(ctx, keywordContinue, continue_)
+	_, err := q.db.Exec(ctx, keywordContinueSQL, continue_)
 	return err
 }
 
-const keywordDefault = `-- name: KeywordDefault :exec
+const keywordDefaultSQL = `-- name: KeywordDefault :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordDefault(ctx context.Context, default_ string) error {
-	_, err := q.db.Exec(ctx, keywordDefault, default_)
+	_, err := q.db.Exec(ctx, keywordDefaultSQL, default_)
 	return err
 }
 
-const keywordDefer = `-- name: KeywordDefer :exec
+const keywordDeferSQL = `-- name: KeywordDefer :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordDefer(ctx context.Context, defer_ string) error {
-	_, err := q.db.Exec(ctx, keywordDefer, defer_)
+	_, err := q.db.Exec(ctx, keywordDeferSQL, defer_)
 	return err
 }
 
-const keywordElse = `-- name: KeywordElse :exec
+const keywordElseSQL = `-- name: KeywordElse :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordElse(ctx context.Context, else_ string) error {
-	_, err := q.db.Exec(ctx, keywordElse, else_)
+	_, err := q.db.Exec(ctx, keywordElseSQL, else_)
 	return err
 }
 
-const keywordFallthrough = `-- name: KeywordFallthrough :exec
+const keywordFallthroughSQL = `-- name: KeywordFallthrough :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordFallthrough(ctx context.Context, fallthrough_ string) error {
-	_, err := q.db.Exec(ctx, keywordFallthrough, fallthrough_)
+	_, err := q.db.Exec(ctx, keywordFallthroughSQL, fallthrough_)
 	return err
 }
 
-const keywordFor = `-- name: KeywordFor :exec
+const keywordForSQL = `-- name: KeywordFor :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordFor(ctx context.Context, for_ string) error {
-	_, err := q.db.Exec(ctx, keywordFor, for_)
+	_, err := q.db.Exec(ctx, keywordForSQL, for_)
 	return err
 }
 
-const keywordFunc = `-- name: KeywordFunc :exec
+const keywordFuncSQL = `-- name: KeywordFunc :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordFunc(ctx context.Context, func_ string) error {
-	_, err := q.db.Exec(ctx, keywordFunc, func_)
+	_, err := q.db.Exec(ctx, keywordFuncSQL, func_)
 	return err
 }
 
-const keywordGo = `-- name: KeywordGo :exec
+const keywordGoSQL = `-- name: KeywordGo :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordGo(ctx context.Context, go_ string) error {
-	_, err := q.db.Exec(ctx, keywordGo, go_)
+	_, err := q.db.Exec(ctx, keywordGoSQL, go_)
 	return err
 }
 
-const keywordGoto = `-- name: KeywordGoto :exec
+const keywordGotoSQL = `-- name: KeywordGoto :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordGoto(ctx context.Context, goto_ string) error {
-	_, err := q.db.Exec(ctx, keywordGoto, goto_)
+	_, err := q.db.Exec(ctx, keywordGotoSQL, goto_)
 	return err
 }
 
-const keywordIf = `-- name: KeywordIf :exec
+const keywordIfSQL = `-- name: KeywordIf :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordIf(ctx context.Context, if_ string) error {
-	_, err := q.db.Exec(ctx, keywordIf, if_)
+	_, err := q.db.Exec(ctx, keywordIfSQL, if_)
 	return err
 }
 
-const keywordImport = `-- name: KeywordImport :exec
+const keywordImportSQL = `-- name: KeywordImport :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordImport(ctx context.Context, import_ string) error {
-	_, err := q.db.Exec(ctx, keywordImport, import_)
+	_, err := q.db.Exec(ctx, keywordImportSQL, import_)
 	return err
 }
 
-const keywordInterface = `-- name: KeywordInterface :exec
+const keywordInterfaceSQL = `-- name: KeywordInterface :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordInterface(ctx context.Context, interface_ string) error {
-	_, err := q.db.Exec(ctx, keywordInterface, interface_)
+	_, err := q.db.Exec(ctx, keywordInterfaceSQL, interface_)
 	return err
 }
 
-const keywordMap = `-- name: KeywordMap :exec
+const keywordMapSQL = `-- name: KeywordMap :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordMap(ctx context.Context, map_ string) error {
-	_, err := q.db.Exec(ctx, keywordMap, map_)
+	_, err := q.db.Exec(ctx, keywordMapSQL, map_)
 	return err
 }
 
-const keywordPackage = `-- name: KeywordPackage :exec
+const keywordPackageSQL = `-- name: KeywordPackage :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordPackage(ctx context.Context, package_ string) error {
-	_, err := q.db.Exec(ctx, keywordPackage, package_)
+	_, err := q.db.Exec(ctx, keywordPackageSQL, package_)
 	return err
 }
 
-const keywordQ = `-- name: KeywordQ :exec
+const keywordQSQL = `-- name: KeywordQ :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordQ(ctx context.Context, q_ string) error {
-	_, err := q.db.Exec(ctx, keywordQ, q_)
+	_, err := q.db.Exec(ctx, keywordQSQL, q_)
 	return err
 }
 
-const keywordRange = `-- name: KeywordRange :exec
+const keywordRangeSQL = `-- name: KeywordRange :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordRange(ctx context.Context, range_ string) error {
-	_, err := q.db.Exec(ctx, keywordRange, range_)
+	_, err := q.db.Exec(ctx, keywordRangeSQL, range_)
 	return err
 }
 
-const keywordReturn = `-- name: KeywordReturn :exec
+const keywordReturnSQL = `-- name: KeywordReturn :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordReturn(ctx context.Context, return_ string) error {
-	_, err := q.db.Exec(ctx, keywordReturn, return_)
+	_, err := q.db.Exec(ctx, keywordReturnSQL, return_)
 	return err
 }
 
-const keywordSelect = `-- name: KeywordSelect :exec
+const keywordSelectSQL = `-- name: KeywordSelect :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordSelect(ctx context.Context, select_ string) error {
-	_, err := q.db.Exec(ctx, keywordSelect, select_)
+	_, err := q.db.Exec(ctx, keywordSelectSQL, select_)
 	return err
 }
 
-const keywordStruct = `-- name: KeywordStruct :exec
+const keywordStructSQL = `-- name: KeywordStruct :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordStruct(ctx context.Context, struct_ string) error {
-	_, err := q.db.Exec(ctx, keywordStruct, struct_)
+	_, err := q.db.Exec(ctx, keywordStructSQL, struct_)
 	return err
 }
 
-const keywordSwitch = `-- name: KeywordSwitch :exec
+const keywordSwitchSQL = `-- name: KeywordSwitch :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordSwitch(ctx context.Context, switch_ string) error {
-	_, err := q.db.Exec(ctx, keywordSwitch, switch_)
+	_, err := q.db.Exec(ctx, keywordSwitchSQL, switch_)
 	return err
 }
 
-const keywordType = `-- name: KeywordType :exec
+const keywordTypeSQL = `-- name: KeywordType :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordType(ctx context.Context, type_ string) error {
-	_, err := q.db.Exec(ctx, keywordType, type_)
+	_, err := q.db.Exec(ctx, keywordTypeSQL, type_)
 	return err
 }
 
-const keywordVar = `-- name: KeywordVar :exec
+const keywordVarSQL = `-- name: KeywordVar :exec
 SELECT $1::text
 `
 
 func (q *Queries) KeywordVar(ctx context.Context, var_ string) error {
-	_, err := q.db.Exec(ctx, keywordVar, var_)
+	_, err := q.db.Exec(ctx, keywordVarSQL, var_)
 	return err
 }
 
-const selectBreak = `-- name: SelectBreak :one
+const selectBreakSQL = `-- name: SelectBreak :one
 SELECT "break" FROM go_keywords
 `
 
 func (q *Queries) SelectBreak(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectBreak)
+	row := q.db.QueryRow(ctx, selectBreakSQL)
 	var break_ pgtype.Text
 	err := row.Scan(&break_)
 	return break_, err
 }
 
-const selectCase = `-- name: SelectCase :one
+const selectCaseSQL = `-- name: SelectCase :one
 SELECT "case" FROM go_keywords
 `
 
 func (q *Queries) SelectCase(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectCase)
+	row := q.db.QueryRow(ctx, selectCaseSQL)
 	var case_ pgtype.Text
 	err := row.Scan(&case_)
 	return case_, err
 }
 
-const selectChan = `-- name: SelectChan :one
+const selectChanSQL = `-- name: SelectChan :one
 SELECT "chan" FROM go_keywords
 `
 
 func (q *Queries) SelectChan(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectChan)
+	row := q.db.QueryRow(ctx, selectChanSQL)
 	var chan_ pgtype.Text
 	err := row.Scan(&chan_)
 	return chan_, err
 }
 
-const selectConst = `-- name: SelectConst :one
+const selectConstSQL = `-- name: SelectConst :one
 SELECT "const" FROM go_keywords
 `
 
 func (q *Queries) SelectConst(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectConst)
+	row := q.db.QueryRow(ctx, selectConstSQL)
 	var const_ pgtype.Text
 	err := row.Scan(&const_)
 	return const_, err
 }
 
-const selectContinue = `-- name: SelectContinue :one
+const selectContinueSQL = `-- name: SelectContinue :one
 SELECT "continue" FROM go_keywords
 `
 
 func (q *Queries) SelectContinue(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectContinue)
+	row := q.db.QueryRow(ctx, selectContinueSQL)
 	var continue_ pgtype.Text
 	err := row.Scan(&continue_)
 	return continue_, err
 }
 
-const selectDefault = `-- name: SelectDefault :one
+const selectDefaultSQL = `-- name: SelectDefault :one
 SELECT "default" FROM go_keywords
 `
 
 func (q *Queries) SelectDefault(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectDefault)
+	row := q.db.QueryRow(ctx, selectDefaultSQL)
 	var default_ pgtype.Text
 	err := row.Scan(&default_)
 	return default_, err
 }
 
-const selectDefer = `-- name: SelectDefer :one
+const selectDeferSQL = `-- name: SelectDefer :one
 SELECT "defer" FROM go_keywords
 `
 
 func (q *Queries) SelectDefer(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectDefer)
+	row := q.db.QueryRow(ctx, selectDeferSQL)
 	var defer_ pgtype.Text
 	err := row.Scan(&defer_)
 	return defer_, err
 }
 
-const selectElse = `-- name: SelectElse :one
+const selectElseSQL = `-- name: SelectElse :one
 SELECT "else" FROM go_keywords
 `
 
 func (q *Queries) SelectElse(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectElse)
+	row := q.db.QueryRow(ctx, selectElseSQL)
 	var else_ pgtype.Text
 	err := row.Scan(&else_)
 	return else_, err
 }
 
-const selectFallthrough = `-- name: SelectFallthrough :one
+const selectFallthroughSQL = `-- name: SelectFallthrough :one
 SELECT "fallthrough" FROM go_keywords
 `
 
 func (q *Queries) SelectFallthrough(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectFallthrough)
+	row := q.db.QueryRow(ctx, selectFallthroughSQL)
 	var fallthrough_ pgtype.Text
 	err := row.Scan(&fallthrough_)
 	return fallthrough_, err
 }
 
-const selectFor = `-- name: SelectFor :one
+const selectForSQL = `-- name: SelectFor :one
 SELECT "for" FROM go_keywords
 `
 
 func (q *Queries) SelectFor(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectFor)
+	row := q.db.QueryRow(ctx, selectForSQL)
 	var for_ pgtype.Text
 	err := row.Scan(&for_)
 	return for_, err
 }
 
-const selectFunc = `-- name: SelectFunc :one
+const selectFuncSQL = `-- name: SelectFunc :one
 SELECT "func" FROM go_keywords
 `
 
 func (q *Queries) SelectFunc(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectFunc)
+	row := q.db.QueryRow(ctx, selectFuncSQL)
 	var func_ pgtype.Text
 	err := row.Scan(&func_)
 	return func_, err
 }
 
-const selectGo = `-- name: SelectGo :one
+const selectGoSQL = `-- name: SelectGo :one
 SELECT "go" FROM go_keywords
 `
 
 func (q *Queries) SelectGo(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectGo)
+	row := q.db.QueryRow(ctx, selectGoSQL)
 	var go_ pgtype.Text
 	err := row.Scan(&go_)
 	return go_, err
 }
 
-const selectGoto = `-- name: SelectGoto :one
+const selectGotoSQL = `-- name: SelectGoto :one
 SELECT "goto" FROM go_keywords
 `
 
 func (q *Queries) SelectGoto(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectGoto)
+	row := q.db.QueryRow(ctx, selectGotoSQL)
 	var goto_ pgtype.Text
 	err := row.Scan(&goto_)
 	return goto_, err
 }
 
-const selectIf = `-- name: SelectIf :one
+const selectIfSQL = `-- name: SelectIf :one
 SELECT "if" FROM go_keywords
 `
 
 func (q *Queries) SelectIf(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectIf)
+	row := q.db.QueryRow(ctx, selectIfSQL)
 	var if_ pgtype.Text
 	err := row.Scan(&if_)
 	return if_, err
 }
 
-const selectImport = `-- name: SelectImport :one
+const selectImportSQL = `-- name: SelectImport :one
 SELECT "import" FROM go_keywords
 `
 
 func (q *Queries) SelectImport(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectImport)
+	row := q.db.QueryRow(ctx, selectImportSQL)
 	var import_ pgtype.Text
 	err := row.Scan(&import_)
 	return import_, err
 }
 
-const selectInterface = `-- name: SelectInterface :one
+const selectInterfaceSQL = `-- name: SelectInterface :one
 SELECT "interface" FROM go_keywords
 `
 
 func (q *Queries) SelectInterface(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectInterface)
+	row := q.db.QueryRow(ctx, selectInterfaceSQL)
 	var interface_ pgtype.Text
 	err := row.Scan(&interface_)
 	return interface_, err
 }
 
-const selectMap = `-- name: SelectMap :one
+const selectMapSQL = `-- name: SelectMap :one
 SELECT "map" FROM go_keywords
 `
 
 func (q *Queries) SelectMap(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectMap)
+	row := q.db.QueryRow(ctx, selectMapSQL)
 	var map_ pgtype.Text
 	err := row.Scan(&map_)
 	return map_, err
 }
 
-const selectPackage = `-- name: SelectPackage :one
+const selectPackageSQL = `-- name: SelectPackage :one
 SELECT "package" FROM go_keywords
 `
 
 func (q *Queries) SelectPackage(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectPackage)
+	row := q.db.QueryRow(ctx, selectPackageSQL)
 	var package_ pgtype.Text
 	err := row.Scan(&package_)
 	return package_, err
 }
 
-const selectQ = `-- name: SelectQ :one
+const selectQSQL = `-- name: SelectQ :one
 SELECT "q" FROM go_keywords
 `
 
 func (q *Queries) SelectQ(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectQ)
+	row := q.db.QueryRow(ctx, selectQSQL)
 	var q_ pgtype.Text
 	err := row.Scan(&q_)
 	return q_, err
 }
 
-const selectRange = `-- name: SelectRange :one
+const selectRangeSQL = `-- name: SelectRange :one
 SELECT "range" FROM go_keywords
 `
 
 func (q *Queries) SelectRange(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectRange)
+	row := q.db.QueryRow(ctx, selectRangeSQL)
 	var range_ pgtype.Text
 	err := row.Scan(&range_)
 	return range_, err
 }
 
-const selectReturn = `-- name: SelectReturn :one
+const selectReturnSQL = `-- name: SelectReturn :one
 SELECT "return" FROM go_keywords
 `
 
 func (q *Queries) SelectReturn(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectReturn)
+	row := q.db.QueryRow(ctx, selectReturnSQL)
 	var return_ pgtype.Text
 	err := row.Scan(&return_)
 	return return_, err
 }
 
-const selectSelect = `-- name: SelectSelect :one
+const selectSelectSQL = `-- name: SelectSelect :one
 SELECT "select" FROM go_keywords
 `
 
 func (q *Queries) SelectSelect(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectSelect)
+	row := q.db.QueryRow(ctx, selectSelectSQL)
 	var select_ pgtype.Text
 	err := row.Scan(&select_)
 	return select_, err
 }
 
-const selectStruct = `-- name: SelectStruct :one
+const selectStructSQL = `-- name: SelectStruct :one
 SELECT "struct" FROM go_keywords
 `
 
 func (q *Queries) SelectStruct(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectStruct)
+	row := q.db.QueryRow(ctx, selectStructSQL)
 	var struct_ pgtype.Text
 	err := row.Scan(&struct_)
 	return struct_, err
 }
 
-const selectSwitch = `-- name: SelectSwitch :one
+const selectSwitchSQL = `-- name: SelectSwitch :one
 SELECT "switch" FROM go_keywords
 `
 
 func (q *Queries) SelectSwitch(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectSwitch)
+	row := q.db.QueryRow(ctx, selectSwitchSQL)
 	var switch_ pgtype.Text
 	err := row.Scan(&switch_)
 	return switch_, err
 }
 
-const selectType = `-- name: SelectType :one
+const selectTypeSQL = `-- name: SelectType :one
 SELECT "type" FROM go_keywords
 `
 
 func (q *Queries) SelectType(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectType)
+	row := q.db.QueryRow(ctx, selectTypeSQL)
 	var type_ pgtype.Text
 	err := row.Scan(&type_)
 	return type_, err
 }
 
-const selectVar = `-- name: SelectVar :one
+const selectVarSQL = `-- name: SelectVar :one
 SELECT "var" FROM go_keywords
 `
 
 func (q *Queries) SelectVar(ctx context.Context) (pgtype.Text, error) {
-	row := q.db.QueryRow(ctx, selectVar)
+	row := q.db.QueryRow(ctx, selectVarSQL)
 	var var_ pgtype.Text
 	err := row.Scan(&var_)
 	return var_, err

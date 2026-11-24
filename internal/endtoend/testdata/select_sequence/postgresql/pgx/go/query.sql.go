@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const getLastValue = `-- name: GetLastValue :one
+const getLastValueSQL = `-- name: GetLastValue :one
 SELECT last_value FROM my_sequence
 `
 
 func (q *Queries) GetLastValue(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, getLastValue)
+	row := q.db.QueryRow(ctx, getLastValueSQL)
 	var last_value int64
 	err := row.Scan(&last_value)
 	return last_value, err

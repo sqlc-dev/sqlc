@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const doStuff = `-- name: DoStuff :exec
+const doStuffSQL = `-- name: DoStuff :exec
 DO $$
     BEGIN
         ALTER TABLE authors
@@ -19,6 +19,6 @@ $$
 `
 
 func (q *Queries) DoStuff(ctx context.Context) error {
-	_, err := q.db.Exec(ctx, doStuff)
+	_, err := q.db.Exec(ctx, doStuffSQL)
 	return err
 }

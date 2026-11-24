@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const selectStatic = `-- name: SelectStatic :one
+const selectStaticSQL = `-- name: SelectStatic :one
 SELECT 'a', 'b' AS b, 1 AS num, true AS truefield, 1.0 AS floater
 `
 
@@ -22,7 +22,7 @@ type SelectStaticRow struct {
 }
 
 func (q *Queries) SelectStatic(ctx context.Context) (SelectStaticRow, error) {
-	row := q.db.QueryRowContext(ctx, selectStatic)
+	row := q.db.QueryRowContext(ctx, selectStaticSQL)
 	var i SelectStaticRow
 	err := row.Scan(
 		&i.Column1,

@@ -17,7 +17,7 @@ var (
 	ErrBatchAlreadyClosed = errors.New("batch already closed")
 )
 
-const insertMappping = `-- name: InsertMappping :batchexec
+const insertMapppingSQL = `-- name: InsertMappping :batchexec
 WITH
     table1
         AS (
@@ -73,7 +73,7 @@ func (q *Queries) InsertMappping(ctx context.Context, arg []InsertMapppingParams
 			a.Sn,
 			a.UpdatedAt,
 		}
-		batch.Queue(insertMappping, vals...)
+		batch.Queue(insertMapppingSQL, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
 	return &InsertMapppingBatchResults{br, len(arg), false}

@@ -11,7 +11,7 @@ import (
 	"context"
 )
 
-const createCity = `-- name: CreateCity :one
+const createCitySQL = `-- name: CreateCity :one
 INSERT INTO city (
     name,
     slug
@@ -30,33 +30,33 @@ type CreateCityParams struct {
 // This is the second line of the comment
 // This is the third line
 func (q *Queries) CreateCity(ctx context.Context, arg CreateCityParams) (City, error) {
-	row := q.queryRow(ctx, q.createCityStmt, createCity, arg.Name, arg.Slug)
+	row := q.queryRow(ctx, q.createCityStmt, createCitySQL, arg.Name, arg.Slug)
 	var i City
 	err := row.Scan(&i.Slug, &i.Name)
 	return i, err
 }
 
-const getCity = `-- name: GetCity :one
+const getCitySQL = `-- name: GetCity :one
 SELECT slug, name
 FROM city
 WHERE slug = $1
 `
 
 func (q *Queries) GetCity(ctx context.Context, slug string) (City, error) {
-	row := q.queryRow(ctx, q.getCityStmt, getCity, slug)
+	row := q.queryRow(ctx, q.getCityStmt, getCitySQL, slug)
 	var i City
 	err := row.Scan(&i.Slug, &i.Name)
 	return i, err
 }
 
-const listCities = `-- name: ListCities :many
+const listCitiesSQL = `-- name: ListCities :many
 SELECT slug, name
 FROM city
 ORDER BY name
 `
 
 func (q *Queries) ListCities(ctx context.Context) ([]City, error) {
-	rows, err := q.query(ctx, q.listCitiesStmt, listCities)
+	rows, err := q.query(ctx, q.listCitiesStmt, listCitiesSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func (q *Queries) ListCities(ctx context.Context) ([]City, error) {
 	return items, nil
 }
 
-const updateCityName = `-- name: UpdateCityName :exec
+const updateCityNameSQL = `-- name: UpdateCityName :exec
 UPDATE city
 SET name = $2
 WHERE slug = $1
@@ -90,6 +90,6 @@ type UpdateCityNameParams struct {
 }
 
 func (q *Queries) UpdateCityName(ctx context.Context, arg UpdateCityNameParams) error {
-	_, err := q.exec(ctx, q.updateCityNameStmt, updateCityName, arg.Slug, arg.Name)
+	_, err := q.exec(ctx, q.updateCityNameStmt, updateCityNameSQL, arg.Slug, arg.Name)
 	return err
 }

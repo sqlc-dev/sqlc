@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const upsertLocation = `-- name: UpsertLocation :exec
+const upsertLocationSQL = `-- name: UpsertLocation :exec
 INSERT INTO locations (
   name,
   address,
@@ -35,7 +35,7 @@ type UpsertLocationParams struct {
 }
 
 func (q *Queries) UpsertLocation(ctx context.Context, arg UpsertLocationParams) error {
-	_, err := q.db.ExecContext(ctx, upsertLocation,
+	_, err := q.db.ExecContext(ctx, upsertLocationSQL,
 		arg.Name,
 		arg.Address,
 		arg.ZipCode,

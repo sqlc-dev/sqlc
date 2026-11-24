@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const math = `-- name: Math :many
+const mathSQL = `-- name: Math :many
 SELECT num, num / 1024 as division FROM foo
 `
 
@@ -19,7 +19,7 @@ type MathRow struct {
 }
 
 func (q *Queries) Math(ctx context.Context) ([]MathRow, error) {
-	rows, err := q.db.Query(ctx, math)
+	rows, err := q.db.Query(ctx, mathSQL)
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const showWarnings = `-- name: ShowWarnings :many
+const showWarningsSQL = `-- name: ShowWarnings :many
 SHOW WARNINGS
 `
 
@@ -20,7 +20,7 @@ type ShowWarningsRow struct {
 }
 
 func (q *Queries) ShowWarnings(ctx context.Context) ([]ShowWarningsRow, error) {
-	rows, err := q.db.QueryContext(ctx, showWarnings)
+	rows, err := q.db.QueryContext(ctx, showWarningsSQL)
 	if err != nil {
 		return nil, err
 	}

@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const updateValues = `-- name: UpdateValues :exec
+const updateValuesSQL = `-- name: UpdateValues :exec
 UPDATE myschema.foo SET a = $1, b = $2
 `
 
@@ -20,6 +20,6 @@ type UpdateValuesParams struct {
 }
 
 func (q *Queries) UpdateValues(ctx context.Context, arg UpdateValuesParams) error {
-	_, err := q.db.Exec(ctx, updateValues, arg.A, arg.B)
+	_, err := q.db.Exec(ctx, updateValuesSQL, arg.A, arg.B)
 	return err
 }

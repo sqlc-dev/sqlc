@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const insertBar = `-- name: InsertBar :execlastid
+const insertBarSQL = `-- name: InsertBar :execlastid
 INSERT INTO bar () VALUES ()
 `
 
 func (q *Queries) InsertBar(ctx context.Context) (int64, error) {
-	result, err := q.db.ExecContext(ctx, insertBar)
+	result, err := q.db.ExecContext(ctx, insertBarSQL)
 	if err != nil {
 		return 0, err
 	}

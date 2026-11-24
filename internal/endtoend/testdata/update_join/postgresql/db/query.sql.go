@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const updateJoin = `-- name: UpdateJoin :exec
+const updateJoinSQL = `-- name: UpdateJoin :exec
 UPDATE  join_table
 SET     is_active = $1
 FROM    primary_table
@@ -25,6 +25,6 @@ type UpdateJoinParams struct {
 }
 
 func (q *Queries) UpdateJoin(ctx context.Context, arg UpdateJoinParams) error {
-	_, err := q.db.ExecContext(ctx, updateJoin, arg.IsActive, arg.ID, arg.UserID)
+	_, err := q.db.ExecContext(ctx, updateJoinSQL, arg.IsActive, arg.ID, arg.UserID)
 	return err
 }

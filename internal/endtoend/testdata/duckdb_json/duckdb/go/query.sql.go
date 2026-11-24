@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const createEvent = `-- name: CreateEvent :exec
+const createEventSQL = `-- name: CreateEvent :exec
 INSERT INTO events (id, payload, meta) VALUES ($1, $2, $3);
 `
 
@@ -21,11 +21,11 @@ type CreateEventParams struct {
 }
 
 func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) error {
-	_, err := q.db.ExecContext(ctx, createEvent, arg.ID, arg.Payload, arg.Meta)
+	_, err := q.db.ExecContext(ctx, createEventSQL, arg.ID, arg.Payload, arg.Meta)
 	return err
 }
 
-const eventKind = `-- name: EventKind :one
+const eventKindSQL = `-- name: EventKind :one
 SELECT json_extract(payload, '$.kind') AS kind, json_extract_string(payload, '$.kind') AS kind_text
 FROM events WHERE id = $1;
 `
@@ -36,18 +36,18 @@ type EventKindRow struct {
 }
 
 func (q *Queries) EventKind(ctx context.Context, id int32) (EventKindRow, error) {
-	row := q.db.QueryRowContext(ctx, eventKind, id)
+	row := q.db.QueryRowContext(ctx, eventKindSQL, id)
 	var i EventKindRow
 	err := row.Scan(&i.Kind, &i.KindText)
 	return i, err
 }
 
-const eventsByPayload = `-- name: EventsByPayload :many
+const eventsByPayloadSQL = `-- name: EventsByPayload :many
 SELECT id FROM events WHERE payload = $1;
 `
 
 func (q *Queries) EventsByPayload(ctx context.Context, payload string) ([]int32, error) {
-	rows, err := q.db.QueryContext(ctx, eventsByPayload, payload)
+	rows, err := q.db.QueryContext(ctx, eventsByPayloadSQL, payload)
 	if err != nil {
 		return nil, err
 	}
@@ -69,23 +69,23 @@ func (q *Queries) EventsByPayload(ctx context.Context, payload string) ([]int32,
 	return items, nil
 }
 
-const getEvent = `-- name: GetEvent :one
+const getEventSQL = `-- name: GetEvent :one
 SELECT id, payload, meta FROM events WHERE id = $1;
 `
 
 func (q *Queries) GetEvent(ctx context.Context, id int32) (Event, error) {
-	row := q.db.QueryRowContext(ctx, getEvent, id)
+	row := q.db.QueryRowContext(ctx, getEventSQL, id)
 	var i Event
 	err := row.Scan(&i.ID, &i.Payload, &i.Meta)
 	return i, err
 }
 
-const payloadText = `-- name: PayloadText :one
+const payloadTextSQL = `-- name: PayloadText :one
 SELECT CAST(payload AS VARCHAR) AS payload_text FROM events WHERE id = $1;
 `
 
 func (q *Queries) PayloadText(ctx context.Context, id int32) (string, error) {
-	row := q.db.QueryRowContext(ctx, payloadText, id)
+	row := q.db.QueryRowContext(ctx, payloadTextSQL, id)
 	var payload_text string
 	err := row.Scan(&payload_text)
 	return payload_text, err

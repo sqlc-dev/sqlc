@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const selectAllJoined = `-- name: SelectAllJoined :many
+const selectAllJoinedSQL = `-- name: SelectAllJoined :many
 select events.id from events
     inner join handled_events
        on events.ID > handled_events.last_handled_id
@@ -19,7 +19,7 @@ where handled_events.handler = $1
 `
 
 func (q *Queries) SelectAllJoined(ctx context.Context, handler sql.NullString) ([]sql.NullInt32, error) {
-	rows, err := q.db.QueryContext(ctx, selectAllJoined, handler)
+	rows, err := q.db.QueryContext(ctx, selectAllJoinedSQL, handler)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (q *Queries) SelectAllJoined(ctx context.Context, handler sql.NullString) (
 	return items, nil
 }
 
-const selectAllJoinedAlias = `-- name: SelectAllJoinedAlias :many
+const selectAllJoinedAliasSQL = `-- name: SelectAllJoinedAlias :many
 select e.id from events e
     inner join handled_events he
        on e.ID > he.last_handled_id
@@ -50,7 +50,7 @@ where he.handler = $1
 `
 
 func (q *Queries) SelectAllJoinedAlias(ctx context.Context, handler sql.NullString) ([]sql.NullInt32, error) {
-	rows, err := q.db.QueryContext(ctx, selectAllJoinedAlias, handler)
+	rows, err := q.db.QueryContext(ctx, selectAllJoinedAliasSQL, handler)
 	if err != nil {
 		return nil, err
 	}

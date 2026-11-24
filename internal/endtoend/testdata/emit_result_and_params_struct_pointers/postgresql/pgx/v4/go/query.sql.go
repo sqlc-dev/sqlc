@@ -10,12 +10,12 @@ import (
 	"database/sql"
 )
 
-const getAll = `-- name: GetAll :many
+const getAllSQL = `-- name: GetAll :many
 SELECT a, b FROM foo
 `
 
 func (q *Queries) GetAll(ctx context.Context) ([]*Foo, error) {
-	rows, err := q.db.Query(ctx, getAll)
+	rows, err := q.db.Query(ctx, getAllSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -34,12 +34,12 @@ func (q *Queries) GetAll(ctx context.Context) ([]*Foo, error) {
 	return items, nil
 }
 
-const getAllAByB = `-- name: GetAllAByB :many
+const getAllAByBSQL = `-- name: GetAllAByB :many
 SELECT a FROM foo WHERE b = $1
 `
 
 func (q *Queries) GetAllAByB(ctx context.Context, b sql.NullInt32) ([]sql.NullInt32, error) {
-	rows, err := q.db.Query(ctx, getAllAByB, b)
+	rows, err := q.db.Query(ctx, getAllAByBSQL, b)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (q *Queries) GetAllAByB(ctx context.Context, b sql.NullInt32) ([]sql.NullIn
 	return items, nil
 }
 
-const getOne = `-- name: GetOne :one
+const getOneSQL = `-- name: GetOne :one
 SELECT a, b FROM foo WHERE a = $1 AND b = $2 LIMIT 1
 `
 
@@ -68,7 +68,7 @@ type GetOneParams struct {
 }
 
 func (q *Queries) GetOne(ctx context.Context, arg *GetOneParams) (*Foo, error) {
-	row := q.db.QueryRow(ctx, getOne, arg.A, arg.B)
+	row := q.db.QueryRow(ctx, getOneSQL, arg.A, arg.B)
 	var i Foo
 	err := row.Scan(&i.A, &i.B)
 	return &i, err

@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const findWallets = `-- name: FindWallets :many
+const findWalletsSQL = `-- name: FindWallets :many
 select id, address, balance, total_balance from 
 (
 	select id, address, balance,
@@ -36,7 +36,7 @@ type FindWalletsRow struct {
 }
 
 func (q *Queries) FindWallets(ctx context.Context, arg FindWalletsParams) ([]FindWalletsRow, error) {
-	rows, err := q.db.Query(ctx, findWallets, arg.Column1, arg.Column2)
+	rows, err := q.db.Query(ctx, findWalletsSQL, arg.Column1, arg.Column2)
 	if err != nil {
 		return nil, err
 	}

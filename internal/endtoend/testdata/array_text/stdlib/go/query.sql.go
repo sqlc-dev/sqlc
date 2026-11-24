@@ -11,12 +11,12 @@ import (
 	"github.com/lib/pq"
 )
 
-const textArray = `-- name: TextArray :many
+const textArraySQL = `-- name: TextArray :many
 SELECT tags FROM bar
 `
 
 func (q *Queries) TextArray(ctx context.Context) ([][]string, error) {
-	rows, err := q.db.QueryContext(ctx, textArray)
+	rows, err := q.db.QueryContext(ctx, textArraySQL)
 	if err != nil {
 		return nil, err
 	}

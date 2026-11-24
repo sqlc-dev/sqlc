@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const insertSelect = `-- name: InsertSelect :exec
+const insertSelectSQL = `-- name: InsertSelect :exec
 INSERT INTO foo (name, meta)
 SELECT name, ?
 FROM bar
@@ -22,6 +22,6 @@ type InsertSelectParams struct {
 }
 
 func (q *Queries) InsertSelect(ctx context.Context, arg InsertSelectParams) error {
-	_, err := q.db.ExecContext(ctx, insertSelect, arg.Meta, arg.Ready)
+	_, err := q.db.ExecContext(ctx, insertSelectSQL, arg.Meta, arg.Ready)
 	return err
 }

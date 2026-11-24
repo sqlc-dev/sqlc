@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const removeAllAuthorsFromTheGreatGatsby = `-- name: RemoveAllAuthorsFromTheGreatGatsby :exec
+const removeAllAuthorsFromTheGreatGatsbySQL = `-- name: RemoveAllAuthorsFromTheGreatGatsby :exec
 DELETE author_book
 FROM
   author_book
@@ -19,6 +19,6 @@ WHERE
 `
 
 func (q *Queries) RemoveAllAuthorsFromTheGreatGatsby(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, removeAllAuthorsFromTheGreatGatsby)
+	_, err := q.db.ExecContext(ctx, removeAllAuthorsFromTheGreatGatsbySQL)
 	return err
 }

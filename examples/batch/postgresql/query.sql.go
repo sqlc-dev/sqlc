@@ -11,34 +11,34 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-const createAuthor = `-- name: CreateAuthor :one
+const createAuthorSQL = `-- name: CreateAuthor :one
 INSERT INTO authors (name) VALUES ($1)
 RETURNING author_id, name, biography
 `
 
 func (q *Queries) CreateAuthor(ctx context.Context, name string) (Author, error) {
-	row := q.db.QueryRow(ctx, createAuthor, name)
+	row := q.db.QueryRow(ctx, createAuthorSQL, name)
 	var i Author
 	err := row.Scan(&i.AuthorID, &i.Name, &i.Biography)
 	return i, err
 }
 
-const deleteBookExecResult = `-- name: DeleteBookExecResult :execresult
+const deleteBookExecResultSQL = `-- name: DeleteBookExecResult :execresult
 DELETE FROM books
 WHERE book_id = $1
 `
 
 func (q *Queries) DeleteBookExecResult(ctx context.Context, bookID int32) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, deleteBookExecResult, bookID)
+	return q.db.Exec(ctx, deleteBookExecResultSQL, bookID)
 }
 
-const getAuthor = `-- name: GetAuthor :one
+const getAuthorSQL = `-- name: GetAuthor :one
 SELECT author_id, name, biography FROM authors
 WHERE author_id = $1
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, authorID int32) (Author, error) {
-	row := q.db.QueryRow(ctx, getAuthor, authorID)
+	row := q.db.QueryRow(ctx, getAuthorSQL, authorID)
 	var i Author
 	err := row.Scan(&i.AuthorID, &i.Name, &i.Biography)
 	return i, err

@@ -17,7 +17,7 @@ var (
 	ErrBatchAlreadyClosed = errors.New("batch already closed")
 )
 
-const createAuthors = `-- name: CreateAuthors :batchexec
+const createAuthorsSQL = `-- name: CreateAuthors :batchexec
 INSERT INTO authors (
   name, bio
 ) VALUES (
@@ -43,7 +43,7 @@ func (q *Queries) CreateAuthors(ctx context.Context, arg []CreateAuthorsParams) 
 			a.Name,
 			a.Bio,
 		}
-		batch.Queue(createAuthors, vals...)
+		batch.Queue(createAuthorsSQL, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
 	return &CreateAuthorsBatchResults{br, len(arg), false}

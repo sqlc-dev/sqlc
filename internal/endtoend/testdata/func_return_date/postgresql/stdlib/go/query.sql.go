@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const getDate = `-- name: GetDate :one
+const getDateSQL = `-- name: GetDate :one
 SELECT  from CURRENT_DATE
 `
 
@@ -17,7 +17,7 @@ type GetDateRow struct {
 }
 
 func (q *Queries) GetDate(ctx context.Context) (GetDateRow, error) {
-	row := q.db.QueryRowContext(ctx, getDate)
+	row := q.db.QueryRowContext(ctx, getDateSQL)
 	var i GetDateRow
 	err := row.Scan()
 	return i, err

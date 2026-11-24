@@ -9,14 +9,14 @@ import (
 	"context"
 )
 
-const columnAsOrderBy = `-- name: ColumnAsOrderBy :many
+const columnAsOrderBySQL = `-- name: ColumnAsOrderBy :many
 SELECT a.email AS id
 FROM foo a JOIN foo b ON a.email = b.email
 ORDER BY id
 `
 
 func (q *Queries) ColumnAsOrderBy(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, columnAsOrderBy)
+	rows, err := q.db.QueryContext(ctx, columnAsOrderBySQL)
 	if err != nil {
 		return nil, err
 	}

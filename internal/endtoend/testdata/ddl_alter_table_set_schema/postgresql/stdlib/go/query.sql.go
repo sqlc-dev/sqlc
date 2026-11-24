@@ -10,20 +10,20 @@ import (
 	"database/sql"
 )
 
-const getFooBar = `-- name: GetFooBar :exec
+const getFooBarSQL = `-- name: GetFooBar :exec
 SELECT name FROM foo.bar
 `
 
 func (q *Queries) GetFooBar(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, getFooBar)
+	_, err := q.db.ExecContext(ctx, getFooBarSQL)
 	return err
 }
 
-const updateFooBar = `-- name: UpdateFooBar :exec
+const updateFooBarSQL = `-- name: UpdateFooBar :exec
 UPDATE foo.bar SET name = $1
 `
 
 func (q *Queries) UpdateFooBar(ctx context.Context, name sql.NullString) error {
-	_, err := q.db.ExecContext(ctx, updateFooBar, name)
+	_, err := q.db.ExecContext(ctx, updateFooBarSQL, name)
 	return err
 }

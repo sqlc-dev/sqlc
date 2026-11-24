@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const listAuthorsColumnSort = `-- name: ListAuthorsColumnSort :many
+const listAuthorsColumnSortSQL = `-- name: ListAuthorsColumnSort :many
 SELECT  id, name, bio FROM authors
 WHERE   id > ? 
 ORDER   BY CASE WHEN ? = 'name' THEN name END
@@ -21,7 +21,7 @@ type ListAuthorsColumnSortParams struct {
 }
 
 func (q *Queries) ListAuthorsColumnSort(ctx context.Context, arg ListAuthorsColumnSortParams) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthorsColumnSort, arg.MinID, arg.SortColumn)
+	rows, err := q.db.QueryContext(ctx, listAuthorsColumnSortSQL, arg.MinID, arg.SortColumn)
 	if err != nil {
 		return nil, err
 	}
@@ -43,13 +43,13 @@ func (q *Queries) ListAuthorsColumnSort(ctx context.Context, arg ListAuthorsColu
 	return items, nil
 }
 
-const listAuthorsColumnSortFnWtihArg = `-- name: ListAuthorsColumnSortFnWtihArg :many
+const listAuthorsColumnSortFnWtihArgSQL = `-- name: ListAuthorsColumnSortFnWtihArg :many
 SELECT  id, name, bio FROM authors
 ORDER   BY MOD(id, ?)
 `
 
 func (q *Queries) ListAuthorsColumnSortFnWtihArg(ctx context.Context, modArg int64) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthorsColumnSortFnWtihArg, modArg)
+	rows, err := q.db.QueryContext(ctx, listAuthorsColumnSortFnWtihArgSQL, modArg)
 	if err != nil {
 		return nil, err
 	}
@@ -71,14 +71,14 @@ func (q *Queries) ListAuthorsColumnSortFnWtihArg(ctx context.Context, modArg int
 	return items, nil
 }
 
-const listAuthorsNameSort = `-- name: ListAuthorsNameSort :many
+const listAuthorsNameSortSQL = `-- name: ListAuthorsNameSort :many
 SELECT  id, name, bio FROM authors
 WHERE   id > ?
 ORDER   BY name ASC
 `
 
 func (q *Queries) ListAuthorsNameSort(ctx context.Context, minID int64) ([]Author, error) {
-	rows, err := q.db.QueryContext(ctx, listAuthorsNameSort, minID)
+	rows, err := q.db.QueryContext(ctx, listAuthorsNameSortSQL, minID)
 	if err != nil {
 		return nil, err
 	}

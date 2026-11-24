@@ -17,7 +17,7 @@ var (
 	ErrBatchAlreadyClosed = errors.New("batch already closed")
 )
 
-const booksByYear = `-- name: BooksByYear :batchmany
+const booksByYearSQL = `-- name: BooksByYear :batchmany
 SELECT book_id, author_id, isbn, book_type, title, year, available, tags FROM books
 WHERE year = $1
 `
@@ -34,7 +34,7 @@ func (q *Queries) BooksByYear(ctx context.Context, year []int32) *BooksByYearBat
 		vals := []any{
 			a,
 		}
-		batch.Queue(booksByYear, vals...)
+		batch.Queue(booksByYearSQL, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
 	return &BooksByYearBatchResults{br, len(year), false}
@@ -85,7 +85,7 @@ func (b *BooksByYearBatchResults) Close() error {
 	return b.br.Close()
 }
 
-const createBook = `-- name: CreateBook :batchone
+const createBookSQL = `-- name: CreateBook :batchone
 INSERT INTO books (
     author_id,
     isbn,
@@ -134,7 +134,7 @@ func (q *Queries) CreateBook(ctx context.Context, arg []CreateBookParams) *Creat
 			a.Available,
 			a.Tags,
 		}
-		batch.Queue(createBook, vals...)
+		batch.Queue(createBookSQL, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
 	return &CreateBookBatchResults{br, len(arg), false}
@@ -172,7 +172,7 @@ func (b *CreateBookBatchResults) Close() error {
 	return b.br.Close()
 }
 
-const deleteBook = `-- name: DeleteBook :batchexec
+const deleteBookSQL = `-- name: DeleteBook :batchexec
 DELETE FROM books
 WHERE book_id = $1
 `
@@ -189,7 +189,7 @@ func (q *Queries) DeleteBook(ctx context.Context, bookID []int32) *DeleteBookBat
 		vals := []any{
 			a,
 		}
-		batch.Queue(deleteBook, vals...)
+		batch.Queue(deleteBookSQL, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
 	return &DeleteBookBatchResults{br, len(bookID), false}
@@ -216,7 +216,7 @@ func (b *DeleteBookBatchResults) Close() error {
 	return b.br.Close()
 }
 
-const deleteBookNamedFunc = `-- name: DeleteBookNamedFunc :batchexec
+const deleteBookNamedFuncSQL = `-- name: DeleteBookNamedFunc :batchexec
 DELETE FROM books
 WHERE book_id = $1
 `
@@ -233,7 +233,7 @@ func (q *Queries) DeleteBookNamedFunc(ctx context.Context, bookID []int32) *Dele
 		vals := []any{
 			a,
 		}
-		batch.Queue(deleteBookNamedFunc, vals...)
+		batch.Queue(deleteBookNamedFuncSQL, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
 	return &DeleteBookNamedFuncBatchResults{br, len(bookID), false}
@@ -260,7 +260,7 @@ func (b *DeleteBookNamedFuncBatchResults) Close() error {
 	return b.br.Close()
 }
 
-const deleteBookNamedSign = `-- name: DeleteBookNamedSign :batchexec
+const deleteBookNamedSignSQL = `-- name: DeleteBookNamedSign :batchexec
 DELETE FROM books
 WHERE book_id = $1
 `
@@ -277,7 +277,7 @@ func (q *Queries) DeleteBookNamedSign(ctx context.Context, bookID []int32) *Dele
 		vals := []any{
 			a,
 		}
-		batch.Queue(deleteBookNamedSign, vals...)
+		batch.Queue(deleteBookNamedSignSQL, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
 	return &DeleteBookNamedSignBatchResults{br, len(bookID), false}
@@ -304,7 +304,7 @@ func (b *DeleteBookNamedSignBatchResults) Close() error {
 	return b.br.Close()
 }
 
-const getBiography = `-- name: GetBiography :batchone
+const getBiographySQL = `-- name: GetBiography :batchone
 SELECT biography FROM authors
 WHERE author_id = $1
 `
@@ -321,7 +321,7 @@ func (q *Queries) GetBiography(ctx context.Context, authorID []int32) *GetBiogra
 		vals := []any{
 			a,
 		}
-		batch.Queue(getBiography, vals...)
+		batch.Queue(getBiographySQL, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
 	return &GetBiographyBatchResults{br, len(authorID), false}
@@ -350,7 +350,7 @@ func (b *GetBiographyBatchResults) Close() error {
 	return b.br.Close()
 }
 
-const updateBook = `-- name: UpdateBook :batchexec
+const updateBookSQL = `-- name: UpdateBook :batchexec
 UPDATE books
 SET title = $1, tags = $2
 WHERE book_id = $3
@@ -376,7 +376,7 @@ func (q *Queries) UpdateBook(ctx context.Context, arg []UpdateBookParams) *Updat
 			a.Tags,
 			a.BookID,
 		}
-		batch.Queue(updateBook, vals...)
+		batch.Queue(updateBookSQL, vals...)
 	}
 	br := q.db.SendBatch(ctx, batch)
 	return &UpdateBookBatchResults{br, len(arg), false}

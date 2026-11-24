@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const updateAttribute = `-- name: UpdateAttribute :one
+const updateAttributeSQL = `-- name: UpdateAttribute :one
 with updated_attribute as (UPDATE attribute_value
     SET
         val = CASE WHEN $1::bool THEN $2 ELSE val END
@@ -35,7 +35,7 @@ type UpdateAttributeRow struct {
 }
 
 func (q *Queries) UpdateAttribute(ctx context.Context, arg UpdateAttributeParams) (UpdateAttributeRow, error) {
-	row := q.db.QueryRow(ctx, updateAttribute, arg.FilterValue, arg.Value, arg.ID)
+	row := q.db.QueryRow(ctx, updateAttributeSQL, arg.FilterValue, arg.Value, arg.ID)
 	var i UpdateAttributeRow
 	err := row.Scan(&i.ID, &i.Val, &i.Name)
 	return i, err

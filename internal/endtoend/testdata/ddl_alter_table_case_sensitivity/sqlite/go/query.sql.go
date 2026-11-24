@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const insertUser = `-- name: InsertUser :exec
+const insertUserSQL = `-- name: InsertUser :exec
 INSERT INTO users (full_name, "EmailAddress", created_at)
 VALUES (?, ?, ?)
 `
@@ -22,17 +22,17 @@ type InsertUserParams struct {
 }
 
 func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) error {
-	_, err := q.db.ExecContext(ctx, insertUser, arg.FullName, arg.EmailAddress, arg.CreatedAt)
+	_, err := q.db.ExecContext(ctx, insertUserSQL, arg.FullName, arg.EmailAddress, arg.CreatedAt)
 	return err
 }
 
-const selectUsers = `-- name: SelectUsers :many
+const selectUsersSQL = `-- name: SelectUsers :many
 SELECT id, full_name, "EmailAddress", created_at
 FROM users
 `
 
 func (q *Queries) SelectUsers(ctx context.Context) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, selectUsers)
+	rows, err := q.db.QueryContext(ctx, selectUsersSQL)
 	if err != nil {
 		return nil, err
 	}

@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const booksByTags = `-- name: BooksByTags :many
+const booksByTagsSQL = `-- name: BooksByTags :many
 SELECT
   book_id,
   title,
@@ -32,7 +32,7 @@ type BooksByTagsRow struct {
 }
 
 func (q *Queries) BooksByTags(ctx context.Context, tags string) ([]BooksByTagsRow, error) {
-	rows, err := q.db.QueryContext(ctx, booksByTags, tags)
+	rows, err := q.db.QueryContext(ctx, booksByTagsSQL, tags)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (q *Queries) BooksByTags(ctx context.Context, tags string) ([]BooksByTagsRo
 	return items, nil
 }
 
-const booksByTitleYear = `-- name: BooksByTitleYear :many
+const booksByTitleYearSQL = `-- name: BooksByTitleYear :many
 SELECT book_id, author_id, isbn, book_type, title, yr, available, tags FROM books
 WHERE title = ? AND yr = ?
 `
@@ -71,7 +71,7 @@ type BooksByTitleYearParams struct {
 }
 
 func (q *Queries) BooksByTitleYear(ctx context.Context, arg BooksByTitleYearParams) ([]Book, error) {
-	rows, err := q.db.QueryContext(ctx, booksByTitleYear, arg.Title, arg.Yr)
+	rows, err := q.db.QueryContext(ctx, booksByTitleYearSQL, arg.Title, arg.Yr)
 	if err != nil {
 		return nil, err
 	}
@@ -102,15 +102,15 @@ func (q *Queries) BooksByTitleYear(ctx context.Context, arg BooksByTitleYearPara
 	return items, nil
 }
 
-const createAuthor = `-- name: CreateAuthor :execresult
+const createAuthorSQL = `-- name: CreateAuthor :execresult
 INSERT INTO authors (name) VALUES (?)
 `
 
 func (q *Queries) CreateAuthor(ctx context.Context, name string) (sql.Result, error) {
-	return q.db.ExecContext(ctx, createAuthor, name)
+	return q.db.ExecContext(ctx, createAuthorSQL, name)
 }
 
-const createBook = `-- name: CreateBook :execresult
+const createBookSQL = `-- name: CreateBook :execresult
 INSERT INTO books (
     author_id,
     isbn,
@@ -141,7 +141,7 @@ type CreateBookParams struct {
 }
 
 func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (sql.Result, error) {
-	return q.db.ExecContext(ctx, createBook,
+	return q.db.ExecContext(ctx, createBookSQL,
 		arg.AuthorID,
 		arg.Isbn,
 		arg.BookType,
@@ -152,7 +152,7 @@ func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (sql.Res
 	)
 }
 
-const deleteAuthorBeforeYear = `-- name: DeleteAuthorBeforeYear :exec
+const deleteAuthorBeforeYearSQL = `-- name: DeleteAuthorBeforeYear :exec
 DELETE FROM books
 WHERE yr < ? AND author_id = ?
 `
@@ -163,39 +163,39 @@ type DeleteAuthorBeforeYearParams struct {
 }
 
 func (q *Queries) DeleteAuthorBeforeYear(ctx context.Context, arg DeleteAuthorBeforeYearParams) error {
-	_, err := q.db.ExecContext(ctx, deleteAuthorBeforeYear, arg.Yr, arg.AuthorID)
+	_, err := q.db.ExecContext(ctx, deleteAuthorBeforeYearSQL, arg.Yr, arg.AuthorID)
 	return err
 }
 
-const deleteBook = `-- name: DeleteBook :exec
+const deleteBookSQL = `-- name: DeleteBook :exec
 DELETE FROM books
 WHERE book_id = ?
 `
 
 func (q *Queries) DeleteBook(ctx context.Context, bookID int32) error {
-	_, err := q.db.ExecContext(ctx, deleteBook, bookID)
+	_, err := q.db.ExecContext(ctx, deleteBookSQL, bookID)
 	return err
 }
 
-const getAuthor = `-- name: GetAuthor :one
+const getAuthorSQL = `-- name: GetAuthor :one
 SELECT author_id, name FROM authors
 WHERE author_id = ?
 `
 
 func (q *Queries) GetAuthor(ctx context.Context, authorID int32) (Author, error) {
-	row := q.db.QueryRowContext(ctx, getAuthor, authorID)
+	row := q.db.QueryRowContext(ctx, getAuthorSQL, authorID)
 	var i Author
 	err := row.Scan(&i.AuthorID, &i.Name)
 	return i, err
 }
 
-const getBook = `-- name: GetBook :one
+const getBookSQL = `-- name: GetBook :one
 SELECT book_id, author_id, isbn, book_type, title, yr, available, tags FROM books
 WHERE book_id = ?
 `
 
 func (q *Queries) GetBook(ctx context.Context, bookID int32) (Book, error) {
-	row := q.db.QueryRowContext(ctx, getBook, bookID)
+	row := q.db.QueryRowContext(ctx, getBookSQL, bookID)
 	var i Book
 	err := row.Scan(
 		&i.BookID,
@@ -210,7 +210,7 @@ func (q *Queries) GetBook(ctx context.Context, bookID int32) (Book, error) {
 	return i, err
 }
 
-const updateBook = `-- name: UpdateBook :exec
+const updateBookSQL = `-- name: UpdateBook :exec
 UPDATE books
 SET title = ?, tags = ?
 WHERE book_id = ?
@@ -223,11 +223,11 @@ type UpdateBookParams struct {
 }
 
 func (q *Queries) UpdateBook(ctx context.Context, arg UpdateBookParams) error {
-	_, err := q.db.ExecContext(ctx, updateBook, arg.Title, arg.Tags, arg.BookID)
+	_, err := q.db.ExecContext(ctx, updateBookSQL, arg.Title, arg.Tags, arg.BookID)
 	return err
 }
 
-const updateBookISBN = `-- name: UpdateBookISBN :exec
+const updateBookISBNSQL = `-- name: UpdateBookISBN :exec
 UPDATE books
 SET title = ?, tags = ?, isbn = ?
 WHERE book_id = ?
@@ -241,7 +241,7 @@ type UpdateBookISBNParams struct {
 }
 
 func (q *Queries) UpdateBookISBN(ctx context.Context, arg UpdateBookISBNParams) error {
-	_, err := q.db.ExecContext(ctx, updateBookISBN,
+	_, err := q.db.ExecContext(ctx, updateBookISBNSQL,
 		arg.Title,
 		arg.Tags,
 		arg.Isbn,

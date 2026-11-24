@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getTotalSlackQueries = `-- name: GetTotalSlackQueries :one
+const getTotalSlackQueriesSQL = `-- name: GetTotalSlackQueries :one
 SELECT
     COUNT(*) AS count
 FROM astoria.slack_feedback
@@ -26,13 +26,13 @@ type GetTotalSlackQueriesParams struct {
 }
 
 func (q *Queries) GetTotalSlackQueries(ctx context.Context, arg GetTotalSlackQueriesParams) (int64, error) {
-	row := q.db.QueryRow(ctx, getTotalSlackQueries, arg.WorkspaceID, arg.Column2, arg.Column3)
+	row := q.db.QueryRow(ctx, getTotalSlackQueriesSQL, arg.WorkspaceID, arg.Column2, arg.Column3)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
 }
 
-const getTotalSlackQueriesRequestsCreated = `-- name: GetTotalSlackQueriesRequestsCreated :one
+const getTotalSlackQueriesRequestsCreatedSQL = `-- name: GetTotalSlackQueriesRequestsCreated :one
 SELECT
     COUNT(*) AS count
 FROM astoria.tickets
@@ -48,13 +48,13 @@ type GetTotalSlackQueriesRequestsCreatedParams struct {
 }
 
 func (q *Queries) GetTotalSlackQueriesRequestsCreated(ctx context.Context, arg GetTotalSlackQueriesRequestsCreatedParams) (int64, error) {
-	row := q.db.QueryRow(ctx, getTotalSlackQueriesRequestsCreated, arg.WorkspaceID, arg.Column2, arg.Column3)
+	row := q.db.QueryRow(ctx, getTotalSlackQueriesRequestsCreatedSQL, arg.WorkspaceID, arg.Column2, arg.Column3)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
 }
 
-const getTotalSlackQueriesResolved = `-- name: GetTotalSlackQueriesResolved :one
+const getTotalSlackQueriesResolvedSQL = `-- name: GetTotalSlackQueriesResolved :one
 SELECT
     COUNT(*) AS count
 FROM astoria.slack_feedback
@@ -70,7 +70,7 @@ type GetTotalSlackQueriesResolvedParams struct {
 }
 
 func (q *Queries) GetTotalSlackQueriesResolved(ctx context.Context, arg GetTotalSlackQueriesResolvedParams) (int64, error) {
-	row := q.db.QueryRow(ctx, getTotalSlackQueriesResolved, arg.WorkspaceID, arg.Column2, arg.Column3)
+	row := q.db.QueryRow(ctx, getTotalSlackQueriesResolvedSQL, arg.WorkspaceID, arg.Column2, arg.Column3)
 	var count int64
 	err := row.Scan(&count)
 	return count, err

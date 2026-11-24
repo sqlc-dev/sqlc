@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const selectJoinUsing = `-- name: SelectJoinUsing :many
+const selectJoinUsingSQL = `-- name: SelectJoinUsing :many
 select t1.fk, sum(t2.fk) from t1 join t2 using (fk) group by fk
 `
 
@@ -21,7 +21,7 @@ type SelectJoinUsingRow struct {
 }
 
 func (q *Queries) SelectJoinUsing(ctx context.Context) ([]SelectJoinUsingRow, error) {
-	rows, err := q.db.Query(ctx, selectJoinUsing)
+	rows, err := q.db.Query(ctx, selectJoinUsingSQL)
 	if err != nil {
 		return nil, err
 	}

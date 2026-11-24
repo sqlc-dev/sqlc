@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const testList = `-- name: TestList :many
+const testListSQL = `-- name: TestList :many
 SELECT id FROM users
 `
 
 func (q *Queries) TestList(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, testList)
+	rows, err := q.db.QueryContext(ctx, testListSQL)
 	if err != nil {
 		return nil, err
 	}
