@@ -1,0 +1,5 @@
+# package querytest
+query.sql:1:1: sqlite3: SQL logic error: near "ORDER": syntax error
+query.sql:5:1: sqlite3: SQL logic error: near "ORDER": syntax error
+query.sql:8:1: sqlite3: SQL logic error: near "ORDER": syntax error
+query.sql:11:1: sqlite3: SQL logic error: near "ORDER": syntax error
