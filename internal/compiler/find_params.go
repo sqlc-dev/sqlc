@@ -68,6 +68,9 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 		if n.LimitCount != nil {
 			p.limitCount = n.LimitCount
 		}
+		if n.LimitOffset != nil {
+			p.limitOffset = n.LimitOffset
+		}
 
 	case *ast.FuncCall:
 		p.parent = node
@@ -131,6 +134,9 @@ func (p paramSearch) Visit(node ast.Node) astutils.Visitor {
 		}
 		if n.LimitCount != nil {
 			p.limitCount = n.LimitCount
+		}
+		if n.LimitOffset != nil {
+			p.limitOffset = n.LimitOffset
 		}
 
 	case *ast.RangeVar:

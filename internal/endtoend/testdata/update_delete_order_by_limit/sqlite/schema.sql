@@ -1,0 +1,5 @@
+CREATE TABLE t (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    score INTEGER NOT NULL
+);
