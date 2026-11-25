@@ -207,7 +207,7 @@ pgx supports any type whose underlying type is `[16]byte`, and as of Go 1.27
 bound via `driver.DefaultParameterConverter` and results are scanned into
 `uuid.UUID` and `*uuid.UUID` destinations, with `nil` representing `NULL`.
 
-For MySQL, there is no native `uuid` data type. When using `UUID_TO_BIN` to store a `UUID()`, the underlying field type is `BINARY(16)` which by default sqlc would map to `sql.NullString`. To have sqlc automatically convert these fields to a `uuid.UUID` type, use an overide override the column storing the `uuid`
+For MySQL, there is no native `uuid` data type. When using `UUID_TO_BIN` to store a `UUID()`, the underlying field type is `BINARY(16)` which by default sqlc would map to `sql.NullString`. To have sqlc automatically convert these fields to a `uuid.UUID` type, use an override on the column storing the `uuid`
 (see [Overriding types](../howto/overrides.md) for details).
 
 ```json
