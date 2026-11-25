@@ -57,6 +57,9 @@ func (a *analyzer) analyzeUpdate(s *ast.UpdateStmt) error {
 			return fmt.Errorf("where: %w", err)
 		}
 	}
+	if err := a.typeOrderLimit(s.SortClause, s.LimitCount, s.LimitOffset); err != nil {
+		return err
+	}
 	return a.projectReturning(s.ReturningList)
 }
 
@@ -74,6 +77,9 @@ func (a *analyzer) analyzeDelete(s *ast.DeleteStmt) error {
 		if _, err := a.typeExpr(s.WhereClause); err != nil {
 			return fmt.Errorf("where: %w", err)
 		}
+	}
+	if err := a.typeOrderLimit(s.SortClause, s.LimitCount, s.LimitOffset); err != nil {
+		return err
 	}
 	return a.projectReturning(s.ReturningList)
 }
@@ -208,4 +214,22 @@ func columnType(rel scopeRel, col core.ClassColumn) exprType {
 		sourceAttributeOID: col.AttOID,
 		sourceTableAlias:   rel.alias,
 	}
+}
+
+// typeOrderLimit types the ORDER BY and LIMIT ... OFFSET that SQLite accepts
+// on an UPDATE or DELETE (MySQL accepts ORDER BY and LIMIT, without OFFSET).
+func (a *analyzer) typeOrderLimit(sort *ast.List, count, offset ast.Node) error {
+	for _, item := range listItems(sort) {
+		if sb, ok := item.(*ast.SortBy); ok {
+			if _, err := a.typeExpr(sb.Node); err != nil {
+				return fmt.Errorf("order by: %w", err)
+			}
+		}
+	}
+	for _, n := range []ast.Node{count, offset} {
+		if err := a.typeLimit(n); err != nil {
+			return fmt.Errorf("limit: %w", err)
+		}
+	}
+	return nil
 }

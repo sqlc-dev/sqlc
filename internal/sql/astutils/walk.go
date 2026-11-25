@@ -1068,8 +1068,14 @@ func Walk(f Visitor, node ast.Node) {
 		if n.WhereClause != nil {
 			Walk(f, n.WhereClause)
 		}
+		if n.SortClause != nil {
+			Walk(f, n.SortClause)
+		}
 		if n.LimitCount != nil {
 			Walk(f, n.LimitCount)
+		}
+		if n.LimitOffset != nil {
+			Walk(f, n.LimitOffset)
 		}
 		if n.ReturningList != nil {
 			Walk(f, n.ReturningList)
@@ -2068,8 +2074,14 @@ func Walk(f Visitor, node ast.Node) {
 		if n.FromClause != nil {
 			Walk(f, n.FromClause)
 		}
+		if n.SortClause != nil {
+			Walk(f, n.SortClause)
+		}
 		if n.LimitCount != nil {
 			Walk(f, n.LimitCount)
+		}
+		if n.LimitOffset != nil {
+			Walk(f, n.LimitOffset)
 		}
 		if n.ReturningList != nil {
 			Walk(f, n.ReturningList)

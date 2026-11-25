@@ -8,7 +8,9 @@ type DeleteStmt struct {
 	Relations     *List       `json:"relations,omitempty"`
 	UsingClause   *List       `json:"using_clause,omitempty"`
 	WhereClause   Node        `json:"where_clause,omitempty"`
+	SortClause    *List       `json:"sort_clause,omitempty"`
 	LimitCount    Node        `json:"limit_count,omitempty"`
+	LimitOffset   Node        `json:"limit_offset,omitempty"`
 	ReturningList *List       `json:"returning_list,omitempty"`
 	WithClause    *WithClause `json:"with_clause,omitempty"`
 	// MySQL multi-table DELETE support
@@ -74,11 +76,25 @@ func (n *DeleteStmt) Format(buf *TrackedBuffer, d format.Dialect) {
 		buf.condition(n.WhereClause, d)
 	}
 
+	if items(n.SortClause) {
+		buf.beforeClause(n.SortClause, d)
+		buf.Line()
+		buf.WriteString("ORDER BY ")
+		buf.astFormat(n.SortClause, d)
+	}
+
 	if set(n.LimitCount) {
 		buf.beforeClause(n.LimitCount, d)
 		buf.Line()
 		buf.WriteString("LIMIT ")
 		buf.astFormat(n.LimitCount, d)
+	}
+
+	if set(n.LimitOffset) {
+		buf.beforeClause(n.LimitOffset, d)
+		buf.Line()
+		buf.WriteString("OFFSET ")
+		buf.astFormat(n.LimitOffset, d)
 	}
 
 	if items(n.ReturningList) {
