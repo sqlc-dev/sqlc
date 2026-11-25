@@ -36,7 +36,7 @@ an up-to-date schema. Here's a minimal working configuration:
 version: "2"
 servers:
 - engine: postgresql
-  uri: "postgres://locahost:5432/postgres?sslmode=disable"
+  uri: "postgres://localhost:5432/postgres?sslmode=disable"
 sql:
   - engine: "postgresql"
     queries: "query.sql"
