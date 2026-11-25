@@ -502,13 +502,24 @@ func (c *cc) convertColumnNames(cols []*meyer.Ident) *ast.List {
 }
 
 // convertSetPairs converts the assignment list of an UPDATE or of an upsert's
-// DO UPDATE. SQLite allows "(a, b) = expr"; sqlc has no node for a
-// multi-column assignment, so each name is given the same value expression.
+// DO UPDATE. SQLite allows "(a, b) = (x, y)", which assigns each column the
+// element of the row value at its position, so it becomes "a = x, b = y".
+// sqlc has no node for a multi-column assignment from a single expression,
+// such as "(a, b) = (SELECT ...)", so there each name is given the whole
+// value expression.
 func (c *cc) convertSetPairs(pairs []*meyer.SetPair) *ast.List {
 	list := &ast.List{}
 	for _, pair := range pairs {
-		val := c.convertExpr(pair.Value)
-		for _, col := range pair.Columns {
+		elems := rowElements(pair.Value, len(pair.Columns))
+		var whole ast.Node
+		if elems == nil {
+			whole = c.convertExpr(pair.Value)
+		}
+		for i, col := range pair.Columns {
+			val := whole
+			if elems != nil {
+				val = c.convertExpr(elems[i])
+			}
 			name := identifier(col)
 			list.Items = append(list.Items, &ast.ResTarget{
 				Name:     &name,
@@ -518,6 +529,26 @@ func (c *cc) convertSetPairs(pairs []*meyer.SetPair) *ast.List {
 		}
 	}
 	return list
+}
+
+// rowElements returns the elements of a row value with exactly n elements,
+// looking through redundant parentheses, or nil if e is not one.
+func rowElements(e meyer.Expr, n int) []meyer.Expr {
+	if n < 2 {
+		return nil
+	}
+	for {
+		p, ok := e.(*meyer.ParenExpr)
+		if !ok {
+			break
+		}
+		e = p.X
+	}
+	v, ok := e.(*meyer.VectorExpr)
+	if !ok || len(v.List) != n {
+		return nil
+	}
+	return v.List
 }
 
 func (c *cc) convertUpdateStmt(n *meyer.UpdateStmt) ast.Node {
